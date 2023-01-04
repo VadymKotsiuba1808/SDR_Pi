@@ -1,6 +1,6 @@
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QApplication, QMainWindow
-from PyQt5.QtCore import QDateTime, QTimer
+from PyQt5.QtCore import QDateTime, QTime, QTimer
 from PyQt5.QtGui import QScreen
 
 from UI.SDR_UI import Ui_MainWindow
@@ -20,20 +20,45 @@ class MyUiWindow(QMainWindow):
         self.ui.mapLayoutButton.clicked.connect(self.change_map_action)
         self.ui.screenSaveButton.clicked.connect(self.take_screenshot)
 
+        self.ui.onTimerButton.clicked.connect(self.start_jammer)
+        self.ui.offTimerButton.clicked.connect(self.stop_jammer)
+
+        self.ui.k_label_1.setEnabled(False)
+
         self.__current_map = 0
         self.__current_date = "15.12.2022"
         self.__current_time = "00:00:00"
+        self.__flagJammer = False
+
+        self.timer_1sec = QTimer(self)
+        self.timer_1sec.timeout.connect(self.handler_1sec)
+        self.timer_1sec.start(1000)
+
         self.change_map_action()
 
-        timer_1sec = QTimer(self)
-        timer_1sec.timeout.connect(self.update_date_time)
-        timer_1sec.start(1000)
+    def start_jammer(self):
+        minutes = 188
+        self.ui.TimerTime.setText('{:02d}:{:02d}:00'.format(*divmod(minutes, 60)))
+        self.__flagJammer = True
+        self.ui.k_label_1.setEnabled(True)
+        self.ui.onTimerButton.setEnabled(False)
+        QTimer.singleShot(minutes*60*1000, self.stop_jammer)
 
-    def update_date_time(self):
+    def stop_jammer(self):
+        self.ui.TimerTime.setText('00:00:00')
+        self.__flagJammer = False
+        self.ui.k_label_1.setEnabled(False)
+        self.ui.onTimerButton.setEnabled(True)
+        print("Jammer Timer Handled")
+
+    def handler_1sec(self):
         date, self.__current_time = QDateTime().currentDateTime().toString(QtCore.Qt.DateFormat.ISODate).split('T')
         self.__current_date = '.'.join(date.split('-')[::-1])
         self.ui.DateLabel.setText( self.__current_date)
         self.ui.TimeLabel.setText(self.__current_time)
+
+        if self.__flagJammer:
+            self.ui.TimerTime.setText(QTime().fromString(self.ui.TimerTime.text(), "hh:mm:ss").addSecs(-1).toString("hh:mm:ss"))
 
     def change_map_action(self) -> bool:
         if self.__current_map == 0 or self.__current_map == MapTypes.HYBRID:

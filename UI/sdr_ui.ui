@@ -1391,6 +1391,9 @@ QPushButton[enabled=&quot;false&quot;]{
      </widget>
     </widget>
     <widget class="QLabel" name="k_label_1">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>1550</x>
@@ -1532,7 +1535,7 @@ QPushButton[enabled=&quot;false&quot;]{
      <property name="geometry">
       <rect>
        <x>509</x>
-       <y>52</y>
+       <y>25</y>
        <width>901</width>
        <height>901</height>
       </rect>
@@ -1557,6 +1560,44 @@ QPushButton[enabled=&quot;false&quot;]{
       </property>
       <property name="pixmap">
        <pixmap resource="../source.qrc">:/Images/images/radar.png</pixmap>
+      </property>
+     </widget>
+     <widget class="QLabel" name="Radar_Green">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>901</width>
+        <height>901</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="pixmap">
+       <pixmap resource="../source.qrc">:/Images/images/radar_green.png</pixmap>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QLabel" name="Radar_Red">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>901</width>
+        <height>901</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="pixmap">
+       <pixmap resource="../source.qrc">:/Images/images/radar_red.png</pixmap>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
       </property>
      </widget>
     </widget>

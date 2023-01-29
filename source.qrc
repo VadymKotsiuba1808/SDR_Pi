@@ -1,7 +1,9 @@
 <RCC>
   <qresource prefix="Images">
-    <file>images/radar.png</file>
     <file>images/k_relay_on.png</file>
+    <file>images/radar.png</file>
+    <file>images/radar_green.png</file>
+    <file>images/radar_red.png</file>
     <file>images/k_relay_off.png</file>
     <file>images/timer_btn_on.png</file>
     <file>images/timer_btn_off.png</file>

@@ -1,14 +1,13 @@
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QApplication, QMainWindow
-from PyQt5.QtCore import QDateTime, QTime, QTimer
-from PyQt5.QtGui import QScreen
+from PyQt5.QtCore import Qt, QDateTime, QTime, QTimer, QRect
+from PyQt5.QtGui import QTransform, QPixmap
 
 from UI.SDR_UI import Ui_MainWindow
 from gmap import get_map, MapTypes
 from tests import TestCase
 
-import sys
-
+import sys, itertools
 
 def remap(x, in_min, in_max, out_min, out_max):
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
@@ -29,6 +28,7 @@ class MyUiWindow(QMainWindow):
         self.ui.homeButton.clicked.connect(self.update_status_bar)
 
         self.ui.k_label_1.setEnabled(False)
+        self.ui.Radar_Red.hide()
 
         self.__current_map = 0
         self.__current_date = "15.12.2022"
@@ -45,7 +45,26 @@ class MyUiWindow(QMainWindow):
         self.timer_refresh.timeout.connect(self.refresh)
         self.timer_refresh.start(20)
 
+        self.__angle_cycle = itertools.cycle([i for i in range(0, 361, 10)])
+        self.timer_radar = QTimer(self)
+        self.timer_radar.timeout.connect(self.__rotate_radar)
+        self.timer_radar.start(60)
+
         self.__test_values = TestCase()
+
+    def __rotate_radar(self):
+        original_pixmap = QPixmap(":/Images/images/radar_green.png")
+        transform = QTransform()
+        transform.rotate(next(self.__angle_cycle))
+        temp_pixmap = original_pixmap.transformed(transform, Qt.SmoothTransformation)
+        width, height = original_pixmap.size().width(), original_pixmap.size().height()
+        center_x = temp_pixmap.width() // 2
+        center_y = temp_pixmap.height() // 2
+        rect_x = center_x - width // 2
+        rect_y = center_y - height // 2
+        temp_pixmap = temp_pixmap.copy(QRect(rect_x, rect_y, width, height))
+        self.ui.Radar_Green.setPixmap(temp_pixmap)
+        del temp_pixmap
 
     def refresh(self):
         self.setStyleSheet("background-image: url(temp_data/current_map.png);")
@@ -110,7 +129,6 @@ class MyUiWindow(QMainWindow):
             self.__current_map = MapTypes.HYBRID
 
         return self.refresh_map()
-
 
     def take_screenshot(self):
         shoot = QApplication.primaryScreen().grabWindow(self.winId(), 0, 0, 1920, 1080)

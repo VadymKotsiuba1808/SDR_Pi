@@ -10,4 +10,4 @@ def receive_list():
 
     return 'List received successfully'
 
-app.run()
+app.run(host='0.0.0.0')

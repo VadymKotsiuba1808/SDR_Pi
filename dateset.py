@@ -17,7 +17,7 @@ dataset_24ghz = {
 def dataset_match(data):
       res_list = []
       if len(data) == 0:
-            return [];
+            return []
       for index, template in dataset_24ghz.items():
             processed_data = [data[i] for i, mask in enumerate(template) if mask == 1]
             avg = sum(processed_data)/len(processed_data)

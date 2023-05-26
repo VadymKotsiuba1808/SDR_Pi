@@ -23,4 +23,4 @@ def dataset_match(data):
             avg = sum(processed_data)/len(processed_data)
             if avg >= 10:
                   res_list.append(index)
-      return res_list;
+      return res_list

@@ -21,6 +21,6 @@ def dataset_match(data):
       for index, template in dataset_24ghz.items():
             processed_data = [data[i] for i, mask in enumerate(template) if mask == 1]
             avg = sum(processed_data)/len(processed_data)
-            if avg >= 6:
+            if avg >= 10:
                   res_list.append(index)
       return res_list;

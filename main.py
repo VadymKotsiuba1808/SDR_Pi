@@ -1,13 +1,22 @@
+import math
+import time
+
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import QApplication, QMainWindow
-from PyQt5.QtCore import Qt, QDateTime, QTime, QTimer, QRect
-from PyQt5.QtGui import QTransform, QPixmap
+from PyQt5.QtCore import Qt, QDateTime, QTime, QTimer, QRect, QRectF
+from PyQt5.QtGui import QTransform, QPixmap, QPainter, QColor, QPen
 
 from UI.SDR_UI import Ui_MainWindow
 from gmap import get_map, MapTypes
 from tests import TestCase
 
+from flask import Flask, request, Blueprint
+
 import sys, itertools
+import threading
+
+
+flask_app = Flask(__name__)
 
 def remap(x, in_min, in_max, out_min, out_max):
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
@@ -26,6 +35,7 @@ class MyUiWindow(QMainWindow):
         self.ui.onTimerButton.clicked.connect(self.start_jammer)
         self.ui.offTimerButton.clicked.connect(self.stop_jammer)
         self.ui.homeButton.clicked.connect(self.update_status_bar)
+        self.ui.menuButton.clicked.connect(self.__test_dot)
 
         self.ui.k_label_1.setEnabled(False)
         self.ui.Radar_Red.hide()
@@ -45,7 +55,7 @@ class MyUiWindow(QMainWindow):
         self.timer_refresh.timeout.connect(self.refresh)
         self.timer_refresh.start(20)
 
-        self.__angle_cycle = itertools.cycle([i for i in range(0, 361, 10)])
+        self.__angle_cycle = itertools.cycle([i for i in range(0, 361, 1)])
         self.timer_radar = QTimer(self)
         self.timer_radar.timeout.connect(self.__rotate_radar)
         self.timer_radar.start(60)
@@ -55,7 +65,8 @@ class MyUiWindow(QMainWindow):
     def __rotate_radar(self):
         original_pixmap = QPixmap(":/Images/images/radar_green.png")
         transform = QTransform()
-        transform.rotate(next(self.__angle_cycle))
+        angle = next(self.__angle_cycle)
+        transform.rotate(angle)
         temp_pixmap = original_pixmap.transformed(transform, Qt.SmoothTransformation)
         width, height = original_pixmap.size().width(), original_pixmap.size().height()
         center_x = temp_pixmap.width() // 2
@@ -65,6 +76,38 @@ class MyUiWindow(QMainWindow):
         temp_pixmap = temp_pixmap.copy(QRect(rect_x, rect_y, width, height))
         self.ui.Radar_Green.setPixmap(temp_pixmap)
         del temp_pixmap
+
+    def flush_radar(self):
+        self.ui.Radar.setPixmap(QPixmap(":/Images/images/radar.png"))
+
+    def __test_dot(self):
+        self.create_dot(45, 100)
+
+    def create_dot(self, angle, distance):
+        painter = QPainter(self.ui.Radar.pixmap())
+        pen = QPen()
+        pen.setWidth(20)
+        pen.setColor(QColor('red'))
+        painter.setPen(pen)
+
+        x = int(self.ui.Radar.width() / 2)
+        y = int(self.ui.Radar.height() / 2) - distance
+
+        center_x = int(self.ui.Radar.width() / 2)
+        center_y = int(self.ui.Radar.height() / 2)
+
+        x1 = x - center_x
+        y1 = y - center_y
+
+        angle_rad = math.radians(angle)
+        new_x = int(x1*math.cos(angle_rad) - y1*math.sin(angle_rad))
+        new_y = int(x1*math.sin(angle_rad) + y1*math.cos(angle_rad))
+
+        new_x = new_x + center_x
+        new_y = new_y + center_y
+
+        painter.drawPoint(new_x, new_y)
+        painter.end()
 
     def refresh(self):
         self.setStyleSheet("background-image: url(temp_data/current_map.png);")
@@ -137,8 +180,35 @@ class MyUiWindow(QMainWindow):
         print("Screenshot taken")
 
 
-if __name__ == "__main__":
+global application
+
+
+def get_app():
+    return application
+
+
+def run_qt_app():
+    global application
+    print("QT App")
     app = QApplication([])
     application = MyUiWindow()
     application.show()
     sys.exit(app.exec_())
+
+
+def run_flask_app():
+    print("Flask App")
+    flask_app.run(host='0.0.0.0')
+
+
+import bridge
+
+
+if __name__ == "__main__":
+    qt_thread = threading.Thread(target=run_qt_app)
+    qt_thread.start()
+
+    flask_thread = threading.Thread(target=run_flask_app)
+    flask_thread.start()
+
+    print("Finish setup")

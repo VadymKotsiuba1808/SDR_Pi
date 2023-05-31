@@ -530,7 +530,7 @@ color: #FF2828;
       <string notr="true">*{font-family: 'Roboto';
 font-style: normal;
 font-weight: 600;
-font-size: 34px;
+font-size: 30px;
 line-height: 100%;
 /* identical to box height, or 34px */
 
@@ -573,11 +573,20 @@ background-image: url(:/Images/images/rf_alert_off.png);
        <height>76</height>
       </rect>
      </property>
+     <property name="font">
+      <font>
+       <family>Roboto</family>
+       <pointsize>-1</pointsize>
+       <weight>75</weight>
+       <italic>false</italic>
+       <bold>true</bold>
+      </font>
+     </property>
      <property name="styleSheet">
       <string notr="true">*{font-family: 'Roboto';
 font-style: normal;
 font-weight: 600;
-font-size: 34px;
+font-size: 30px;
 line-height: 100%;
 /* identical to box height, or 34px */
 
@@ -606,6 +615,9 @@ background-image: url(:/Images/images/sound_alert_off.png);
      </property>
      <property name="margin">
       <number>5</number>
+     </property>
+     <property name="indent">
+      <number>-1</number>
      </property>
      <property name="alert" stdset="0">
       <bool>true</bool>
@@ -1254,7 +1266,7 @@ border: none;
 font-family: 'Roboto';
 font-style: normal;
 font-weight: 500;
-font-size: 56px;
+font-size: 52px;
 line-height: 68px;
 
 display: flex;

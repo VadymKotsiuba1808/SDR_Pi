@@ -59,6 +59,24 @@ class TestCase:
             }
         )
 
+        self.__list_data.append(
+            {
+                "gps_level": 80,
+                "wifi_level": 65,
+                "ghz24_1": True,
+                "ghz24_2": True,
+                "ghz24_3": True,
+                "ghz24_4": True,
+                "ghz58_1": True,
+                "ghz58_2": True,
+                "ghz58_3": True,
+                "ghz58_4": True,
+                "rf_alert": True,
+                "sound_alert": False,
+                "coord": [50.353026, 30.511801]
+            }
+        )
+
         self.__cycle_list = cycle(self.__list_data)
 
     def next_test(self):

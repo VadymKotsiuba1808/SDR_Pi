@@ -1546,7 +1546,7 @@ QPushButton[enabled=&quot;false&quot;]{
     <widget class="QFrame" name="RadarFrame">
      <property name="geometry">
       <rect>
-       <x>509</x>
+       <x>300</x>
        <y>25</y>
        <width>901</width>
        <height>901</height>

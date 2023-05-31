@@ -928,7 +928,7 @@ class Ui_MainWindow(object):
         self.k_label_3.setAlignment(QtCore.Qt.AlignCenter)
         self.k_label_3.setObjectName("k_label_3")
         self.RadarFrame = QtWidgets.QFrame(self.Body)
-        self.RadarFrame.setGeometry(QtCore.QRect(509, 25, 901, 901))
+        self.RadarFrame.setGeometry(QtCore.QRect(300, 25, 901, 901))
         self.RadarFrame.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.RadarFrame.setFrameShadow(QtWidgets.QFrame.Raised)
         self.RadarFrame.setObjectName("RadarFrame")

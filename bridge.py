@@ -20,3 +20,13 @@ def receive_list():
             get_app().create_dot(240, 150)
 
     return 'List received successfully'
+
+
+@flask_app.route('/api/audio_alarm', methods=['POST'])
+def receive_audio_alarm():
+    print("AUDIO ALARM!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    status = request.get_json()
+    if status['alert'] == 'True':
+        get_app().ui.Sound_alert.setProperty("alert", True)
+    else:
+        get_app().ui.Sound_alert.setProperty("alert", False)

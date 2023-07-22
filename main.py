@@ -62,6 +62,8 @@ class MyUiWindow(QMainWindow):
 
         self.__test_values = TestCase()
 
+        self.ui.Sound_alert.setProperty("alert", False)
+
     def __rotate_radar(self):
         original_pixmap = QPixmap(":/Images/images/radar_green.png")
         transform = QTransform()

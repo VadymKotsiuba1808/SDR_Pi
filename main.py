@@ -207,10 +207,13 @@ import bridge
 
 
 if __name__ == "__main__":
-    qt_thread = threading.Thread(target=run_qt_app)
-    qt_thread.start()
+    import threading
 
-    flask_thread = threading.Thread(target=run_flask_app)
+    # Запускаємо Flask у окремому потоці
+    flask_thread = threading.Thread(target=run_flask_app, daemon=True)
     flask_thread.start()
 
     print("Finish setup")
+
+    # Qt запускаємо у головному потоці
+    run_qt_app()

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import math
 from PyQt5.QtWidgets import QMainWindow
-# ВИПРАВЛЕННЯ: Імпортуємо QThread
+
 from PyQt5.QtCore import QTimer, QDateTime, Qt, QRect, QThread
 from PyQt5.QtGui import QPixmap, QTransform, QPainter, QColor, QPen
 from PyQt5 import uic
@@ -24,7 +24,6 @@ class MainWindow(QMainWindow):
         self.test_data_provider = TestDataProvider()
         self.map_service = MapService(api_key=self.settings.get('maps', 'api_key', fallback=''))
         
-        # ВИПРАВЛЕННЯ: Створюємо ApiServer як звичайний об'єкт, а не потік.
         self.api_server = ApiServer(signal_analyzer=self.signal_analyzer)
         
         self._setup_timers()
@@ -61,7 +60,6 @@ class MainWindow(QMainWindow):
         self.homeButton.clicked.connect(self.update_status_bar_with_test_data)
         self.menuButton.clicked.connect(self.test_draw_dot)
 
-        # ВИПРАВЛЕННЯ: Запускаємо ApiServer у безпечному QThread
         self.api_thread = QThread()
         self.api_server.moveToThread(self.api_thread)
         
@@ -149,7 +147,7 @@ class MainWindow(QMainWindow):
     # --- Тестові методи ---
 
     def update_status_bar_with_test_data(self):
-        # ВИПРАВЛЕННЯ: Змінено назву методу, щоб вона відповідала реалізації
+
         data = self.test_data_provider.get_next_test_data()
         self.ghz24_1.setProperty("band_active", data['ghz24_1'])
         self.ghz58_1.setProperty("band_active", data['ghz58_1'])

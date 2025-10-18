@@ -45,7 +45,7 @@ class MainWindow(QMainWindow):
         
         self.test_update_timer = QTimer(self)
         self.test_update_timer.timeout.connect(self.update_status_bar_with_test_data)
-        self.test_update_timer.start(2000)
+        self.test_update_timer.start(10*60*1000)
 
     def _setup_state_variables(self):
         self.current_map_type_index = 0

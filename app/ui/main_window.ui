@@ -35,7 +35,7 @@
                   <string>SDR Drone Detector</string>
             </property>
             <property name="styleSheet">
-                  <string notr="true">background-image: url(:/images/bg.png);</string>
+                  <string notr="true">background-color:rgba(0, 47, 0, 139);</string>
             </property>
             <widget class="QWidget" name="centralwidget">
                   <widget class="QFrame" name="Header">
@@ -51,10 +51,10 @@
                               </rect>
                         </property>
                         <property name="frameShape">
-                              <enum>QFrame::StyledPanel</enum>
+                              <enum>QFrame::Shape::StyledPanel</enum>
                         </property>
                         <property name="frameShadow">
-                              <enum>QFrame::Raised</enum>
+                              <enum>QFrame::Shadow::Raised</enum>
                         </property>
                         <widget class="QLabel" name="HeaderBack">
                               <property name="geometry">
@@ -94,7 +94,7 @@ background: rgba(0, 10, 0, 0.1);</string>
                                     <string>05.01.2022</string>
                               </property>
                               <property name="alignment">
-                                    <set>Qt::AlignCenter</set>
+                                    <set>Qt::AlignmentFlag::AlignCenter</set>
                               </property>
                         </widget>
                         <widget class="QFrame" name="BandsAvailable">
@@ -111,10 +111,10 @@ background: rgba(0, 10, 0, 0.1);</string>
 background: rgba(0, 10, 0, 0.1);</string>
                               </property>
                               <property name="frameShape">
-                                    <enum>QFrame::StyledPanel</enum>
+                                    <enum>QFrame::Shape::StyledPanel</enum>
                               </property>
                               <property name="frameShadow">
-                                    <enum>QFrame::Raised</enum>
+                                    <enum>QFrame::Shadow::Raised</enum>
                               </property>
                               <widget class="QLabel" name="ghz58_1">
                                     <property name="geometry">
@@ -126,7 +126,7 @@ background: rgba(0, 10, 0, 0.1);</string>
                                           </rect>
                                     </property>
                                     <property name="styleSheet">
-                                          <string notr="true">*[band_active="true"] { 
+                                          <string notr="true">*[band_active=&quot;true&quot;] { 
 border: 2px solid #328843;
 font-family: 'Roboto';
 font-weight: 600;
@@ -134,7 +134,7 @@ font-size: 26px;
 color: #50E37F;
 }
 
-*[band_active="false"] { 
+*[band_active=&quot;false&quot;] { 
 border: 2px solid #328843;
 background-image: url(:/images/band_inactive.png);
 font-family: 'Roboto';
@@ -147,7 +147,7 @@ color: #FF2828;
                                           <string>5.8GHz</string>
                                     </property>
                                     <property name="alignment">
-                                          <set>Qt::AlignCenter</set>
+                                          <set>Qt::AlignmentFlag::AlignCenter</set>
                                     </property>
                                     <property name="band_active" stdset="0">
                                           <bool>true</bool>
@@ -163,7 +163,7 @@ color: #FF2828;
                                           </rect>
                                     </property>
                                     <property name="styleSheet">
-                                          <string notr="true">*[band_active="true"] { 
+                                          <string notr="true">*[band_active=&quot;true&quot;] { 
 border: 2px solid #328843;
 font-family: 'Roboto';
 font-weight: 600;
@@ -171,7 +171,7 @@ font-size: 26px;
 color: #50E37F;
 }
 
-*[band_active="false"] { 
+*[band_active=&quot;false&quot;] { 
 border: 2px solid #328843;
 background-image: url(:/images/band_inactive.png);
 font-family: 'Roboto';
@@ -184,7 +184,7 @@ color: #FF2828;
                                           <string>5.8GHz</string>
                                     </property>
                                     <property name="alignment">
-                                          <set>Qt::AlignCenter</set>
+                                          <set>Qt::AlignmentFlag::AlignCenter</set>
                                     </property>
                                     <property name="band_active" stdset="0">
                                           <bool>true</bool>
@@ -200,7 +200,7 @@ color: #FF2828;
                                           </rect>
                                     </property>
                                     <property name="styleSheet">
-                                          <string notr="true">*[band_active="true"] { 
+                                          <string notr="true">*[band_active=&quot;true&quot;] { 
 border: 2px solid #328843;
 font-family: 'Roboto';
 font-weight: 600;
@@ -208,7 +208,7 @@ font-size: 26px;
 color: #50E37F;
 }
 
-*[band_active="false"] { 
+*[band_active=&quot;false&quot;] { 
 border: 2px solid #328843;
 background-image: url(:/images/band_inactive.png);
 font-family: 'Roboto';
@@ -221,7 +221,7 @@ color: #FF2828;
                                           <string>5.8GHz</string>
                                     </property>
                                     <property name="alignment">
-                                          <set>Qt::AlignCenter</set>
+                                          <set>Qt::AlignmentFlag::AlignCenter</set>
                                     </property>
                                     <property name="band_active" stdset="0">
                                           <bool>false</bool>
@@ -237,7 +237,7 @@ color: #FF2828;
                                           </rect>
                                     </property>
                                     <property name="styleSheet">
-                                          <string notr="true">*[band_active="true"] { 
+                                          <string notr="true">*[band_active=&quot;true&quot;] { 
 border: 2px solid #328843;
 font-family: 'Roboto';
 font-weight: 600;
@@ -245,7 +245,7 @@ font-size: 26px;
 color: #50E37F;
 }
 
-*[band_active="false"] { 
+*[band_active=&quot;false&quot;] { 
 border: 2px solid #328843;
 background-image: url(:/images/band_inactive.png);
 font-family: 'Roboto';
@@ -258,7 +258,7 @@ color: #FF2828;
                                           <string>5.8GHz</string>
                                     </property>
                                     <property name="alignment">
-                                          <set>Qt::AlignCenter</set>
+                                          <set>Qt::AlignmentFlag::AlignCenter</set>
                                     </property>
                                     <property name="band_active" stdset="0">
                                           <bool>true</bool>
@@ -274,7 +274,7 @@ color: #FF2828;
                                           </rect>
                                     </property>
                                     <property name="styleSheet">
-                                          <string notr="true">*[band_active="true"] { 
+                                          <string notr="true">*[band_active=&quot;true&quot;] { 
 border: 2px solid #328843;
 font-family: 'Roboto';
 font-weight: 600;
@@ -282,7 +282,7 @@ font-size: 26px;
 color: #50E37F;
 }
 
-*[band_active="false"] { 
+*[band_active=&quot;false&quot;] { 
 border: 2px solid #328843;
 background-image: url(:/images/band_inactive.png);
 font-family: 'Roboto';
@@ -295,7 +295,7 @@ color: #FF2828;
                                           <string>2.4GHz</string>
                                     </property>
                                     <property name="alignment">
-                                          <set>Qt::AlignCenter</set>
+                                          <set>Qt::AlignmentFlag::AlignCenter</set>
                                     </property>
                                     <property name="band_active" stdset="0">
                                           <bool>true</bool>
@@ -311,7 +311,7 @@ color: #FF2828;
                                           </rect>
                                     </property>
                                     <property name="styleSheet">
-                                          <string notr="true">*[band_active="true"] { 
+                                          <string notr="true">*[band_active=&quot;true&quot;] { 
 border: 2px solid #328843;
 font-family: 'Roboto';
 font-weight: 600;
@@ -319,7 +319,7 @@ font-size: 26px;
 color: #50E37F;
 }
 
-*[band_active="false"] { 
+*[band_active=&quot;false&quot;] { 
 border: 2px solid #328843;
 background-image: url(:/images/band_inactive.png);
 font-family: 'Roboto';
@@ -332,7 +332,7 @@ color: #FF2828;
                                           <string>2.4GHz</string>
                                     </property>
                                     <property name="alignment">
-                                          <set>Qt::AlignCenter</set>
+                                          <set>Qt::AlignmentFlag::AlignCenter</set>
                                     </property>
                                     <property name="band_active" stdset="0">
                                           <bool>false</bool>
@@ -348,7 +348,7 @@ color: #FF2828;
                                           </rect>
                                     </property>
                                     <property name="styleSheet">
-                                          <string notr="true">*[band_active="true"] { 
+                                          <string notr="true">*[band_active=&quot;true&quot;] { 
 border: 2px solid #328843;
 font-family: 'Roboto';
 font-weight: 600;
@@ -356,7 +356,7 @@ font-size: 26px;
 color: #50E37F;
 }
 
-*[band_active="false"] { 
+*[band_active=&quot;false&quot;] { 
 border: 2px solid #328843;
 background-image: url(:/images/band_inactive.png);
 font-family: 'Roboto';
@@ -369,7 +369,7 @@ color: #FF2828;
                                           <string>2.4GHz</string>
                                     </property>
                                     <property name="alignment">
-                                          <set>Qt::AlignCenter</set>
+                                          <set>Qt::AlignmentFlag::AlignCenter</set>
                                     </property>
                                     <property name="band_active" stdset="0">
                                           <bool>false</bool>
@@ -385,7 +385,7 @@ color: #FF2828;
                                           </rect>
                                     </property>
                                     <property name="styleSheet">
-                                          <string notr="true">*[band_active="true"] { 
+                                          <string notr="true">*[band_active=&quot;true&quot;] { 
 border: 2px solid #328843;
 font-family: 'Roboto';
 font-weight: 600;
@@ -393,7 +393,7 @@ font-size: 26px;
 color: #50E37F;
 }
 
-*[band_active="false"] { 
+*[band_active=&quot;false&quot;] { 
 border: 2px solid #328843;
 background-image: url(:/images/band_inactive.png);
 font-family: 'Roboto';
@@ -406,7 +406,7 @@ color: #FF2828;
                                           <string>2.4GHz</string>
                                     </property>
                                     <property name="alignment">
-                                          <set>Qt::AlignCenter</set>
+                                          <set>Qt::AlignmentFlag::AlignCenter</set>
                                     </property>
                                     <property name="band_active" stdset="0">
                                           <bool>false</bool>
@@ -429,11 +429,11 @@ font-size: 30px;
 color: #FFFFFF;
 }
 
-*[alert="true"]{
+*[alert=&quot;true&quot;]{
 background-image: url(:/images/rf_alert_on.png);
 }
 
-*[alert="false"]{
+*[alert=&quot;false&quot;]{
 background-image: url(:/images/rf_alert_off.png);
 }</string>
                               </property>
@@ -441,7 +441,7 @@ background-image: url(:/images/rf_alert_off.png);
                                     <string>Тривога RF</string>
                               </property>
                               <property name="alignment">
-                                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                                    <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
                               </property>
                               <property name="margin">
                                     <number>15</number>
@@ -462,8 +462,8 @@ background-image: url(:/images/rf_alert_off.png);
                               <property name="font">
                                     <font>
                                           <family>Roboto</family>
-                                          <weight>75</weight>
-                                          <bold>true</bold>
+                                          <pointsize>-1</pointsize>
+                                          <fontweight>DemiBold</fontweight>
                                     </font>
                               </property>
                               <property name="styleSheet">
@@ -473,11 +473,11 @@ font-size: 30px;
 color: #FFFFFF;
 }
 
-*[alert="true"]{
+*[alert=&quot;true&quot;]{
 background-image: url(:/images/sound_alert_on.png);
 }
 
-*[alert="false"]{
+*[alert=&quot;false&quot;]{
 background-image: url(:/images/sound_alert_off.png);
 }</string>
                               </property>
@@ -485,7 +485,7 @@ background-image: url(:/images/sound_alert_off.png);
                                     <string>Тривога Sound</string>
                               </property>
                               <property name="alignment">
-                                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                                    <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
                               </property>
                               <property name="margin">
                                     <number>15</number>
@@ -511,10 +511,10 @@ background-image: url(:/images/sound_alert_off.png);
 background: rgba(0, 10, 0, 0.1);</string>
                               </property>
                               <property name="frameShape">
-                                    <enum>QFrame::StyledPanel</enum>
+                                    <enum>QFrame::Shape::StyledPanel</enum>
                               </property>
                               <property name="frameShadow">
-                                    <enum>QFrame::Raised</enum>
+                                    <enum>QFrame::Shadow::Raised</enum>
                               </property>
                               <widget class="QLabel" name="label">
                                     <property name="geometry">
@@ -535,7 +535,7 @@ color: #FFFFFF;</string>
                                           <string>GPS</string>
                                     </property>
                                     <property name="alignment">
-                                          <set>Qt::AlignCenter</set>
+                                          <set>Qt::AlignmentFlag::AlignCenter</set>
                                     </property>
                               </widget>
                               <widget class="QLabel" name="GPS_level">
@@ -548,11 +548,11 @@ color: #FFFFFF;</string>
                                           </rect>
                                     </property>
                                     <property name="styleSheet">
-                                          <string notr="true">*[level="0"] { background-image: url(:/images/level_0.png); }
-*[level="1"] { background-image: url(:/images/level_1.png); }
-*[level="2"] { background-image: url(:/images/level_2.png); }
-*[level="3"] { background-image: url(:/images/level_3.png); }
-*[level="4"] { background-image: url(:/images/level_4.png); }</string>
+                                          <string notr="true">*[level=&quot;0&quot;] { background-image: url(:/images/level_0.png); }
+*[level=&quot;1&quot;] { background-image: url(:/images/level_1.png); }
+*[level=&quot;2&quot;] { background-image: url(:/images/level_2.png); }
+*[level=&quot;3&quot;] { background-image: url(:/images/level_3.png); }
+*[level=&quot;4&quot;] { background-image: url(:/images/level_4.png); }</string>
                                     </property>
                                     <property name="text">
                                           <string/>
@@ -576,10 +576,10 @@ color: #FFFFFF;</string>
 background: rgba(0, 10, 0, 0.1);</string>
                               </property>
                               <property name="frameShape">
-                                    <enum>QFrame::StyledPanel</enum>
+                                    <enum>QFrame::Shape::StyledPanel</enum>
                               </property>
                               <property name="frameShadow">
-                                    <enum>QFrame::Raised</enum>
+                                    <enum>QFrame::Shadow::Raised</enum>
                               </property>
                               <widget class="QLabel" name="label_2">
                                     <property name="geometry">
@@ -600,7 +600,7 @@ color: #FFFFFF;</string>
                                           <string>Wi Fi</string>
                                     </property>
                                     <property name="alignment">
-                                          <set>Qt::AlignCenter</set>
+                                          <set>Qt::AlignmentFlag::AlignCenter</set>
                                     </property>
                               </widget>
                               <widget class="QLabel" name="WiFi_level">
@@ -613,11 +613,11 @@ color: #FFFFFF;</string>
                                           </rect>
                                     </property>
                                     <property name="styleSheet">
-                                          <string notr="true">*[level="0"] { background-image: url(:/images/level_0.png); }
-*[level="1"] { background-image: url(:/images/level_1.png); }
-*[level="2"] { background-image: url(:/images/level_2.png); }
-*[level="3"] { background-image: url(:/images/level_3.png); }
-*[level="4"] { background-image: url(:/images/level_4.png); }</string>
+                                          <string notr="true">*[level=&quot;0&quot;] { background-image: url(:/images/level_0.png); }
+*[level=&quot;1&quot;] { background-image: url(:/images/level_1.png); }
+*[level=&quot;2&quot;] { background-image: url(:/images/level_2.png); }
+*[level=&quot;3&quot;] { background-image: url(:/images/level_3.png); }
+*[level=&quot;4&quot;] { background-image: url(:/images/level_4.png); }</string>
                                     </property>
                                     <property name="text">
                                           <string/>
@@ -639,7 +639,8 @@ color: #FFFFFF;</string>
                               <property name="font">
                                     <font>
                                           <family>Roboto</family>
-                                          <weight>50</weight>
+                                          <pointsize>-1</pointsize>
+                                          <italic>false</italic>
                                           <bold>false</bold>
                                     </font>
                               </property>
@@ -655,7 +656,7 @@ background: rgba(0, 10, 0, 0.1);</string>
                                     <string>17:54</string>
                               </property>
                               <property name="alignment">
-                                    <set>Qt::AlignCenter</set>
+                                    <set>Qt::AlignmentFlag::AlignCenter</set>
                               </property>
                         </widget>
                   </widget>
@@ -676,10 +677,10 @@ background: rgba(0, 10, 0, 0.1);</string>
 background: none;</string>
                         </property>
                         <property name="frameShape">
-                              <enum>QFrame::StyledPanel</enum>
+                              <enum>QFrame::Shape::StyledPanel</enum>
                         </property>
                         <property name="frameShadow">
-                              <enum>QFrame::Raised</enum>
+                              <enum>QFrame::Shadow::Raised</enum>
                         </property>
                         <widget class="QPushButton" name="homeButton">
                               <property name="enabled">
@@ -702,7 +703,7 @@ QPushButton#homeButton:pressed{
 	background-image: url(:/images/homeBtn_on.png);
 }
 
-QPushButton#homeButton[enabled="false"]{
+QPushButton#homeButton[enabled=&quot;false&quot;]{
 	background-image: url(:/images/homeBtn_disabled.png);
 }</string>
                               </property>
@@ -731,7 +732,7 @@ QPushButton#mapLayoutButton:pressed{
 	background-image: url(:/images/map_layout_on.png);
 }
 
-QPushButton#mapLayoutButton[enabled="false"]{
+QPushButton#mapLayoutButton[enabled=&quot;false&quot;]{
 	background-image: url(:/images/map_layout_disabled.png);
 }</string>
                               </property>
@@ -760,7 +761,7 @@ QPushButton#screenSaveButton:pressed{
 	background-image: url(:/images/screen_save_on.png);
 }
 
-QPushButton#screenSaveButton[enabled="false"]{
+QPushButton#screenSaveButton[enabled=&quot;false&quot;]{
 	background-image: url(:/images/screen_save_disabled.png);
 }</string>
                               </property>
@@ -782,10 +783,10 @@ QPushButton#screenSaveButton[enabled="false"]{
 border: 2px solid #328844;</string>
                               </property>
                               <property name="frameShape">
-                                    <enum>QFrame::StyledPanel</enum>
+                                    <enum>QFrame::Shape::StyledPanel</enum>
                               </property>
                               <property name="frameShadow">
-                                    <enum>QFrame::Raised</enum>
+                                    <enum>QFrame::Shadow::Raised</enum>
                               </property>
                               <widget class="QPushButton" name="radarButton">
                                     <property name="enabled">
@@ -818,7 +819,7 @@ QPushButton:pressed, QPushButton:checked{
 	color: #002509;
 }
 
-QPushButton[enabled="false"]{
+QPushButton[enabled=&quot;false&quot;]{
 	border: none;
 	background-image: url(:/images/Btn_MainMenu_disabled.png);
 	font-family: 'Roboto';
@@ -868,7 +869,7 @@ QPushButton:pressed, QPushButton:checked{
 	color: #002509;
 }
 
-QPushButton[enabled="false"]{
+QPushButton[enabled=&quot;false&quot;]{
 	border: none;
 	background-image: url(:/images/Btn_MainMenu_disabled.png);
 	font-family: 'Roboto';
@@ -921,7 +922,7 @@ QPushButton:pressed{
 	color: #002509;
 }
 
-QPushButton[enabled="false"]{
+QPushButton[enabled=&quot;false&quot;]{
 	border: none;
 	background-image: url(:/images/Btn_MainMenu_disabled.png);
 	font-family: 'Roboto';
@@ -949,10 +950,10 @@ QPushButton[enabled="false"]{
 border: 2px solid #328844;</string>
                               </property>
                               <property name="frameShape">
-                                    <enum>QFrame::StyledPanel</enum>
+                                    <enum>QFrame::Shape::StyledPanel</enum>
                               </property>
                               <property name="frameShadow">
-                                    <enum>QFrame::Raised</enum>
+                                    <enum>QFrame::Shadow::Raised</enum>
                               </property>
                               <widget class="QLabel" name="label_3">
                                     <property name="geometry">
@@ -975,7 +976,7 @@ color: #FFF500;</string>
                                           <string>Jammer</string>
                                     </property>
                                     <property name="alignment">
-                                          <set>Qt::AlignCenter</set>
+                                          <set>Qt::AlignmentFlag::AlignCenter</set>
                                     </property>
                               </widget>
                               <widget class="QLabel" name="TimerTime">
@@ -1000,7 +1001,7 @@ color: #E4E7E4;
                                           <string>00:00:00</string>
                                     </property>
                                     <property name="alignment">
-                                          <set>Qt::AlignCenter</set>
+                                          <set>Qt::AlignmentFlag::AlignCenter</set>
                                     </property>
                               </widget>
                               <widget class="QPushButton" name="onTimerButton">
@@ -1031,7 +1032,7 @@ QPushButton:pressed{
 	color: #002509;
 }
 
-QPushButton[enabled="false"]{
+QPushButton[enabled=&quot;false&quot;]{
 	border: none;
 	border-image: url(:/images/Btn_MainMenu_disabled.png);
 	font-family: 'Roboto';
@@ -1072,7 +1073,7 @@ QPushButton:pressed{
 	color: #002509;
 }
 
-QPushButton[enabled="false"]{
+QPushButton[enabled=&quot;false&quot;]{
 	border: none;
 	border-image: url(:/images/Btn_MainMenu_disabled.png);
 	font-family: 'Roboto';
@@ -1106,12 +1107,12 @@ QPushButton[enabled="false"]{
 	color: #FFFFFF;
 }
 
-*[enabled="true"]
+*[enabled=&quot;true&quot;]
 {
 	background-image: url(:/images/k_relay_on.png);
 }
 
-*[enabled="false"]
+*[enabled=&quot;false&quot;]
 {
 	background-image: url(:/images/k_relay_off.png);
 }</string>
@@ -1120,7 +1121,7 @@ QPushButton[enabled="false"]{
                                     <string>K1</string>
                               </property>
                               <property name="alignment">
-                                    <set>Qt::AlignCenter</set>
+                                    <set>Qt::AlignmentFlag::AlignCenter</set>
                               </property>
                         </widget>
                         <widget class="QLabel" name="k_label_2">
@@ -1143,12 +1144,12 @@ QPushButton[enabled="false"]{
 	color: #FFFFFF;
 }
 
-*[enabled="true"]
+*[enabled=&quot;true&quot;]
 {
 	background-image: url(:/images/k_relay_on.png);
 }
 
-*[enabled="false"]
+*[enabled=&quot;false&quot;]
 {
 	background-image: url(:/images/k_relay_off.png);
 }</string>
@@ -1157,7 +1158,7 @@ QPushButton[enabled="false"]{
                                     <string>K2</string>
                               </property>
                               <property name="alignment">
-                                    <set>Qt::AlignCenter</set>
+                                    <set>Qt::AlignmentFlag::AlignCenter</set>
                               </property>
                         </widget>
                         <widget class="QLabel" name="k_label_3">
@@ -1180,12 +1181,12 @@ QPushButton[enabled="false"]{
 	color: #FFFFFF;
 }
 
-*[enabled="true"]
+*[enabled=&quot;true&quot;]
 {
 	background-image: url(:/images/k_relay_on.png);
 }
 
-*[enabled="false"]
+*[enabled=&quot;false&quot;]
 {
 	background-image: url(:/images/k_relay_off.png);
 }</string>
@@ -1194,7 +1195,7 @@ QPushButton[enabled="false"]{
                                     <string>K3</string>
                               </property>
                               <property name="alignment">
-                                    <set>Qt::AlignCenter</set>
+                                    <set>Qt::AlignmentFlag::AlignCenter</set>
                               </property>
                         </widget>
                         <widget class="QFrame" name="RadarFrame">
@@ -1207,10 +1208,10 @@ QPushButton[enabled="false"]{
                                     </rect>
                               </property>
                               <property name="frameShape">
-                                    <enum>QFrame::StyledPanel</enum>
+                                    <enum>QFrame::Shape::StyledPanel</enum>
                               </property>
                               <property name="frameShadow">
-                                    <enum>QFrame::Raised</enum>
+                                    <enum>QFrame::Shadow::Raised</enum>
                               </property>
                               <widget class="QLabel" name="Radar">
                                     <property name="geometry">
@@ -1225,7 +1226,7 @@ QPushButton[enabled="false"]{
                                           <string/>
                                     </property>
                                     <property name="pixmap">
-                                          <pixmap resource="resources.qrc">:/images/radar.png</pixmap>
+                                          <pixmap resource="../../resources.qrc">:/images/radar.png</pixmap>
                                     </property>
                               </widget>
                               <widget class="QLabel" name="Radar_Green">
@@ -1241,10 +1242,10 @@ QPushButton[enabled="false"]{
                                           <string/>
                                     </property>
                                     <property name="pixmap">
-                                          <pixmap resource="resources.qrc">:/images/radar_green.png</pixmap>
+                                          <pixmap resource="../../resources.qrc">:/images/radar_green.png</pixmap>
                                     </property>
                                     <property name="alignment">
-                                          <set>Qt::AlignCenter</set>
+                                          <set>Qt::AlignmentFlag::AlignCenter</set>
                                     </property>
                               </widget>
                               <widget class="QLabel" name="Radar_Red">
@@ -1260,10 +1261,10 @@ QPushButton[enabled="false"]{
                                           <string/>
                                     </property>
                                     <property name="pixmap">
-                                          <pixmap resource="resources.qrc">:/images/radar_red.png</pixmap>
+                                          <pixmap resource="../../resources.qrc">:/images/radar_red.png</pixmap>
                                     </property>
                                     <property name="alignment">
-                                          <set>Qt::AlignCenter</set>
+                                          <set>Qt::AlignmentFlag::AlignCenter</set>
                                     </property>
                               </widget>
                         </widget>
@@ -1271,7 +1272,8 @@ QPushButton[enabled="false"]{
             </widget>
       </widget>
       <resources>
-            <include location="app/assets/resources_rc.py"/>
+            <include location="../../resources.qrc"/>
+            <include location="resources.qrc"/>
       </resources>
       <connections/>
 </ui>

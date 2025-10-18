@@ -31,7 +31,7 @@ class MainWindow(QMainWindow):
         self._connect_signals_and_start_threads()
         
         self.Radar_Red.hide()
-        self.change_map_type()
+        self.refresh_map()
         print("Головне вікно успішно ініціалізовано.")
 
     def _setup_timers(self):
@@ -128,15 +128,29 @@ class MainWindow(QMainWindow):
         painter.end()
         self.Radar.setPixmap(pixmap)
 
+    def refresh_map(self):
+        """
+        Централізований метод для завантаження та оновлення фонової карти.
+        """
+        map_type = self.map_types[self.current_map_type_index]
+        pixmap = self.map_service.get_map_pixmap(self.current_coords, map_type)
+        
+        if pixmap:
+            self.MainWindow.setPixmap(pixmap) 
+            print(f"Карту оновлено. Тип: {map_type.value}, Координати: {self.current_coords}")
+        else:
+            print(f"Помилка: не вдалося завантажити карту типу {map_type.value}.")
+
     # --- Методи-дії для кнопок ---
 
     def change_map_type(self):
-        map_type = self.map_types[self.current_map_type_index]
-        pixmap = self.map_service.get_map_pixmap(self.current_coords, map_type)
-        if pixmap:
-            print(f"Карта типу '{map_type.value}' успішно завантажена.")
+        # map_type = self.map_types[self.current_map_type_index]
+        # pixmap = self.map_service.get_map_pixmap(self.current_coords, map_type)
+        # if pixmap:
+        #     print(f"Карта типу '{map_type.value}' успішно завантажена.")
         
         self.current_map_type_index = (self.current_map_type_index + 1) % len(self.map_types)
+        self.refresh_map()
 
     def take_screenshot(self):
         screenshot = self.grab()
@@ -155,6 +169,8 @@ class MainWindow(QMainWindow):
         self.Sound_alert.setProperty("alert", data['sound_alert'])
         self.current_coords = data['coord']
         print(f"Оновлено тестові дані. Координати: {self.current_coords}")
+
+        self.refresh_map()
 
     def test_draw_dot(self):
         self.create_radar_dot(45, 200)

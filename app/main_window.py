@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 import math
-from PyQt5.QtWidgets import QMainWindow
+from PyQt6.QtWidgets import QMainWindow
 
-from PyQt5.QtCore import QTimer, QDateTime, Qt, QRect, QThread
-from PyQt5.QtGui import QPixmap, QTransform, QPainter, QColor, QPen
-from PyQt5 import uic
+from PyQt6.QtCore import QTimer, QDateTime, Qt, QRect, QThread
+from PyQt6.QtGui import QPixmap, QTransform, QPainter, QColor, QPen
+from PyQt6 import uic
 
 from app.services.api_server import ApiServer
 from app.services.map_service import MapService, MapTypes
@@ -18,7 +18,7 @@ class MainWindow(QMainWindow):
         self.settings = settings
         
         uic.loadUi("app/ui/main_window.ui", self)
-        self.setWindowFlag(Qt.FramelessWindowHint)
+        self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
         
         self.signal_analyzer = SignalAnalyzer()
         self.test_data_provider = TestDataProvider()
@@ -102,7 +102,7 @@ class MainWindow(QMainWindow):
         original_pixmap = QPixmap(":/images/radar_green.png")
         if original_pixmap.isNull(): return
 
-        rotated_pixmap = original_pixmap.transformed(transform, Qt.SmoothTransformation)
+        rotated_pixmap = original_pixmap.transformed(transform, Qt.TransformationMode.SmoothTransformation)
         self.Radar_Green.setPixmap(rotated_pixmap)
         self.radar_angle = current_angle
 
@@ -136,7 +136,7 @@ class MainWindow(QMainWindow):
         pixmap = self.map_service.get_map_pixmap(self.current_coords, map_type)
         
         if pixmap:
-            self.MainWindow.setPixmap(pixmap) 
+            self.map_background_label.setPixmap(pixmap)
             print(f"Карту оновлено. Тип: {map_type.value}, Координати: {self.current_coords}")
         else:
             print(f"Помилка: не вдалося завантажити карту типу {map_type.value}.")

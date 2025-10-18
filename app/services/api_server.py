@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from flask import Flask, request
-from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt6.QtCore import QObject, pyqtSignal
 import logging
 
 # ВИПРАВЛЕННЯ: Імпортуємо сам клас, а не стару функцію

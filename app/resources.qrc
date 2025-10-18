@@ -1,0 +1,33 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/">
+    <file alias="images/band_inactive.png">assets/images/band_inactive.png</file>
+    <file alias="images/rf_alert_on.png">assets/images/rf_alert_on.png</file>
+    <file alias="images/rf_alert_off.png">assets/images/rf_alert_off.png</file>
+    <file alias="images/sound_alert_on.png">assets/images/sound_alert_on.png</file>
+    <file alias="images/sound_alert_off.png">assets/images/sound_alert_off.png</file>
+    <file alias="images/level_0.png">assets/images/level_0.png</file>
+    <file alias="images/level_1.png">assets/images/level_1.png</file>
+    <file alias="images/level_2.png">assets/images/level_2.png</file>
+    <file alias="images/level_3.png">assets/images/level_3.png</file>
+    <file alias="images/level_4.png">assets/images/level_4.png</file>
+    <file alias="images/homeBtn_off.png">assets/images/homeBtn_off.png</file>
+    <file alias="images/homeBtn_on.png">assets/images/homeBtn_on.png</file>
+    <file alias="images/homeBtn_disabled.png">assets/images/homeBtn_disabled.png</file>
+    <file alias="images/map_layout_off.png">assets/images/map_layout_off.png</file>
+    <file alias="images/map_layout_on.png">assets/images/map_layout_on.png</file>
+    <file alias="images/map_layout_disabled.png">assets/images/map_layout_disabled.png</file>
+    <file alias="images/screen_save_off.png">assets/images/screen_save_off.png</file>
+    <file alias="images/screen_save_on.png">assets/images/screen_save_on.png</file>
+    <file alias="images/screen_save_disabled.png">assets/images/screen_save_disabled.png</file>
+    <file alias="images/Btn_MainMenu_off.png">assets/images/Btn_MainMenu_off.png</file>
+    <file alias="images/Btn_MainMenu_on.png">assets/images/Btn_MainMenu_on.png</file>
+    <file alias="images/Btn_MainMenu_disabled.png">assets/images/Btn_MainMenu_disabled.png</file>
+    <file alias="images/Btn_MainMenu_red.png">assets/images/Btn_MainMenu_red.png</file>
+    <file alias="images/k_relay_on.png">assets/images/k_relay_on.png</file>
+    <file alias="images/k_relay_off.png">assets/images/k_relay_off.png</file>
+    <file alias="images/radar.png">assets/images/radar.png</file>
+    <file alias="images/radar_green.png">assets/images/radar_green.png</file>
+    <file alias="images/radar_red.png">assets/images/radar_red.png</file>
+</qresource>
+</RCC>
+

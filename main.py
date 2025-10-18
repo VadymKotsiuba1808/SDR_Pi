@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
 import configparser
-from PyQt5.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication
 
 # Імпортуємо наш клас головного вікна
 from app.main_window import MainWindow
@@ -26,5 +26,5 @@ if __name__ == '__main__':
     window.show()
     
     # 5. Запускаємо головний цикл
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
 

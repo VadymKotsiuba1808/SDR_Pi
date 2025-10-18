@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import requests
 from enum import Enum
-from PyQt5.QtGui import QPixmap
+from PyQt6.QtGui import QPixmap
 
 class MapTypes(Enum):
     """Перерахування для типів карт."""

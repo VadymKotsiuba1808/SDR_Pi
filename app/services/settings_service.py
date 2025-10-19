@@ -1,3 +1,5 @@
+import os
+
 from PyQt6.QtCore import QObject, pyqtSignal, QSettings, QFileSystemWatcher
 
 class SettingsService(QObject):
@@ -8,12 +10,14 @@ class SettingsService(QObject):
     # Сигнал, який сповіщає всю програму про те, що налаштування оновилися
     settings_changed = pyqtSignal()
 
-    def __init__(self, file_path="config.ini"):
+    def __init__(self):
         super().__init__()
-
+        file_path=os.path.join(os.path.dirname(__file__), "../../config.ini")
+        file_path = os.path.abspath(file_path)
         # --- Ініціалізація QSettings ---
         QSettings.setDefaultFormat(QSettings.Format.IniFormat)
-        self.settings_file = QSettings(file_path)
+        self.settings_file = QSettings(file_path, QSettings.Format.IniFormat)
+        print(self.settings_file)
 
         # --- Явні атрибути з налаштуваннями (значення за замовчуванням) ---
         self.host='0.0.0.0'

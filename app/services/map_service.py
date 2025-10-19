@@ -1,7 +1,7 @@
 import httpx
 from enum import Enum
 from PyQt6.QtGui import QPixmap
-from app.services.settings_service import SettingsService # Припустимо, цей імпорт правильний
+from app.services.settings_service import SettingsService 
 
 class MapTypes(Enum):
     ROAD = "roadmap"

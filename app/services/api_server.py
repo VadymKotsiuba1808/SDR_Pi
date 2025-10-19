@@ -1,6 +1,6 @@
 import asyncio
-from quart import Quart, request, shutdown_server
-from settings_service import SettingsService
+from quart import Quart, request
+from app.services.settings_service import SettingsService 
 
 class ApiServer:
     """

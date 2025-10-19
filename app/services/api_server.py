@@ -1,60 +1,48 @@
-# -*- coding: utf-8 -*-
-from flask import Flask, request
-from PyQt6.QtCore import QObject, pyqtSignal
-import logging
+import asyncio
+from quart import Quart, request, shutdown_server
 
-# ВИПРАВЛЕННЯ: Імпортуємо сам клас, а не стару функцію
-from app.core.signal_analyzer import SignalAnalyzer
-
-# Вимикаємо логування Flask у консоль, щоб не засмічувати вивід
-log = logging.getLogger('werkzeug')
-log.setLevel(logging.ERROR)
-
-# ВИПРАВЛЕННЯ: Клас більше не успадковується від threading.Thread, лише від QObject.
-# Тепер це "робітник", якого ми перемістимо в QThread.
-class ApiServer(QObject):
+class ApiServer:
     """
-    Клас-робітник, що запускає Flask-сервер для прийому
-    HTTP-запитів від Raspberry Pi №1.
+    Асинхронний веб-сервер на базі Quart, що працює в одному
+    циклі подій з основним додатком.
     """
-    # Сигнали, які сервер буде відправляти головному вікну
-    rf_data_received = pyqtSignal(list)
-    audio_alert_received = pyqtSignal(bool)
-
-    def __init__(self, signal_analyzer: SignalAnalyzer, host='0.0.0.0', port=5000, parent=None):
-        super().__init__(parent)
+    def __init__(self, host='0.0.0.0', port=5000):
         
-        self.flask_app = Flask(__name__)
+        self.quart_app = Quart(__name__)
         self.host = host
         self.port = port
-        self.signal_analyzer = signal_analyzer
+        
+        # Створюємо "заглушки" для callback-функцій, які будуть передані з MainWindow
+        self.on_rf_data = lambda data: print("Попередження: обробник для RF даних не встановлено.")
+        self.on_audio_alert = lambda status: print("Попередження: обробник для аудіо-тривоги не встановлено.")
 
-        # Реєструємо маршрути (endpoints)
-        self.flask_app.route('/api/2_4_ghz', methods=['POST'])(self.receive_rf_data)
-        self.flask_app.route('/api/audio_alarm', methods=['POST'])(self.receive_audio_alarm)
+        # Реєструємо асинхронні маршрути (endpoints)
+        self.quart_app.route('/api/2_4_ghz', methods=['POST'])(self.receive_rf_data)
+        self.quart_app.route('/api/audio_alarm', methods=['POST'])(self.receive_audio_alarm)
 
-    def start_server(self):
-        """Запускає Flask-сервер. Цей метод буде викликаний, коли потік QThread запуститься."""
-        print(f"Flask сервер запущено на http://{self.host}:{self.port}")
-        self.flask_app.run(host=self.host, port=self.port)
+    async def run_server(self):
+        """Асинхронно запускає сервер."""
+        print(f"Асинхронний сервер Quart запущено на http://{self.host}:{self.port}")
+        try:
+            # Запускаємо сервер
+            await self.quart_app.run_task(host=self.host, port=self.port)
+        except asyncio.CancelledError:
+            # Це нормально при закритті програми
+            print("Сервер зупинено.")
 
-    def stop(self):
-        """Зупиняє сервер (цей метод може не спрацювати надійно, але є спробою)."""
-        print("Спроба зупинки Flask сервера...")
-
-    def receive_rf_data(self):
-        """Обробник для маршруту /api/2_4_ghz."""
-        data_list = request.get_json()
-        if data_list:
-            analyzed_results = self.signal_analyzer.match(data_list)
-            self.rf_data_received.emit(analyzed_results)
+    # Обробники тепер є асинхронними функціями
+    async def receive_rf_data(self):
+        analyzed_results = await request.get_json()
+        if analyzed_results:
+            # Просто передаємо його далі, без аналізу
+            self.on_rf_data(analyzed_results)
         return 'RF data received'
 
-    def receive_audio_alarm(self):
-        """Обробник для маршруту /api/audio_alarm."""
-        status_data = request.get_json()
+    async def receive_audio_alarm(self):
+        """Асинхронний обробник для маршруту /api/audio_alarm."""
+        status_data = await request.get_json()
         if status_data and 'alert' in status_data:
             alert_status = status_data['alert'].lower() == 'true'
-            self.audio_alert_received.emit(alert_status)
+            # Викликаємо callback-функцію, передану з MainWindow
+            self.on_audio_alert(alert_status)
         return 'Audio alert received'
-

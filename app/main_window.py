@@ -1,38 +1,72 @@
-# -*- coding: utf-8 -*-
+# app/main_window.py
 import math
+import asyncio
 from PyQt6.QtWidgets import QMainWindow
-
-from PyQt6.QtCore import QTimer, QDateTime, Qt, QRect, QThread
+from PyQt6.QtCore import QTimer, QDateTime, Qt
 from PyQt6.QtGui import QPixmap, QTransform, QPainter, QColor, QPen
 from PyQt6 import uic
+from qasync import asyncSlot
 
-from app.services.api_server import ApiServer
+# Припускаємо, що ApiServer буде переписаний асинхронно, тому поки його не імпортуємо
+from app.services.api_server import ApiServer 
 from app.services.map_service import MapService, MapTypes
 from app.core.signal_analyzer import SignalAnalyzer
 from app.utils.test_data_provider import TestDataProvider
 from app.assets import resources_rc
 
+# Імпортуємо ваш сервіс налаштувань
+from app.services.settings_service import SettingsService
+
 class MainWindow(QMainWindow):
-    def __init__(self, settings, parent=None):
+    def __init__(self, settings: SettingsService, parent=None):
         super().__init__(parent)
         self.settings_service = settings
         
         uic.loadUi("app/ui/main_window.ui", self)
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
         
-        self.signal_analyzer = SignalAnalyzer()
+        # self.signal_analyzer = SignalAnalyzer()
         self.test_data_provider = TestDataProvider()
-        self.map_service = MapService(api_key=self.settings.get('maps', 'api_key', fallback=''))
         
-        self.api_server = ApiServer(signal_analyzer=self.signal_analyzer)
+        self.map_service = MapService(settings=self.settings_service)
+        
+        self.api_server = ApiServer()
+        
+        # 2. Передаємо йому методи з MainWindow як callback-функції
+        self.api_server.on_rf_data = self.handle_rf_data
+        self.api_server.on_audio_alert = self.handle_audio_alert
+        
+        # 3. Запускаємо сервер як фонову асинхронну задачу.
+        # Він буде працювати в тому ж циклі подій, що й UI.
+        asyncio.create_task(self.api_server.run_server())
         
         self._setup_timers()
         self._setup_state_variables()
-        self._connect_signals_and_start_threads()
         
+        self.mapLayoutButton.clicked.connect(self.change_map_type)
+        self.screenSaveButton.clicked.connect(self.take_screenshot)
+        self.homeButton.clicked.connect(self.update_status_bar_with_test_data)
+        self.menuButton.clicked.connect(self.test_draw_dot)
+        
+        # Запускаємо асинхронну задачу для отримання даних з Raspberry Pi
+        asyncio.create_task(self.listen_for_pi_data())
+
         self.Radar_Red.hide()
-        self.refresh_map()
+        self.refresh_map() # Цей виклик запустить асинхронну функцію
         print("Головне вікно успішно ініціалізовано.")
+
+    # --- Нова асинхронна функція для отримання даних ---
+    async def listen_for_pi_data(self):
+        """Асинхронно слухає та обробляє дані з Raspberry Pi."""
+        # Тут буде ваша логіка для постійного отримання даних
+        # Наприклад, через веб-сокет або HTTP-запити
+        print("Запущено асинхронний слухач даних...")
+        while True:
+            # `await asyncio.sleep(1)` імітує асинхронне очікування.
+            # Замініть це на ваш реальний код очікування даних.
+            # наприклад: data = await get_data_from_pi()
+            await asyncio.sleep(1) 
+            # self.handle_rf_data(data) # Викликаємо обробник, коли дані прийшли
 
     def _setup_timers(self):
         self.timer_1sec = QTimer(self)
@@ -44,37 +78,16 @@ class MainWindow(QMainWindow):
         self.timer_radar.start(60)
         
         self.test_update_timer = QTimer(self)
+        # Важливо: під'єднуємо таймер до асинхронного слота
         self.test_update_timer.timeout.connect(self.update_status_bar_with_test_data)
-        self.test_update_timer.start(10*60*1000)
+        self.test_update_timer.start(10 * 60 * 1000)
 
     def _setup_state_variables(self):
         self.current_map_type_index = 0
         self.map_types = [MapTypes.ROAD, MapTypes.SATELLITE, MapTypes.TERRAIN, MapTypes.HYBRID]
         self.current_coords = [49.83, 24.03]
 
-    def _connect_signals_and_start_threads(self):
-        """З'єднує сигнали та запускає фонові потоки."""
-        # Кнопки
-        self.mapLayoutButton.clicked.connect(self.change_map_type)
-        self.screenSaveButton.clicked.connect(self.take_screenshot)
-        self.homeButton.clicked.connect(self.update_status_bar_with_test_data)
-        self.menuButton.clicked.connect(self.test_draw_dot)
-
-        self.api_thread = QThread()
-        self.api_server.moveToThread(self.api_thread)
-        
-        # Коли потік стартує, викликаємо метод, що запускає Flask
-        self.api_thread.started.connect(self.api_server.start_server)
-        
-        # Підключаємо сигнали від сервера до обробників у цьому вікні
-        self.api_server.rf_data_received.connect(self.handle_rf_data)
-        self.api_server.audio_alert_received.connect(self.handle_audio_alert)
-        
-        # Запускаємо потік
-        self.api_thread.start()
-
-    # --- Обробники сигналів (слоти) ---
-    
+    # --- Обробники даних, які тепер викликаються з асинхронних функцій ---
     def handle_rf_data(self, analyzed_results):
         print(f"Слот отримав проаналізовані RF дані: {analyzed_results}")
         self.flush_radar_dots()
@@ -86,8 +99,7 @@ class MainWindow(QMainWindow):
         print(f"Слот отримав звукову тривогу: {status}")
         self.Sound_alert.setProperty("alert", status)
 
-    # --- Методи для оновлення UI ---
-
+    # --- Методи для оновлення UI (залишаються без змін) ---
     def update_time_and_date(self):
         current_datetime = QDateTime.currentDateTime()
         self.DateLabel.setText(current_datetime.toString("dd.MM.yyyy"))
@@ -112,7 +124,7 @@ class MainWindow(QMainWindow):
     def create_radar_dot(self, angle, distance):
         pixmap = self.Radar.pixmap()
         if not pixmap or pixmap.isNull(): return
-            
+        
         painter = QPainter(pixmap)
         pen = QPen(QColor('red'), 20)
         painter.setPen(pen)
@@ -128,24 +140,20 @@ class MainWindow(QMainWindow):
         painter.end()
         self.Radar.setPixmap(pixmap)
 
+    # --- Асинхронні слоти (залишаються без змін) ---
+    @asyncSlot()
     async def refresh_map(self):
-        """Асинхронно оновлює карту, не блокуючи UI."""
         print("Запускаю асинхронне завантаження карти...")
-        # Тут можна показати індикатор завантаження
-        
         map_type = self.map_types[self.current_map_type_index]
         pixmap = await self.map_service.get_map_pixmap(self.current_coords, map_type)
-        
-        # Тут можна приховати індикатор завантаження
         if pixmap:
             print("Карта успішно завантажена.")
             self.map_background_label.setPixmap(pixmap)
         else:
             print("Не вдалося завантажити карту.")
 
-    # Цей метод тепер теж має бути асинхронним
+    @asyncSlot()
     async def change_map_type(self):
-        """Змінює тип карти і викликає асинхронне оновлення."""
         self.current_map_type_index = (self.current_map_type_index + 1) % len(self.map_types)
         await self.refresh_map()
 
@@ -155,8 +163,7 @@ class MainWindow(QMainWindow):
         screenshot.save(filename, 'png')
         print(f"Знімок екрану збережено як {filename}")
 
-    # --- Тестові методи ---
-
+    @asyncSlot()
     async def update_status_bar_with_test_data(self):
 
         data = self.test_data_provider.get_next_test_data()
@@ -173,11 +180,6 @@ class MainWindow(QMainWindow):
         self.create_radar_dot(45, 200)
 
     def closeEvent(self, event):
-        """Коректно завершує роботу фонового потоку при закритті вікна."""
-        print("Закриття програми, зупинка сервера та потоку...")
-        self.api_server.stop()
-        if hasattr(self, 'api_thread') and self.api_thread.isRunning():
-            self.api_thread.quit()
-            self.api_thread.wait(500) # Чекаємо пів секунди на завершення
+        print("Закриття програми...")
+        # Тут можна додати логіку для скасування асинхронних задач, якщо потрібно
         event.accept()
-

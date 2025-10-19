@@ -16,7 +16,8 @@ class SettingsService(QObject):
         self.settings_file = QSettings(file_path)
 
         # --- Явні атрибути з налаштуваннями (значення за замовчуванням) ---
-        self.title = "SDR Drone Detector"
+        self.host='0.0.0.0'
+        self.port=5000
         self.radar_radius = 500
         self.radar_max_radius=1000
         self.api_key=''
@@ -43,7 +44,8 @@ class SettingsService(QObject):
         self.settings_file.sync() 
 
         # Оновлюємо поля класу новими значеннями з файлу
-        self.title = self.settings_file.value("main/title", self.title)
+        self.host= self.settings_file.value("network/host", self.host)
+        self.port= self.settings_file.value("network/port", self.port)
         self.radar_radius = self.settings_file.value("maps/radar_radius", self.radar_radius, type=int)
         self.radar_max_radius=self.settings_file.value("maps/radar_max_radius", self.radar_max_radius, type=int)
         self.api_key=self.settings_file.value("maps/api_key", self.api_key)

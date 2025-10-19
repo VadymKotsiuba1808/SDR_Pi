@@ -16,9 +16,13 @@ class SettingsService(QObject):
         self.settings_file = QSettings(file_path)
 
         # --- Явні атрибути з налаштуваннями (значення за замовчуванням) ---
-        self.window_title = "SDR Drone Detector"
+        self.title = "SDR Drone Detector"
         self.radar_radius = 500
-        self.show_radar = True
+        self.radar_max_radius=1000
+        self.api_key=''
+        self.base_url='https://maps.googleapis.com/maps/api/staticmap?'
+        self.scale=2
+        
         # Додавайте сюди інші налаштування за потреби
 
         # --- Запуск відстеження файлу ---
@@ -39,9 +43,12 @@ class SettingsService(QObject):
         self.settings_file.sync() 
 
         # Оновлюємо поля класу новими значеннями з файлу
-        self.window_title = self.settings_file.value("main/title", self.window_title)
-        self.radar_radius = self.settings_file.value("main/radar_radius", self.radar_radius, type=int)
-        self.show_radar = self.settings_file.value("main/show_radar", self.show_radar, type=bool)
+        self.title = self.settings_file.value("main/title", self.title)
+        self.radar_radius = self.settings_file.value("maps/radar_radius", self.radar_radius, type=int)
+        self.radar_max_radius=self.settings_file.value("maps/radar_max_radius", self.radar_max_radius, type=int)
+        self.api_key=self.settings_file.value("maps/api_key", self.api_key)
+        self.base_url=self.settings_file.value("maps/base_url", self.base_url)
+        self.scale=self.settings_file.value("maps/scale", self.scale)
 
         # Сповіщаємо всі частини програми, що налаштування змінилися
         self.settings_changed.emit()

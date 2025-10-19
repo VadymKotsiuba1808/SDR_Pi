@@ -15,7 +15,7 @@ from app.assets import resources_rc
 class MainWindow(QMainWindow):
     def __init__(self, settings, parent=None):
         super().__init__(parent)
-        self.settings = settings
+        self.settings_service = settings
         
         uic.loadUi("app/ui/main_window.ui", self)
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
@@ -128,29 +128,26 @@ class MainWindow(QMainWindow):
         painter.end()
         self.Radar.setPixmap(pixmap)
 
-    def refresh_map(self):
-        """
-        Централізований метод для завантаження та оновлення фонової карти.
-        """
+    async def refresh_map(self):
+        """Асинхронно оновлює карту, не блокуючи UI."""
+        print("Запускаю асинхронне завантаження карти...")
+        # Тут можна показати індикатор завантаження
+        
         map_type = self.map_types[self.current_map_type_index]
-        pixmap = self.map_service.get_map_pixmap(self.current_coords, map_type)
+        pixmap = await self.map_service.get_map_pixmap(self.current_coords, map_type)
         
+        # Тут можна приховати індикатор завантаження
         if pixmap:
+            print("Карта успішно завантажена.")
             self.map_background_label.setPixmap(pixmap)
-            print(f"Карту оновлено. Тип: {map_type.value}, Координати: {self.current_coords}")
         else:
-            print(f"Помилка: не вдалося завантажити карту типу {map_type.value}.")
+            print("Не вдалося завантажити карту.")
 
-    # --- Методи-дії для кнопок ---
-
-    def change_map_type(self):
-        # map_type = self.map_types[self.current_map_type_index]
-        # pixmap = self.map_service.get_map_pixmap(self.current_coords, map_type)
-        # if pixmap:
-        #     print(f"Карта типу '{map_type.value}' успішно завантажена.")
-        
+    # Цей метод тепер теж має бути асинхронним
+    async def change_map_type(self):
+        """Змінює тип карти і викликає асинхронне оновлення."""
         self.current_map_type_index = (self.current_map_type_index + 1) % len(self.map_types)
-        self.refresh_map()
+        await self.refresh_map()
 
     def take_screenshot(self):
         screenshot = self.grab()
@@ -160,7 +157,7 @@ class MainWindow(QMainWindow):
 
     # --- Тестові методи ---
 
-    def update_status_bar_with_test_data(self):
+    async def update_status_bar_with_test_data(self):
 
         data = self.test_data_provider.get_next_test_data()
         self.ghz24_1.setProperty("band_active", data['ghz24_1'])
@@ -170,7 +167,7 @@ class MainWindow(QMainWindow):
         self.current_coords = data['coord']
         print(f"Оновлено тестові дані. Координати: {self.current_coords}")
 
-        self.refresh_map()
+        await self.refresh_map()
 
     def test_draw_dot(self):
         self.create_radar_dot(45, 200)

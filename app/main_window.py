@@ -30,7 +30,7 @@ class MainWindow(QMainWindow):
         
         self.map_service = MapService(settings=self.settings_service)
         
-        self.api_server = ApiServer()
+        self.api_server = ApiServer(settings=self.settings_service)
         
         # 2. Передаємо йому методи з MainWindow як callback-функції
         self.api_server.on_rf_data = self.handle_rf_data

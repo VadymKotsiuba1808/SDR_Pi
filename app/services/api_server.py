@@ -1,16 +1,16 @@
 import asyncio
 from quart import Quart, request, shutdown_server
+from settings_service import SettingsService
 
 class ApiServer:
     """
     Асинхронний веб-сервер на базі Quart, що працює в одному
     циклі подій з основним додатком.
     """
-    def __init__(self, host='0.0.0.0', port=5000):
-        
+    def __init__(self,settings: SettingsService):
+
+        self.settings_service = settings
         self.quart_app = Quart(__name__)
-        self.host = host
-        self.port = port
         
         # Створюємо "заглушки" для callback-функцій, які будуть передані з MainWindow
         self.on_rf_data = lambda data: print("Попередження: обробник для RF даних не встановлено.")
@@ -22,10 +22,12 @@ class ApiServer:
 
     async def run_server(self):
         """Асинхронно запускає сервер."""
-        print(f"Асинхронний сервер Quart запущено на http://{self.host}:{self.port}")
+        host=self.settings_service.host
+        port =self.settings_service.port
+        print(f"Асинхронний сервер Quart запущено на http://{host}:{port}")
         try:
             # Запускаємо сервер
-            await self.quart_app.run_task(host=self.host, port=self.port)
+            await self.quart_app.run_task(host=host, port=port)
         except asyncio.CancelledError:
             # Це нормально при закритті програми
             print("Сервер зупинено.")

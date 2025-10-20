@@ -16,6 +16,8 @@ class ApiServer:
         self.on_rf_data = lambda data: print("Попередження: обробник для RF даних не встановлено.")
         self.on_audio_alert = lambda status: print("Попередження: обробник для аудіо-тривоги не встановлено.")
 
+        self.server_task: asyncio.Task | None = None
+
         # Реєструємо асинхронні маршрути (endpoints)
         self.quart_app.route('/api/2_4_ghz', methods=['POST'])(self.receive_rf_data)
         self.quart_app.route('/api/audio_alarm', methods=['POST'])(self.receive_audio_alarm)
@@ -27,7 +29,9 @@ class ApiServer:
         print(f"Асинхронний сервер Quart запущено на http://{host}:{port}")
         try:
             # Запускаємо сервер
-            await self.quart_app.run_task(host=host, port=port)
+            self.server_task = asyncio.create_task(
+    self.quart_app.run_task(host=host, port=port)
+    )
         except asyncio.CancelledError:
             # Це нормально при закритті програми
             print("Сервер зупинено.")
@@ -48,3 +52,18 @@ class ApiServer:
             # Викликаємо callback-функцію, передану з MainWindow
             self.on_audio_alert(alert_status)
         return 'Audio alert received'
+    
+    def stop_server(self):
+        """Асинхронно зупиняє сервер."""
+        #await self.quart_app.shutdown()
+        if(self.server_task):
+            self.server_task.cancel()
+        # if self.server_task and not self.server_task.done():
+        #     self.server_task.cancel()
+        #     try:
+        #         await self.server_task
+        #     except asyncio.CancelledError:
+        #         pass
+        #     await self.quart_app.shutdown()
+        #     print("Сервер Quart успішно зупинено.")
+        #print(asyncio.tasks.all_tasks())

@@ -1,80 +1,77 @@
+# app/main_window.py
 import math
 import asyncio
-from PyQt6.QtWidgets import QMainWindow
+from PyQt6.QtWidgets import QMainWindow,QApplication
 from PyQt6.QtCore import QTimer, QDateTime, Qt
-from PyQt6.QtGui import QPixmap, QTransform, QPainter, QColor, QPen, QFont
+from PyQt6.QtGui import QPixmap, QTransform, QPainter, QColor, QPen
 from PyQt6 import uic
 from qasync import asyncSlot
 
-from app.services.api_server import ApiServer
+# Припускаємо, що ApiServer буде переписаний асинхронно, тому поки його не імпортуємо
+from app.services.api_server import ApiServer 
 from app.services.map_service import MapService, MapTypes
 from app.core.signal_analyzer import SignalAnalyzer
 from app.utils.test_data_provider import TestDataProvider
 from app.assets import resources_rc
+
+# Імпортуємо ваш сервіс налаштувань
 from app.services.settings_service import SettingsService
 
 class MainWindow(QMainWindow):
     def __init__(self, settings: SettingsService, parent=None):
         super().__init__(parent)
         self.settings_service = settings
-        self.async_tasks = []  # Список для асинхронних задач
         
-        # Завантаження UI
         uic.loadUi("app/ui/main_window.ui", self)
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
         
-        # # Налаштування шрифту
-        # font = QFont()
-        # font_size = self.settings_service.get_font_size()
-        # if font_size <= 0:
-        #     font_size = 12  # Значення за замовчуванням
-        #     print("Попередження: Некоректний розмір шрифту в config.ini, використано значення за замовчуванням (12)")
-        # font.setPointSize(font_size)
-        # self.setFont(font)
-        
-        # Ініціалізація сервісів
+        # self.signal_analyzer = SignalAnalyzer()
         self.test_data_provider = TestDataProvider()
+        
         self.map_service = MapService(settings=self.settings_service)
+        
         self.api_server = ApiServer(settings=self.settings_service)
         
-        # Передача callback-функцій для ApiServer
+        # 2. Передаємо йому методи з MainWindow як callback-функції
         self.api_server.on_rf_data = self.handle_rf_data
         self.api_server.on_audio_alert = self.handle_audio_alert
         
-        # Запуск асинхронних задач
-        loop = asyncio.get_running_loop()
-        self.async_tasks.append(loop.create_task(self.api_server.run_server()))
-        self.async_tasks.append(loop.create_task(self.listen_for_pi_data()))
+        # 3. Запускаємо сервер як фонову асинхронну задачу.
+        # Він буде працювати в тому ж циклі подій, що й UI.
+        asyncio.create_task(self.api_server.run_server())
         
-        # Налаштування таймерів і змінних стану
         self._setup_timers()
         self._setup_state_variables()
         
-        # Підключення сигналів до слотів
         self.mapLayoutButton.clicked.connect(self.change_map_type)
         self.screenSaveButton.clicked.connect(self.take_screenshot)
         self.homeButton.clicked.connect(self.update_status_bar_with_test_data)
         self.menuButton.clicked.connect(self.test_draw_dot)
         
-        # Початкове оновлення карти
-        loop.create_task(self.refresh_map())
+        # Запускаємо асинхронну задачу для отримання даних з Raspberry Pi
+        asyncio.create_task(self.listen_for_pi_data())
+
+        self.Radar_Red.hide()
+        self.refresh_map() # Цей виклик запустить асинхронну функцію
         print("Головне вікно успішно ініціалізовано.")
 
+    # --- Нова асинхронна функція для отримання даних ---
     async def listen_for_pi_data(self):
         """Асинхронно слухає та обробляє дані з Raspberry Pi."""
+        # Тут буде ваша логіка для постійного отримання даних
+        # Наприклад, через веб-сокет або HTTP-запити
         print("Запущено асинхронний слухач даних...")
-        try:
-            while True:
-                await asyncio.sleep(1)  # Імітація асинхронного очікування
-                # Додайте вашу логіку для отримання даних з Raspberry Pi
-                # Наприклад: data = await get_data_from_pi()
-                # self.handle_rf_data(data)
-        except asyncio.CancelledError:
-            print("Слухач даних зупинено.")
-            raise
-        except Exception as e:
-            print(f"Помилка в слухачі даних: {e}")
-            raise
+        while True:
+            # `await asyncio.sleep(1)` імітує асинхронне очікування.
+            # Замініть це на ваш реальний код очікування даних.
+            # наприклад: data = await get_data_from_pi()
+            await asyncio.sleep(1) 
+            # self.handle_rf_data(data) # Викликаємо обробник, коли дані прийшли
+
+
+    async def start_async_tasks(self):
+        """Запускаємо всі асинхронні задачі після старту loop."""
+        self.server_task = asyncio.create_task(self.api_server.run_server())
 
     def _setup_timers(self):
         self.timer_1sec = QTimer(self)
@@ -86,6 +83,7 @@ class MainWindow(QMainWindow):
         self.timer_radar.start(60)
         
         self.test_update_timer = QTimer(self)
+        # Важливо: під'єднуємо таймер до асинхронного слота
         self.test_update_timer.timeout.connect(self.update_status_bar_with_test_data)
         self.test_update_timer.start(10 * 60 * 1000)
 
@@ -93,21 +91,20 @@ class MainWindow(QMainWindow):
         self.current_map_type_index = 0
         self.map_types = [MapTypes.ROAD, MapTypes.SATELLITE, MapTypes.TERRAIN, MapTypes.HYBRID]
         self.current_coords = [49.83, 24.03]
-        self.radar_angle = 0
 
+    # --- Обробники даних, які тепер викликаються з асинхронних функцій ---
     def handle_rf_data(self, analyzed_results):
         print(f"Слот отримав проаналізовані RF дані: {analyzed_results}")
         self.flush_radar_dots()
         if analyzed_results:
-            if '0' in analyzed_results:
-                self.create_radar_dot(180, 350)
-            if '1' in analyzed_results:
-                self.create_radar_dot(240, 150)
+            if '0' in analyzed_results: self.create_radar_dot(180, 350)
+            if '1' in analyzed_results: self.create_radar_dot(240, 150)
     
     def handle_audio_alert(self, status):
         print(f"Слот отримав звукову тривогу: {status}")
         self.Sound_alert.setProperty("alert", status)
 
+    # --- Методи для оновлення UI (залишаються без змін) ---
     def update_time_and_date(self):
         current_datetime = QDateTime.currentDateTime()
         self.DateLabel.setText(current_datetime.toString("dd.MM.yyyy"))
@@ -115,28 +112,23 @@ class MainWindow(QMainWindow):
 
     def rotate_radar_animation(self):
         transform = QTransform()
-        self.radar_angle = (self.radar_angle + 6) % 360
-        transform.rotate(self.radar_angle)
+        current_angle = getattr(self, 'radar_angle', 0)
+        current_angle = (current_angle + 6) % 360
+        transform.rotate(current_angle)
         
         original_pixmap = QPixmap(":/images/radar_green.png")
-        if original_pixmap.isNull():
-            print("Помилка: не вдалося завантажити radar_green.png")
-            return
+        if original_pixmap.isNull(): return
 
         rotated_pixmap = original_pixmap.transformed(transform, Qt.TransformationMode.SmoothTransformation)
         self.Radar_Green.setPixmap(rotated_pixmap)
+        self.radar_angle = current_angle
 
     def flush_radar_dots(self):
-        pixmap = QPixmap(":/images/radar.png")
-        if pixmap.isNull():
-            print("Помилка: не вдалося завантажити radar.png")
-        self.Radar.setPixmap(pixmap)
+        self.Radar.setPixmap(QPixmap(":/images/radar.png"))
 
     def create_radar_dot(self, angle, distance):
         pixmap = self.Radar.pixmap()
-        if not pixmap or pixmap.isNull():
-            print("Помилка: pixmap для Radar недоступний")
-            return
+        if not pixmap or pixmap.isNull(): return
         
         painter = QPainter(pixmap)
         pen = QPen(QColor('red'), 20)
@@ -153,32 +145,23 @@ class MainWindow(QMainWindow):
         painter.end()
         self.Radar.setPixmap(pixmap)
 
+    # --- Асинхронні слоти (залишаються без змін) ---
     @asyncSlot()
     async def refresh_map(self):
         print("Запускаю асинхронне завантаження карти...")
-        try:
-            map_type = self.map_types[self.current_map_type_index]
-            pixmap = await self.map_service.get_map_pixmap(self.current_coords, map_type)
-            if pixmap:
-                print("Карта успішно завантажена.")
-                self.map_background_label.setPixmap(pixmap)
-            else:
-                print("Не вдалося завантажити карту.")
-        except asyncio.CancelledError:
-            print("Завантаження карти зупинено.")
-            raise
-        except Exception as e:
-            print(f"Помилка при завантаженні карти: {e}")
-            raise
+        map_type = self.map_types[self.current_map_type_index]
+        pixmap = await self.map_service.get_map_pixmap(self.current_coords, map_type)
+        
+        if pixmap:
+            print("Карта успішно завантажена.")
+            self.map_background_label.setPixmap(pixmap)
+        else:
+            print("Не вдалося завантажити карту.")
 
     @asyncSlot()
     async def change_map_type(self):
-        try:
-            self.current_map_type_index = (self.current_map_type_index + 1) % len(self.map_types)
-            await self.refresh_map()
-        except asyncio.CancelledError:
-            print("Зміна типу карти зупинена.")
-            raise
+        self.current_map_type_index = (self.current_map_type_index + 1) % len(self.map_types)
+        await self.refresh_map()
 
     def take_screenshot(self):
         screenshot = self.grab()
@@ -188,39 +171,35 @@ class MainWindow(QMainWindow):
 
     @asyncSlot()
     async def update_status_bar_with_test_data(self):
-        try:
-            data = self.test_data_provider.get_next_test_data()
-            self.ghz24_1.setProperty("band_active", data['ghz24_1'])
-            self.ghz58_1.setProperty("band_active", data['ghz58_1'])
-            self.RF_alert.setProperty("alert", data['rf_alert'])
-            self.Sound_alert.setProperty("alert", data['sound_alert'])
-            self.current_coords = data['coord']
-            print(f"Оновлено тестові дані. Координати: {self.current_coords}")
-            await self.refresh_map()
-        except asyncio.CancelledError:
-            print("Оновлення тестових даних зупинено.")
-            raise
-        except Exception as e:
-            print(f"Помилка при оновленні тестових даних: {e}")
-            raise
+
+        data = self.test_data_provider.get_next_test_data()
+        self.ghz24_1.setProperty("band_active", data['ghz24_1'])
+        self.ghz58_1.setProperty("band_active", data['ghz58_1'])
+        self.RF_alert.setProperty("alert", data['rf_alert'])
+        self.Sound_alert.setProperty("alert", data['sound_alert'])
+        self.current_coords = data['coord']
+        print(f"Оновлено тестові дані. Координати: {self.current_coords}")
+
+        await self.refresh_map()
 
     def test_draw_dot(self):
         self.create_radar_dot(45, 200)
 
     def closeEvent(self, event):
         print("Закриття програми...")
-        try:
-            # Скасовуємо всі асинхронні задачі
-            for task in self.async_tasks:
-                print(f"Скасовуємо задачу: {task}")
-                task.cancel()
-            # Зупиняємо сервер Quart
-            loop = asyncio.get_running_loop()
-            loop.create_task(self.api_server.stop_server())
-            # Зупиняємо таймери
-            self.timer_1sec.stop()
-            self.timer_radar.stop()
-            self.test_update_timer.stop()
-        except Exception as e:
-            print(f"Помилка при закритті програми: {e}")
-        event.accept()
+        
+        # Фоново зупиняємо сервер і таски
+        # async def shutdown():
+        #     await self.api_server.stop_server()
+        #     # for task in getattr(self, "async_tasks", []):
+        #     #     task.cancel()
+        #     # if hasattr(self, "api_server"):
+        #     #     await self.api_server.stop_server()
+        #     # print("Сервер зупинено. Завершення програми...")
+
+        # # Створюємо таску, не чекаємо її завершення
+        # asyncio.create_task(shutdown())
+        
+        # self.api_server.stop_server()
+        event.accept()  # 
+

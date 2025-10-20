@@ -1,13 +1,13 @@
 import asyncio
 from quart import Quart, request
-from app.services.settings_service import SettingsService 
 
+from app.protocols import ApiServerSettings
 class ApiServer:
     """
     Асинхронний веб-сервер на базі Quart, що працює в одному
     циклі подій з основним додатком.
     """
-    def __init__(self,settings: SettingsService):
+    def __init__(self,settings: ApiServerSettings):
 
         self.settings_service = settings
         self.quart_app = Quart(__name__)

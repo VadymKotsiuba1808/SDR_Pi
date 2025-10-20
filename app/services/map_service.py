@@ -1,7 +1,7 @@
 import httpx
 from enum import Enum
-from PyQt6.QtGui import QPixmap
-from app.services.settings_service import SettingsService 
+
+from app.protocols import MapServiceSettings
 
 class MapTypes(Enum):
     ROAD = "roadmap"
@@ -12,7 +12,7 @@ class MapTypes(Enum):
 class MapService:
     """Асинхронний сервіс, що використовує httpx."""
 
-    def __init__(self, settings: SettingsService):
+    def __init__(self, settings: MapServiceSettings):
         self.settings_service = settings
         # Створюємо один клієнт для перевикористання
         self.client = httpx.AsyncClient()

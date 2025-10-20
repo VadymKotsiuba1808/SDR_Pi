@@ -1,5 +1,6 @@
 import httpx
 from enum import Enum
+from PyQt6.QtGui import QPixmap
 
 from app.protocols import MapServiceSettings
 
@@ -24,7 +25,6 @@ class MapService:
         """
         api_key = self.settings_service.api_key
         base_url = self.settings_service.base_url
-        # ... (отримайте інші налаштування) ...
         size = f"{self.settings_service.radar_max_radius}x{self.settings_service.radar_max_radius}"
         scale = self.settings_service.scale
 

@@ -6,13 +6,12 @@ from PyQt6.QtCore import QTimer, QDateTime, Qt
 from PyQt6.QtGui import QPixmap, QTransform, QPainter, QColor, QPen
 from PyQt6 import uic
 from qasync import asyncSlot
+from app.assets import resources_rc
 
 # Припускаємо, що ApiServer буде переписаний асинхронно, тому поки його не імпортуємо
 from app.services.api_server import ApiServer 
 from app.services.map_service import MapService, MapTypes
-from app.core.signal_analyzer import SignalAnalyzer
 from app.utils.test_data_provider import TestDataProvider
-from app.assets import resources_rc
 
 # Імпортуємо ваш сервіс налаштувань
 from app.services.settings_service import SettingsService
@@ -151,7 +150,7 @@ class MainWindow(QMainWindow):
         print("Запускаю асинхронне завантаження карти...")
         map_type = self.map_types[self.current_map_type_index]
         pixmap = await self.map_service.get_map_pixmap(self.current_coords, map_type)
-        
+
         if pixmap:
             print("Карта успішно завантажена.")
             self.map_background_label.setPixmap(pixmap)

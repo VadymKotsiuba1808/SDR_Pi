@@ -173,7 +173,7 @@ class MainWindow(QMainWindow):
         if pixmap:
             print("Карта успішно завантажена.")
             pixmap = pixmap.scaled(
-    self.map_background_label.height(),
+    self.map_background_label.width(),
     self.map_background_label.height(),
     Qt.AspectRatioMode.KeepAspectRatioByExpanding,  # або KeepAspectRatio
     Qt.TransformationMode.SmoothTransformation
@@ -189,7 +189,7 @@ class MainWindow(QMainWindow):
 
     def take_screenshot(self):
         screenshot = self.grab()
-        filename = f"screenshot_{QDateTime.currentDateTime().toString('yyyy-MM-dd_hh-mm-ss')}.png"
+        filename = f"./screenshots/screenshot_{QDateTime.currentDateTime().toString('yyyy-MM-dd_hh-mm-ss')}.png"
         screenshot.save(filename, 'png')
         print(f"Знімок екрану збережено як {filename}")
 

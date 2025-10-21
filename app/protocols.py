@@ -5,6 +5,7 @@ class MapServiceSettings(Protocol):
     base_url:str
     radar_max_radius:int
     scale:float
+    zoom:int
 
 class ApiServerSettings(Protocol):
     host:str

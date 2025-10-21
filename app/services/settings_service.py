@@ -27,6 +27,7 @@ class SettingsService(QObject):
         self.api_key=''
         self.base_url='https://maps.googleapis.com/maps/api/staticmap?'
         self.scale=2
+        self.zoom=15
         
         # Додавайте сюди інші налаштування за потреби
 
@@ -50,11 +51,13 @@ class SettingsService(QObject):
         # Оновлюємо поля класу новими значеннями з файлу
         self.host= self.settings_file.value("network/host", self.host)
         self.port= self.settings_file.value("network/port", self.port, type=int)
+
         self.radar_radius = self.settings_file.value("maps/radar_radius", self.radar_radius, type=int)
         self.radar_max_radius=self.settings_file.value("maps/radar_max_radius", self.radar_max_radius, type=int)
         self.api_key=self.settings_file.value("maps/api_key", self.api_key)
         self.base_url=self.settings_file.value("maps/base_url", self.base_url)
         self.scale=self.settings_file.value("maps/scale", self.scale, type=float)
+        self.zoom=self.settings_file.value("maps/zoom", self.zoom, type=int)
 
         # Сповіщаємо всі частини програми, що налаштування змінилися
         self.settings_changed.emit()

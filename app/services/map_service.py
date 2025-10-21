@@ -37,6 +37,8 @@ class MapService:
             f"&zoom={zoom}&size={size}&scale={scale}"
             f"&maptype={map_type.value}&key={api_key}"
         )
+
+        print(url)
         
         try:
             response = await self.client.get(url, timeout=10)

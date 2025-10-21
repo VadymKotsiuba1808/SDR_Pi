@@ -1,5 +1,6 @@
 import asyncio
 from quart import Quart, request
+from qasync import asyncSlot
 
 from app.protocols import ApiServerSettings
 class ApiServer:
@@ -22,6 +23,7 @@ class ApiServer:
         self.quart_app.route('/api/2_4_ghz', methods=['POST'])(self.receive_rf_data)
         self.quart_app.route('/api/audio_alarm', methods=['POST'])(self.receive_audio_alarm)
 
+    # @asyncSlot()
     async def run_server(self):
         """Асинхронно запускає сервер."""
         host=self.settings_service.host
@@ -37,6 +39,7 @@ class ApiServer:
             print("Сервер зупинено.")
 
     # Обробники тепер є асинхронними функціями
+    @asyncSlot()
     async def receive_rf_data(self):
         analyzed_results = await request.get_json()
         if analyzed_results:
@@ -44,6 +47,7 @@ class ApiServer:
             self.on_rf_data(analyzed_results)
         return 'RF data received'
 
+    @asyncSlot()
     async def receive_audio_alarm(self):
         """Асинхронний обробник для маршруту /api/audio_alarm."""
         status_data = await request.get_json()

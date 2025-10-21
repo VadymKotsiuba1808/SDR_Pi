@@ -132,7 +132,7 @@ QFrame#loginFrame {
         <property name="font">
          <font>
           <family>Roboto</family>
-          <pointsize>-1</pointsize>
+          <pointsize>1</pointsize>
           <fontweight>DemiBold</fontweight>
          </font>
         </property>
@@ -181,7 +181,7 @@ font-size:22px;
         <property name="font">
          <font>
           <family>Roboto</family>
-          <pointsize>-1</pointsize>
+          <pointsize>1</pointsize>
          </font>
         </property>
         <property name="styleSheet">
@@ -282,11 +282,9 @@ font-size:22px;
         <property name="styleSheet">
          <string notr="true">
 QPushButton{
-display:block;
 	border: none;
 	background-image: url(:/images/Btn_MainMenu_off.png);
 	background-position:center;
-	background-size: contain;
 	min-width:320px;
 	max-width:320px;
 	height:100px;

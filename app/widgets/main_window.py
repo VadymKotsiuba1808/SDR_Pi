@@ -37,7 +37,6 @@ class MainWindow(QMainWindow):
         
         # 3. Запускаємо сервер як фонову асинхронну задачу.
         # Він буде працювати в тому ж циклі подій, що й UI.
-        asyncio.create_task(self.api_server.run_server())
         
         self._setup_timers()
         self._setup_state_variables()
@@ -47,14 +46,24 @@ class MainWindow(QMainWindow):
         self.homeButton.clicked.connect(self.update_status_bar_with_test_data)
         self.menuButton.clicked.connect(self.test_draw_dot)
         
-        # Запускаємо асинхронну задачу для отримання даних з Raspberry Pi
-        asyncio.create_task(self.listen_for_pi_data())
-
         self.Radar_Red.hide()
-        self.refresh_map() # Цей виклик запустить асинхронну функцію
+
+        self.start_async_tasks()
+        
         print("Головне вікно успішно ініціалізовано.")
 
-    # --- Нова асинхронна функція для отримання даних ---
+    @asyncSlot()
+    async def start_async_tasks(self):
+        """
+        Запускає всі фонові асинхронні задачі.
+        Цей метод має викликатися з 'main' ПІСЛЯ створення вікна.
+        """
+        print("Запуск фонових асинхронних задач (сервер та слухач)...")
+        #asyncio.create_task(self.api_server.run_server())
+        self.listen_for_pi_data()
+        self.refresh_map()
+
+    @asyncSlot()
     async def listen_for_pi_data(self):
         """Асинхронно слухає та обробляє дані з Raspberry Pi."""
         # Тут буде ваша логіка для постійного отримання даних
@@ -67,10 +76,6 @@ class MainWindow(QMainWindow):
             await asyncio.sleep(1) 
             # self.handle_rf_data(data) # Викликаємо обробник, коли дані прийшли
 
-
-    async def start_async_tasks(self):
-        """Запускаємо всі асинхронні задачі після старту loop."""
-        self.server_task = asyncio.create_task(self.api_server.run_server())
 
     def _setup_timers(self):
         self.timer_1sec = QTimer(self)

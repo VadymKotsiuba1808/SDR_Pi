@@ -3,7 +3,7 @@ import asyncio
 import qasync
 from PyQt6.QtWidgets import QApplication
 
-from app.main_window import MainWindow
+from app.widgets.main_window import MainWindow
 from app.services.settings_service import SettingsService
 from app.widgets.scalable_window import ScalableWindow
 

@@ -1,90 +1,73 @@
 import os
-
 from PyQt6.QtCore import QObject, pyqtSignal, QSettings, QFileSystemWatcher
+from typing import NamedTuple, Any
+
+class Setting(NamedTuple):
+    section: str
+    typ: type
+    default: Any
 
 class SettingsService(QObject):
-    """
-    Централізований сервіс для керування налаштуваннями додатку.
-    Використовує явні атрибути для надійності та зручності.
-    """
-    # Сигнал, який сповіщає всю програму про те, що налаштування оновилися
+
     settings_changed = pyqtSignal()
+
+    # Єдиний словник конфігурації: ключ → (секція, тип, значення за замовчуванням)
+    _config_schema = {
+        "host": ("network", str, "0.0.0.0"),
+        "port": ("network", int, 5000),
+        "radar_radius": ("maps", int, 500),
+        "radar_max_radius": ("maps", int, 1000),
+        "api_key": ("maps", str, ""),
+        "base_url": ("maps", str, "https://maps.googleapis.com/maps/api/staticmap?"),
+        "scale": ("maps", float, 2.0),
+        "zoom": ("maps", int, 15),
+        "role": Setting("auth", str, "operator"),
+        "owner_password_hash": Setting("auth", str, ""),
+        "remember_me": Setting("auth", bool, False),
+    }
 
     def __init__(self):
         super().__init__()
-        file_path=os.path.join(os.path.dirname(__file__), "../../config.ini")
-        file_path = os.path.abspath(file_path)
-        # --- Ініціалізація QSettings ---
+        file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../config.ini"))
+
         QSettings.setDefaultFormat(QSettings.Format.IniFormat)
-        self.settings_file = QSettings(file_path, QSettings.Format.IniFormat)
-        print(self.settings_file)
+        self._settings = QSettings(file_path, QSettings.Format.IniFormat)
 
-        # --- Явні атрибути з налаштуваннями (значення за замовчуванням) ---
-        self.host='0.0.0.0'
-        self.port=5000
-        self.radar_radius = 500
-        self.radar_max_radius=1000
-        self.api_key=''
-        self.base_url='https://maps.googleapis.com/maps/api/staticmap?'
-        self.scale=2
-        self.zoom=15
-        
-        # Додавайте сюди інші налаштування за потреби
+        # --- Завантаження початкових значень ---
+        for key, (section, typ, default) in self._config_schema.items():
+            value = self._settings.value(f"{section}/{key}", default, type=typ)
+            super().__setattr__(key, value)  # уникаємо рекурсії
 
-        # --- Запуск відстеження файлу ---
-        self.watcher = QFileSystemWatcher([self.settings_file.fileName()])
-        self.watcher.fileChanged.connect(self._reload_from_file)
+        # --- Відстеження змін у config.ini ---
+        self._watcher = QFileSystemWatcher([self._settings.fileName()])
+        self._watcher.fileChanged.connect(self._reload_from_file)
 
-        # Завантажуємо налаштування при першому запуску
-        self._reload_from_file()
+    def __setattr__(self, name, value):
+        if name in self._config_schema:
+            section, _, _ = self._config_schema[name]
+            self._settings.setValue(f"{section}/{name}", value)
+            super().__setattr__(name, value)
+            self.settings_changed.emit()
+        else:
+            super().__setattr__(name, value)
 
     def _reload_from_file(self):
         """
-        ПРИВАТНИЙ МЕТОД: Перезавантажує всі налаштування з файлу.
-        Використовується при старті та при зовнішній зміні config.ini.
+        Перезавантажує дані, якщо config.ini змінено зовні.
         """
         print("Перезавантаження налаштувань з config.ini...")
-        
-        # Примусово читаємо файл з диска
-        self.settings_file.sync() 
+        self._settings.sync()
 
-        # Оновлюємо поля класу новими значеннями з файлу
-        self.host= self.settings_file.value("network/host", self.host)
-        self.port= self.settings_file.value("network/port", self.port, type=int)
+        updated = False
+        for key, (section, typ, default) in self._config_schema.items():
+            new_value = self._settings.value(f"{section}/{key}", default, type=typ)
+            if getattr(self, key) != new_value:
+                super().__setattr__(key, new_value)
+                updated = True
 
-        self.radar_radius = self.settings_file.value("maps/radar_radius", self.radar_radius, type=int)
-        self.radar_max_radius=self.settings_file.value("maps/radar_max_radius", self.radar_max_radius, type=int)
-        self.api_key=self.settings_file.value("maps/api_key", self.api_key)
-        self.base_url=self.settings_file.value("maps/base_url", self.base_url)
-        self.scale=self.settings_file.value("maps/scale", self.scale, type=float)
-        self.zoom=self.settings_file.value("maps/zoom", self.zoom, type=int)
+        if updated:
+            self.settings_changed.emit()
 
-        # Сповіщаємо всі частини програми, що налаштування змінилися
-        self.settings_changed.emit()
-
-    def update_setting(self, key: str, value):
-        """
-        ПУБЛІЧНИЙ МЕТОД: Оновлює одне налаштування.
-        Записує його у файл та оновлює поле в класі.
-        """
-        print(f"Оновлення налаштування '{key}' на значення '{value}'")
-
-        # 1. Перевіряємо, чи такий ключ налаштування взагалі існує
-        if not self.settings_file.contains(key):
-             # Можна також перевіряти по явних атрибутах, але contains надійніше
-             print(f"Увага: Невідомий ключ налаштування '{key}'")
-             return
-
-        # 2. Записуємо нове значення у файл config.ini
-        self.settings_file.setValue(key, value)
-
-        # 3. Оновлюємо відповідне поле в цьому класі
-        # Використовуємо setattr для динамічного оновлення атрибута за його назвою
-        attribute_name = key.split('/')[-1] # Отримуємо "radar_radius" з "main/radar_radius"
-        if hasattr(self, attribute_name):
-            # Перетворюємо тип, якщо потрібно
-            current_type = type(getattr(self, attribute_name))
-            setattr(self, attribute_name, current_type(value))
-        
-        # 4. Сповіщаємо додаток про зміни
-        self.settings_changed.emit()
+    def sync(self):
+        """Примусово записує зміни у файл."""
+        self._settings.sync()

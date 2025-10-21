@@ -19,19 +19,24 @@ async def main():
     app.aboutToQuit.connect(lambda: future.set_result(None))
 
     login_dialog = LoginDialog(settings=settings_service)
+    isAlreadyAccept=login_dialog.isAlreadyAccept
+    result_code=None
     
-    # Створюємо "Future", який буде "чекати" на закриття діалогу
-    dialog_finished_future = asyncio.Future()
-    # Під'єднуємо сигнал 'finished' (який спрацює при .accept() або .reject())
-    # до нашого future.
-    login_dialog.finished.connect(dialog_finished_future.set_result)
+    if(isAlreadyAccept==False):
     
-    # Відкриваємо діалог неблокуючим методом .open()
-    login_dialog.open()
+        # Створюємо "Future", який буде "чекати" на закриття діалогу
+        dialog_finished_future = asyncio.Future()
+        # Під'єднуємо сигнал 'finished' (який спрацює при .accept() або .reject())
+        # до нашого future.
+        login_dialog.finished.connect(dialog_finished_future.set_result)
+        
+        # Відкриваємо діалог неблокуючим методом .open()
+        login_dialog.open()
+        
+        result_code = await dialog_finished_future
     
-    result_code = await dialog_finished_future
-    
-    if result_code == QDialog.DialogCode.Accepted:  # .Accepted це зазвичай 1
+    if (result_code == QDialog.DialogCode.Accepted or 
+        isAlreadyAccept==True):  # .Accepted це зазвичай 1
         
         app.setQuitOnLastWindowClosed(True)
         window = MainWindow(settings=settings_service)

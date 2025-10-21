@@ -2,8 +2,8 @@
 import math
 import asyncio
 from PyQt6.QtWidgets import QMainWindow,QApplication
-from PyQt6.QtCore import QTimer, QDateTime, Qt
-from PyQt6.QtGui import QPixmap, QTransform, QPainter, QColor, QPen
+from PyQt6.QtCore import QTimer, QDateTime, Qt, QPointF
+from PyQt6.QtGui import QPixmap, QConicalGradient, QPainter, QColor, QPen
 from PyQt6 import uic
 from qasync import asyncSlot
 from app.assets import resources_rc
@@ -110,17 +110,36 @@ class MainWindow(QMainWindow):
         self.TimeLabel.setText(current_datetime.toString("hh:mm:ss"))
 
     def rotate_radar_animation(self):
-        transform = QTransform()
         current_angle = getattr(self, 'radar_angle', 0)
         current_angle = (current_angle + 6) % 360
-        transform.rotate(current_angle)
-        
-        original_pixmap = QPixmap(":/images/radar_green.png")
-        if original_pixmap.isNull(): return
-
-        rotated_pixmap = original_pixmap.transformed(transform, Qt.TransformationMode.SmoothTransformation)
-        self.Radar_Green.setPixmap(rotated_pixmap)
         self.radar_angle = current_angle
+
+        base_pixmap=self.draw_radar_section(current_angle)
+
+        self.Radar_Green.setPixmap(base_pixmap)
+
+    def draw_radar_section(self, angle):
+        base_pixmap = QPixmap(self.Radar.size())
+        base_pixmap.fill(Qt.GlobalColor.transparent)
+
+        painter = QPainter(base_pixmap)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+
+        size = min(base_pixmap.width(), base_pixmap.height())
+        center = QPointF(base_pixmap.width() / 2, base_pixmap.height() / 2)
+
+        # Малюємо градієнтний промінь
+        gradient = QConicalGradient(center, -angle)
+        gradient.setColorAt(0.0, QColor(40, 215, 30, 90))   
+        gradient.setColorAt(0.25, QColor(30, 180, 30, 50))  
+        gradient.setColorAt(1.0, QColor(30, 100, 30, 10))
+
+        painter.setBrush(gradient)
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.drawEllipse(center, size / 2, size / 2)
+        painter.end()
+
+        return base_pixmap
 
     def flush_radar_dots(self):
         self.Radar.setPixmap(QPixmap(":/images/radar.png"))

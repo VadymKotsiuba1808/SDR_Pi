@@ -6,7 +6,8 @@ from PyQt6.QtWidgets import QApplication, QDialog, QMainWindow
 from app.widgets.main_window import MainWindow
 from app.widgets.login_dialog import LoginDialog
 from app.services.settings_service import SettingsService
-from app.widgets.scalable_window import make_scalable
+from app.widgets.autosize_window import make_scalable, make_window_stretched
+from app.utils.async_utils import make_safe_set_result
 
 async def main():
     app = QApplication.instance()
@@ -19,14 +20,16 @@ async def main():
     app.aboutToQuit.connect(lambda: future.set_result(None))
     remember_me=settings_service.remember_me
     
+    result_code=None
+    
     if(remember_me==False):
         app.setQuitOnLastWindowClosed(False)
         login_dialog = LoginDialog(settings=settings_service)
-        # Створюємо "Future", який буде "чекати" на закриття діалогу
+        make_window_stretched(login_dialog)
+        
         dialog_finished_future = asyncio.Future()
-        # Під'єднуємо сигнал 'finished' (який спрацює при .accept() або .reject())
-        # до нашого future.
-        login_dialog.finished.connect(dialog_finished_future.set_result)
+
+        login_dialog.finished.connect(make_safe_set_result(dialog_finished_future))
         
         login_dialog.showFullScreen()
         
@@ -40,6 +43,10 @@ async def main():
         ScalableMainWindow = make_scalable(QMainWindow)
         scalable_window = ScalableMainWindow(widget=window)
         scalable_window.showFullScreen()
+
+        if(remember_me==False):
+            await asyncio.sleep(0.05)
+            login_dialog.close()
 
         await future
         

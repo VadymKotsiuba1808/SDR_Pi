@@ -1,5 +1,7 @@
 from PyQt6.QtWidgets import QDialog
 from PyQt6 import uic
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QGuiApplication
 
 from app.services.settings_service import SettingsService
 from app.utils.password_utils import  verify_password
@@ -9,11 +11,22 @@ class LoginDialog(QDialog):
         super().__init__(parent)
         self.settings_service = settings
 
-        remember_me=self.settings_service.remember_me
-        if(remember_me):
-            self.isAlreadyAccept=True
-        else: 
-            self.isAlreadyAccept=False
+        # self.setWindowFlags(Qt.WindowType.Window)
+        # # або Qt.WindowType.Dialog | Qt.WindowType.FramelessWindowHint якщо хочеш без рамок
+
+        # # дозволяємо розтягування
+        # self.setSizeGripEnabled(True)
+        # self.setModal(True)
+
+        # self.setWindowFlags(Qt.WindowType.Window)
+        # screen = QGuiApplication.primaryScreen().geometry()
+        # self.setGeometry(screen)
+
+        # remember_me=self.settings_service.remember_me
+        # if(remember_me):
+        #     self.isAlreadyAccept=True
+        # else: 
+        #     self.isAlreadyAccept=False
         
         uic.loadUi("app/ui/login_dialog.ui", self) 
 
@@ -48,7 +61,7 @@ class LoginDialog(QDialog):
         
         if role == "Оператор":
             self.settings_service.role="operator"
-            self.accept() 
+            self.accept_window()
 
             return 
 
@@ -68,8 +81,12 @@ class LoginDialog(QDialog):
                 
 
                 self.settings_service.role="owner"
-                self.accept() 
+                self.accept_window()
             else:
                 # Пароль неправильний!
                 self.passwordIncorrectLabel.setVisible(True)
+
+    def accept_window(self):
+        # self.hide()
+        self.finished.emit(QDialog.DialogCode.Accepted)
 

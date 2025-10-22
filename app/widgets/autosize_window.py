@@ -2,6 +2,7 @@ from PyQt6.QtWidgets import (
  QGraphicsScene, QGraphicsView, QWidget, QApplication, QVBoxLayout
 )
 from PyQt6.QtGui import QPainter, QGuiApplication
+from PyQt6.QtCore import Qt
 
 
 def make_scalable(base_class):
@@ -10,8 +11,8 @@ def make_scalable(base_class):
     від будь-якого Qt-класу (QMainWindow, QDialog, QWidget і т.д.)
     """
     class ScalableWindow(base_class):
-        def __init__(self, widget, *args, **kwargs):
-            super().__init__(*args, **kwargs)
+        def __init__(self, widget):
+            super().__init__()
 
             self.ui_widget = widget
             self.base_width = self.ui_widget.width()
@@ -56,3 +57,14 @@ def make_scalable(base_class):
             self.view.scale(scale, scale)
 
     return ScalableWindow
+
+def make_window_stretched(widget):
+    
+    widget.setSizeGripEnabled(True)
+    widget.setModal(True)
+
+    widget.setWindowFlags(Qt.WindowType.Window)
+        # або Qt.WindowType.Dialog | Qt.WindowType.FramelessWindowHint якщо хочеш без рамок
+    screen = QGuiApplication.primaryScreen().geometry()
+    widget.setGeometry(screen)
+

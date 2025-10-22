@@ -1,7 +1,5 @@
-from PyQt6.QtWidgets import QDialog
+from PyQt6.QtWidgets import QDialog, QLineEdit
 from PyQt6 import uic
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QGuiApplication
 
 from app.services.settings_service import SettingsService
 from app.utils.password_utils import  verify_password
@@ -10,23 +8,6 @@ class LoginDialog(QDialog):
     def __init__(self, settings: SettingsService, parent=None):
         super().__init__(parent)
         self.settings_service = settings
-
-        # self.setWindowFlags(Qt.WindowType.Window)
-        # # або Qt.WindowType.Dialog | Qt.WindowType.FramelessWindowHint якщо хочеш без рамок
-
-        # # дозволяємо розтягування
-        # self.setSizeGripEnabled(True)
-        # self.setModal(True)
-
-        # self.setWindowFlags(Qt.WindowType.Window)
-        # screen = QGuiApplication.primaryScreen().geometry()
-        # self.setGeometry(screen)
-
-        # remember_me=self.settings_service.remember_me
-        # if(remember_me):
-        #     self.isAlreadyAccept=True
-        # else: 
-        #     self.isAlreadyAccept=False
         
         uic.loadUi("app/ui/login_dialog.ui", self) 
 
@@ -35,6 +16,8 @@ class LoginDialog(QDialog):
         self.roleComboBox.currentIndexChanged.connect(self.toggle_password_field)
         self.roleComboBox.setCurrentIndex(0 if role=="operator"  else 1 )  
         self.passwordLineEdit.textChanged.connect(self.change_password_status)
+
+        self.passwordHideBtn.clicked.connect(self.hide_unhide_password)
         
         self.loginButton.clicked.connect(self.handle_login)
 
@@ -55,6 +38,21 @@ class LoginDialog(QDialog):
         #Приховую Label зі статусом
 
         self.passwordIncorrectLabel.setVisible(False)
+
+    def hide_unhide_password(self):
+        status=self.passwordHideBtn.property("status")
+        print("Status:",status)
+        if(status=="hidden"):
+            self.passwordHideBtn.setProperty("status","unhidden")
+            self.passwordLineEdit.setEchoMode(QLineEdit.EchoMode.Normal)
+        else:
+            self.passwordHideBtn.setProperty("status","hidden")
+            self.passwordLineEdit.setEchoMode(QLineEdit.EchoMode.Password)
+        
+        self.passwordHideBtn.style().unpolish(self.passwordHideBtn)
+        self.passwordHideBtn.style().polish(self.passwordHideBtn)
+        self.passwordHideBtn.update()
+
 
     def handle_login(self):
         role = self.roleComboBox.currentText()

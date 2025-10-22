@@ -8,12 +8,9 @@ from PyQt6 import uic
 from qasync import asyncSlot
 from app.assets import resources_rc
 
-# Припускаємо, що ApiServer буде переписаний асинхронно, тому поки його не імпортуємо
 from app.services.api_server import ApiServer 
 from app.services.map_service import MapService, MapTypes
 from app.utils.test_data_provider import TestDataProvider
-
-# Імпортуємо ваш сервіс налаштувань
 from app.services.settings_service import SettingsService
 
 class MainWindow(QMainWindow):
@@ -34,9 +31,6 @@ class MainWindow(QMainWindow):
         # 2. Передаємо йому методи з MainWindow як callback-функції
         self.api_server.on_rf_data = self.handle_rf_data
         self.api_server.on_audio_alert = self.handle_audio_alert
-        
-        # 3. Запускаємо сервер як фонову асинхронну задачу.
-        # Він буде працювати в тому ж циклі подій, що й UI.
         
         self._setup_timers()
         self._setup_state_variables()
@@ -59,7 +53,7 @@ class MainWindow(QMainWindow):
         Цей метод має викликатися з 'main' ПІСЛЯ створення вікна.
         """
         print("Запуск фонових асинхронних задач (сервер та слухач)...")
-        #asyncio.create_task(self.api_server.run_server())
+        self.api_server.run_server()
         self.listen_for_pi_data()
         self.refresh_map()
 

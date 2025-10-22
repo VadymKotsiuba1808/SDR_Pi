@@ -23,7 +23,7 @@ class ApiServer:
         self.quart_app.route('/api/2_4_ghz', methods=['POST'])(self.receive_rf_data)
         self.quart_app.route('/api/audio_alarm', methods=['POST'])(self.receive_audio_alarm)
 
-    # @asyncSlot()
+    @asyncSlot()
     async def run_server(self):
         """Асинхронно запускає сервер."""
         host=self.settings_service.host

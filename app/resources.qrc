@@ -28,6 +28,8 @@
     <file alias="images/radar.png">assets/images/radar.png</file>
     <file alias="images/radar_green.png">assets/images/radar_green.png</file>
     <file alias="images/radar_red.png">assets/images/radar_red.png</file>
+    <file alias="icons/eye_off.svg">assets/icons/eye_off.svg</file>
+    <file alias="icons/eye_on.svg">assets/icons/eye_on.svg</file>
 </qresource>
 </RCC>
 

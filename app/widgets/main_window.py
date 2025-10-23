@@ -88,7 +88,7 @@ class MainWindow(QMainWindow):
     def _setup_state_variables(self):
         self.current_map_type_index = 0
         self.map_types = [MapTypes.ROAD, MapTypes.SATELLITE, MapTypes.TERRAIN, MapTypes.HYBRID]
-        self.current_coords = [49.83, 24.03]
+        self.current_coords = [49.43366, 31.71344]
 
     # --- Обробники даних, які тепер викликаються з асинхронних функцій ---
     def handle_rf_data(self, analyzed_results):

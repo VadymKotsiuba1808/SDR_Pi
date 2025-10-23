@@ -19,7 +19,7 @@ class SettingsService(QObject):
         "radar_max_radius": ("maps", int, 1000),
         "api_key": ("maps", str, ""),
         "base_url": ("maps", str, "https://maps.googleapis.com/maps/api/staticmap?"),
-        "scale": ("maps", float, 2.0),
+        "scale": ("maps", str, "@2x"),
         "zoom": ("maps", int, 15),
         "role": Setting("auth", str, "operator"),
         "owner_password_hash": Setting("auth", str, ""),

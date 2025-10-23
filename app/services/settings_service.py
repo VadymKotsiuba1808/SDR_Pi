@@ -21,9 +21,10 @@ class SettingsService(QObject):
         "base_url": ("maps", str, "https://maps.googleapis.com/maps/api/staticmap?"),
         "scale": ("maps", str, "@2x"),
         "zoom": ("maps", int, 15),
+        "img_format":Setting('maps', str, "png"),
         "role": Setting("auth", str, "operator"),
         "owner_password_hash": Setting("auth", str, ""),
-        "remember_me": Setting("auth", bool, False),
+        "remember_me": Setting("auth", bool, False)
     }
 
     def __init__(self):

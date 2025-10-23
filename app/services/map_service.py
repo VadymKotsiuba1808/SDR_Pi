@@ -38,9 +38,9 @@ class MapService:
         x_tile, y_tile = self.latlon_to_tile(lat, lon, zoom)
         return x_tile * self.TILE_SIZE, y_tile * self.TILE_SIZE
 
-    async def download_tile(self, zoom: int, x: int, y: int, map_type: str, api_key: str) -> Image.Image:
+    async def download_tile(self,base_url:str, zoom: int, x: int, y: int, map_type: str,format:str, api_key: str) -> Image.Image:
         """Завантаження одного тайла."""
-        url = f"https://api.maptiler.com/maps/{map_type}/{zoom}/{x}/{y}.png?key={api_key}"
+        url = f"{base_url}/{map_type}/{zoom}/{x}/{y}.{format.lower()}?key={api_key}"
         response = await self.client.get(url, timeout=10)
         response.raise_for_status()
         return Image.open(BytesIO(response.content))
@@ -50,11 +50,12 @@ class MapService:
         Асинхронно завантажує карту з тайлів навколо заданих координат.
         Повертає QPixmap або None у випадку помилки.
         """
-        print(coord)
+        base_url=self.settings_service.base_url
         lat, lon = coord
         api_key = self.settings_service.api_key
         zoom = self.settings_service.zoom
         size_px = int(self.settings_service.radar_max_radius)
+        format=str(self.settings_service.img_format)
         map_type_str = map_type.value
 
         if not api_key:
@@ -84,7 +85,10 @@ class MapService:
 
             for x in range(tile_x_min, tile_x_max + 1):
                 for y in range(tile_y_min, tile_y_max + 1):
-                    tasks.append(self.download_tile(zoom, x, y, map_type_str, api_key))
+                    
+                    tasks.append(self.download_tile(base_url=base_url, zoom=zoom, 
+                    x=x, y=y, map_type=map_type_str,format=format, api_key=api_key))
+
                     positions.append((x, y))
 
             tiles = await asyncio.gather(*tasks)
@@ -103,7 +107,7 @@ class MapService:
 
             # Конвертуємо у QPixmap
             buffer = BytesIO()
-            cropped.save(buffer, format="PNG")
+            cropped.save(buffer, format=format.upper())
             buffer.seek(0)
             pixmap = QPixmap()
             pixmap.loadFromData(buffer.read())

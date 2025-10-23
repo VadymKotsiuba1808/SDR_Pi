@@ -10,7 +10,7 @@ class TestDataProvider:
                 "ghz24_1": True, "ghz24_2": True, "ghz24_3": True, "ghz24_4": True,
                 "ghz58_1": True, "ghz58_2": True, "ghz58_3": True, "ghz58_4": True,
                 "rf_alert": True, "sound_alert": False,
-                "coord": [49.43366,  31.71344]  # Поточне розташування
+                "coord": [49.43440, 27.00543]  # Поточне розташування
             }
             ,
             {

@@ -45,7 +45,7 @@ class MapService:
         response.raise_for_status()
         return Image.open(BytesIO(response.content))
 
-    async def get_map_pixmap(self, coord: list, map_type: MapTypes) -> QPixmap | None:
+    async def get_map_pixmap(self, coord: list, map_type: MapTypes, add_width_k:float=1, add_height_k:float=1) -> QPixmap | None:
         """
         Асинхронно завантажує карту з тайлів навколо заданих координат.
         Повертає QPixmap або None у випадку помилки.
@@ -54,21 +54,25 @@ class MapService:
         lat, lon = coord
         api_key = self.settings_service.api_key
         zoom = self.settings_service.zoom
-        size_px = int(self.settings_service.radar_max_radius)
+        width_px = math.ceil(self.settings_service.radar_max_radius*add_width_k)
+        height_px = math.ceil(self.settings_service.radar_max_radius*add_height_k)
         format=str(self.settings_service.img_format)
         map_type_str = map_type.value
+
+        print("Width:", width_px)
 
         if not api_key:
             print("ПОМИЛКА: API ключ не вказано")
             return None
 
-        half_size = size_px // 2
+        half_width = width_px // 2
+        half_height=height_px//2
         center_px_x, center_px_y = self.tile_to_pixel_offset(lat, lon, zoom)
 
-        top_left_px_x = center_px_x - half_size
-        top_left_px_y = center_px_y - half_size
-        bottom_right_px_x = center_px_x + half_size
-        bottom_right_px_y = center_px_y + half_size
+        top_left_px_x = center_px_x - half_width
+        top_left_px_y = center_px_y - half_height
+        bottom_right_px_x = center_px_x + half_width
+        bottom_right_px_y = center_px_y + half_height
 
         tile_x_min = int(top_left_px_x // self.TILE_SIZE)
         tile_y_min = int(top_left_px_y // self.TILE_SIZE)
@@ -92,6 +96,7 @@ class MapService:
                     positions.append((x, y))
 
             tiles = await asyncio.gather(*tasks)
+            print("Count of tiles:",len(tasks))
 
             for img, (x, y) in zip(tiles, positions):
                 px = (x - tile_x_min) * self.TILE_SIZE
@@ -103,7 +108,7 @@ class MapService:
 
             offset_x = int(top_left_px_x - tile_x_min * self.TILE_SIZE)
             offset_y = int(top_left_px_y - tile_y_min * self.TILE_SIZE)
-            cropped = full_img.crop((offset_x, offset_y, offset_x + size_px, offset_y + size_px))
+            cropped = full_img.crop((offset_x, offset_y, offset_x + width_px, offset_y + height_px))
 
             # Конвертуємо у QPixmap
             buffer = BytesIO()

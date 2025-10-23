@@ -42,6 +42,9 @@ class MainWindow(QMainWindow):
         
         self.Radar_Red.hide()
 
+        self.add_width_k=self.map_background_label.width()/self.Radar.width()
+        self.add_height_k=self.map_background_label.height()/self.Radar.height()
+
         self.start_async_tasks()
         
         print("Головне вікно успішно ініціалізовано.")
@@ -88,7 +91,7 @@ class MainWindow(QMainWindow):
     def _setup_state_variables(self):
         self.current_map_type_index = 0
         self.map_types = [MapTypes.ROAD, MapTypes.SATELLITE, MapTypes.TERRAIN, MapTypes.HYBRID]
-        self.current_coords = [49.43366, 31.71344]
+        self.current_coords = [49.43440, 27.00543]
 
     # --- Обробники даних, які тепер викликаються з асинхронних функцій ---
     def handle_rf_data(self, analyzed_results):
@@ -167,7 +170,9 @@ class MainWindow(QMainWindow):
     async def refresh_map(self):
         print("Запускаю асинхронне завантаження карти...")
         map_type = self.map_types[self.current_map_type_index]
-        pixmap = await self.map_service.get_map_pixmap(self.current_coords, map_type)
+
+        pixmap = await self.map_service.get_map_pixmap(self.current_coords, map_type, self.add_width_k, self.add_height_k)
+
 
         if pixmap:
             print("Карта успішно завантажена.")

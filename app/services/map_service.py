@@ -2,7 +2,7 @@ import math
 import asyncio
 from io import BytesIO
 from enum import Enum
-from PIL import Image
+from PIL import Image, ImageDraw
 import httpx
 from PyQt6.QtGui import QPixmap
 
@@ -19,7 +19,7 @@ class MapTypes(Enum):
 class MapService:
     """Асинхронний сервіс, що завантажує карти з тайлів (MapTiler)."""
 
-    TILE_SIZE = 256
+    TILE_SIZE = 512
 
     def __init__(self, settings: MapServiceSettings):
         self.settings_service = settings
@@ -93,6 +93,9 @@ class MapService:
                 px = (x - tile_x_min) * self.TILE_SIZE
                 py = (y - tile_y_min) * self.TILE_SIZE
                 full_img.paste(img, (px, py))
+
+                draw = ImageDraw.Draw(full_img)
+                draw.rectangle([px, py, px + self.TILE_SIZE, py + self.TILE_SIZE], outline="red")
 
             offset_x = int(top_left_px_x - tile_x_min * self.TILE_SIZE)
             offset_y = int(top_left_px_y - tile_y_min * self.TILE_SIZE)

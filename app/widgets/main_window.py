@@ -244,12 +244,12 @@ class MainWindow(QMainWindow):
 
         if pixmap:
             print("Карта успішно завантажена.")
-            pixmap = pixmap.scaled(
-    self.map_background_label.width(),
-    self.map_background_label.height(),
-    Qt.AspectRatioMode.KeepAspectRatioByExpanding,  # або KeepAspectRatio
-    Qt.TransformationMode.SmoothTransformation
-)
+#             pixmap = pixmap.scaled(
+#     self.map_background_label.width(),
+#     self.map_background_label.height(),
+#     Qt.AspectRatioMode.KeepAspectRatioByExpanding,  # або KeepAspectRatio
+#     Qt.TransformationMode.SmoothTransformation
+# )
             self.map_background_label.setPixmap(pixmap)
         else:
             print("Не вдалося завантажити карту.")

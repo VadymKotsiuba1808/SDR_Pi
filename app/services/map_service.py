@@ -45,7 +45,7 @@ class MapService:
         response.raise_for_status()
         return Image.open(BytesIO(response.content))
 
-    async def get_map_pixmap(self, coord: list, map_type: MapTypes, add_width_k:float=1, add_height_k:float=1) -> QPixmap | None:
+    async def get_map_pixmap(self, coord: list, map_type: MapTypes,coord_offset_px:list=[0,0], add_sizes_k:list=[1,1],) -> QPixmap | None:
         """
         Асинхронно завантажує карту з тайлів навколо заданих координат.
         Повертає QPixmap або None у випадку помилки.
@@ -54,6 +54,7 @@ class MapService:
         lat, lon = coord
         api_key = self.settings_service.api_key
         zoom = self.settings_service.zoom
+        add_width_k, add_height_k=add_sizes_k
         width_px = math.ceil(self.settings_service.radar_max_radius*add_width_k)
         height_px = math.ceil(self.settings_service.radar_max_radius*add_height_k)
         format=str(self.settings_service.img_format)
@@ -67,7 +68,10 @@ class MapService:
 
         half_width = width_px // 2
         half_height=height_px//2
+        x_offset_px, y_offset_px=coord_offset_px
         center_px_x, center_px_y = self.tile_to_pixel_offset(lat, lon, zoom)
+        center_px_x+=x_offset_px
+        center_px_y+=y_offset_px
 
         top_left_px_x = center_px_x - half_width
         top_left_px_y = center_px_y - half_height

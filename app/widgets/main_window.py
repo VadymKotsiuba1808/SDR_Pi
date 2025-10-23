@@ -21,7 +21,6 @@ class MainWindow(QMainWindow):
         uic.loadUi("app/ui/main_window.ui", self)
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
         
-        # self.signal_analyzer = SignalAnalyzer()
         self.test_data_provider = TestDataProvider()
         
         self.map_service = MapService(settings=self.settings_service)
@@ -42,12 +41,34 @@ class MainWindow(QMainWindow):
         
         self.Radar_Red.hide()
 
-        self.add_width_k=self.map_background_label.width()/self.Radar.width()
-        self.add_height_k=self.map_background_label.height()/self.Radar.height()
+        add_width_k=self.map_background_label.width()/self.Radar.width()
+        add_height_k=self.map_background_label.height()/self.Radar.height()
+        self.add_sizes_map_k=[add_width_k,add_height_k]
+
+        map_background_center=[self.map_background_label.x()+self.map_background_label.width()/2, 
+                               self.map_background_label.y()+self.map_background_label.height()/2]
+        radar_center=[self.Radar.x()+self.Radar.width()/2, 
+                      self.Radar.y()+self.Radar.height()/2]
+
+        self.coord_offset_map_px=[(map_background_center[0]-radar_center[0])/2,
+                                  (map_background_center[1]-radar_center[1])/2
+                                  ]
 
         self.start_async_tasks()
         
         print("Головне вікно успішно ініціалізовано.")
+
+    # app/main_window.py
+
+    def showEvent(self, event):
+        """
+        Викликається, коли віджет показується. 
+        Використовуємо для первинного розрахунку геометрії.
+        """
+        super().showEvent(event)
+        # Робимо розрахунок при першому показі
+        self._update_map_geometry()
+        self.refresh_map()
 
     @asyncSlot()
     async def start_async_tasks(self):
@@ -58,7 +79,6 @@ class MainWindow(QMainWindow):
         print("Запуск фонових асинхронних задач (сервер та слухач)...")
         self.api_server.run_server()
         self.listen_for_pi_data()
-        self.refresh_map()
 
     @asyncSlot()
     async def listen_for_pi_data(self):
@@ -93,7 +113,53 @@ class MainWindow(QMainWindow):
         self.map_types = [MapTypes.ROAD, MapTypes.SATELLITE, MapTypes.TERRAIN, MapTypes.HYBRID]
         self.current_coords = [49.43440, 27.00543]
 
-    # --- Обробники даних, які тепер викликаються з асинхронних функцій ---
+    def _update_map_geometry(self):
+        """
+        Обчислює та оновлює коефіцієнти та зміщення 
+        на основі ПОТОЧНИХ розмірів віджетів.
+        (з розширеним логуванням)
+        """
+
+        # Перевірка, чи віджети вже завантажені
+        if not self.Radar.width() or not self.Radar.height():
+            return
+
+        # --- 1. Збір вхідних даних ---
+        radar_x = self.RadarFrame.x()
+        radar_y = self.RadarFrame.y()
+        radar_width = self.RadarFrame.width()
+        radar_height = self.RadarFrame.height()
+
+        map_bg_x = self.map_background_label.x()
+        map_bg_y = self.map_background_label.y()
+        map_bg_width = self.map_background_label.width()
+        map_bg_height = self.map_background_label.height()
+
+        # --- 2. Розрахунок коефіцієнтів ---
+        self.add_sizes_map_k = [
+            map_bg_width / radar_width,
+            map_bg_height / radar_height
+        ]
+
+        # --- 3. Розрахунок центрів ---
+        map_background_center = [
+            map_bg_x + map_bg_width / 2, 
+            map_bg_y + map_bg_height / 2
+        ]
+        
+        radar_center = [
+            radar_x + radar_width / 2, 
+            radar_y + radar_height / 2
+        ]
+
+        # --- 4. Розрахунок фінального зміщення ---
+        self.coord_offset_map_px = [
+            map_background_center[0] - radar_center[0],
+            map_background_center[1] - radar_center[1]
+        ]
+        
+
+    # --- Обробники даних, які викликаються з асинхронних функцій ---
     def handle_rf_data(self, analyzed_results):
         print(f"Слот отримав проаналізовані RF дані: {analyzed_results}")
         self.flush_radar_dots()
@@ -170,8 +236,10 @@ class MainWindow(QMainWindow):
     async def refresh_map(self):
         print("Запускаю асинхронне завантаження карти...")
         map_type = self.map_types[self.current_map_type_index]
+        
 
-        pixmap = await self.map_service.get_map_pixmap(self.current_coords, map_type, self.add_width_k, self.add_height_k)
+        pixmap = await self.map_service.get_map_pixmap(coord=self.current_coords, map_type=map_type,
+        coord_offset_px=self.coord_offset_map_px, add_sizes_k=self.add_sizes_map_k)
 
 
         if pixmap:

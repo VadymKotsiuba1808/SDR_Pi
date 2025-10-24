@@ -237,7 +237,7 @@ class MainWindow(QMainWindow):
 
             radar_radius_m = self.settings_service.radar_radius  # у метрах
             radar_max_radius_m = self.settings_service.radar_max_radius  # у метрах
-            radius_px = self.RadarFrame.width()  # піксельний розмір радара
+            radius_px = self.RadarFrame.width() / 2  # піксельний розмір радара
 
             scale_factor = (radius_px / current_radius_px) * (
                 radar_max_radius_m / radar_radius_m

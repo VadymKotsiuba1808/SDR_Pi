@@ -133,13 +133,9 @@ class MainWindow(QMainWindow):
             return
 
         # --- 1. Збір вхідних даних ---
-        radar_x = self.RadarFrame.x()
-        radar_y = self.RadarFrame.y()
         radar_width = self.RadarFrame.width()
         radar_height = self.RadarFrame.height()
 
-        map_bg_x = self.map_background_label.x()
-        map_bg_y = self.map_background_label.y()
         map_bg_width = self.map_background_label.width()
         map_bg_height = self.map_background_label.height()
 
@@ -147,20 +143,6 @@ class MainWindow(QMainWindow):
         self.add_sizes_map_k = [
             map_bg_width / radar_width,
             map_bg_height / radar_height,
-        ]
-
-        # --- 3. Розрахунок центрів ---
-        map_background_center = [
-            map_bg_x + map_bg_width / 2,
-            map_bg_y + map_bg_height / 2,
-        ]
-
-        radar_center = [radar_x + radar_width / 2, radar_y + radar_height / 2]
-
-        # --- 4. Розрахунок фінального зміщення ---
-        self.coord_offset_map_px = [
-            map_background_center[0] - radar_center[0],
-            map_background_center[1] - radar_center[1],
         ]
 
     # --- Обробники даних, які викликаються з асинхронних функцій ---
@@ -244,44 +226,47 @@ class MainWindow(QMainWindow):
         print("Запускаю асинхронне завантаження карти...")
         map_type = self.map_types[self.current_map_type_index]
 
-        pixmap = await self.map_service.get_map_pixmap(
+        pixmap, current_radius_px = await self.map_service.get_map_pixmap(
             coord=self.current_coords,
             map_type=map_type,
-            coord_offset_px=self.coord_offset_map_px,
             add_sizes_k=self.add_sizes_map_k,
         )
 
         if pixmap:
             print("Карта успішно завантажена.")
 
-            # # === Масштабування за radar_radius ===
-            # radar_radius_m = self.settings_service.radar_radius  # у метрах
-            # radar_max_radius_m = self.settings_service.radar_max_radius  # у метрах
-            # radius_px = self.RadarFrame.width()  # цільове значення в пікселях
+            radar_radius_m = self.settings_service.radar_radius  # у метрах
+            radar_max_radius_m = self.settings_service.radar_max_radius  # у метрах
+            radius_px = self.RadarFrame.width()  # піксельний розмір радара
 
-            # # Обчислимо реальний радіус карти в пікселях (у сирому QPixmap)
-            # meters_per_pixel = (
-            #     self.map_service.INITIAL_RESOLUTION
-            #     * math.cos(math.radians(self.current_coords[0]))
-            # ) / (2**self.settings_service.zoom)
-            # current_radius_px =
+            scale_factor = (radius_px / current_radius_px) * (
+                radar_max_radius_m / radar_radius_m
+            )
+            print(f"Масштабування карти: {scale_factor:.3f}x")
 
-            # # Тепер коефіцієнт масштабування:
-            # scale_factor = (radius_px / current_radius_px) * (
-            #     radar_max_radius_m / radar_radius_m
-            # )
+            scaled_pixmap = pixmap.scaled(
+                int(pixmap.width() * scale_factor),
+                int(pixmap.height() * scale_factor),
+                Qt.AspectRatioMode.KeepAspectRatioByExpanding,
+                Qt.TransformationMode.SmoothTransformation,
+            )
 
-            # print(f"Масштабування карти: {scale_factor:.3f}x")
+            # === Центрування карти ===
+            self.map_background_label.setPixmap(scaled_pixmap)
+            self.map_background_label.resize(scaled_pixmap.size())
 
-            # # Масштабуємо карту
-            # scaled_pixmap = pixmap.scaled(
-            #     int(pixmap.width() * scale_factor),
-            #     int(pixmap.height() * scale_factor),
-            #     Qt.AspectRatioMode.KeepAspectRatioByExpanding,
-            #     Qt.TransformationMode.SmoothTransformation,
-            # )
+            # Отримуємо центр радара
+            radar_center = self.RadarFrame.geometry().center()
 
-            self.map_background_label.setPixmap(pixmap)
+            # Отримуємо центр зображення
+            pixmap_center = self.map_background_label.rect().center()
+
+            # Розраховуємо нову позицію для QLabel, щоб центри співпали
+            new_x = radar_center.x() - pixmap_center.x()
+            new_y = radar_center.y() - pixmap_center.y()
+
+            # Переміщуємо фон карти
+            self.map_background_label.move(new_x, new_y)
 
         else:
             print("Не вдалося завантажити карту.")

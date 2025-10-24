@@ -8,8 +8,6 @@ from PyQt6.QtGui import QPixmap
 
 from app.protocols import MapServiceSettings
 
-# from app.utils.map_sizes_converter import metters_to_pixels
-
 
 class MapTypes(Enum):
     ROAD = "streets-v2"
@@ -28,10 +26,12 @@ class MapService:
         self.client = httpx.AsyncClient()
 
     def metters_to_pixels(self, distance_m: int, zoom: int, lat: float):
-        INITIAL_RESOLUTION = 156543.03392
+        INITIAL_RESOLUTION = 156543.03392  # для тайла 256 px
         meters_per_pixel = (INITIAL_RESOLUTION * math.cos(math.radians(lat))) / (
             2**zoom
         )
+        # Коригуємо на розмір тайла (якщо він не 256)
+        meters_per_pixel *= 256 / self.TILE_SIZE
         return distance_m / meters_per_pixel
 
     def latlon_to_tile(self, lat: float, lon: float, zoom: int):
@@ -71,7 +71,6 @@ class MapService:
         self,
         coord: list,
         map_type: MapTypes,
-        coord_offset_px: list = [0, 0],
         add_sizes_k: list = [1, 1],
     ) -> QPixmap | None:
         """
@@ -85,7 +84,7 @@ class MapService:
         radar_max_radius_m = self.settings_service.radar_max_radius
         add_width_k, add_height_k = add_sizes_k
 
-        radius_px = self.metters_to_pixels(radar_max_radius_m, zoom, lat)  # у метрах
+        radius_px = self.metters_to_pixels(radar_max_radius_m, zoom, lat)
 
         width_px = math.ceil(radius_px * 2 * add_width_k)
         height_px = math.ceil(radius_px * 2 * add_height_k)
@@ -100,10 +99,7 @@ class MapService:
 
         half_width = width_px // 2
         half_height = height_px // 2
-        x_offset_px, y_offset_px = coord_offset_px
         center_px_x, center_px_y = self.tile_to_pixel_offset(lat, lon, zoom)
-        center_px_x += x_offset_px
-        center_px_y += y_offset_px
 
         top_left_px_x = center_px_x - half_width
         top_left_px_y = center_px_y - half_height
@@ -165,7 +161,7 @@ class MapService:
             buffer.seek(0)
             pixmap = QPixmap()
             pixmap.loadFromData(buffer.read())
-            return pixmap
+            return [pixmap, radius_px]
 
         except Exception as e:
             print(f"Помилка завантаження карти: {e}")

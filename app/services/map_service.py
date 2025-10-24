@@ -82,6 +82,7 @@ class MapService:
         api_key = self.settings_service.api_key
         zoom = self.settings_service.zoom
         radar_max_radius_m = self.settings_service.radar_max_radius
+
         add_width_k, add_height_k = add_sizes_k
 
         radius_px = self.metters_to_pixels(radar_max_radius_m, zoom, lat)
@@ -115,6 +116,7 @@ class MapService:
         height = (tile_y_max - tile_y_min + 1) * self.TILE_SIZE
         full_img = Image.new("RGB", (width, height))
 
+        tile_divider_enabled = self.settings_service.tile_divider_enabled
         try:
             tasks = []
             positions = []
@@ -144,10 +146,12 @@ class MapService:
                 py = (y - tile_y_min) * self.TILE_SIZE
                 full_img.paste(img, (px, py))
 
-                draw = ImageDraw.Draw(full_img)
-                draw.rectangle(
-                    [px, py, px + self.TILE_SIZE, py + self.TILE_SIZE], outline="red"
-                )
+                if tile_divider_enabled == True:
+                    draw = ImageDraw.Draw(full_img)
+                    draw.rectangle(
+                        [px, py, px + self.TILE_SIZE, py + self.TILE_SIZE],
+                        outline="red",
+                    )
 
             offset_x = int(top_left_px_x - tile_x_min * self.TILE_SIZE)
             offset_y = int(top_left_px_y - tile_y_min * self.TILE_SIZE)

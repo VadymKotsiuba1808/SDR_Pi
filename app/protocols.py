@@ -1,12 +1,16 @@
 from typing import Protocol
 
+
 class MapServiceSettings(Protocol):
-    api_key:str
-    base_url:str
-    radar_max_radius:int
-    scale:float
-    zoom:int
+    api_key: str
+    base_url: str
+    radar_max_radius: int
+    scale: float
+    zoom: int
+    img_format: str
+    tile_divider_enabled: bool
+
 
 class ApiServerSettings(Protocol):
-    host:str
-    port:int
+    host: str
+    port: int

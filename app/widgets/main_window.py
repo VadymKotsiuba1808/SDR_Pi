@@ -21,6 +21,8 @@ class MainWindow(QMainWindow):
         uic.loadUi("app/ui/main_window.ui", self)
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
 
+        self.is_warning = False
+
         self.test_data_provider = TestDataProvider()
 
         self.map_service = MapService(settings=self.settings_service)
@@ -181,9 +183,16 @@ class MainWindow(QMainWindow):
 
         # Малюємо градієнтний промінь
         gradient = QConicalGradient(center, -angle)
-        gradient.setColorAt(0.0, QColor(40, 215, 30, 90))
-        gradient.setColorAt(0.25, QColor(30, 180, 30, 50))
-        gradient.setColorAt(1.0, QColor(30, 100, 30, 10))
+
+        if self.is_warning:
+            gradient.setColorAt(0.0, QColor(215, 40, 30, 100))
+            gradient.setColorAt(0.25, QColor(180, 30, 30, 70))
+            gradient.setColorAt(1.0, QColor(100, 30, 30, 20))
+
+        else:
+            gradient.setColorAt(0.0, QColor(40, 215, 30, 90))
+            gradient.setColorAt(0.25, QColor(30, 180, 30, 50))
+            gradient.setColorAt(1.0, QColor(30, 100, 30, 10))
 
         painter.setBrush(gradient)
         painter.setPen(Qt.PenStyle.NoPen)
@@ -197,6 +206,7 @@ class MainWindow(QMainWindow):
 
     def create_radar_dot(self, angle, distance):
         pixmap = self.Radar.pixmap()
+        self.radar_background = self.Radar.pixmap()
         if not pixmap or pixmap.isNull():
             return
 
@@ -214,6 +224,15 @@ class MainWindow(QMainWindow):
         painter.drawPoint(int(x), int(y))
         painter.end()
         self.Radar.setPixmap(pixmap)
+
+    def clear_radar_dots(self):
+        """Видаляє намальовані точки з радара, відновлюючи фон."""
+        if not hasattr(self, "radar_background"):
+            # Якщо фон ще не збережений — збережи його перед першим малюванням точки
+            return
+
+        clean_pixmap = self.radar_background.copy()
+        self.Radar.setPixmap(clean_pixmap)
 
     # --- Асинхронні слоти (залишаються без змін) ---
     @asyncSlot()
@@ -303,7 +322,14 @@ class MainWindow(QMainWindow):
         await self.refresh_map()
 
     def test_draw_dot(self):
-        self.create_radar_dot(45, 200)
+
+        if self.is_warning == True:
+            self.clear_radar_dots()
+            self.is_warning = False
+
+        else:
+            self.create_radar_dot(45, 200)
+            self.is_warning = True
 
     def closeEvent(self, event):
         print("Закриття програми...")

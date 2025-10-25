@@ -2,10 +2,12 @@ import os
 from PyQt6.QtCore import QObject, pyqtSignal, QSettings, QFileSystemWatcher
 from typing import NamedTuple, Any
 
+
 class Setting(NamedTuple):
     section: str
     typ: type
     default: Any
+
 
 class SettingsService(QObject):
 
@@ -18,17 +20,21 @@ class SettingsService(QObject):
         "radar_radius": ("maps", int, 500),
         "radar_max_radius": ("maps", int, 1000),
         "api_key": ("maps", str, ""),
-        "base_url": ("maps", str, "https://maps.googleapis.com/maps/api/staticmap?"),
-        "scale": ("maps", float, 2.0),
+        "base_url": ("maps", str, "https://api.maptiler.com/maps"),
+        "scale": ("maps", str, "@2x"),
         "zoom": ("maps", int, 15),
+        "img_format": Setting("maps", str, "png"),
         "role": Setting("auth", str, "operator"),
         "owner_password_hash": Setting("auth", str, ""),
         "remember_me": Setting("auth", bool, False),
+        "tile_divider_enabled": Setting("dev", bool, False),
     }
 
     def __init__(self):
         super().__init__()
-        file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../config.ini"))
+        file_path = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../config.ini")
+        )
 
         QSettings.setDefaultFormat(QSettings.Format.IniFormat)
         self._settings = QSettings(file_path, QSettings.Format.IniFormat)

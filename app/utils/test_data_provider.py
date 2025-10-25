@@ -10,6 +10,14 @@ class TestDataProvider:
                 "ghz24_1": True, "ghz24_2": True, "ghz24_3": True, "ghz24_4": True,
                 "ghz58_1": True, "ghz58_2": True, "ghz58_3": True, "ghz58_4": True,
                 "rf_alert": True, "sound_alert": False,
+                "coord": [49.43289934066111, 26.999101758965445]  # Атб 
+            }
+            ,
+            {
+                "gps_level": 80, "wifi_level": 65,
+                "ghz24_1": True, "ghz24_2": True, "ghz24_3": True, "ghz24_4": True,
+                "ghz58_1": True, "ghz58_2": True, "ghz58_3": True, "ghz58_4": True,
+                "rf_alert": True, "sound_alert": False,
                 "coord": [49.8349462, 24.0310315]  # Львів
             },
             {

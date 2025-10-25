@@ -273,6 +273,8 @@ class MainWindow(QMainWindow):
 
             # Переміщуємо фон карти
             self.map_background_label.move(new_x, new_y)
+        else:
+            print("При зміні радіусу карта не буда знайдена.")
 
     @asyncSlot()
     async def change_map_type(self):

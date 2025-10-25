@@ -39,25 +39,15 @@ class MainWindow(QMainWindow):
         self.homeButton.clicked.connect(self.update_status_bar_with_test_data)
         self.menuButton.clicked.connect(self.test_draw_dot)
 
+        self.saveRadarSettingsBtn.clicked.connect(self.handle_radar_radius_change)
+
+        radar_max_radius = self.settings_service.radar_max_radius
+        self.radarRadiusSpinbox.setRange(1, radar_max_radius)
+
+        radar_radius = self.settings_service.radar_radius
+        self.radarRadiusSpinbox.setValue(radar_radius)
+
         self.Radar_Red.hide()
-
-        add_width_k = self.map_background_label.width() / self.Radar.width()
-        add_height_k = self.map_background_label.height() / self.Radar.height()
-        self.add_sizes_map_k = [add_width_k, add_height_k]
-
-        map_background_center = [
-            self.map_background_label.x() + self.map_background_label.width() / 2,
-            self.map_background_label.y() + self.map_background_label.height() / 2,
-        ]
-        radar_center = [
-            self.Radar.x() + self.Radar.width() / 2,
-            self.Radar.y() + self.Radar.height() / 2,
-        ]
-
-        self.coord_offset_map_px = [
-            (map_background_center[0] - radar_center[0]) / 2,
-            (map_background_center[1] - radar_center[1]) / 2,
-        ]
 
         self.start_async_tasks()
 
@@ -159,6 +149,11 @@ class MainWindow(QMainWindow):
         print(f"Слот отримав звукову тривогу: {status}")
         self.Sound_alert.setProperty("alert", status)
 
+    def handle_radar_radius_change(self):
+        new_radar_radius = self.radarRadiusSpinbox.value()
+        self.settings_service.radar_radius = new_radar_radius
+        self.scale_map()
+
     # --- Методи для оновлення UI (залишаються без змін) ---
     def update_time_and_date(self):
         current_datetime = QDateTime.currentDateTime()
@@ -234,7 +229,18 @@ class MainWindow(QMainWindow):
 
         if pixmap:
             print("Карта успішно завантажена.")
+            self.current_map = pixmap
+            self.current_map_radius = current_radius_px
 
+            self.scale_map()
+
+        else:
+            print("Не вдалося завантажити карту.")
+
+    def scale_map(self):
+        pixmap = self.current_map
+        current_radius_px = self.current_map_radius
+        if pixmap:
             radar_radius_m = self.settings_service.radar_radius  # у метрах
             radar_max_radius_m = self.settings_service.radar_max_radius  # у метрах
             radius_px = self.RadarFrame.width() / 2  # піксельний розмір радара
@@ -267,9 +273,6 @@ class MainWindow(QMainWindow):
 
             # Переміщуємо фон карти
             self.map_background_label.move(new_x, new_y)
-
-        else:
-            print("Не вдалося завантажити карту.")
 
     @asyncSlot()
     async def change_map_type(self):

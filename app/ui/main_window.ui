@@ -1430,7 +1430,7 @@ QPushButton[enabled=&quot;false&quot;]{
      <property name="styleSheet">
       <string notr="true">QPushButton#addMapButton{
 	border-image: url(:/images/addMapBtn_off.png) stretch stretch;
-	background-color:#000;
+	background-color:rgba(0,0,0,0.8)
 }
 
 QPushButton#addMapButton:pressed{

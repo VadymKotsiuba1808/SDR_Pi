@@ -1,6 +1,6 @@
 import math
 import asyncio
-from PyQt6.QtWidgets import QMainWindow, QApplication
+from PyQt6.QtWidgets import QMainWindow, QApplication, QDialog
 from PyQt6.QtCore import QTimer, QDateTime, Qt, QPointF
 from PyQt6.QtGui import QPixmap, QConicalGradient, QPainter, QColor, QPen
 from PyQt6 import uic
@@ -11,6 +11,8 @@ from app.services.api_server import ApiServer
 from app.services.map_service import MapService, MapTypes
 from app.utils.test_data_provider import TestDataProvider
 from app.services.settings_service import SettingsService
+from app.widgets.set_map_window import SetMapWindow
+from app.widgets.autosize_window import make_scalable
 
 
 class MainWindow(QMainWindow):
@@ -39,6 +41,7 @@ class MainWindow(QMainWindow):
         self.mapLayoutButton.clicked.connect(self.change_map_type)
         self.screenSaveButton.clicked.connect(self.take_screenshot)
         self.homeButton.clicked.connect(self.update_status_bar_with_test_data)
+        self.addMapButton.clicked.connect(self.open_set_map_dialog)
         self.menuButton.clicked.connect(self.test_draw_dot)
 
         self.saveRadarSettingsBtn.clicked.connect(self.handle_radar_radius_change)
@@ -155,6 +158,14 @@ class MainWindow(QMainWindow):
         new_radar_radius = self.radarRadiusSpinbox.value()
         self.settings_service.radar_radius = new_radar_radius
         self.scale_map()
+
+    def open_set_map_dialog(self):
+        self.set_map_window = SetMapWindow(settings=self.settings_service)
+        ScalableDialog = make_scalable(QMainWindow)
+        self.scalable_set_map_window = ScalableDialog(self.set_map_window)
+        # print("I open")
+
+        self.scalable_set_map_window.showFullScreen()
 
     # --- Методи для оновлення UI (залишаються без змін) ---
     def update_time_and_date(self):

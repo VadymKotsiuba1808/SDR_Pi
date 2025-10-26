@@ -11,7 +11,7 @@ from app.services.api_server import ApiServer
 from app.services.map_service import MapService, MapTypes
 from app.utils.test_data_provider import TestDataProvider
 from app.services.settings_service import SettingsService
-from app.widgets.set_map_window import SetMapWindow
+from app.widgets.set_map_dialog import SetMapDialog
 from app.widgets.autosize_window import make_scalable
 
 
@@ -160,12 +160,46 @@ class MainWindow(QMainWindow):
         self.scale_map()
 
     def open_set_map_dialog(self):
-        self.set_map_window = SetMapWindow(settings=self.settings_service)
-        ScalableDialog = make_scalable(QMainWindow)
-        self.scalable_set_map_window = ScalableDialog(self.set_map_window)
-        # print("I open")
 
-        self.scalable_set_map_window.showFullScreen()
+        # 1. Створюємо екземпляр діалогу
+        self.dialog = SetMapDialog(
+            settings=self.settings_service, add_sizes_map_k=self.add_sizes_map_k
+        )
+
+        # 2. "Загортаємо" його (якщо make_scalable приймає QDialog)
+        ScalableDialog = make_scalable(QDialog)
+        self.scalable_dialog = ScalableDialog(widget_to_scale=self.dialog)
+
+        # 3. Використовуємо .exec() для блокуючого виклику
+        # .exec() покаже вікно і ЗАЧЕКАЄ, доки користувач натисне "Зберегти" або "Скасувати"
+        result = self.scalable_dialog.exec()
+
+        # 4. Перевіряємо результат
+        if result == QDialog.DialogCode.Accepted:
+            # Якщо користувач натиснув "Зберегти" і валідація пройшла:
+
+            # 5. Отримуємо дані
+            settings_data = self.scalable_dialog.get_settings()
+
+            if self.current_map:
+                self.current_map = settings_data["pixmap"]
+                print("Width:", self.current_map.width())
+                radar_max_radius = self.settings_service.radar_max_radius
+                self.current_map_radius = (
+                    settings_data["px_per_meter"] * radar_max_radius
+                )
+                self.scale_map()
+
+            print("ГОЛОВНЕ ВІКНО: Отримано налаштування!", settings_data)
+            # ... тут ваш код обробки 'settings_data' ...
+            # Наприклад: self.my_map_pixmap = settings_data["pixmap"]
+
+        else:
+            # Якщо користувач натиснув "Скасувати" або закрив вікно
+            print("ГОЛОВНЕ ВІКНО: Налаштування скасовано.")
+
+        # 6. Очищуємо посилання
+        self.scalable_dialog = None
 
     # --- Методи для оновлення UI (залишаються без змін) ---
     def update_time_and_date(self):

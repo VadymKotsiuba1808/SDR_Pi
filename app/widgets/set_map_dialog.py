@@ -1,27 +1,32 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog, QMessageBox
+
+# Додаємо QDialog
+from PyQt6.QtWidgets import QApplication, QDialog, QFileDialog, QMessageBox
 from PyQt6.QtGui import QPixmap, QPainter
-from PyQt6.QtCore import Qt, QPoint, QEvent, QPointF, pyqtSignal
+from PyQt6.QtCore import Qt, QPoint, QEvent, QPointF
 from PyQt6 import uic
 
 
-class SetMapWindow(QMainWindow):
-    # Сигнал, що відправляє словник з налаштуваннями при збереженні
-    settings_saved = pyqtSignal(dict)
+# Змінюємо QMainWindow на QDialog
+class SetMapDialog(QDialog):
 
-    def __init__(self, settings, parent=None):
+    # Сигнал settings_saved БІЛЬШЕ НЕ ПОТРІБЕН
+
+    def __init__(self, settings, add_sizes_map_k=[1, 1], parent=None):
         super().__init__(parent)
-        print("[Init] Ініціалізація SetMapWindow...")
+        print("[Init] Ініціалізація SetMapDialog...")
 
         # Зберігаємо цільовий радіус радару
         self.settings_service = settings
+        self.add_sizes_map_k = add_sizes_map_k
 
+        # Завантажуємо новий .ui файл
         uic.loadUi("app/ui/set_map_window.ui", self)
         print("[Init] UI завантажено")
 
         # Внутрішні змінні стану
         self.original_pixmap = None
-        self.image_path = ""  # Зберігаємо шлях для перевірки
+        self.image_path = ""
         self.center_point_f = QPointF()
         self.current_scale = 1.0
         self.current_offset = QPointF()
@@ -41,7 +46,9 @@ class SetMapWindow(QMainWindow):
         self.mapDisplayLabel.installEventFilter(self)
         self.centerCircleLabel.installEventFilter(self)
         self.centerPointIconLabel.installEventFilter(self)
-        self.settings = {}  # Словник для збереження результатів
+
+        # Це буде словник, який ми повернемо
+        self.result_settings = {}
         print("[Init] Ініціалізацію завершено\n")
 
     def connect_signals(self):
@@ -51,16 +58,17 @@ class SetMapWindow(QMainWindow):
         self.zoomOutButton.clicked.connect(self.on_zoom_out)
         self.scaleSpinBox.valueChanged.connect(self.on_scale_changed)
 
-        # Змінено з accept/reject на кастомні слоти
-        self.saveButton.clicked.connect(self.on_save)
-        self.cancelButton.clicked.connect(self.on_cancel)
+        # Підключаємо кнопки до вбудованих слотів QDialog
+        # (Хоча це вже є в .ui, але так надійніше)
+        self.saveButton.clicked.connect(self.save)
+        self.cancelButton.clicked.connect(self.cancel)
 
     # --- Обробники подій ---
 
     def on_select_image(self):
         print("[on_select_image] Відкривається діалог вибору зображення...")
         file_path, _ = QFileDialog.getOpenFileName(
-            None,
+            None,  # Використовуємо None для уникнення проблем з модальністю
             "Виберіть зображення карти",
             "",
             "Зображення (*.png *.jpg *.bmp *.jpeg)",
@@ -132,7 +140,7 @@ class SetMapWindow(QMainWindow):
             return
 
         self.current_scale = self.scaleSpinBox.value() / 100.0
-        print(f"[update_map_display] Поточний масштаб: {self.current_scale}")
+        # ... (решта коду update_map_display залишається такою ж)
 
         scaled_pixmap = self.original_pixmap.scaled(
             int(self.original_pixmap.width() * self.current_scale),
@@ -140,13 +148,9 @@ class SetMapWindow(QMainWindow):
             Qt.AspectRatioMode.KeepAspectRatio,
             Qt.TransformationMode.SmoothTransformation,
         )
-        print(
-            f"[update_map_display] Новий розмір зображення: {scaled_pixmap.width()}x{scaled_pixmap.height()}"
-        )
 
         scaled_center_point_f = self.center_point_f * self.current_scale
         self.current_offset = self.screen_center - scaled_center_point_f
-        print(f"[update_map_display] Поточний offset: {self.current_offset}")
 
         display_pixmap = QPixmap(self.mapDisplayLabel.size())
         display_pixmap.fill(Qt.GlobalColor.transparent)
@@ -193,85 +197,98 @@ class SetMapWindow(QMainWindow):
 
         return super().eventFilter(source, event)
 
-    def on_save(self):
+    def save(self):
         """
-        Слот для кнопки "Зберегти". Замінює логіку accept().
+        Цей метод тепер автоматично викликається при натисканні 'saveButton'.
         """
-        print("[on_save] Підтвердження та збереження налаштувань...")
+        print("[accept] Підтвердження та збереження налаштувань...")
         if not self.original_pixmap or not self.image_path:
-            print("[on_save] ПОМИЛКА: зображення не вибрано")
+            print("[accept] ПОМИЛКА: зображення не вибрано")
             QMessageBox.warning(None, "Помилка", "Зображення не вибрано!")
-            return
+            return  # Важливо: не викликаємо super().accept()
 
         screen_circle_radius_px = 500.0
         user_defined_radius_m = self.radiusMetersSpinBox.value()
         current_view_scale = self.scaleSpinBox.value() / 100.0
 
         print(
-            f"[on_save] Радіус на екрані: {screen_circle_radius_px}px = {user_defined_radius_m}м"
+            f"[accept] Радіус на екрані: {screen_circle_radius_px}px = {user_defined_radius_m}м"
         )
-        print(f"[on_save] Поточний масштаб перегляду: {current_view_scale}")
+        print(f"[accept] Поточний масштаб перегляду: {current_view_scale}")
 
         if user_defined_radius_m <= 0 or current_view_scale <= 0:
-            print("[on_save] ПОМИЛКА: некоректні значення радіуса або масштабу")
+            print("[accept] ПОМИЛКА: некоректні значення радіуса або масштабу")
             QMessageBox.warning(
                 None, "Помилка", "Радіус в метрах та масштаб мають бути > 0."
             )
-            return
+            return  # Не викликаємо super().accept()
 
         displayed_px_per_meter = screen_circle_radius_px / user_defined_radius_m
         original_px_per_meter = displayed_px_per_meter / current_view_scale
-        print(f"[on_save] Пікселів на метр (оригінал): {original_px_per_meter}")
+        print(f"[accept] Пікселів на метр (оригінал): {original_px_per_meter}")
 
         target_diameter_m = self.settings_service.radar_max_radius * 2.0
         target_size_px = int(round(target_diameter_m * original_px_per_meter))
         print(
-            f"[on_save] Цільовий розмір карти: {target_size_px}px ({target_diameter_m}м)"
+            f"[accept] Цільовий розмір карти: {target_size_px}px ({target_diameter_m}м)"
         )
 
         if target_size_px <= 0:
-            print("[on_save] ПОМИЛКА: розраховано 0 або менше")
+            print("[accept] ПОМИЛКА: розраховано 0 або менше")
             QMessageBox.warning(
                 None,
                 "Помилка розрахунку",
                 f"Цільовий розмір 0 або менше (розраховано: {target_size_px}px).",
             )
-            return
+            return  # Не викликаємо super().accept()
 
-        final_pixmap = QPixmap(target_size_px, target_size_px)
+        final_pixmap = QPixmap(
+            int(target_size_px * self.add_sizes_map_k[0]),
+            int(target_size_px * self.add_sizes_map_k[1]),
+        )
         final_pixmap.fill(Qt.GlobalColor.transparent)
-        print("[on_save] Створено фінальну карту")
+        print("[accept] Створено фінальну карту")
 
         final_center_f = QPointF(
             final_pixmap.width() / 2.0, final_pixmap.height() / 2.0
         )
         draw_pos_f = final_center_f - self.center_point_f
-        print(f"[on_save] Малювання оригіналу з позиції {draw_pos_f}")
+        print(f"[accept] Малювання оригіналу з позиції {draw_pos_f}")
 
         painter = QPainter(final_pixmap)
         painter.drawPixmap(draw_pos_f, self.original_pixmap)
         painter.end()
-        print("[on_save] Малювання завершено")
+        print("[accept] Малювання завершено")
 
-        self.settings = {
+        # Зберігаємо налаштування у змінну класу
+        self.result_settings = {
             "pixmap": final_pixmap,
             "px_per_meter": original_px_per_meter,
-            "total_diameter_meters": target_diameter_m,
-            "center_px_point": final_center_f.toPoint(),
+            # "total_diameter_meters": target_diameter_m,
+            # "center_px_point": final_center_f.toPoint(),
         }
 
-        print(f"[on_save] Збережено налаштування: {self.settings}\n")
+        print(f"[accept] Збережено налаштування: {self.result_settings}\n")
 
-        # Відправляємо сигнал з даними
-        self.settings_saved.emit(self.settings)
-        print(f"[on_save] Сигнал settings_saved відправлено")
+        # Всі перевірки пройдено. Викликаємо батьківський метод,
+        # щоб закрити вікно і повернути "Accepted".
+        self.accept()
 
-        # Закриваємо вікно
-        self.close()
-
-    def on_cancel(self):
+    def cancel(self):
         """
-        Слот для кнопки "Скасувати". Замінює логіку reject().
+        Цей метод автоматично викликається при натисканні 'cancelButton'.
         """
-        print("[on_cancel] Налаштування скасовано")
-        self.close()
+        print("[reject] Налаштування скасовано")
+
+        # Очищуємо результат на випадок, якщо щось було
+        self.result_settings = {}
+
+        # Викликаємо батьківський метод, щоб закрити вікно
+        # і повернути "Rejected".
+        self.reject()
+
+    def get_settings(self):
+        """
+        Новий метод: Головне вікно викликає це, щоб отримати результат.
+        """
+        return self.result_settings

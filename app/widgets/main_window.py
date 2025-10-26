@@ -108,12 +108,7 @@ class MainWindow(QMainWindow):
 
     def _setup_state_variables(self):
         self.current_map_type_index = 0
-        self.map_types = [
-            MapTypes.ROAD,
-            MapTypes.SATELLITE,
-            MapTypes.TERRAIN,
-            MapTypes.HYBRID,
-        ]
+        self.map_types = [e for e in MapTypes]
         self.current_coords = [49.43440, 27.00543]
 
     def _update_map_geometry(self):
@@ -379,17 +374,4 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):
         print("Закриття програми...")
 
-        # Фоново зупиняємо сервер і таски
-        # async def shutdown():
-        #     await self.api_server.stop_server()
-        #     # for task in getattr(self, "async_tasks", []):
-        #     #     task.cancel()
-        #     # if hasattr(self, "api_server"):
-        #     #     await self.api_server.stop_server()
-        #     # print("Сервер зупинено. Завершення програми...")
-
-        # # Створюємо таску, не чекаємо її завершення
-        # asyncio.create_task(shutdown())
-
-        # self.api_server.stop_server()
-        event.accept()  #
+        event.accept()

@@ -1,116 +1,116 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
-        <class>MapSettingsDialog</class>
-        <widget class="QDialog" name="MapSettingsDialog">
-                <property name="geometry">
-                        <rect>
-                                <x>0</x>
-                                <y>0</y>
-                                <width>1920</width>
-                                <height>1080</height>
-                        </rect>
-                </property>
-                <property name="minimumSize">
-                        <size>
-                                <width>1920</width>
-                                <height>1080</height>
-                        </size>
-                </property>
-                <property name="maximumSize">
-                        <size>
-                                <width>1920</width>
-                                <height>1080</height>
-                        </size>
-                </property>
-                <property name="windowTitle">
-                        <string>Налаштування власної карти</string>
-                </property>
-                <property name="styleSheet">
-                        <string notr="true">background-color:rgba(0, 47, 0, 139);</string>
-                </property>
-                <property name="modal">
-                        <bool>true</bool>
-                </property>
-                <widget class="QLabel" name="mapDisplayLabel">
-                        <property name="geometry">
-                                <rect>
-                                        <x>0</x>
-                                        <y>0</y>
-                                        <width>1920</width>
-                                        <height>1080</height>
-                                </rect>
-                        </property>
-                        <property name="styleSheet">
-                                <string notr="true">background-color:rgba(0, 47, 0, 139);</string>
-                        </property>
-                        <property name="text">
-                                <string/>
-                        </property>
-                        <property name="alignment">
-                                <set>Qt::AlignmentFlag::AlignCenter</set>
-                        </property>
-                </widget>
-                <widget class="QLabel" name="centerCircleLabel">
-                        <property name="geometry">
-                                <rect>
-                                        <x>460</x>
-                                        <y>40</y>
-                                        <width>1000</width>
-                                        <height>1000</height>
-                                </rect>
-                        </property>
-                        <property name="styleSheet">
-                                <string notr="true">background-color: transparent;
+ <class>MapSettingsDialog</class>
+ <widget class="QDialog" name="MapSettingsDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1920</width>
+    <height>1080</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>1920</width>
+    <height>1080</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>1920</width>
+    <height>1080</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Налаштування власної карти</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">background-color:rgba(0, 47, 0, 139);</string>
+  </property>
+  <property name="modal">
+   <bool>true</bool>
+  </property>
+  <widget class="QLabel" name="mapDisplayLabel">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1920</width>
+     <height>1080</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color:rgba(0, 47, 0, 139);</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignmentFlag::AlignCenter</set>
+   </property>
+  </widget>
+  <widget class="QLabel" name="centerCircleLabel">
+   <property name="geometry">
+    <rect>
+     <x>277</x>
+     <y>40</y>
+     <width>1000</width>
+     <height>1000</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color: transparent;
 border: 4px dashed #882222; 
 border-radius: 500px; 
 font-size:48px;</string>
-                        </property>
-                        <property name="text">
-                                <string/>
-                        </property>
-                </widget>
-                <widget class="QFrame" name="controlPanelFrame">
-                        <property name="geometry">
-                                <rect>
-                                        <x>1550</x>
-                                        <y>95</y>
-                                        <width>367</width>
-                                        <height>701</height>
-                                </rect>
-                        </property>
-                        <property name="styleSheet">
-                                <string notr="true">background: rgba(0, 10, 0, 0.8);
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QFrame" name="controlPanelFrame">
+   <property name="geometry">
+    <rect>
+     <x>1550</x>
+     <y>95</y>
+     <width>367</width>
+     <height>701</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background: rgba(0, 10, 0, 0.8);
 border: 2px solid #328844;</string>
-                        </property>
-                        <property name="frameShape">
-                                <enum>QFrame::Shape::StyledPanel</enum>
-                        </property>
-                        <property name="frameShadow">
-                                <enum>QFrame::Shadow::Raised</enum>
-                        </property>
-                        <layout class="QVBoxLayout" name="verticalLayout">
-                                <property name="leftMargin">
-                                        <number>20</number>
-                                </property>
-                                <property name="topMargin">
-                                        <number>20</number>
-                                </property>
-                                <property name="rightMargin">
-                                        <number>20</number>
-                                </property>
-                                <property name="bottomMargin">
-                                        <number>20</number>
-                                </property>
-                                <item>
-                                        <widget class="QPushButton" name="selectImageButton">
-                                                <property name="minimumSize">
-                                                        <size>
-                                                                <width>0</width>
-                                                                <height>105</height>
-                                                        </size>
-                                                </property>
-                                                <property name="styleSheet">
-                                                        <string notr="true">QPushButton{
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::Shape::StyledPanel</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Shadow::Raised</enum>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="leftMargin">
+     <number>20</number>
+    </property>
+    <property name="topMargin">
+     <number>20</number>
+    </property>
+    <property name="rightMargin">
+     <number>20</number>
+    </property>
+    <property name="bottomMargin">
+     <number>20</number>
+    </property>
+    <item>
+     <widget class="QPushButton" name="selectImageButton">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>105</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton{
 	border: none;
 	background-image: url(:/images/Btn_MainMenu_off.png);
 	font-family: 'Roboto';
@@ -124,22 +124,22 @@ QPushButton:pressed{
 	background-image: url(:/images/Btn_MainMenu_on.png);
 	color: #002509;
 }</string>
-                                                </property>
-                                                <property name="text">
-                                                        <string>Обрати зображення</string>
-                                                </property>
-                                        </widget>
-                                </item>
-                                <item>
-                                        <widget class="QPushButton" name="setCenterButton">
-                                                <property name="minimumSize">
-                                                        <size>
-                                                                <width>0</width>
-                                                                <height>105</height>
-                                                        </size>
-                                                </property>
-                                                <property name="styleSheet">
-                                                        <string notr="true">QPushButton{
+      </property>
+      <property name="text">
+       <string>Обрати зображення</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="setCenterButton">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>105</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton{
 	border: none;
 	background-image: url(:/images/Btn_MainMenu_off.png);
 	font-family: 'Roboto';
@@ -153,54 +153,54 @@ QPushButton:pressed{
 	background-image: url(:/images/Btn_MainMenu_on.png);
 	color: #002509;
 }</string>
-                                                </property>
-                                                <property name="text">
-                                                        <string>Встановити центр</string>
-                                                </property>
-                                        </widget>
-                                </item>
-                                <item>
-                                        <widget class="QLabel" name="scaleLabel">
-                                                <property name="maximumSize">
-                                                        <size>
-                                                                <width>16777215</width>
-                                                                <height>30</height>
-                                                        </size>
-                                                </property>
-                                                <property name="styleSheet">
-                                                        <string notr="true">font-family: 'Roboto';
+      </property>
+      <property name="text">
+       <string>Встановити центр</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="scaleLabel">
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>30</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font-family: 'Roboto';
 font-weight: 500;
 font-size: 24px;
 color: #FFFFFF;
 border:none;
 background-color:transparent;</string>
-                                                </property>
-                                                <property name="text">
-                                                        <string>Масштаб (%)</string>
-                                                </property>
-                                                <property name="alignment">
-                                                        <set>Qt::AlignmentFlag::AlignCenter</set>
-                                                </property>
-                                        </widget>
-                                </item>
-                                <item>
-                                        <layout class="QHBoxLayout" name="scaleLayout">
-                                                <item>
-                                                        <widget class="QPushButton" name="zoomOutButton">
-                                                                <property name="minimumSize">
-                                                                        <size>
-                                                                                <width>70</width>
-                                                                                <height>70</height>
-                                                                        </size>
-                                                                </property>
-                                                                <property name="maximumSize">
-                                                                        <size>
-                                                                                <width>70</width>
-                                                                                <height>70</height>
-                                                                        </size>
-                                                                </property>
-                                                                <property name="styleSheet">
-                                                                        <string notr="true">QPushButton{
+      </property>
+      <property name="text">
+       <string>Масштаб (%)</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="scaleLayout">
+      <item>
+       <widget class="QPushButton" name="zoomOutButton">
+        <property name="minimumSize">
+         <size>
+          <width>70</width>
+          <height>70</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>70</width>
+          <height>70</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton{
 	font-family: 'Roboto';
 	font-weight: 500;
 	font-size: 36px;
@@ -213,22 +213,22 @@ QPushButton:pressed{
 	border-image: url(:/images/Btn_Square_on.png) 0 0 0 0 stretch stretch;
 	color: #002509;
 }</string>
-                                                                </property>
-                                                                <property name="text">
-                                                                        <string>-</string>
-                                                                </property>
-                                                        </widget>
-                                                </item>
-                                                <item>
-                                                        <widget class="QSpinBox" name="scaleSpinBox">
-                                                                <property name="minimumSize">
-                                                                        <size>
-                                                                                <width>0</width>
-                                                                                <height>70</height>
-                                                                        </size>
-                                                                </property>
-                                                                <property name="styleSheet">
-                                                                        <string notr="true">QSpinBox {
+        </property>
+        <property name="text">
+         <string>-</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSpinBox" name="scaleSpinBox">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>70</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QSpinBox {
 	font-family: 'Roboto';
 	font-weight: 500;
 	font-size: 26px;
@@ -239,40 +239,40 @@ QPushButton:pressed{
 	text-align: center;
 }
 </string>
-                                                                </property>
-                                                                <property name="alignment">
-                                                                        <set>Qt::AlignmentFlag::AlignCenter</set>
-                                                                </property>
-                                                                <property name="buttonSymbols">
-                                                                        <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
-                                                                </property>
-                                                                <property name="minimum">
-                                                                        <number>1</number>
-                                                                </property>
-                                                                <property name="maximum">
-                                                                        <number>500</number>
-                                                                </property>
-                                                                <property name="value">
-                                                                        <number>100</number>
-                                                                </property>
-                                                        </widget>
-                                                </item>
-                                                <item>
-                                                        <widget class="QPushButton" name="zoomInButton">
-                                                                <property name="minimumSize">
-                                                                        <size>
-                                                                                <width>70</width>
-                                                                                <height>70</height>
-                                                                        </size>
-                                                                </property>
-                                                                <property name="maximumSize">
-                                                                        <size>
-                                                                                <width>70</width>
-                                                                                <height>70</height>
-                                                                        </size>
-                                                                </property>
-                                                                <property name="styleSheet">
-                                                                        <string notr="true">QPushButton{
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignCenter</set>
+        </property>
+        <property name="buttonSymbols">
+         <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
+        </property>
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>500</number>
+        </property>
+        <property name="value">
+         <number>100</number>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="zoomInButton">
+        <property name="minimumSize">
+         <size>
+          <width>70</width>
+          <height>70</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>70</width>
+          <height>70</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton{
 	font-family: 'Roboto';
 	font-weight: 500;
 	font-size: 36px;
@@ -285,48 +285,48 @@ QPushButton:pressed{
 	border-image: url(:/images/Btn_Square_on.png) 0 0 0 0 stretch stretch;
 	color: #002509;
 }</string>
-                                                                </property>
-                                                                <property name="text">
-                                                                        <string>+</string>
-                                                                </property>
-                                                        </widget>
-                                                </item>
-                                        </layout>
-                                </item>
-                                <item>
-                                        <widget class="QLabel" name="radiusLabel">
-                                                <property name="maximumSize">
-                                                        <size>
-                                                                <width>16777215</width>
-                                                                <height>30</height>
-                                                        </size>
-                                                </property>
-                                                <property name="styleSheet">
-                                                        <string notr="true">font-family: 'Roboto';
+        </property>
+        <property name="text">
+         <string>+</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="QLabel" name="radiusLabel">
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>30</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font-family: 'Roboto';
 font-weight: 500;
 font-size: 24px;
 color: #FFFFFF;
 border:none;
 background-color:transparent;</string>
-                                                </property>
-                                                <property name="text">
-                                                        <string>Радіус кола (м)</string>
-                                                </property>
-                                                <property name="alignment">
-                                                        <set>Qt::AlignmentFlag::AlignCenter</set>
-                                                </property>
-                                        </widget>
-                                </item>
-                                <item>
-                                        <widget class="QSpinBox" name="radiusMetersSpinBox">
-                                                <property name="minimumSize">
-                                                        <size>
-                                                                <width>0</width>
-                                                                <height>60</height>
-                                                        </size>
-                                                </property>
-                                                <property name="styleSheet">
-                                                        <string notr="true">QSpinBox {
+      </property>
+      <property name="text">
+       <string>Радіус кола (м)</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QSpinBox" name="radiusMetersSpinBox">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>60</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QSpinBox {
 	font-family: 'Roboto';
 	font-weight: 500;
 	font-size: 26px;
@@ -337,47 +337,47 @@ background-color:transparent;</string>
 	text-align: center;
 }
 </string>
-                                                </property>
-                                                <property name="alignment">
-                                                        <set>Qt::AlignmentFlag::AlignCenter</set>
-                                                </property>
-                                                <property name="buttonSymbols">
-                                                        <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
-                                                </property>
-                                                <property name="minimum">
-                                                        <number>1</number>
-                                                </property>
-                                                <property name="maximum">
-                                                        <number>100000</number>
-                                                </property>
-                                                <property name="value">
-                                                        <number>1000</number>
-                                                </property>
-                                        </widget>
-                                </item>
-                                <item>
-                                        <spacer name="verticalSpacer">
-                                                <property name="orientation">
-                                                        <enum>Qt::Orientation::Vertical</enum>
-                                                </property>
-                                                <property name="sizeHint" stdset="0">
-                                                        <size>
-                                                                <width>20</width>
-                                                                <height>40</height>
-                                                        </size>
-                                                </property>
-                                        </spacer>
-                                </item>
-                                <item>
-                                        <widget class="QPushButton" name="saveButton">
-                                                <property name="minimumSize">
-                                                        <size>
-                                                                <width>0</width>
-                                                                <height>103</height>
-                                                        </size>
-                                                </property>
-                                                <property name="styleSheet">
-                                                        <string notr="true">QPushButton{
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
+      </property>
+      <property name="buttonSymbols">
+       <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
+      </property>
+      <property name="minimum">
+       <number>1</number>
+      </property>
+      <property name="maximum">
+       <number>100000</number>
+      </property>
+      <property name="value">
+       <number>200</number>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <spacer name="verticalSpacer">
+      <property name="orientation">
+       <enum>Qt::Orientation::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>40</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item>
+     <widget class="QPushButton" name="saveButton">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>103</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton{
 	border: none;
 	background-image: url(:/images/Btn_MainMenu_off.png);
 	font-family: 'Roboto';
@@ -391,22 +391,22 @@ QPushButton:pressed{
 	background-image: url(:/images/Btn_MainMenu_on.png);
 	color: #002509;
 }</string>
-                                                </property>
-                                                <property name="text">
-                                                        <string>Зберегти</string>
-                                                </property>
-                                        </widget>
-                                </item>
-                                <item>
-                                        <widget class="QPushButton" name="cancelButton">
-                                                <property name="minimumSize">
-                                                        <size>
-                                                                <width>0</width>
-                                                                <height>103</height>
-                                                        </size>
-                                                </property>
-                                                <property name="styleSheet">
-                                                        <string notr="true">QPushButton{
+      </property>
+      <property name="text">
+       <string>Зберегти</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="cancelButton">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>103</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton{
 	border: none;
 	background-image: url(:/images/Btn_MainMenu_red.png); /* Червоний стиль для скасування */
 	font-family: 'Roboto';
@@ -420,73 +420,73 @@ QPushButton:pressed{
 	background-image: url(:/images/Btn_MainMenu_on.png);
 	color: #002509;
 }</string>
-                                                </property>
-                                                <property name="text">
-                                                        <string>Скасувати</string>
-                                                </property>
-                                        </widget>
-                                </item>
-                        </layout>
-                </widget>
-                <widget class="QLabel" name="centerPointIconLabel">
-                        <property name="geometry">
-                                <rect>
-                                        <x>932</x>
-                                        <y>490</y>
-                                        <width>56</width>
-                                        <height>56</height>
-                                </rect>
-                        </property>
-                        <property name="visible">
-                                <bool>false</bool>
-                        </property>
-                        <property name="styleSheet">
-                                <string notr="true">background-color: transparent;
+      </property>
+      <property name="text">
+       <string>Скасувати</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QLabel" name="centerPointIconLabel">
+   <property name="geometry">
+    <rect>
+     <x>749</x>
+     <y>490</y>
+     <width>56</width>
+     <height>56</height>
+    </rect>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color: transparent;
 background-image: url(:/icons/point_location.svg);
 background-position:center;
 background-repeat:no-repeat;
 </string>
-                        </property>
-                        <property name="text">
-                                <string/>
-                        </property>
-                </widget>
-        </widget>
-        <resources>
-                <include location="../resources.qrc"/>
-        </resources>
-        <connections>
-                <connection>
-                        <sender>saveButton</sender>
-                        <signal>clicked()</signal>
-                        <receiver>MapSettingsDialog</receiver>
-                        <slot>accept()</slot>
-                        <hints>
-                                <hint type="sourcelabel">
-                                        <x>1733</x>
-                                        <y>712</y>
-                                </hint>
-                                <hint type="destinationlabel">
-                                        <x>959</x>
-                                        <y>539</y>
-                                </hint>
-                        </hints>
-                </connection>
-                <connection>
-                        <sender>cancelButton</sender>
-                        <signal>clicked()</signal>
-                        <receiver>MapSettingsDialog</receiver>
-                        <slot>reject()</slot>
-                        <hints>
-                                <hint type="sourcelabel">
-                                        <x>1733</x>
-                                        <y>818</y>
-                                </hint>
-                                <hint type="destinationlabel">
-                                        <x>959</x>
-                                        <y>539</y>
-                                </hint>
-                        </hints>
-                </connection>
-        </connections>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+ </widget>
+ <resources>
+  <include location="../resources.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>saveButton</sender>
+   <signal>clicked()</signal>
+   <receiver>MapSettingsDialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1733</x>
+     <y>712</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>959</x>
+     <y>539</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cancelButton</sender>
+   <signal>clicked()</signal>
+   <receiver>MapSettingsDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1733</x>
+     <y>818</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>959</x>
+     <y>539</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

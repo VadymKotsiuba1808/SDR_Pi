@@ -11,7 +11,7 @@ from app.protocols import MapServiceSettings
 
 class MapTypes(Enum):
     ROAD = "streets-v2"
-    SATELLITE = "satellite-v2"
+    # SATELLITE = "satellite-v2"
     HYBRID = "hybrid"
     TERRAIN = "topo-v2"
 

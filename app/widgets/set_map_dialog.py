@@ -3,7 +3,7 @@ import sys
 # Додаємо QDialog
 from PyQt6.QtWidgets import QApplication, QDialog, QFileDialog, QMessageBox
 from PyQt6.QtGui import QPixmap, QPainter
-from PyQt6.QtCore import Qt, QPoint, QEvent, QPointF
+from PyQt6.QtCore import Qt, QPoint, QEvent
 from PyQt6 import uic
 
 
@@ -21,19 +21,21 @@ class SetMapDialog(QDialog):
         self.add_sizes_map_k = add_sizes_map_k
 
         # Завантажуємо новий .ui файл
-        uic.loadUi("app/ui/set_map_window.ui", self)
+        uic.loadUi("app/ui/set_map_dialog.ui", self)
         print("[Init] UI завантажено")
 
         # Внутрішні змінні стану
         self.original_pixmap = None
         self.image_path = ""
-        self.center_point_f = QPointF()
         self.current_scale = 1.0
-        self.current_offset = QPointF()
+        self.current_offset = QPoint()
         self.is_centering_mode = False
+        circle_radius = self.centerCircleLabel.width() / 2
+        self.center_point = QPoint()
 
-        self.screen_center = QPointF(
-            self.mapDisplayLabel.width() / 2, self.mapDisplayLabel.height() / 2
+        self.screen_center = QPoint(
+            int(self.centerCircleLabel.x() + circle_radius),
+            int(self.centerCircleLabel.y() + circle_radius),
         )
         print(
             f"[Init] Розмір екрану карти: {self.mapDisplayLabel.width()}x{self.mapDisplayLabel.height()}"
@@ -94,8 +96,8 @@ class SetMapDialog(QDialog):
         print(
             f"[on_select_image] Зображення завантажено, розмір: {self.original_pixmap.width()}x{self.original_pixmap.height()}"
         )
-        self.center_point_f = QPointF(self.original_pixmap.rect().center())
-        print(f"[on_select_image] Початковий центр зображення: {self.center_point_f}")
+        self.center_point = QPoint(self.original_pixmap.rect().center())
+        print(f"[on_select_image] Початковий центр зображення: {self.center_point}")
         self.scaleSpinBox.setValue(100)
         self.centerPointIconLabel.setVisible(False)
         self.update_map_display()
@@ -149,8 +151,8 @@ class SetMapDialog(QDialog):
             Qt.TransformationMode.SmoothTransformation,
         )
 
-        scaled_center_point_f = self.center_point_f * self.current_scale
-        self.current_offset = self.screen_center - scaled_center_point_f
+        scaled_center_point = self.center_point * self.current_scale
+        self.current_offset = self.screen_center - scaled_center_point
 
         display_pixmap = QPixmap(self.mapDisplayLabel.size())
         display_pixmap.fill(Qt.GlobalColor.transparent)
@@ -178,16 +180,16 @@ class SetMapDialog(QDialog):
                         )
                         return True
 
-                    img_x = (
-                        label_click_pos.x() - self.current_offset.x()
-                    ) / self.current_scale
-                    img_y = (
-                        label_click_pos.y() - self.current_offset.y()
-                    ) / self.current_scale
-                    self.center_point_f = QPointF(img_x, img_y)
-                    print(
-                        f"[eventFilter] Новий центр зображення: {self.center_point_f}"
+                    img_x = int(
+                        (label_click_pos.x() - self.current_offset.x())
+                        // self.current_scale
                     )
+                    img_y = int(
+                        (label_click_pos.y() - self.current_offset.y())
+                        // self.current_scale
+                    )
+                    self.center_point = QPoint(img_x, img_y)
+                    print(f"[eventFilter] Новий центр зображення: {self.center_point}")
 
                     self.is_centering_mode = False
                     self.clear_cross_cursor()
@@ -205,9 +207,9 @@ class SetMapDialog(QDialog):
         if not self.original_pixmap or not self.image_path:
             print("[accept] ПОМИЛКА: зображення не вибрано")
             QMessageBox.warning(None, "Помилка", "Зображення не вибрано!")
-            return  # Важливо: не викликаємо super().accept()
+            return
 
-        screen_circle_radius_px = 500.0
+        screen_circle_radius_px = self.centerCircleLabel.width() / 2
         user_defined_radius_m = self.radiusMetersSpinBox.value()
         current_view_scale = self.scaleSpinBox.value() / 100.0
 
@@ -221,13 +223,13 @@ class SetMapDialog(QDialog):
             QMessageBox.warning(
                 None, "Помилка", "Радіус в метрах та масштаб мають бути > 0."
             )
-            return  # Не викликаємо super().accept()
+            return
 
         displayed_px_per_meter = screen_circle_radius_px / user_defined_radius_m
         original_px_per_meter = displayed_px_per_meter / current_view_scale
         print(f"[accept] Пікселів на метр (оригінал): {original_px_per_meter}")
 
-        target_diameter_m = self.settings_service.radar_max_radius * 2.0
+        target_diameter_m = self.settings_service.radar_max_radius * 2
         target_size_px = int(round(target_diameter_m * original_px_per_meter))
         print(
             f"[accept] Цільовий розмір карти: {target_size_px}px ({target_diameter_m}м)"
@@ -249,10 +251,8 @@ class SetMapDialog(QDialog):
         final_pixmap.fill(Qt.GlobalColor.transparent)
         print("[accept] Створено фінальну карту")
 
-        final_center_f = QPointF(
-            final_pixmap.width() / 2.0, final_pixmap.height() / 2.0
-        )
-        draw_pos_f = final_center_f - self.center_point_f
+        final_center = QPoint(final_pixmap.width() // 2, final_pixmap.height() // 2)
+        draw_pos_f = final_center - self.center_point
         print(f"[accept] Малювання оригіналу з позиції {draw_pos_f}")
 
         painter = QPainter(final_pixmap)
@@ -270,8 +270,6 @@ class SetMapDialog(QDialog):
 
         print(f"[accept] Збережено налаштування: {self.result_settings}\n")
 
-        # Всі перевірки пройдено. Викликаємо батьківський метод,
-        # щоб закрити вікно і повернути "Accepted".
         self.accept()
 
     def cancel(self):
@@ -283,8 +281,6 @@ class SetMapDialog(QDialog):
         # Очищуємо результат на випадок, якщо щось було
         self.result_settings = {}
 
-        # Викликаємо батьківський метод, щоб закрити вікно
-        # і повернути "Rejected".
         self.reject()
 
     def get_settings(self):

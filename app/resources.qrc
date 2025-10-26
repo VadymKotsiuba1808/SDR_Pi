@@ -34,6 +34,9 @@
     <file alias="images/Btn_Square_on.png">assets/images/Btn_Square_on.png</file>
     <file alias="images/Btn_Square_off.png">assets/images/Btn_Square_off.png</file>
     <file alias="images/Btn_Square_disabled.png">assets/images/Btn_Square_disabled.png</file>
+    <file alias="images/addMapBtn_on.png">assets/images/addMapBtn_on.png</file>
+    <file alias="images/addMapBtn_off.png">assets/images/addMapBtn_off.png</file>
+    <file alias="images/addMapBtn_disabled.png">assets/images/addMapBtn_disabled.png</file>
 </qresource>
 </RCC>
 

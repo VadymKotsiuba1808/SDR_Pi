@@ -695,7 +695,7 @@ background: none;</string>
      <property name="geometry">
       <rect>
        <x>30</x>
-       <y>573</y>
+       <y>437</y>
        <width>110</width>
        <height>110</height>
       </rect>
@@ -1415,6 +1415,36 @@ QPushButton[enabled=&quot;false&quot;]{
       </item>
      </layout>
     </widget>
+    <widget class="QPushButton" name="addMapButton">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>573</y>
+       <width>110</width>
+       <height>110</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton#addMapButton{
+	border-image: url(:/images/addMapBtn_off.png) stretch stretch;
+	background-color:#000;
+}
+
+QPushButton#addMapButton:pressed{
+	border-image: url(:/images/addMapBtn_on.png) stretch stretch;
+}
+
+QPushButton#addMapButton[enabled=&quot;false&quot;]{
+	border-image: url(:/images/addMapBtn_disabled.png) stretch stretch;
+}</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
     <zorder>map_background_label</zorder>
     <zorder>homeButton</zorder>
     <zorder>mapLayoutButton</zorder>
@@ -1426,6 +1456,7 @@ QPushButton[enabled=&quot;false&quot;]{
     <zorder>k_label_3</zorder>
     <zorder>RadarFrame</zorder>
     <zorder>RadarSettings</zorder>
+    <zorder>addMapButton</zorder>
    </widget>
   </widget>
  </widget>

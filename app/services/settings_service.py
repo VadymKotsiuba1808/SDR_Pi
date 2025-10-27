@@ -28,6 +28,8 @@ class SettingsService(QObject):
         "owner_password_hash": Setting("auth", str, ""),
         "remember_me": Setting("auth", bool, False),
         "tile_divider_enabled": Setting("dev", bool, False),
+        "radio_range_GHz": ("signal", list, [0.0, 9.9]),
+        "sound_range_GHz": ("signal", list, [0.0, 9.9]),
     }
 
     def __init__(self):

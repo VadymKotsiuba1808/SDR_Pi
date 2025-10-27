@@ -38,6 +38,15 @@ class MainWindow(QMainWindow):
         self._setup_timers()
         self._setup_state_variables()
 
+        self.connect_handlers()
+
+        self.Radar_Red.hide()
+
+        self.start_async_tasks()
+
+        print("Головне вікно успішно ініціалізовано.")
+
+    def connect_handlers(self):
         self.mapLayoutButton.clicked.connect(self.change_map_type)
         self.screenSaveButton.clicked.connect(self.take_screenshot)
         self.homeButton.clicked.connect(self.update_status_bar_with_test_data)
@@ -47,16 +56,22 @@ class MainWindow(QMainWindow):
         self.saveRadarSettingsBtn.clicked.connect(self.handle_radar_radius_change)
 
         radar_max_radius = self.settings_service.radar_max_radius
-        self.radarRadiusSpinbox.setRange(1, radar_max_radius)
+        self.radarRadiusSpinbox.setMaximum(radar_max_radius)
 
         radar_radius = self.settings_service.radar_radius
         self.radarRadiusSpinbox.setValue(radar_radius)
 
-        self.Radar_Red.hide()
+        self.saveRadioRangePushButton.clicked.connect(self.set_radio_range)
+        self.saveSoundRangePushButton.clicked.connect(self.set_sound_range)
 
-        self.start_async_tasks()
-
-        print("Головне вікно успішно ініціалізовано.")
+        self.radioStartDoubleSpinBox.valueChanged.connect(
+            self.handle_signal_range_change
+        )
+        self.radioEndDoubleSpinBox.valueChanged.connect(self.handle_signal_range_change)
+        self.soundStartDoubleSpinBox.valueChanged.connect(
+            self.handle_signal_range_change
+        )
+        self.soundEndDoubleSpinBox.valueChanged.connect(self.handle_signal_range_change)
 
     def showEvent(self, event):
         """
@@ -161,12 +176,10 @@ class MainWindow(QMainWindow):
             settings=self.settings_service, add_sizes_map_k=self.add_sizes_map_k
         )
 
-        # 2. "Загортаємо" його (якщо make_scalable приймає QDialog)
         ScalableDialog = make_scalable(QDialog)
         self.scalable_dialog = ScalableDialog(widget_to_scale=self.dialog)
 
         # 3. Використовуємо .exec() для блокуючого виклику
-        # .exec() покаже вікно і ЗАЧЕКАЄ, доки користувач натисне "Зберегти" або "Скасувати"
         result = self.scalable_dialog.exec()
 
         # 4. Перевіряємо результат
@@ -185,9 +198,7 @@ class MainWindow(QMainWindow):
                 )
                 self.scale_map()
 
-            print("ГОЛОВНЕ ВІКНО: Отримано налаштування!", settings_data)
-            # ... тут ваш код обробки 'settings_data' ...
-            # Наприклад: self.my_map_pixmap = settings_data["pixmap"]
+            print("ГОЛОВНЕ ВІКНО: Отримано налаштування!")
 
         else:
             # Якщо користувач натиснув "Скасувати" або закрив вікно
@@ -195,6 +206,50 @@ class MainWindow(QMainWindow):
 
         # 6. Очищуємо посилання
         self.scalable_dialog = None
+
+    def set_radio_range(self):
+        start_value = self.radioStartDoubleSpinBox.value()
+        end_value = self.radioEndDoubleSpinBox.value()
+
+        self.settings_service.radio_range_GHz = [start_value, end_value]
+
+    def set_sound_range(self):
+        start_value = self.soundStartDoubleSpinBox.value()
+        end_value = self.soundEndDoubleSpinBox.value()
+
+        self.settings_service.sound_range_GHz = [start_value, end_value]
+
+    def handle_signal_range_change(self, value):
+        current_spin_box = self.sender()
+
+        start_spin_box = None
+        end_spin_box = None
+
+        match current_spin_box.objectName():
+            case "radioStartDoubleSpinBox":
+                start_spin_box = current_spin_box
+                end_spin_box = self.radioEndDoubleSpinBox
+            case "radioEndDoubleSpinBox":
+                start_spin_box = self.radioStartDoubleSpinBox
+                end_spin_box = current_spin_box
+            case "soundStartDoubleSpinBox":
+                start_spin_box = current_spin_box
+                end_spin_box = self.soundEndDoubleSpinBox
+            case "soundEndDoubleSpinBox":
+                start_spin_box = self.soundStartDoubleSpinBox
+                end_spin_box = current_spin_box
+
+        if start_spin_box is None or end_spin_box is None:
+            return
+
+        start_spin_box.blockSignals(True)
+        end_spin_box.blockSignals(True)
+
+        start_spin_box.setMaximum(end_spin_box.value())
+        end_spin_box.setMinimum(start_spin_box.value())
+
+        start_spin_box.blockSignals(False)
+        end_spin_box.blockSignals(False)
 
     # --- Методи для оновлення UI (залишаються без змін) ---
     def update_time_and_date(self):

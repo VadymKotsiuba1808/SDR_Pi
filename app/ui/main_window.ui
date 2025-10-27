@@ -103,7 +103,7 @@ background: rgba(0, 10, 0, 0.1);</string>
       <set>Qt::AlignmentFlag::AlignCenter</set>
      </property>
     </widget>
-    <widget class="QFrame" name="BandsAvailable">
+    <widget class="QFrame" name="signals_range">
      <property name="geometry">
       <rect>
        <x>640</x>
@@ -122,7 +122,7 @@ background: rgba(0, 10, 0, 0.1);</string>
      <property name="frameShadow">
       <enum>QFrame::Shadow::Raised</enum>
      </property>
-     <widget class="QDoubleSpinBox" name="doubleSpinBox">
+     <widget class="QDoubleSpinBox" name="radioStartDoubleSpinBox">
       <property name="geometry">
        <rect>
         <x>160</x>
@@ -135,10 +135,24 @@ background: rgba(0, 10, 0, 0.1);</string>
        <string notr="true">QDoubleSpinBox{
 	font-size:24px;
 	padding:2px;
+}
+
+QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {
+    width: 22px;
+    height: 18px;
 }</string>
       </property>
+      <property name="buttonSymbols">
+       <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
+      </property>
+      <property name="showGroupSeparator" stdset="0">
+       <bool>false</bool>
+      </property>
+      <property name="singleStep">
+       <double>0.100000000000000</double>
+      </property>
      </widget>
-     <widget class="QDoubleSpinBox" name="doubleSpinBox_2">
+     <widget class="QDoubleSpinBox" name="soundStartDoubleSpinBox">
       <property name="geometry">
        <rect>
         <x>160</x>
@@ -151,10 +165,26 @@ background: rgba(0, 10, 0, 0.1);</string>
        <string notr="true">QDoubleSpinBox{
 	font-size:24px;
 	padding:2px;
-}</string>
+}
+
+QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {
+    width: 22px;
+    height: 18px;
+}
+
+</string>
+      </property>
+      <property name="buttonSymbols">
+       <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
+      </property>
+      <property name="showGroupSeparator" stdset="0">
+       <bool>false</bool>
+      </property>
+      <property name="singleStep">
+       <double>0.100000000000000</double>
       </property>
      </widget>
-     <widget class="QDoubleSpinBox" name="doubleSpinBox_3">
+     <widget class="QDoubleSpinBox" name="soundEndDoubleSpinBox">
       <property name="geometry">
        <rect>
         <x>344</x>
@@ -167,10 +197,24 @@ background: rgba(0, 10, 0, 0.1);</string>
        <string notr="true">QDoubleSpinBox{
 	font-size:24px;
 	padding:2px;
+}
+
+QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {
+    width: 22px;
+    height: 18px;
 }</string>
       </property>
+      <property name="buttonSymbols">
+       <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
+      </property>
+      <property name="showGroupSeparator" stdset="0">
+       <bool>false</bool>
+      </property>
+      <property name="singleStep">
+       <double>0.100000000000000</double>
+      </property>
      </widget>
-     <widget class="QDoubleSpinBox" name="doubleSpinBox_4">
+     <widget class="QDoubleSpinBox" name="radioEndDoubleSpinBox">
       <property name="geometry">
        <rect>
         <x>344</x>
@@ -183,6 +227,11 @@ background: rgba(0, 10, 0, 0.1);</string>
        <string notr="true">QDoubleSpinBox{
 	font-size:24px;
 	padding:2px;
+}
+
+QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {
+    width: 22px;
+    height: 18px;
 }</string>
       </property>
       <property name="wrapping">
@@ -200,8 +249,11 @@ background: rgba(0, 10, 0, 0.1);</string>
       <property name="showGroupSeparator" stdset="0">
        <bool>false</bool>
       </property>
+      <property name="singleStep">
+       <double>0.100000000000000</double>
+      </property>
      </widget>
-     <widget class="QLabel" name="label_4">
+     <widget class="QLabel" name="rangeDivideLabel_1">
       <property name="geometry">
        <rect>
         <x>307</x>
@@ -227,7 +279,7 @@ padiing:4px;
        <number>-1</number>
       </property>
      </widget>
-     <widget class="QLabel" name="label_5">
+     <widget class="QLabel" name="rangeDivideLabel_2">
       <property name="geometry">
        <rect>
         <x>305</x>
@@ -253,7 +305,7 @@ padiing:4px;
        <number>-1</number>
       </property>
      </widget>
-     <widget class="QLabel" name="label_6">
+     <widget class="QLabel" name="radioRangeLabel">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -270,7 +322,7 @@ font-size:24px;</string>
        <string>Radio, GHz</string>
       </property>
      </widget>
-     <widget class="QLabel" name="label_7">
+     <widget class="QLabel" name="soundRangeLabel">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -287,7 +339,7 @@ font-size:24px;</string>
        <string>Sound, GHz</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="pushButton">
+     <widget class="QPushButton" name="saveRadioRangePushButton">
       <property name="geometry">
        <rect>
         <x>500</x>
@@ -313,7 +365,7 @@ background-color:#2b6425
        <bool>false</bool>
       </property>
      </widget>
-     <widget class="QPushButton" name="pushButton_2">
+     <widget class="QPushButton" name="saveSoundRangePushButton">
       <property name="geometry">
        <rect>
         <x>500</x>
@@ -339,10 +391,10 @@ background-color:#2b6425
        <bool>false</bool>
       </property>
      </widget>
-     <widget class="QPushButton" name="pushButton_3">
+     <widget class="QPushButton" name="chartRadioRangePushButton">
       <property name="geometry">
        <rect>
-        <x>550</x>
+        <x>560</x>
         <y>9</y>
         <width>41</width>
         <height>41</height>
@@ -365,10 +417,10 @@ background-color:#2b6425
        <bool>false</bool>
       </property>
      </widget>
-     <widget class="QPushButton" name="pushButton_4">
+     <widget class="QPushButton" name="chartSoundRangePushButton">
       <property name="geometry">
        <rect>
-        <x>550</x>
+        <x>560</x>
         <y>52</y>
         <width>41</width>
         <height>41</height>

@@ -53,7 +53,7 @@ class SetMapDialog(QDialog):
         )
         print(f"[Init] Центр екрана карти: {self.screen_center_f}")
 
-        self.connect_signals()
+        self.connect_handlers()
         print("[Init] Сигнали підключено")
 
         self.mapDisplayLabel.installEventFilter(self)
@@ -64,7 +64,7 @@ class SetMapDialog(QDialog):
         self.result_settings = {}
         print("[Init] Ініціалізацію завершено\n")
 
-    def connect_signals(self):
+    def connect_handlers(self):
         self.selectImageButton.clicked.connect(self.on_select_image)
         self.setCenterButton.clicked.connect(self.on_set_center)
         self.zoomInButton.clicked.connect(self.on_zoom_in)

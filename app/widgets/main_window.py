@@ -1,5 +1,8 @@
 import math
 import asyncio
+import platform
+import subprocess
+import re
 from PyQt6.QtWidgets import QMainWindow, QApplication, QDialog
 from PyQt6.QtCore import QTimer, QDateTime, Qt, QPointF
 from PyQt6.QtGui import QPixmap, QConicalGradient, QPainter, QColor, QPen
@@ -38,8 +41,10 @@ class MainWindow(QMainWindow):
         self._setup_timers()
         self._setup_state_variables()
 
-        self.adjust_fields()
-        self.connect_handlers()
+        self._adjust_fields()
+        self._connect_handlers()
+
+        self.update_wifi_signal_info()
 
         self.Radar_Red.hide()
 
@@ -47,7 +52,7 @@ class MainWindow(QMainWindow):
 
         print("Головне вікно успішно ініціалізовано.")
 
-    def adjust_fields(self):
+    def _adjust_fields(self):
         radar_max_radius = self.settings_service.radar_max_radius
         self.radarRadiusSpinbox.setMaximum(radar_max_radius)
 
@@ -63,7 +68,7 @@ class MainWindow(QMainWindow):
         self.soundStartDoubleSpinBox.setValue(float(sound_range[0]))
         self.soundEndDoubleSpinBox.setValue(float(sound_range[1]))
 
-    def connect_handlers(self):
+    def _connect_handlers(self):
         self.mapLayoutButton.clicked.connect(self.change_map_type)
         self.screenSaveButton.clicked.connect(self.take_screenshot)
         self.homeButton.clicked.connect(self.update_status_bar_with_test_data)
@@ -130,9 +135,12 @@ class MainWindow(QMainWindow):
         self.timer_radar.start(60)
 
         self.test_update_timer = QTimer(self)
-        # Важливо: під'єднуємо таймер до асинхронного слота
         self.test_update_timer.timeout.connect(self.update_status_bar_with_test_data)
         self.test_update_timer.start(10 * 60 * 1000)
+
+        self.timer_wifi = QTimer(self)
+        self.timer_wifi.timeout.connect(self.update_wifi_signal_info)
+        self.timer_wifi.start(2 * 60 * 1000)
 
     def _setup_state_variables(self):
         self.current_map_type_index = 0
@@ -163,7 +171,6 @@ class MainWindow(QMainWindow):
             map_bg_height / radar_height,
         ]
 
-    # --- Обробники даних, які викликаються з асинхронних функцій ---
     def handle_rf_data(self, analyzed_results):
         print(f"Слот отримав проаналізовані RF дані: {analyzed_results}")
         self.flush_radar_dots()
@@ -306,7 +313,6 @@ class MainWindow(QMainWindow):
         start_spin_box.blockSignals(False)
         end_spin_box.blockSignals(False)
 
-    # --- Методи для оновлення UI (залишаються без змін) ---
     def update_time_and_date(self):
         current_datetime = QDateTime.currentDateTime()
         self.DateLabel.setText(current_datetime.toString("dd.MM.yyyy"))
@@ -384,7 +390,6 @@ class MainWindow(QMainWindow):
         clean_pixmap = self.radar_background.copy()
         self.Radar.setPixmap(clean_pixmap)
 
-    # --- Асинхронні слоти (залишаються без змін) ---
     @asyncSlot()
     async def refresh_map(self):
         print("Запускаю асинхронне завантаження карти...")
@@ -462,8 +467,8 @@ class MainWindow(QMainWindow):
     async def update_status_bar_with_test_data(self):
 
         data = self.test_data_provider.get_next_test_data()
-        self.ghz24_1.setProperty("band_active", data["ghz24_1"])
-        self.ghz58_1.setProperty("band_active", data["ghz58_1"])
+        # self.ghz24_1.setProperty("band_active", data["ghz24_1"])
+        # self.ghz58_1.setProperty("band_active", data["ghz58_1"])
         self.RF_alert.setProperty("alert", data["rf_alert"])
         self.Sound_alert.setProperty("alert", data["sound_alert"])
         self.current_coords = data["coord"]
@@ -480,6 +485,64 @@ class MainWindow(QMainWindow):
         else:
             self.create_radar_dot(45, 200)
             self.is_warning = True
+
+    def update_wifi_signal_info(self):
+        wifi_strength = self.get_wifi_signal_strength()
+        print("wifi_signal_strength:", wifi_strength)
+
+        wifi_level = 0
+
+        if wifi_strength:
+            wifi_level = math.ceil(wifi_strength / 25)
+
+        self.WiFi_level.setProperty("level", wifi_level)
+        self.update_element_styles(self.WiFi_level)
+
+    def get_wifi_signal_strength(self):
+        """
+        Повертає рівень сигналу Wi-Fi у %, або None якщо не вдалося визначити.
+        Підтримує Windows та Linux.
+        """
+        system = platform.system().lower()
+
+        try:
+            if "windows" in system:
+                # --- Windows ---
+                output = subprocess.check_output(
+                    ["netsh", "wlan", "show", "interfaces"], encoding="utf-8"
+                )
+                match = re.search(r"Signal\s*:\s*(\d+)%", output)
+                if match:
+                    return int(match.group(1))
+
+            elif "linux" in system:
+                # --- Linux ---
+                # Спроба через nmcli (нові системи)
+                try:
+                    output = subprocess.check_output(
+                        ["nmcli", "-t", "-f", "active,ssid,signal", "dev", "wifi"],
+                        encoding="utf-8",
+                    )
+                    for line in output.splitlines():
+                        if line.startswith("yes:"):
+                            parts = line.split(":")
+                            if len(parts) >= 3:
+                                return int(parts[2])
+                except FileNotFoundError:
+                    # Якщо nmcli недоступний, fallback на iwconfig
+                    output = subprocess.check_output(["iwconfig"], encoding="utf-8")
+                    match = re.search(r"Signal level=(-?\d+) dBm", output)
+                    if match:
+                        dbm = int(match.group(1))
+                        quality = 2 * (dbm + 100)
+                        return max(0, min(100, quality))
+
+        except subprocess.CalledProcessError:
+            pass
+        except Exception as e:
+            print(f"⚠️ Error reading Wi-Fi signal: {e}")
+
+        return None
 
     def closeEvent(self, event):
         print("Закриття програми...")

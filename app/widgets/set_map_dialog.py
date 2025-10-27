@@ -1,15 +1,12 @@
 import sys
 
 from PyQt6.QtWidgets import (
-    QApplication,
     QDialog,
     QFileDialog,
     QMessageBox,
-    QSpinBox,
-    QLabel,
 )
 from PyQt6.QtGui import QPixmap, QPainter, QTransform
-from PyQt6.QtCore import Qt, QPoint, QEvent, QPointF
+from PyQt6.QtCore import Qt, QEvent, QPointF
 from PyQt6 import uic
 
 
@@ -53,7 +50,7 @@ class SetMapDialog(QDialog):
         )
         print(f"[Init] Центр екрана карти: {self.screen_center_f}")
 
-        self.connect_handlers()
+        self._connect_handlers()
         print("[Init] Сигнали підключено")
 
         self.mapDisplayLabel.installEventFilter(self)
@@ -64,7 +61,7 @@ class SetMapDialog(QDialog):
         self.result_settings = {}
         print("[Init] Ініціалізацію завершено\n")
 
-    def connect_handlers(self):
+    def _connect_handlers(self):
         self.selectImageButton.clicked.connect(self.on_select_image)
         self.setCenterButton.clicked.connect(self.on_set_center)
         self.zoomInButton.clicked.connect(self.on_zoom_in)

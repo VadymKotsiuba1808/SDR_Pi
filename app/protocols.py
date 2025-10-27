@@ -14,3 +14,9 @@ class MapServiceSettings(Protocol):
 class ApiServerSettings(Protocol):
     host: str
     port: int
+
+
+class LoginDialogSettings(Protocol):
+    role: str
+    owner_password_hash: str
+    remember_me: bool

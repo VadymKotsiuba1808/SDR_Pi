@@ -1,12 +1,12 @@
 from PyQt6.QtWidgets import QDialog, QLineEdit
 from PyQt6 import uic
 
-from app.services.settings_service import SettingsService
+from app.protocols import LoginDialogSettings
 from app.utils.password_utils import verify_password
 
 
 class LoginDialog(QDialog):
-    def __init__(self, settings: SettingsService, parent=None):
+    def __init__(self, settings: LoginDialogSettings, parent=None):
         super().__init__(parent)
         print("[LoginDialog] Ініціалізація діалогу входу...")
 

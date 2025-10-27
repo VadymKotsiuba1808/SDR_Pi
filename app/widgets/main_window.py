@@ -73,7 +73,10 @@ class MainWindow(QMainWindow):
         self.screenSaveButton.clicked.connect(self.take_screenshot)
         self.homeButton.clicked.connect(self.update_status_bar_with_test_data)
         self.addMapButton.clicked.connect(self.open_set_map_dialog)
+
         self.menuButton.clicked.connect(self.test_draw_dot)
+        self.radarButton.clicked.connect(self.set_radar_mode)
+        self.mapButton.clicked.connect(self.set_map_mode)
 
         self.saveRadarSettingsBtn.clicked.connect(self.handle_radar_radius_change)
 
@@ -146,6 +149,7 @@ class MainWindow(QMainWindow):
         self.current_map_type_index = 0
         self.map_types = [e for e in MapTypes]
         self.current_coords = [49.43440, 27.00543]
+        self.isRadarMode = False
 
     def _update_map_geometry(self):
         """
@@ -226,6 +230,20 @@ class MainWindow(QMainWindow):
 
         # 6. Очищуємо посилання
         self.scalable_dialog = None
+
+    def set_radar_mode(self):
+        if self.isRadarMode:
+            return
+
+        self.isRadarMode = True
+        self.map_background_label.setPixmap(QPixmap())
+
+    def set_map_mode(self):
+        if self.isRadarMode == False:
+            return
+
+        self.isRadarMode = False
+        self.scale_map()
 
     def set_radio_range(self):
         start_value = self.radioStartDoubleSpinBox.value()
@@ -412,6 +430,11 @@ class MainWindow(QMainWindow):
             print("Не вдалося завантажити карту.")
 
     def scale_map(self):
+
+        if self.isRadarMode:
+            print("Режим радару: зміна карти не відбувається")
+            return
+
         pixmap = self.current_map
         current_radius_px = self.current_map_radius
         if pixmap:

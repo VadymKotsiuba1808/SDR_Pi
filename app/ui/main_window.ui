@@ -1486,6 +1486,12 @@ font-size: 26px;</string>
                                     </item>
                                     <item>
                                           <widget class="QPushButton" name="saveRadarSettingsBtn">
+                                                <property name="minimumSize">
+                                                      <size>
+                                                            <width>0</width>
+                                                            <height>55</height>
+                                                      </size>
+                                                </property>
                                                 <property name="styleSheet">
                                                       <string notr="true">QPushButton{
 	border: none;
@@ -1494,7 +1500,6 @@ font-size: 26px;</string>
 	font-weight: 500;
 	font-size: 30px;
 	color: #FFFFFF;
-	padding:8px 0;
 }
 
 QPushButton:pressed{

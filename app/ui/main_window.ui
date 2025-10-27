@@ -479,7 +479,7 @@ background-color:#2b6425
        </rect>
       </property>
       <property name="styleSheet">
-       <string notr="true">QPushButton{background-image: url(:/icons/save.svg);
+       <string notr="true">QPushButton{background-image: url(:/icons/clear.svg);
 background-position:center;
 border-radius:6px;
 }
@@ -505,7 +505,7 @@ background-color:#2b6425
        </rect>
       </property>
       <property name="styleSheet">
-       <string notr="true">QPushButton{background-image: url(:/icons/save.svg);
+       <string notr="true">QPushButton{background-image: url(:/icons/clear.svg);
 background-position:center;
 border-radius:6px;
 }

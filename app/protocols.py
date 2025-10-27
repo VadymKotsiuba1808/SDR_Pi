@@ -24,3 +24,7 @@ class LoginDialogSettings(Protocol):
 
 class ChangePwdDialogSettings(Protocol):
     owner_password_hash: str
+
+
+class SetMapDialogSettings(Protocol):
+    radar_max_radius: int

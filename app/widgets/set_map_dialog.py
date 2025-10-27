@@ -9,10 +9,14 @@ from PyQt6.QtGui import QPixmap, QPainter, QTransform
 from PyQt6.QtCore import Qt, QEvent, QPointF
 from PyQt6 import uic
 
+from app.protocols import SetMapDialogSettings
+
 
 class SetMapDialog(QDialog):
 
-    def __init__(self, settings, add_sizes_map_k=[1, 1], parent=None):
+    def __init__(
+        self, settings: SetMapDialogSettings, add_sizes_map_k=[1, 1], parent=None
+    ):
         super().__init__(parent)
         print("[Init] Ініціалізація SetMapDialog...")
 

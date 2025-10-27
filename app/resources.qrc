@@ -37,6 +37,8 @@
     <file alias="images/addMapBtn_on.png">assets/images/addMapBtn_on.png</file>
     <file alias="images/addMapBtn_off.png">assets/images/addMapBtn_off.png</file>
     <file alias="images/addMapBtn_disabled.png">assets/images/addMapBtn_disabled.png</file>
+    <file alias="icons/chart.svg">assets/icons/chart.svg</file>
+    <file alias="icons/save.svg">assets/icons/save.svg</file>
 </qresource>
 </RCC>
 

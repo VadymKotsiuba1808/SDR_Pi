@@ -106,10 +106,10 @@ background: rgba(0, 10, 0, 0.1);</string>
     <widget class="QFrame" name="BandsAvailable">
      <property name="geometry">
       <rect>
-       <x>773</x>
-       <y>9</y>
-       <width>468</width>
-       <height>78</height>
+       <x>640</x>
+       <y>-4</y>
+       <width>621</width>
+       <height>101</height>
       </rect>
      </property>
      <property name="styleSheet">
@@ -122,299 +122,272 @@ background: rgba(0, 10, 0, 0.1);</string>
      <property name="frameShadow">
       <enum>QFrame::Shadow::Raised</enum>
      </property>
-     <widget class="QLabel" name="ghz58_1">
+     <widget class="QDoubleSpinBox" name="doubleSpinBox">
       <property name="geometry">
        <rect>
-        <x>0</x>
-        <y>0</y>
-        <width>117</width>
-        <height>39</height>
+        <x>160</x>
+        <y>9</y>
+        <width>140</width>
+        <height>41</height>
        </rect>
       </property>
       <property name="styleSheet">
-       <string notr="true">*[band_active=&quot;true&quot;] { 
-border: 2px solid #328843;
-font-family: 'Roboto';
-font-weight: 600;
-font-size: 26px;
-color: #50E37F;
-}
-
-*[band_active=&quot;false&quot;] { 
-border: 2px solid #328843;
-background-image: url(:/images/band_inactive.png);
-font-family: 'Roboto';
-font-weight: 600;
-font-size: 26px;
-color: #FF2828;
+       <string notr="true">QDoubleSpinBox{
+	font-size:24px;
+	padding:2px;
 }</string>
-      </property>
-      <property name="text">
-       <string>5.8GHz</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignmentFlag::AlignCenter</set>
-      </property>
-      <property name="band_active" stdset="0">
-       <bool>true</bool>
       </property>
      </widget>
-     <widget class="QLabel" name="ghz58_2">
+     <widget class="QDoubleSpinBox" name="doubleSpinBox_2">
       <property name="geometry">
        <rect>
-        <x>117</x>
-        <y>0</y>
-        <width>117</width>
-        <height>39</height>
+        <x>160</x>
+        <y>52</y>
+        <width>140</width>
+        <height>41</height>
        </rect>
       </property>
       <property name="styleSheet">
-       <string notr="true">*[band_active=&quot;true&quot;] { 
-border: 2px solid #328843;
-font-family: 'Roboto';
-font-weight: 600;
-font-size: 26px;
-color: #50E37F;
-}
-
-*[band_active=&quot;false&quot;] { 
-border: 2px solid #328843;
-background-image: url(:/images/band_inactive.png);
-font-family: 'Roboto';
-font-weight: 600;
-font-size: 26px;
-color: #FF2828;
+       <string notr="true">QDoubleSpinBox{
+	font-size:24px;
+	padding:2px;
 }</string>
-      </property>
-      <property name="text">
-       <string>5.8GHz</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignmentFlag::AlignCenter</set>
-      </property>
-      <property name="band_active" stdset="0">
-       <bool>true</bool>
       </property>
      </widget>
-     <widget class="QLabel" name="ghz58_3">
+     <widget class="QDoubleSpinBox" name="doubleSpinBox_3">
       <property name="geometry">
        <rect>
-        <x>234</x>
-        <y>0</y>
-        <width>117</width>
-        <height>39</height>
+        <x>344</x>
+        <y>52</y>
+        <width>140</width>
+        <height>41</height>
        </rect>
       </property>
       <property name="styleSheet">
-       <string notr="true">*[band_active=&quot;true&quot;] { 
-border: 2px solid #328843;
-font-family: 'Roboto';
-font-weight: 600;
-font-size: 26px;
-color: #50E37F;
-}
-
-*[band_active=&quot;false&quot;] { 
-border: 2px solid #328843;
-background-image: url(:/images/band_inactive.png);
-font-family: 'Roboto';
-font-weight: 600;
-font-size: 26px;
-color: #FF2828;
+       <string notr="true">QDoubleSpinBox{
+	font-size:24px;
+	padding:2px;
 }</string>
       </property>
-      <property name="text">
-       <string>5.8GHz</string>
+     </widget>
+     <widget class="QDoubleSpinBox" name="doubleSpinBox_4">
+      <property name="geometry">
+       <rect>
+        <x>344</x>
+        <y>9</y>
+        <width>140</width>
+        <height>41</height>
+       </rect>
       </property>
-      <property name="alignment">
-       <set>Qt::AlignmentFlag::AlignCenter</set>
+      <property name="styleSheet">
+       <string notr="true">QDoubleSpinBox{
+	font-size:24px;
+	padding:2px;
+}</string>
       </property>
-      <property name="band_active" stdset="0">
+      <property name="wrapping">
+       <bool>false</bool>
+      </property>
+      <property name="buttonSymbols">
+       <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
+      </property>
+      <property name="accelerated">
+       <bool>false</bool>
+      </property>
+      <property name="keyboardTracking">
+       <bool>true</bool>
+      </property>
+      <property name="showGroupSeparator" stdset="0">
        <bool>false</bool>
       </property>
      </widget>
-     <widget class="QLabel" name="ghz58_4">
+     <widget class="QLabel" name="label_4">
       <property name="geometry">
        <rect>
-        <x>351</x>
-        <y>0</y>
-        <width>117</width>
-        <height>39</height>
+        <x>307</x>
+        <y>10</y>
+        <width>30</width>
+        <height>31</height>
        </rect>
       </property>
       <property name="styleSheet">
-       <string notr="true">*[band_active=&quot;true&quot;] { 
-border: 2px solid #328843;
-font-family: 'Roboto';
-font-weight: 600;
-font-size: 26px;
-color: #50E37F;
-}
-
-*[band_active=&quot;false&quot;] { 
-border: 2px solid #328843;
-background-image: url(:/images/band_inactive.png);
-font-family: 'Roboto';
-font-weight: 600;
-font-size: 26px;
-color: #FF2828;
+       <string notr="true">QLabel{
+border:none;
+font-size:56px;
+padiing:4px;
 }</string>
       </property>
       <property name="text">
-       <string>5.8GHz</string>
+       <string>-</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignmentFlag::AlignCenter</set>
       </property>
-      <property name="band_active" stdset="0">
-       <bool>true</bool>
+      <property name="indent">
+       <number>-1</number>
       </property>
      </widget>
-     <widget class="QLabel" name="ghz24_1">
+     <widget class="QLabel" name="label_5">
       <property name="geometry">
        <rect>
-        <x>0</x>
-        <y>39</y>
-        <width>117</width>
-        <height>39</height>
+        <x>305</x>
+        <y>45</y>
+        <width>30</width>
+        <height>41</height>
        </rect>
       </property>
       <property name="styleSheet">
-       <string notr="true">*[band_active=&quot;true&quot;] { 
-border: 2px solid #328843;
-font-family: 'Roboto';
-font-weight: 600;
-font-size: 26px;
-color: #50E37F;
-}
-
-*[band_active=&quot;false&quot;] { 
-border: 2px solid #328843;
-background-image: url(:/images/band_inactive.png);
-font-family: 'Roboto';
-font-weight: 600;
-font-size: 26px;
-color: #FF2828;
+       <string notr="true">QLabel{
+border:none;
+font-size:56px;
+padiing:4px;
 }</string>
       </property>
       <property name="text">
-       <string>2.4GHz</string>
+       <string>-</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignmentFlag::AlignCenter</set>
       </property>
-      <property name="band_active" stdset="0">
-       <bool>true</bool>
+      <property name="indent">
+       <number>-1</number>
       </property>
      </widget>
-     <widget class="QLabel" name="ghz24_2">
+     <widget class="QLabel" name="label_6">
       <property name="geometry">
        <rect>
-        <x>117</x>
-        <y>39</y>
-        <width>117</width>
-        <height>39</height>
+        <x>10</x>
+        <y>20</y>
+        <width>121</width>
+        <height>20</height>
        </rect>
       </property>
       <property name="styleSheet">
-       <string notr="true">*[band_active=&quot;true&quot;] { 
-border: 2px solid #328843;
-font-family: 'Roboto';
-font-weight: 600;
-font-size: 26px;
-color: #50E37F;
+       <string notr="true">border:none;
+font-size:24px;</string>
+      </property>
+      <property name="text">
+       <string>Radio, GHz</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_7">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>63</y>
+        <width>131</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">border:none;
+font-size:24px;</string>
+      </property>
+      <property name="text">
+       <string>Sound, GHz</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton">
+      <property name="geometry">
+       <rect>
+        <x>500</x>
+        <y>9</y>
+        <width>41</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton{background-image: url(:/icons/save.svg);
+background-position:center;
+border-radius:6px;
 }
 
-*[band_active=&quot;false&quot;] { 
-border: 2px solid #328843;
-background-image: url(:/images/band_inactive.png);
-font-family: 'Roboto';
-font-weight: 600;
-font-size: 26px;
-color: #FF2828;
+QPushButton:pressed, QPushButton:checked{
+background-color:#2b6425
 }</string>
       </property>
       <property name="text">
-       <string>2.4GHz</string>
+       <string/>
       </property>
-      <property name="alignment">
-       <set>Qt::AlignmentFlag::AlignCenter</set>
-      </property>
-      <property name="band_active" stdset="0">
+      <property name="checkable">
        <bool>false</bool>
       </property>
      </widget>
-     <widget class="QLabel" name="ghz24_3">
+     <widget class="QPushButton" name="pushButton_2">
       <property name="geometry">
        <rect>
-        <x>234</x>
-        <y>39</y>
-        <width>117</width>
-        <height>39</height>
+        <x>500</x>
+        <y>52</y>
+        <width>41</width>
+        <height>41</height>
        </rect>
       </property>
       <property name="styleSheet">
-       <string notr="true">*[band_active=&quot;true&quot;] { 
-border: 2px solid #328843;
-font-family: 'Roboto';
-font-weight: 600;
-font-size: 26px;
-color: #50E37F;
+       <string notr="true">QPushButton{background-image: url(:/icons/save.svg);
+background-position:center;
+border-radius:6px;
 }
 
-*[band_active=&quot;false&quot;] { 
-border: 2px solid #328843;
-background-image: url(:/images/band_inactive.png);
-font-family: 'Roboto';
-font-weight: 600;
-font-size: 26px;
-color: #FF2828;
+QPushButton:pressed, QPushButton:checked{
+background-color:#2b6425
 }</string>
       </property>
       <property name="text">
-       <string>2.4GHz</string>
+       <string/>
       </property>
-      <property name="alignment">
-       <set>Qt::AlignmentFlag::AlignCenter</set>
-      </property>
-      <property name="band_active" stdset="0">
+      <property name="checkable">
        <bool>false</bool>
       </property>
      </widget>
-     <widget class="QLabel" name="ghz24_4">
+     <widget class="QPushButton" name="pushButton_3">
       <property name="geometry">
        <rect>
-        <x>351</x>
-        <y>39</y>
-        <width>117</width>
-        <height>39</height>
+        <x>550</x>
+        <y>9</y>
+        <width>41</width>
+        <height>41</height>
        </rect>
       </property>
       <property name="styleSheet">
-       <string notr="true">*[band_active=&quot;true&quot;] { 
-border: 2px solid #328843;
-font-family: 'Roboto';
-font-weight: 600;
-font-size: 26px;
-color: #50E37F;
+       <string notr="true">QPushButton{background-image: url(:/icons/chart.svg);
+background-position:center;
+border-radius:6px;
 }
 
-*[band_active=&quot;false&quot;] { 
-border: 2px solid #328843;
-background-image: url(:/images/band_inactive.png);
-font-family: 'Roboto';
-font-weight: 600;
-font-size: 26px;
-color: #FF2828;
+QPushButton:pressed, QPushButton:checked{
+background-color:#2b6425
 }</string>
       </property>
       <property name="text">
-       <string>2.4GHz</string>
+       <string/>
       </property>
-      <property name="alignment">
-       <set>Qt::AlignmentFlag::AlignCenter</set>
+      <property name="checkable">
+       <bool>false</bool>
       </property>
-      <property name="band_active" stdset="0">
+     </widget>
+     <widget class="QPushButton" name="pushButton_4">
+      <property name="geometry">
+       <rect>
+        <x>550</x>
+        <y>52</y>
+        <width>41</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton{background-image: url(:/icons/chart.svg);
+background-position:center;
+border-radius:6px;
+}
+
+QPushButton:pressed, QPushButton:checked{
+background-color:#2b6425
+}</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="checkable">
        <bool>false</bool>
       </property>
      </widget>
@@ -422,7 +395,7 @@ color: #FF2828;
     <widget class="QLabel" name="RF_alert">
      <property name="geometry">
       <rect>
-       <x>1269</x>
+       <x>1280</x>
        <y>9</y>
        <width>267</width>
        <height>76</height>
@@ -433,14 +406,15 @@ color: #FF2828;
 font-weight: 600;
 font-size: 30px;
 color: #FFFFFF;
+background-color: transparent;
 }
 
 *[alert=&quot;true&quot;]{
-background-image: url(:/images/rf_alert_on.png);
+border-image: url(:/images/rf_alert_on.png) stretch stretch;
 }
 
 *[alert=&quot;false&quot;]{
-background-image: url(:/images/rf_alert_off.png);
+border-image: url(:/images/rf_alert_off.png) stretch stretch;
 }</string>
      </property>
      <property name="text">
@@ -477,14 +451,15 @@ background-image: url(:/images/rf_alert_off.png);
 font-weight: 600;
 font-size: 30px;
 color: #FFFFFF;
+background-color: transparent;
 }
 
 *[alert=&quot;true&quot;]{
-background-image: url(:/images/sound_alert_on.png);
+border-image: url(:/images/sound_alert_on.png) stretch stretch;
 }
 
 *[alert=&quot;false&quot;]{
-background-image: url(:/images/sound_alert_off.png);
+border-image: url(:/images/sound_alert_off.png) stretch stretch;
 }</string>
      </property>
      <property name="text">
@@ -506,7 +481,7 @@ background-image: url(:/images/sound_alert_off.png);
     <widget class="QFrame" name="GPS">
      <property name="geometry">
       <rect>
-       <x>251</x>
+       <x>200</x>
        <y>17</y>
        <width>198</width>
        <height>60</height>
@@ -571,7 +546,7 @@ color: #FFFFFF;</string>
     <widget class="QFrame" name="WiFi">
      <property name="geometry">
       <rect>
-       <x>481</x>
+       <x>420</x>
        <y>17</y>
        <width>198</width>
        <height>60</height>

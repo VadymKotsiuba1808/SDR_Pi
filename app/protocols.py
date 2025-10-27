@@ -20,3 +20,7 @@ class LoginDialogSettings(Protocol):
     role: str
     owner_password_hash: str
     remember_me: bool
+
+
+class ChangePwdDialogSettings(Protocol):
+    owner_password_hash: str

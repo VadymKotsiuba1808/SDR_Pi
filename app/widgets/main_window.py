@@ -38,6 +38,7 @@ class MainWindow(QMainWindow):
         self._setup_timers()
         self._setup_state_variables()
 
+        self.adjust_fields()
         self.connect_handlers()
 
         self.Radar_Red.hide()
@@ -45,6 +46,22 @@ class MainWindow(QMainWindow):
         self.start_async_tasks()
 
         print("Головне вікно успішно ініціалізовано.")
+
+    def adjust_fields(self):
+        radar_max_radius = self.settings_service.radar_max_radius
+        self.radarRadiusSpinbox.setMaximum(radar_max_radius)
+
+        radar_radius = self.settings_service.radar_radius
+        self.radarRadiusSpinbox.setValue(radar_radius)
+
+        radio_range = self.settings_service.radio_range_GHz
+
+        self.radioStartDoubleSpinBox.setValue(float(radio_range[0]))
+        self.radioEndDoubleSpinBox.setValue(float(radio_range[1]))
+
+        sound_range = self.settings_service.sound_range_GHz
+        self.soundStartDoubleSpinBox.setValue(float(sound_range[0]))
+        self.soundEndDoubleSpinBox.setValue(float(sound_range[1]))
 
     def connect_handlers(self):
         self.mapLayoutButton.clicked.connect(self.change_map_type)
@@ -55,14 +72,10 @@ class MainWindow(QMainWindow):
 
         self.saveRadarSettingsBtn.clicked.connect(self.handle_radar_radius_change)
 
-        radar_max_radius = self.settings_service.radar_max_radius
-        self.radarRadiusSpinbox.setMaximum(radar_max_radius)
-
-        radar_radius = self.settings_service.radar_radius
-        self.radarRadiusSpinbox.setValue(radar_radius)
-
         self.saveRadioRangePushButton.clicked.connect(self.set_radio_range)
         self.saveSoundRangePushButton.clicked.connect(self.set_sound_range)
+        self.clearRadioRangePushButton.clicked.connect(self.clear_radio_range_values)
+        self.clearSoundRangePushButton.clicked.connect(self.clear_sound_range_values)
 
         self.radioStartDoubleSpinBox.valueChanged.connect(
             self.handle_signal_range_change
@@ -212,12 +225,50 @@ class MainWindow(QMainWindow):
         end_value = self.radioEndDoubleSpinBox.value()
 
         self.settings_service.radio_range_GHz = [start_value, end_value]
+        self.reset_radio_range_status()
+
+    def clear_radio_range_values(self):
+        radio_range = self.settings_service.radio_range_GHz
+
+        self.radioStartDoubleSpinBox.setValue(float(radio_range[0]))
+        self.radioEndDoubleSpinBox.setValue(float(radio_range[1]))
+
+        self.reset_radio_range_status()
+
+    def reset_radio_range_status(self):
+        self.radioStartDoubleSpinBox.setProperty("status", "saved")
+        self.radioEndDoubleSpinBox.setProperty("status", "saved")
+
+        self.update_element_styles(self.radioStartDoubleSpinBox)
+        self.update_element_styles(self.radioEndDoubleSpinBox)
 
     def set_sound_range(self):
         start_value = self.soundStartDoubleSpinBox.value()
         end_value = self.soundEndDoubleSpinBox.value()
 
         self.settings_service.sound_range_GHz = [start_value, end_value]
+
+        self.reset_sound_range_status()
+
+    def clear_sound_range_values(self):
+        sound_range = self.settings_service.sound_range_GHz
+
+        self.soundStartDoubleSpinBox.setValue(float(sound_range[0]))
+        self.soundEndDoubleSpinBox.setValue(float(sound_range[1]))
+
+        self.reset_sound_range_status()
+
+    def reset_sound_range_status(self):
+        self.soundStartDoubleSpinBox.setProperty("status", "saved")
+        self.soundEndDoubleSpinBox.setProperty("status", "saved")
+
+        self.update_element_styles(self.soundStartDoubleSpinBox)
+        self.update_element_styles(self.soundEndDoubleSpinBox)
+
+    def update_element_styles(self, element):
+        element.style().unpolish(element)
+        element.style().polish(element)
+        element.update()
 
     def handle_signal_range_change(self, value):
         current_spin_box = self.sender()
@@ -242,11 +293,15 @@ class MainWindow(QMainWindow):
         if start_spin_box is None or end_spin_box is None:
             return
 
+        current_spin_box.setProperty("status", "unsaved")
+
+        self.update_element_styles(current_spin_box)
+
         start_spin_box.blockSignals(True)
         end_spin_box.blockSignals(True)
 
-        start_spin_box.setMaximum(end_spin_box.value())
         end_spin_box.setMinimum(start_spin_box.value())
+        start_spin_box.setMaximum(end_spin_box.value())
 
         start_spin_box.blockSignals(False)
         end_spin_box.blockSignals(False)

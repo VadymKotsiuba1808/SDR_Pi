@@ -1,5 +1,5 @@
 #.py файли віджетів
-SOURCES = widgets/main_window.py widgets/login_dialog.py  widgets/change_pwd_dialog.py  widgets/set_map_dialog.py 
+SOURCES = main.py widgets/main_window.py widgets/login_dialog.py  widgets/change_pwd_dialog.py  widgets/set_map_dialog.py 
 
 #.ui файли
 FORMS = ui/main_window.ui ui/login_dialog.ui  ui/change_pwd_dialog.ui  ui/set_map_dialog.ui 

@@ -25,21 +25,18 @@ class Ui_SetMapDialog(object):
         self.mapDisplayLabel.setObjectName("mapDisplayLabel")
         self.centerCircleLabel = QtWidgets.QLabel(parent=SetMapDialog)
         self.centerCircleLabel.setGeometry(QtCore.QRect(277, 40, 1000, 1000))
-        self.centerCircleLabel.setStyleSheet(
-            "background-color: transparent;\n"
-            "border: 4px dashed #882222; \n"
-            "border:none;\n"
-            "border-radius: 500px; \n"
-            "font-size:48px;\n"
-            "border-image:url(:/images/radar.png) stretch stretch;"
-        )
+        self.centerCircleLabel.setStyleSheet("background-color: transparent;\n"
+"border: 4px dashed #882222; \n"
+"border:none;\n"
+"border-radius: 500px; \n"
+"font-size:48px;\n"
+"border-image:url(:/images/radar.png) stretch stretch;")
         self.centerCircleLabel.setText("")
         self.centerCircleLabel.setObjectName("centerCircleLabel")
         self.controlPanelFrame = QtWidgets.QFrame(parent=SetMapDialog)
-        self.controlPanelFrame.setGeometry(QtCore.QRect(1550, 95, 367, 829))
-        self.controlPanelFrame.setStyleSheet(
-            "background: rgba(0, 10, 0, 0.8);\n" "border: 2px solid #328844;"
-        )
+        self.controlPanelFrame.setGeometry(QtCore.QRect(1550, 100, 367, 870))
+        self.controlPanelFrame.setStyleSheet("background: rgba(0, 10, 0, 0.8);\n"
+"border: 2px solid #328844;")
         self.controlPanelFrame.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
         self.controlPanelFrame.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
         self.controlPanelFrame.setObjectName("controlPanelFrame")
@@ -48,54 +45,48 @@ class Ui_SetMapDialog(object):
         self.verticalLayout.setObjectName("verticalLayout")
         self.selectImageButton = QtWidgets.QPushButton(parent=self.controlPanelFrame)
         self.selectImageButton.setMinimumSize(QtCore.QSize(0, 105))
-        self.selectImageButton.setStyleSheet(
-            "QPushButton{\n"
-            "    border: none;\n"
-            "    background-image: url(:/images/Btn_MainMenu_off.png);\n"
-            "    font-family: 'Roboto';\n"
-            "    font-weight: 500;\n"
-            "    font-size: 30px;\n"
-            "    color: #FFFFFF;\n"
-            "}\n"
-            "\n"
-            "QPushButton:pressed{\n"
-            "    border: none;\n"
-            "    background-image: url(:/images/Btn_MainMenu_on.png);\n"
-            "    color: #002509;\n"
-            "}"
-        )
+        self.selectImageButton.setStyleSheet("QPushButton{\n"
+"    border: none;\n"
+"    background-image: url(:/images/Btn_MainMenu_off.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 30px;\n"
+"    color: #FFFFFF;\n"
+"}\n"
+"\n"
+"QPushButton:pressed{\n"
+"    border: none;\n"
+"    background-image: url(:/images/Btn_MainMenu_on.png);\n"
+"    color: #002509;\n"
+"}")
         self.selectImageButton.setObjectName("selectImageButton")
         self.verticalLayout.addWidget(self.selectImageButton)
         self.setCenterButton = QtWidgets.QPushButton(parent=self.controlPanelFrame)
         self.setCenterButton.setMinimumSize(QtCore.QSize(0, 105))
-        self.setCenterButton.setStyleSheet(
-            "QPushButton{\n"
-            "    border: none;\n"
-            "    background-image: url(:/images/Btn_MainMenu_off.png);\n"
-            "    font-family: 'Roboto';\n"
-            "    font-weight: 500;\n"
-            "    font-size: 30px;\n"
-            "    color: #FFFFFF;\n"
-            "}\n"
-            "\n"
-            "QPushButton:pressed{\n"
-            "    border: none;\n"
-            "    background-image: url(:/images/Btn_MainMenu_on.png);\n"
-            "    color: #002509;\n"
-            "}"
-        )
+        self.setCenterButton.setStyleSheet("QPushButton{\n"
+"    border: none;\n"
+"    background-image: url(:/images/Btn_MainMenu_off.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 30px;\n"
+"    color: #FFFFFF;\n"
+"}\n"
+"\n"
+"QPushButton:pressed{\n"
+"    border: none;\n"
+"    background-image: url(:/images/Btn_MainMenu_on.png);\n"
+"    color: #002509;\n"
+"}")
         self.setCenterButton.setObjectName("setCenterButton")
         self.verticalLayout.addWidget(self.setCenterButton)
         self.scaleLabel = QtWidgets.QLabel(parent=self.controlPanelFrame)
         self.scaleLabel.setMaximumSize(QtCore.QSize(16777215, 30))
-        self.scaleLabel.setStyleSheet(
-            "font-family: 'Roboto';\n"
-            "font-weight: 500;\n"
-            "font-size: 24px;\n"
-            "color: #FFFFFF;\n"
-            "border:none;\n"
-            "background-color:transparent;"
-        )
+        self.scaleLabel.setStyleSheet("font-family: \'Roboto\';\n"
+"font-weight: 500;\n"
+"font-size: 24px;\n"
+"color: #FFFFFF;\n"
+"border:none;\n"
+"background-color:transparent;")
         self.scaleLabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.scaleLabel.setObjectName("scaleLabel")
         self.verticalLayout.addWidget(self.scaleLabel)
@@ -104,42 +95,36 @@ class Ui_SetMapDialog(object):
         self.zoomOutButton = QtWidgets.QPushButton(parent=self.controlPanelFrame)
         self.zoomOutButton.setMinimumSize(QtCore.QSize(70, 70))
         self.zoomOutButton.setMaximumSize(QtCore.QSize(70, 70))
-        self.zoomOutButton.setStyleSheet(
-            "QPushButton{\n"
-            "    font-family: 'Roboto';\n"
-            "    font-weight: 500;\n"
-            "    font-size: 36px;\n"
-            "    color: #FFFFFF;\n"
-            "    border: none;\n"
-            "    border-image: url(:/images/Btn_Square_off.png) 0 0 0 0 stretch stretch;\n"
-            "}\n"
-            "QPushButton:pressed{\n"
-            "    border: none;\n"
-            "    border-image: url(:/images/Btn_Square_on.png) 0 0 0 0 stretch stretch;\n"
-            "    color: #002509;\n"
-            "}"
-        )
+        self.zoomOutButton.setStyleSheet("QPushButton{\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 36px;\n"
+"    color: #FFFFFF;\n"
+"    border: none;\n"
+"    border-image: url(:/images/Btn_Square_off.png) 0 0 0 0 stretch stretch;\n"
+"}\n"
+"QPushButton:pressed{\n"
+"    border: none;\n"
+"    border-image: url(:/images/Btn_Square_on.png) 0 0 0 0 stretch stretch;\n"
+"    color: #002509;\n"
+"}")
         self.zoomOutButton.setObjectName("zoomOutButton")
         self.scaleLayout.addWidget(self.zoomOutButton)
         self.scaleSpinBox = QtWidgets.QSpinBox(parent=self.controlPanelFrame)
         self.scaleSpinBox.setMinimumSize(QtCore.QSize(0, 70))
-        self.scaleSpinBox.setStyleSheet(
-            "QSpinBox {\n"
-            "    font-family: 'Roboto';\n"
-            "    font-weight: 500;\n"
-            "    font-size: 26px;\n"
-            "    color: #FFFFFF;\n"
-            "    background-color: rgba(0, 0, 0, 0.7);\n"
-            "    border: 1px solid #328844;\n"
-            "    padding: 5px;\n"
-            "    text-align: center;\n"
-            "}\n"
-            ""
-        )
+        self.scaleSpinBox.setStyleSheet("QSpinBox {\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 26px;\n"
+"    color: #FFFFFF;\n"
+"    background-color: rgba(0, 0, 0, 0.7);\n"
+"    border: 1px solid #328844;\n"
+"    padding: 5px;\n"
+"    text-align: center;\n"
+"}\n"
+"")
         self.scaleSpinBox.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.scaleSpinBox.setButtonSymbols(
-            QtWidgets.QAbstractSpinBox.ButtonSymbols.NoButtons
-        )
+        self.scaleSpinBox.setButtonSymbols(QtWidgets.QAbstractSpinBox.ButtonSymbols.NoButtons)
         self.scaleSpinBox.setMinimum(1)
         self.scaleSpinBox.setMaximum(500)
         self.scaleSpinBox.setProperty("value", 100)
@@ -148,56 +133,48 @@ class Ui_SetMapDialog(object):
         self.zoomInButton = QtWidgets.QPushButton(parent=self.controlPanelFrame)
         self.zoomInButton.setMinimumSize(QtCore.QSize(70, 70))
         self.zoomInButton.setMaximumSize(QtCore.QSize(70, 70))
-        self.zoomInButton.setStyleSheet(
-            "QPushButton{\n"
-            "    font-family: 'Roboto';\n"
-            "    font-weight: 500;\n"
-            "    font-size: 36px;\n"
-            "    color: #FFFFFF;\n"
-            "    border: none;\n"
-            "    border-image: url(:/images/Btn_Square_off.png) 0 0 0 0 stretch stretch;\n"
-            "}\n"
-            "QPushButton:pressed{\n"
-            "    border: none;\n"
-            "    border-image: url(:/images/Btn_Square_on.png) 0 0 0 0 stretch stretch;\n"
-            "    color: #002509;\n"
-            "}"
-        )
+        self.zoomInButton.setStyleSheet("QPushButton{\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 36px;\n"
+"    color: #FFFFFF;\n"
+"    border: none;\n"
+"    border-image: url(:/images/Btn_Square_off.png) 0 0 0 0 stretch stretch;\n"
+"}\n"
+"QPushButton:pressed{\n"
+"    border: none;\n"
+"    border-image: url(:/images/Btn_Square_on.png) 0 0 0 0 stretch stretch;\n"
+"    color: #002509;\n"
+"}")
         self.zoomInButton.setObjectName("zoomInButton")
         self.scaleLayout.addWidget(self.zoomInButton)
         self.verticalLayout.addLayout(self.scaleLayout)
         self.radiusLabel = QtWidgets.QLabel(parent=self.controlPanelFrame)
         self.radiusLabel.setMaximumSize(QtCore.QSize(16777215, 30))
-        self.radiusLabel.setStyleSheet(
-            "font-family: 'Roboto';\n"
-            "font-weight: 500;\n"
-            "font-size: 24px;\n"
-            "color: #FFFFFF;\n"
-            "border:none;\n"
-            "background-color:transparent;"
-        )
+        self.radiusLabel.setStyleSheet("font-family: \'Roboto\';\n"
+"font-weight: 500;\n"
+"font-size: 24px;\n"
+"color: #FFFFFF;\n"
+"border:none;\n"
+"background-color:transparent;")
         self.radiusLabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.radiusLabel.setObjectName("radiusLabel")
         self.verticalLayout.addWidget(self.radiusLabel)
         self.radiusMetersSpinBox = QtWidgets.QSpinBox(parent=self.controlPanelFrame)
         self.radiusMetersSpinBox.setMinimumSize(QtCore.QSize(0, 60))
-        self.radiusMetersSpinBox.setStyleSheet(
-            "QSpinBox {\n"
-            "    font-family: 'Roboto';\n"
-            "    font-weight: 500;\n"
-            "    font-size: 26px;\n"
-            "    color: #FFFFFF;\n"
-            "    background-color: rgba(0, 0, 0, 0.7);\n"
-            "    border: 1px solid #328844;\n"
-            "    padding: 5px;\n"
-            "    text-align: center;\n"
-            "}\n"
-            ""
-        )
+        self.radiusMetersSpinBox.setStyleSheet("QSpinBox {\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 26px;\n"
+"    color: #FFFFFF;\n"
+"    background-color: rgba(0, 0, 0, 0.7);\n"
+"    border: 1px solid #328844;\n"
+"    padding: 5px;\n"
+"    text-align: center;\n"
+"}\n"
+"")
         self.radiusMetersSpinBox.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.radiusMetersSpinBox.setButtonSymbols(
-            QtWidgets.QAbstractSpinBox.ButtonSymbols.NoButtons
-        )
+        self.radiusMetersSpinBox.setButtonSymbols(QtWidgets.QAbstractSpinBox.ButtonSymbols.NoButtons)
         self.radiusMetersSpinBox.setMinimum(1)
         self.radiusMetersSpinBox.setMaximum(100000)
         self.radiusMetersSpinBox.setProperty("value", 200)
@@ -205,154 +182,108 @@ class Ui_SetMapDialog(object):
         self.verticalLayout.addWidget(self.radiusMetersSpinBox)
         self.rotateLabel = QtWidgets.QLabel(parent=self.controlPanelFrame)
         self.rotateLabel.setMaximumSize(QtCore.QSize(16777215, 30))
-        self.rotateLabel.setStyleSheet(
-            "font-family: 'Roboto';\n"
-            "font-weight: 500;\n"
-            "font-size: 24px;\n"
-            "color: #FFFFFF;\n"
-            "border:none;\n"
-            "background-color:transparent;"
-        )
+        self.rotateLabel.setStyleSheet("font-family: \'Roboto\';\n"
+"font-weight: 500;\n"
+"font-size: 24px;\n"
+"color: #FFFFFF;\n"
+"border:none;\n"
+"background-color:transparent;")
         self.rotateLabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.rotateLabel.setObjectName("rotateLabel")
         self.verticalLayout.addWidget(self.rotateLabel)
         self.rotateLayout = QtWidgets.QHBoxLayout()
         self.rotateLayout.setObjectName("rotateLayout")
-        self.rotateDecreaseButton = QtWidgets.QPushButton(parent=self.controlPanelFrame)
-        self.rotateDecreaseButton.setMinimumSize(QtCore.QSize(70, 70))
-        self.rotateDecreaseButton.setMaximumSize(QtCore.QSize(70, 70))
-        self.rotateDecreaseButton.setStyleSheet(
-            "QPushButton{\n"
-            "    font-family: 'Roboto';\n"
-            "    font-weight: 500;\n"
-            "    font-size: 36px;\n"
-            "    color: #FFFFFF;\n"
-            "    border: none;\n"
-            "    border-image: url(:/images/Btn_Square_off.png) 0 0 0 0 stretch stretch;\n"
-            "}\n"
-            "QPushButton:pressed{\n"
-            "    border: none;\n"
-            "    border-image: url(:/images/Btn_Square_on.png) 0 0 0 0 stretch stretch;\n"
-            "    color: #002509;\n"
-            "}"
-        )
-        self.rotateDecreaseButton.setObjectName("rotateDecreaseButton")
-        self.rotateLayout.addWidget(self.rotateDecreaseButton)
         self.rotateSpinBox = QtWidgets.QSpinBox(parent=self.controlPanelFrame)
-        self.rotateSpinBox.setMinimumSize(QtCore.QSize(0, 70))
-        self.rotateSpinBox.setStyleSheet(
-            "QSpinBox {\n"
-            "    font-family: 'Roboto';\n"
-            "    font-weight: 500;\n"
-            "    font-size: 26px;\n"
-            "    color: #FFFFFF;\n"
-            "    background-color: rgba(0, 0, 0, 0.7);\n"
-            "    border: 1px solid #328844;\n"
-            "    padding: 5px;\n"
-            "    text-align: center;\n"
-            "}\n"
-            ""
-        )
+        self.rotateSpinBox.setMinimumSize(QtCore.QSize(0, 60))
+        self.rotateSpinBox.setStyleSheet("QSpinBox {\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 26px;\n"
+"    color: #FFFFFF;\n"
+"    background-color: rgba(0, 0, 0, 0.7);\n"
+"    border: 1px solid #328844;\n"
+"    padding: 5px;\n"
+"    text-align: center;\n"
+"}\n"
+"")
         self.rotateSpinBox.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.rotateSpinBox.setButtonSymbols(
-            QtWidgets.QAbstractSpinBox.ButtonSymbols.NoButtons
-        )
+        self.rotateSpinBox.setButtonSymbols(QtWidgets.QAbstractSpinBox.ButtonSymbols.NoButtons)
         self.rotateSpinBox.setMinimum(0)
         self.rotateSpinBox.setMaximum(359)
         self.rotateSpinBox.setProperty("value", 0)
         self.rotateSpinBox.setObjectName("rotateSpinBox")
         self.rotateLayout.addWidget(self.rotateSpinBox)
-        self.rotateIncreaseButton = QtWidgets.QPushButton(parent=self.controlPanelFrame)
-        self.rotateIncreaseButton.setMinimumSize(QtCore.QSize(70, 70))
-        self.rotateIncreaseButton.setMaximumSize(QtCore.QSize(70, 70))
-        self.rotateIncreaseButton.setStyleSheet(
-            "QPushButton{\n"
-            "    font-family: 'Roboto';\n"
-            "    font-weight: 500;\n"
-            "    font-size: 36px;\n"
-            "    color: #FFFFFF;\n"
-            "    border: none;\n"
-            "    border-image: url(:/images/Btn_Square_off.png) 0 0 0 0 stretch stretch;\n"
-            "}\n"
-            "QPushButton:pressed{\n"
-            "    border: none;\n"
-            "    border-image: url(:/images/Btn_Square_on.png) 0 0 0 0 stretch stretch;\n"
-            "    color: #002509;\n"
-            "}"
-        )
-        self.rotateIncreaseButton.setObjectName("rotateIncreaseButton")
-        self.rotateLayout.addWidget(self.rotateIncreaseButton)
         self.verticalLayout.addLayout(self.rotateLayout)
-        spacerItem = QtWidgets.QSpacerItem(
-            20,
-            40,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-            QtWidgets.QSizePolicy.Policy.Expanding,
-        )
+        self.rotateHorizontalSlider = QtWidgets.QSlider(parent=self.controlPanelFrame)
+        self.rotateHorizontalSlider.setMinimumSize(QtCore.QSize(0, 35))
+        self.rotateHorizontalSlider.setMaximumSize(QtCore.QSize(321, 16777215))
+        self.rotateHorizontalSlider.setStyleSheet("background-color:transparent;\n"
+"border:none;\n"
+"")
+        self.rotateHorizontalSlider.setMaximum(359)
+        self.rotateHorizontalSlider.setOrientation(QtCore.Qt.Orientation.Horizontal)
+        self.rotateHorizontalSlider.setInvertedAppearance(False)
+        self.rotateHorizontalSlider.setInvertedControls(False)
+        self.rotateHorizontalSlider.setTickPosition(QtWidgets.QSlider.TickPosition.NoTicks)
+        self.rotateHorizontalSlider.setObjectName("rotateHorizontalSlider")
+        self.verticalLayout.addWidget(self.rotateHorizontalSlider)
+        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
         self.verticalLayout.addItem(spacerItem)
         self.saveButton = QtWidgets.QPushButton(parent=self.controlPanelFrame)
         self.saveButton.setMinimumSize(QtCore.QSize(0, 103))
-        self.saveButton.setStyleSheet(
-            "QPushButton{\n"
-            "    border: none;\n"
-            "    background-image: url(:/images/Btn_MainMenu_off.png);\n"
-            "    font-family: 'Roboto';\n"
-            "    font-weight: 500;\n"
-            "    font-size: 30px;\n"
-            "    color: #FFFFFF;\n"
-            "}\n"
-            "\n"
-            "QPushButton:pressed{\n"
-            "    border: none;\n"
-            "    background-image: url(:/images/Btn_MainMenu_on.png);\n"
-            "    color: #002509;\n"
-            "}"
-        )
+        self.saveButton.setStyleSheet("QPushButton{\n"
+"    border: none;\n"
+"    background-image: url(:/images/Btn_MainMenu_off.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 30px;\n"
+"    color: #FFFFFF;\n"
+"}\n"
+"\n"
+"QPushButton:pressed{\n"
+"    border: none;\n"
+"    background-image: url(:/images/Btn_MainMenu_on.png);\n"
+"    color: #002509;\n"
+"}")
         self.saveButton.setObjectName("saveButton")
         self.verticalLayout.addWidget(self.saveButton)
         self.cancelButton = QtWidgets.QPushButton(parent=self.controlPanelFrame)
         self.cancelButton.setMinimumSize(QtCore.QSize(0, 103))
-        self.cancelButton.setStyleSheet(
-            "QPushButton{\n"
-            "    border: none;\n"
-            "    background-image: url(:/images/Btn_MainMenu_red.png); /* Червоний стиль для скасування */\n"
-            "    font-family: 'Roboto';\n"
-            "    font-weight: 500;\n"
-            "    font-size: 30px;\n"
-            "    color: #FFFFFF;\n"
-            "}\n"
-            "\n"
-            "QPushButton:pressed{\n"
-            "    border: none;\n"
-            "    background-image: url(:/images/Btn_MainMenu_on.png);\n"
-            "    color: #002509;\n"
-            "}"
-        )
+        self.cancelButton.setStyleSheet("QPushButton{\n"
+"    border: none;\n"
+"    background-image: url(:/images/Btn_MainMenu_red.png); /* Червоний стиль для скасування */\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 30px;\n"
+"    color: #FFFFFF;\n"
+"}\n"
+"\n"
+"QPushButton:pressed{\n"
+"    border: none;\n"
+"    background-image: url(:/images/Btn_MainMenu_on.png);\n"
+"    color: #002509;\n"
+"}")
         self.cancelButton.setObjectName("cancelButton")
         self.verticalLayout.addWidget(self.cancelButton)
         self.centerPointIconLabel = QtWidgets.QLabel(parent=SetMapDialog)
         self.centerPointIconLabel.setGeometry(QtCore.QRect(749, 490, 56, 56))
         self.centerPointIconLabel.setVisible(False)
-        self.centerPointIconLabel.setStyleSheet(
-            "background-color: transparent;\n"
-            "background-image: url(:/icons/point_location.svg);\n"
-            "background-position:center;\n"
-            "background-repeat:no-repeat;\n"
-            ""
-        )
+        self.centerPointIconLabel.setStyleSheet("background-color: transparent;\n"
+"background-image: url(:/icons/point_location.svg);\n"
+"background-position:center;\n"
+"background-repeat:no-repeat;\n"
+"")
         self.centerPointIconLabel.setText("")
         self.centerPointIconLabel.setObjectName("centerPointIconLabel")
 
         self.retranslateUi(SetMapDialog)
-        self.saveButton.clicked.connect(SetMapDialog.accept)  # type: ignore
-        self.cancelButton.clicked.connect(SetMapDialog.reject)  # type: ignore
+        self.saveButton.clicked.connect(SetMapDialog.accept) # type: ignore
+        self.cancelButton.clicked.connect(SetMapDialog.reject) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(SetMapDialog)
 
     def retranslateUi(self, SetMapDialog):
         _translate = QtCore.QCoreApplication.translate
-        SetMapDialog.setWindowTitle(
-            _translate("SetMapDialog", "Налаштування власної карти")
-        )
+        SetMapDialog.setWindowTitle(_translate("SetMapDialog", "Налаштування власної карти"))
         self.selectImageButton.setText(_translate("SetMapDialog", "Обрати зображення"))
         self.setCenterButton.setText(_translate("SetMapDialog", "Встановити центр"))
         self.scaleLabel.setText(_translate("SetMapDialog", "Масштаб (%)"))
@@ -360,7 +291,5 @@ class Ui_SetMapDialog(object):
         self.zoomInButton.setText(_translate("SetMapDialog", "+"))
         self.radiusLabel.setText(_translate("SetMapDialog", "Радіус кола (м)"))
         self.rotateLabel.setText(_translate("SetMapDialog", "Кут повороту"))
-        self.rotateDecreaseButton.setText(_translate("SetMapDialog", "-"))
-        self.rotateIncreaseButton.setText(_translate("SetMapDialog", "+"))
         self.saveButton.setText(_translate("SetMapDialog", "Зберегти"))
         self.cancelButton.setText(_translate("SetMapDialog", "Скасувати"))

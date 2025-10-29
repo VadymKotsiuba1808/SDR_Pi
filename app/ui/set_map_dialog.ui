@@ -75,9 +75,9 @@ border-image:url(:/images/radar.png) stretch stretch;</string>
    <property name="geometry">
     <rect>
      <x>1550</x>
-     <y>95</y>
+     <y>100</y>
      <width>367</width>
-     <height>829</height>
+     <height>870</height>
     </rect>
    </property>
    <property name="styleSheet">
@@ -384,45 +384,11 @@ background-color:transparent;</string>
     <item>
      <layout class="QHBoxLayout" name="rotateLayout">
       <item>
-       <widget class="QPushButton" name="rotateDecreaseButton">
-        <property name="minimumSize">
-         <size>
-          <width>70</width>
-          <height>70</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>70</width>
-          <height>70</height>
-         </size>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">QPushButton{
-	font-family: 'Roboto';
-	font-weight: 500;
-	font-size: 36px;
-	color: #FFFFFF;
-	border: none;
-	border-image: url(:/images/Btn_Square_off.png) 0 0 0 0 stretch stretch;
-}
-QPushButton:pressed{
-	border: none;
-	border-image: url(:/images/Btn_Square_on.png) 0 0 0 0 stretch stretch;
-	color: #002509;
-}</string>
-        </property>
-        <property name="text">
-         <string>-</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <widget class="QSpinBox" name="rotateSpinBox">
         <property name="minimumSize">
          <size>
           <width>0</width>
-          <height>70</height>
+          <height>60</height>
          </size>
         </property>
         <property name="styleSheet">
@@ -455,41 +421,43 @@ QPushButton:pressed{
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QPushButton" name="rotateIncreaseButton">
-        <property name="minimumSize">
-         <size>
-          <width>70</width>
-          <height>70</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>70</width>
-          <height>70</height>
-         </size>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">QPushButton{
-	font-family: 'Roboto';
-	font-weight: 500;
-	font-size: 36px;
-	color: #FFFFFF;
-	border: none;
-	border-image: url(:/images/Btn_Square_off.png) 0 0 0 0 stretch stretch;
-}
-QPushButton:pressed{
-	border: none;
-	border-image: url(:/images/Btn_Square_on.png) 0 0 0 0 stretch stretch;
-	color: #002509;
-}</string>
-        </property>
-        <property name="text">
-         <string>+</string>
-        </property>
-       </widget>
-      </item>
      </layout>
+    </item>
+    <item>
+     <widget class="QSlider" name="rotateHorizontalSlider">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>35</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>321</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color:transparent;
+border:none;
+</string>
+      </property>
+      <property name="maximum">
+       <number>359</number>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Orientation::Horizontal</enum>
+      </property>
+      <property name="invertedAppearance">
+       <bool>false</bool>
+      </property>
+      <property name="invertedControls">
+       <bool>false</bool>
+      </property>
+      <property name="tickPosition">
+       <enum>QSlider::TickPosition::NoTicks</enum>
+      </property>
+     </widget>
     </item>
     <item>
      <spacer name="verticalSpacer">

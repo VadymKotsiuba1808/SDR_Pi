@@ -18,122 +18,119 @@ import types
 def make_scalable(base_class):
     """
     Фабрика класів: створює клас-обгортку, який масштабує
-    внутрішній віджет. (QGraphicsView - це правильний підхід)
+    внутрішній віджет (з фіксованим розміром)
+    для заповнення всього доступного простору вікна.
+
+    Працює з QMainWindow, QDialog, QWidget.
     """
 
     class ScalableWindow(base_class):
-        def __init__(self, main_window_instance, widget_to_scale):
+        def __init__(self, widget_to_scale):
             super().__init__()
 
-            # 1. Зберігаємо обидва віджети
-            self.main_window = main_window_instance
-            self.ui_widget = widget_to_scale  # Це window.centralwidget
+            self.ui_widget = widget_to_scale
+            # Зберігаємо базові розміри
+            self.base_width = self.ui_widget.width()
+            self.base_height = self.ui_widget.height()
 
-            # 2. Визначаємо коректний базовий розмір
-            # (беремо з minimumSize, який ви встановили в .ui)
-            intended_size = self.main_window.minimumSize()
-            self.base_width = intended_size.width()
-            self.base_height = intended_size.height()
-
-            # Аварійний варіант, якщо розміри не зчиталися
-            if self.base_width <= 0:
-                print("[Scalable] Аварійне встановлення розміру 1920x1080.")
-                self.base_width = 1920
-                self.base_height = 1080
-
-            print(
-                f"[Scalable] ФІНАЛЬНИЙ РОЗМІР СЦЕНИ: {self.base_width}x{self.base_height}"
-            )
-
-            # 3. Створюємо сцену з коректними розмірами
+            # Встановлюємо сцену з розмірами нашого віджета
             self.scene = QGraphicsScene(0, 0, self.base_width, self.base_height)
-
-            # --- ВИРІШЕННЯ ПОМИЛКИ "cannot embed widget" ---
-            # "Звільняємо" centralwidget від MainWindow,
-            # щоб QGraphicsScene могла його "всиновити".
-            print("[Scalable] Звільнення centralwidget (setParent(None)).")
-            self.ui_widget.setParent(None)
-            # --- КІНЕЦЬ ВИРІШЕННЯ ---
-
-            # 5. Додаємо centralwidget на сцену
-            print("[Scalable] Додавання centralwidget до QGraphicsScene.")
             self.proxy = self.scene.addWidget(self.ui_widget)
 
-            # --- ВИРІШЕННЯ ПРОБЛЕМИ QCOMBOBOX ---
-            all_comboboxes = self.ui_widget.findChildren(QComboBox)
-            print(f"[Scalable] Знайдено {len(all_comboboxes)} QComboBox.")
-            for combo in all_comboboxes:
-                print(f"[Scalable] Застосовую фікс SubWindow до {combo.objectName()}")
-                combo.view().setWindowFlags(Qt.WindowType.SubWindow)
-            # --- КІНЕЦЬ ВИРІШЕННЯ ---
-
-            # 7. Налаштовуємо QGraphicsView
             self.view = QGraphicsView(self.scene)
             self.view.setRenderHint(QPainter.RenderHint.Antialiasing, True)
             self.view.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform, True)
+
+            # Вимикаємо смуги прокрутки, оскільки ми масштабуємо
             self.view.setHorizontalScrollBarPolicy(
                 Qt.ScrollBarPolicy.ScrollBarAlwaysOff
             )
             self.view.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+
+            # Встановлюємо прозорий фон для QGraphicsView
             self.view.setStyleSheet("background: transparent")
 
-            # 8. Обробка QDialog (якщо це діалог)
+            # Якщо 'base_class' є QDialog, ми повинні з'єднати сигнали.
             if base_class is QDialog:
                 self.setWindowFlags(
                     Qt.WindowType.Dialog | Qt.WindowType.FramelessWindowHint
                 )
-            if isinstance(self.main_window, QDialog):
-                self.main_window.accepted.connect(self.accept)
-                self.main_window.rejected.connect(self.reject)
 
-            # 9. Розміщуємо QGraphicsView всередині обгортки
+                # З'єднуємо сигнали "accepted" та "rejected"
+                # ВНУТРІШНЬОГО віджета (widget_to_scale)
+                # зі слотами "accept" та "reject"
+                # ЗОВНІШНЬОГО вікна (self).
+                if isinstance(widget_to_scale, QDialog):
+                    widget_to_scale.accepted.connect(self.accept)
+                    widget_to_scale.rejected.connect(self.reject)
+
+            # Розміщуємо QGraphicsView всередині обгортки
             if hasattr(self, "setCentralWidget"):
+                # Шлях для QMainWindow
                 self.setCentralWidget(self.view)
             else:
+                # Шлях для QDialog або QWidget
                 if self.layout() is None:
                     lay = QVBoxLayout(self)
                     self.setLayout(lay)
+
+                # Прибираємо відступи, щоб view заповнював усе вікно
                 self.layout().setContentsMargins(0, 0, 0, 0)
                 self.layout().addWidget(self.view)
 
+            # Встановлюємо початковий розмір обгортки
             self.resize(self.base_width, self.base_height)
 
-        # --- Методи для масштабування ---
-
         def resizeEvent(self, event):
+            # Перехоплюємо подію зміни розміру вікна
             super().resizeEvent(event)
             self.fitInView()
 
         def fitInView(self):
-            # Ця функція масштабує сцену (1920x1080)
-            # до розміру QGraphicsView (1536x864)
+            # Ця функція тепер масштабує вміст до поточного розміру вікна
+
             view_rect = self.view.viewport().rect()
             if view_rect.isEmpty():
                 return
+
             scene_rect = self.scene.sceneRect()
+
+            # Використовуємо вбудовану функцію Qt для ідеального масштабування
             self.view.fitInView(scene_rect, Qt.AspectRatioMode.KeepAspectRatio)
 
         def exec(self):
+            # Якщо викликається exec() (для QDialog),
+            # ми спочатку показуємо вікно на весь екран.
             self.showFullScreen()
             return super().exec()
 
         def showEvent(self, event):
+            # Також викликаємо fitInView при першому показі
             super().showEvent(event)
-            # Перший запуск масштабування при показі
             self.fitInView()
 
-        # --- Метод для переадресації викликів ---
+        # --- ЗАМІНА: АВТОМАТИЧНА ПЕРЕАДРЕСАЦІЯ ---
         def __getattr__(self, name):
+            """
+            Цей магічний метод автоматично викликається,
+            якщо атрибут 'name' не знайдено у ScalableWindow.
+            Він перенаправляє запит до внутрішнього ui_widget.
+
+            Це дозволяє викликати 'scalable_dialog.get_settings()'
+            безпосередньо.
+            """
             try:
-                return getattr(self.main_window, name)
+                # Намагаємося отримати атрибут (метод або властивість)
+                # у внутрішнього віджета
+                return getattr(self.ui_widget, name)
             except AttributeError:
-                try:
-                    return getattr(self.ui_widget, name)
-                except AttributeError:
-                    raise AttributeError(
-                        f"'{type(self).__name__}' object (and its wrapped 'main_window'/'ui_widget') "
-                        f"has no attribute '{name}'"
-                    )
+                # Якщо його немає і там, викликаємо стандартну помилку
+                raise AttributeError(
+                    f"'{type(self).__name__}' object (and its wrapped 'ui_widget') "
+                    f"has no attribute '{name}'"
+                )
+
+        # --- КІНЕЦЬ ЗАМІНИ ---
 
     return ScalableWindow
 

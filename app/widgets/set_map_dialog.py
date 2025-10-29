@@ -107,8 +107,7 @@ class SetMapDialog(QDialog):
         self.ui.zoomOutButton.clicked.connect(self.on_zoom_out)
         self.ui.scaleSpinBox.valueChanged.connect(self.on_scale_changed)
         self.ui.rotateSpinBox.valueChanged.connect(self.on_rotation_changed)
-        self.ui.rotateIncreaseButton.clicked.connect(self.on_rotation_increase)
-        self.ui.rotateDecreaseButton.clicked.connect(self.on_rotation_decrease)
+        self.ui.rotateHorizontalSlider.valueChanged.connect(self.on_rotation_changed)
 
         # Підключаємо кнопки до вбудованих слотів QDialog
         self.ui.saveButton.clicked.connect(self.save)
@@ -187,16 +186,25 @@ class SetMapDialog(QDialog):
 
     def on_rotation_changed(self, value):
         print(f"[on_rotation_changed] Кут змінено: {value}°")
+
+        # Визначаємо, хто викликав зміну (спінбокс чи слайдер)
+        sender = self.sender()
+
+        # Синхронізуємо значення, не викликаючи повторних сигналів
+        if sender == self.ui.rotateSpinBox:
+            self.ui.rotateHorizontalSlider.blockSignals(True)
+            self.ui.rotateHorizontalSlider.setValue(value)
+            self.ui.rotateHorizontalSlider.blockSignals(False)
+        elif sender == self.ui.rotateHorizontalSlider:
+            self.ui.rotateSpinBox.blockSignals(True)
+            self.ui.rotateSpinBox.setValue(value)
+            self.ui.rotateSpinBox.blockSignals(False)
+
+        # Зберігаємо поточний кут
         self.current_rotation = float(value)
+
+        # Оновлюємо карту
         self.update_map_display()
-
-    def on_rotation_increase(self):
-        print("[on_rotation_increase] Збільшення кута")
-        self.ui.rotateSpinBox.setValue(self.ui.rotateSpinBox.value() + 1)
-
-    def on_rotation_decrease(self):
-        print("[on_rotation_decrease] Зменшення кута")
-        self.ui.rotateSpinBox.setValue(self.ui.rotateSpinBox.value() - 1)
 
     def update_map_display(self):
         print("[update_map_display] Оновлення зображення карти...")

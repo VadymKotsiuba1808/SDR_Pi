@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QDialog, QLineEdit
+from PyQt6.QtCore import QCoreApplication, QTranslator, QEvent
 
 # from PyQt6 import uic
-from PyQt6.QtCore import QCoreApplication, QTranslator, QEvent
 
 from app.ui.ui_login_dialog import Ui_LoginDialog
 

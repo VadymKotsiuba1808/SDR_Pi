@@ -6,10 +6,12 @@ from PyQt6.QtWidgets import (
     QMessageBox,
 )
 from PyQt6.QtGui import QPixmap, QPainter, QTransform
-from PyQt6.QtCore import Qt, QEvent, QPointF
-from PyQt6 import uic
+from PyQt6.QtCore import Qt, QEvent, QPointF, QCoreApplication, QTranslator
+
+# from PyQt6 import uic
 
 from app.protocols import SetMapDialogSettings
+from app.ui.ui_set_map_dialog import Ui_SetMapDialog
 
 
 class SetMapDialog(QDialog):
@@ -24,8 +26,12 @@ class SetMapDialog(QDialog):
         self.settings_service = settings
         self.add_sizes_map_k = add_sizes_map_k
 
-        # Завантажуємо .ui файл
-        uic.loadUi("app/ui/set_map_dialog.ui", self)
+        # uic.loadUi("app/ui/set_map_dialog.ui", self)
+
+        # Завантажуємо ui
+        self.ui = Ui_SetMapDialog()
+        self.ui.setupUi(self)
+
         print("[Init] UI завантажено")
 
         # Внутрішні змінні стану
@@ -34,50 +40,79 @@ class SetMapDialog(QDialog):
         self.current_scale = 1.0
         self.current_rotation = 0.0  # Нова змінна для обертання
 
-        # --- ВИПРАВЛЕННЯ: Повертаємо QPointF для точності ---
         self.center_point_f = QPointF()
         self.current_offset_f = QPointF()
         # ---
 
         self.is_centering_mode = False
-        circle_radius = self.centerCircleLabel.width() / 2
+        circle_radius = self.ui.centerCircleLabel.width() / 2
 
-        # --- ВИПРАВЛЕННЯ: Повертаємо QPointF ---
         self.screen_center_f = QPointF(
-            self.centerCircleLabel.x() + circle_radius,
-            self.centerCircleLabel.y() + circle_radius,
+            self.ui.centerCircleLabel.x() + circle_radius,
+            self.ui.centerCircleLabel.y() + circle_radius,
         )
-        # ---
 
         print(
-            f"[Init] Розмір екрану карти: {self.mapDisplayLabel.width()}x{self.mapDisplayLabel.height()}"
+            f"[Init] Розмір екрану карти: {self.ui.mapDisplayLabel.width()}x{self.ui.mapDisplayLabel.height()}"
         )
         print(f"[Init] Центр екрана карти: {self.screen_center_f}")
 
         self._connect_handlers()
         print("[Init] Сигнали підключено")
 
-        self.mapDisplayLabel.installEventFilter(self)
-        self.centerCircleLabel.installEventFilter(self)
-        self.centerPointIconLabel.installEventFilter(self)
+        self.ui.mapDisplayLabel.installEventFilter(self)
+        self.ui.centerCircleLabel.installEventFilter(self)
+        self.ui.centerPointIconLabel.installEventFilter(self)
 
         # Це буде словник, який ми повернемо
         self.result_settings = {}
+
+        self.translator = QTranslator()
+
+        self.load_language()
+
         print("[Init] Ініціалізацію завершено\n")
 
+    def changeEvent(self, event):
+        # Ловимо подію, яку надіслав installTranslator
+        if event.type() == QEvent.Type.LanguageChange:
+            print("Зміна мови, оновлюю UI...")
+            # Викликаємо авто-згенеровану функцію
+            self.ui.retranslateUi(self)
+        else:
+            # Передаємо всі інші події (натискання клавіш, зміна розміру тощо)
+            # на стандартну обробку
+            super().changeEvent(event)
+
+    def load_language(self):
+        # Видаляємо старий перекладач
+        lang_code = self.settings_service.lang_code
+
+        if lang_code == None:
+            return
+
+        QCoreApplication.removeTranslator(self.translator)
+
+        # Завантажуємо та встановлюємо новий
+        path = f"app/i18n/qm/app_{lang_code}.qm"  # Перевірте правильність шляху
+        if self.translator.load(path):
+            QCoreApplication.installTranslator(self.translator)
+        else:
+            print(f"Помилка: не вдалося завантажити {path}")
+
     def _connect_handlers(self):
-        self.selectImageButton.clicked.connect(self.on_select_image)
-        self.setCenterButton.clicked.connect(self.on_set_center)
-        self.zoomInButton.clicked.connect(self.on_zoom_in)
-        self.zoomOutButton.clicked.connect(self.on_zoom_out)
-        self.scaleSpinBox.valueChanged.connect(self.on_scale_changed)
-        self.rotateSpinBox.valueChanged.connect(self.on_rotation_changed)
-        self.rotateIncreaseButton.clicked.connect(self.on_rotation_increase)
-        self.rotateDecreaseButton.clicked.connect(self.on_rotation_decrease)
+        self.ui.selectImageButton.clicked.connect(self.on_select_image)
+        self.ui.setCenterButton.clicked.connect(self.on_set_center)
+        self.ui.zoomInButton.clicked.connect(self.on_zoom_in)
+        self.ui.zoomOutButton.clicked.connect(self.on_zoom_out)
+        self.ui.scaleSpinBox.valueChanged.connect(self.on_scale_changed)
+        self.ui.rotateSpinBox.valueChanged.connect(self.on_rotation_changed)
+        self.ui.rotateIncreaseButton.clicked.connect(self.on_rotation_increase)
+        self.ui.rotateDecreaseButton.clicked.connect(self.on_rotation_decrease)
 
         # Підключаємо кнопки до вбудованих слотів QDialog
-        self.saveButton.clicked.connect(self.save)
-        self.cancelButton.clicked.connect(self.cancel)
+        self.ui.saveButton.clicked.connect(self.save)
+        self.ui.cancelButton.clicked.connect(self.cancel)
 
     def on_select_image(self):
         print("[on_select_image] Відкривається діалог вибору зображення...")
@@ -114,10 +149,10 @@ class SetMapDialog(QDialog):
         print(f"[on_select_image] Початковий центр зображення: {self.center_point_f}")
         # ---
 
-        self.scaleSpinBox.setValue(100)
-        self.rotateSpinBox.setValue(0)  # Скидаємо кут
+        self.ui.scaleSpinBox.setValue(100)
+        self.ui.rotateSpinBox.setValue(0)  # Скидаємо кут
 
-        self.centerPointIconLabel.setVisible(False)
+        self.ui.centerPointIconLabel.setVisible(False)
         self.update_map_display()
 
     def on_set_center(self):
@@ -129,22 +164,22 @@ class SetMapDialog(QDialog):
         self.set_cross_cursor()
 
     def set_cross_cursor(self):
-        self.mapDisplayLabel.setCursor(Qt.CursorShape.CrossCursor)
-        self.centerCircleLabel.setCursor(Qt.CursorShape.CrossCursor)
-        self.centerPointIconLabel.setCursor(Qt.CursorShape.CrossCursor)
+        self.ui.mapDisplayLabel.setCursor(Qt.CursorShape.CrossCursor)
+        self.ui.centerCircleLabel.setCursor(Qt.CursorShape.CrossCursor)
+        self.ui.centerPointIconLabel.setCursor(Qt.CursorShape.CrossCursor)
 
     def clear_cross_cursor(self):
-        self.mapDisplayLabel.setCursor(Qt.CursorShape.ArrowCursor)
-        self.centerCircleLabel.setCursor(Qt.CursorShape.ArrowCursor)
-        self.centerPointIconLabel.setCursor(Qt.CursorShape.ArrowCursor)
+        self.ui.mapDisplayLabel.setCursor(Qt.CursorShape.ArrowCursor)
+        self.ui.centerCircleLabel.setCursor(Qt.CursorShape.ArrowCursor)
+        self.ui.centerPointIconLabel.setCursor(Qt.CursorShape.ArrowCursor)
 
     def on_zoom_in(self):
         print("[on_zoom_in] Збільшення масштабу")
-        self.scaleSpinBox.setValue(self.scaleSpinBox.value() + 1)
+        self.ui.scaleSpinBox.setValue(self.ui.scaleSpinBox.value() + 1)
 
     def on_zoom_out(self):
         print("[on_zoom_out] Зменшення масштабу")
-        self.scaleSpinBox.setValue(self.scaleSpinBox.value() - 1)
+        self.ui.scaleSpinBox.setValue(self.ui.scaleSpinBox.value() - 1)
 
     def on_scale_changed(self, value):
         print(f"[on_scale_changed] Масштаб змінено: {value}%")
@@ -157,22 +192,22 @@ class SetMapDialog(QDialog):
 
     def on_rotation_increase(self):
         print("[on_rotation_increase] Збільшення кута")
-        self.rotateSpinBox.setValue(self.rotateSpinBox.value() + 1)
+        self.ui.rotateSpinBox.setValue(self.ui.rotateSpinBox.value() + 1)
 
     def on_rotation_decrease(self):
         print("[on_rotation_decrease] Зменшення кута")
-        self.rotateSpinBox.setValue(self.rotateSpinBox.value() - 1)
+        self.ui.rotateSpinBox.setValue(self.ui.rotateSpinBox.value() - 1)
 
     def update_map_display(self):
         print("[update_map_display] Оновлення зображення карти...")
         if not self.original_pixmap:
             print("[update_map_display] Немає зображення для відображення — очищаю фон")
-            bg_pixmap = QPixmap(self.mapDisplayLabel.size())
+            bg_pixmap = QPixmap(self.ui.mapDisplayLabel.size())
             bg_pixmap.fill(Qt.GlobalColor.transparent)
-            self.mapDisplayLabel.setPixmap(bg_pixmap)
+            self.ui.mapDisplayLabel.setPixmap(bg_pixmap)
             return
 
-        self.current_scale = self.scaleSpinBox.value() / 100.0
+        self.current_scale = self.ui.scaleSpinBox.value() / 100.0
 
         scaled_pixmap = self.original_pixmap.scaled(
             int(self.original_pixmap.width() * self.current_scale),
@@ -186,7 +221,7 @@ class SetMapDialog(QDialog):
         self.current_offset_f = self.screen_center_f - scaled_center_point_f
         # ---
 
-        display_pixmap = QPixmap(self.mapDisplayLabel.size())
+        display_pixmap = QPixmap(self.ui.mapDisplayLabel.size())
         display_pixmap.fill(Qt.GlobalColor.transparent)
 
         painter = QPainter(display_pixmap)
@@ -209,14 +244,14 @@ class SetMapDialog(QDialog):
 
         painter.end()
 
-        self.mapDisplayLabel.setPixmap(display_pixmap)
+        self.ui.mapDisplayLabel.setPixmap(display_pixmap)
         print("[update_map_display] Відображення оновлено\n")
 
     def eventFilter(self, source, event):
         if (
-            source is self.mapDisplayLabel
-            or source is self.centerCircleLabel
-            or source is self.centerPointIconLabel
+            source is self.ui.mapDisplayLabel
+            or source is self.ui.centerCircleLabel
+            or source is self.ui.centerPointIconLabel
         ):
             if event.type() == QEvent.Type.MouseButtonPress and self.is_centering_mode:
                 if event.button() == Qt.MouseButton.LeftButton:
@@ -225,7 +260,7 @@ class SetMapDialog(QDialog):
 
                     # 1. Отримуємо позицію кліку (у координатах mapDisplayLabel)
                     label_click_pos_f = QPointF(
-                        source.mapTo(self.mapDisplayLabel, event.pos())
+                        source.mapTo(self.ui.mapDisplayLabel, event.pos())
                     )
                     print(
                         f"[eventFilter] Клік у режимі центрування: {label_click_pos_f}"
@@ -267,7 +302,7 @@ class SetMapDialog(QDialog):
 
                     self.is_centering_mode = False
                     self.clear_cross_cursor()
-                    self.centerPointIconLabel.setVisible(True)
+                    self.ui.centerPointIconLabel.setVisible(True)
                     self.update_map_display()
                     return True
 
@@ -283,9 +318,9 @@ class SetMapDialog(QDialog):
             QMessageBox.warning(None, "Помилка", "Зображення не вибрано!")
             return  # Важливо: не викликаємо super().accept()
 
-        screen_circle_radius_px = self.centerCircleLabel.width() / 2
-        user_defined_radius_m = self.radiusMetersSpinBox.value()
-        current_view_scale = self.scaleSpinBox.value() / 100.0
+        screen_circle_radius_px = self.ui.centerCircleLabel.width() / 2
+        user_defined_radius_m = self.ui.radiusMetersSpinBox.value()
+        current_view_scale = self.ui.scaleSpinBox.value() / 100.0
 
         print(
             f"[accept] Радіус на екрані: {screen_circle_radius_px}px = {user_defined_radius_m}м"

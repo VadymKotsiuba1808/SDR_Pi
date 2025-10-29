@@ -31,11 +31,11 @@ class LoginDialog(QDialog):
         self.ui.passwordHideBtn.clicked.connect(self.hide_unhide_password)
         self.ui.loginButton.clicked.connect(self.handle_login)
 
+        print("[LoginDialog] Сигнали підключено.")
+
         self.translator = QTranslator()
 
         self.load_language()
-
-        print("[LoginDialog] Сигнали підключено.")
 
     def changeEvent(self, event):
         # Ловимо подію, яку надіслав installTranslator

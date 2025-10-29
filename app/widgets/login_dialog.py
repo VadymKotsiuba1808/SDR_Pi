@@ -1,5 +1,9 @@
 from PyQt6.QtWidgets import QDialog, QLineEdit
-from PyQt6 import uic
+
+# from PyQt6 import uic
+from PyQt6.QtCore import QCoreApplication, QTranslator, QEvent
+
+from app.ui.ui_login_dialog import Ui_LoginDialog
 
 from app.protocols import LoginDialogSettings
 from app.utils.password_utils import verify_password
@@ -13,80 +17,112 @@ class LoginDialog(QDialog):
         self.settings_service = settings
 
         print("[LoginDialog] Завантаження UI...")
-        uic.loadUi("app/ui/login_dialog.ui", self)
+        # uic.loadUi("app/ui/login_dialog.ui", self)
+        self.ui = Ui_LoginDialog()
+        self.ui.setupUi(self)
 
         role = self.settings_service.role
         print(f"[LoginDialog] Поточна роль із налаштувань: {role}")
 
-        self.roleComboBox.currentIndexChanged.connect(self.toggle_password_field)
-        self.roleComboBox.setCurrentIndex(0 if role == "operator" else 1)
-        self.passwordLineEdit.textChanged.connect(self.change_password_status)
+        self.ui.roleComboBox.currentIndexChanged.connect(self.toggle_password_field)
+        self.ui.roleComboBox.setCurrentIndex(0 if role == "operator" else 1)
+        self.ui.passwordLineEdit.textChanged.connect(self.change_password_status)
 
-        self.passwordHideBtn.clicked.connect(self.hide_unhide_password)
-        self.loginButton.clicked.connect(self.handle_login)
+        self.ui.passwordHideBtn.clicked.connect(self.hide_unhide_password)
+        self.ui.loginButton.clicked.connect(self.handle_login)
+
+        self.translator = QTranslator()
+
+        self.load_language()
+
         print("[LoginDialog] Сигнали підключено.")
+
+    def changeEvent(self, event):
+        # Ловимо подію, яку надіслав installTranslator
+        if event.type() == QEvent.Type.LanguageChange:
+            print("Зміна мови, оновлюю UI...")
+            # Викликаємо авто-згенеровану функцію
+            self.ui.retranslateUi(self)
+        else:
+            # Передаємо всі інші події (натискання клавіш, зміна розміру тощо)
+            # на стандартну обробку
+            super().changeEvent(event)
+
+    def load_language(self):
+        # Видаляємо старий перекладач
+        lang_code = self.settings_service.lang_code
+
+        if lang_code == None:
+            return
+
+        QCoreApplication.removeTranslator(self.translator)
+
+        # Завантажуємо та встановлюємо новий
+        path = f"app/i18n/qm/app_{lang_code}.qm"  # Перевірте правильність шляху
+        if self.translator.load(path):
+            QCoreApplication.installTranslator(self.translator)
+        else:
+            print(f"Помилка: не вдалося завантажити {path}")
 
     def toggle_password_field(self):
         """
         Показує або ховає контейнер з паролем
         залежно від обраної ролі.
         """
-        current_role = self.roleComboBox.currentText()
-        print(f"[toggle_password_field] Обрана роль: {current_role}")
+        current_index = self.ui.roleComboBox.currentIndex()
 
-        if current_role == "Власник":
+        if current_index == 1:
             print("[toggle_password_field] Показуємо поле пароля")
-            self.passwordContainer.setVisible(True)
+            self.ui.passwordContainer.setVisible(True)
         else:
             print("[toggle_password_field] Ховаємо поле пароля")
-            self.passwordContainer.setVisible(False)
+            self.ui.passwordContainer.setVisible(False)
 
     def change_password_status(self):
         # Приховую Label зі статусом
         print(
             "[change_password_status] Зміна тексту в полі пароля — ховаємо мітку помилки."
         )
-        self.passwordIncorrectLabel.setVisible(False)
+        self.ui.passwordIncorrectLabel.setVisible(False)
 
     def hide_unhide_password(self):
-        status = self.passwordHideBtn.property("status")
+        status = self.ui.passwordHideBtn.property("status")
         print(f"[hide_unhide_password] Поточний статус: {status}")
 
         if status == "hidden":
             print("[hide_unhide_password] Відображаємо пароль.")
-            self.passwordHideBtn.setProperty("status", "unhidden")
-            self.passwordLineEdit.setEchoMode(QLineEdit.EchoMode.Normal)
+            self.ui.passwordHideBtn.setProperty("status", "unhidden")
+            self.ui.passwordLineEdit.setEchoMode(QLineEdit.EchoMode.Normal)
         else:
             print("[hide_unhide_password] Приховуємо пароль.")
-            self.passwordHideBtn.setProperty("status", "hidden")
-            self.passwordLineEdit.setEchoMode(QLineEdit.EchoMode.Password)
+            self.ui.passwordHideBtn.setProperty("status", "hidden")
+            self.ui.passwordLineEdit.setEchoMode(QLineEdit.EchoMode.Password)
 
-        self.passwordHideBtn.style().unpolish(self.passwordHideBtn)
-        self.passwordHideBtn.style().polish(self.passwordHideBtn)
-        self.passwordHideBtn.update()
+        self.ui.passwordHideBtn.style().unpolish(self.ui.passwordHideBtn)
+        self.ui.passwordHideBtn.style().polish(self.ui.passwordHideBtn)
+        self.ui.passwordHideBtn.update()
         print("[hide_unhide_password] Оновлення стилю завершено.")
 
     def handle_login(self):
-        role = self.roleComboBox.currentText()
-        print(f"[handle_login] Користувач вибрав роль: {role}")
+        index = self.ui.roleComboBox.currentIndex()
 
-        if role == "Оператор":
+        if index == 0:
             print("[handle_login] Вхід як оператор. Пропускаємо перевірку пароля.")
             self.settings_service.role = "operator"
             self.accept_window()
             return
 
         # 2. Логіка для Власника (потрібна перевірка пароля)
-        if role == "Власник":
+        if index == 1:
             print("[handle_login] Перевірка пароля для власника.")
-            password = self.passwordLineEdit.text()
+            password = self.ui.passwordLineEdit.text()
             real_password = self.settings_service.owner_password_hash
 
             is_password_correct = verify_password(password, real_password)
             print(f"[handle_login] Результат перевірки пароля: {is_password_correct}")
 
             if is_password_correct:
-                remember = self.rememberCheckBox.isChecked()
+                remember = self.ui.rememberCheckBox.isChecked()
                 print(
                     f"[handle_login] Пароль правильний. Запам'ятати користувача: {remember}"
                 )
@@ -99,7 +135,7 @@ class LoginDialog(QDialog):
                 print(
                     "[handle_login] Неправильний пароль. Показуємо повідомлення про помилку."
                 )
-                self.passwordIncorrectLabel.setVisible(True)
+                self.ui.passwordIncorrectLabel.setVisible(True)
 
     def accept_window(self):
         print("[accept_window] Закриття діалогу з кодом Accepted.")

@@ -30,6 +30,7 @@ class SettingsService(QObject):
         "tile_divider_enabled": Setting("dev", bool, False),
         "radio_range_GHz": ("signal", list, [0.0, 9.9]),
         "sound_range_GHz": ("signal", list, [0.0, 9.9]),
+        "lang_code": ("ui", str, "uk"),
     }
 
     def __init__(self):

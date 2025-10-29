@@ -4,10 +4,21 @@ import platform
 import subprocess
 import re
 from PyQt6.QtWidgets import QMainWindow, QApplication, QDialog
-from PyQt6.QtCore import QTimer, QDateTime, Qt, QPointF
+from PyQt6.QtCore import (
+    QTimer,
+    QDateTime,
+    Qt,
+    QPointF,
+    QEvent,
+    QCoreApplication,
+    QTranslator,
+)
 from PyQt6.QtGui import QPixmap, QConicalGradient, QPainter, QColor, QPen
-from PyQt6 import uic
+
+# from PyQt6 import uic
 from qasync import asyncSlot
+
+from app.ui.ui_main_window import Ui_MainWindow
 from app.assets import resources_rc
 
 from app.services.api_server import ApiServer
@@ -23,10 +34,10 @@ class MainWindow(QMainWindow):
         super().__init__(parent)
         self.settings_service = settings
 
-        uic.loadUi("app/ui/main_window.ui", self)
+        # uic.loadUi("app/ui/main_window.ui", self)
+        self.ui = Ui_MainWindow()  # Створюємо екземпляр UI
+        self.ui.setupUi(self)
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
-
-        self.is_warning = False
 
         self.test_data_provider = TestDataProvider()
 
@@ -46,53 +57,13 @@ class MainWindow(QMainWindow):
 
         self.update_wifi_signal_info()
 
-        self.Radar_Red.hide()
+        self.ui.Radar_Red.hide()
+
+        self.load_language()
 
         self.start_async_tasks()
 
         print("Головне вікно успішно ініціалізовано.")
-
-    def _adjust_fields(self):
-        radar_max_radius = self.settings_service.radar_max_radius
-        self.radarRadiusSpinbox.setMaximum(radar_max_radius)
-
-        radar_radius = self.settings_service.radar_radius
-        self.radarRadiusSpinbox.setValue(radar_radius)
-
-        radio_range = self.settings_service.radio_range_GHz
-
-        self.radioStartDoubleSpinBox.setValue(float(radio_range[0]))
-        self.radioEndDoubleSpinBox.setValue(float(radio_range[1]))
-
-        sound_range = self.settings_service.sound_range_GHz
-        self.soundStartDoubleSpinBox.setValue(float(sound_range[0]))
-        self.soundEndDoubleSpinBox.setValue(float(sound_range[1]))
-
-    def _connect_handlers(self):
-        self.mapLayoutButton.clicked.connect(self.change_map_type)
-        self.screenSaveButton.clicked.connect(self.take_screenshot)
-        self.homeButton.clicked.connect(self.update_status_bar_with_test_data)
-        self.addMapButton.clicked.connect(self.open_set_map_dialog)
-
-        self.menuButton.clicked.connect(self.test_draw_dot)
-        self.radarButton.clicked.connect(self.set_radar_mode)
-        self.mapButton.clicked.connect(self.set_map_mode)
-
-        self.saveRadarSettingsBtn.clicked.connect(self.handle_radar_radius_change)
-
-        self.saveRadioRangePushButton.clicked.connect(self.set_radio_range)
-        self.saveSoundRangePushButton.clicked.connect(self.set_sound_range)
-        self.clearRadioRangePushButton.clicked.connect(self.clear_radio_range_values)
-        self.clearSoundRangePushButton.clicked.connect(self.clear_sound_range_values)
-
-        self.radioStartDoubleSpinBox.valueChanged.connect(
-            self.handle_signal_range_change
-        )
-        self.radioEndDoubleSpinBox.valueChanged.connect(self.handle_signal_range_change)
-        self.soundStartDoubleSpinBox.valueChanged.connect(
-            self.handle_signal_range_change
-        )
-        self.soundEndDoubleSpinBox.valueChanged.connect(self.handle_signal_range_change)
 
     def showEvent(self, event):
         """
@@ -100,10 +71,132 @@ class MainWindow(QMainWindow):
         Використовуємо для первинного розрахунку геометрії.
         """
         super().showEvent(event)
-        self.map_background_label.setScaledContents(False)
+        self.ui.map_background_label.setScaledContents(False)
         # Робимо розрахунок при першому показі
         self._update_map_geometry()
         self.refresh_map()
+
+    def changeEvent(self, event):
+        # Ловимо подію, яку надіслав installTranslator
+        if event.type() == QEvent.Type.LanguageChange:
+            print("Зміна мови, оновлюю UI...")
+            # Викликаємо авто-згенеровану функцію
+            self.ui.retranslateUi(self)
+        else:
+            # Передаємо всі інші події (натискання клавіш, зміна розміру тощо)
+            # на стандартну обробку
+            super().changeEvent(event)
+
+    def _adjust_fields(self):
+        radar_max_radius = self.settings_service.radar_max_radius
+        self.ui.radarRadiusSpinbox.setMaximum(radar_max_radius)
+
+        radar_radius = self.settings_service.radar_radius
+        self.ui.radarRadiusSpinbox.setValue(radar_radius)
+
+        radio_range = self.settings_service.radio_range_GHz
+
+        self.ui.radioStartDoubleSpinBox.setValue(float(radio_range[0]))
+        self.ui.radioEndDoubleSpinBox.setValue(float(radio_range[1]))
+
+        sound_range = self.settings_service.sound_range_GHz
+        self.ui.soundStartDoubleSpinBox.setValue(float(sound_range[0]))
+        self.ui.soundEndDoubleSpinBox.setValue(float(sound_range[1]))
+
+    def _connect_handlers(self):
+        self.ui.mapLayoutButton.clicked.connect(self.change_map_type)
+        self.ui.screenSaveButton.clicked.connect(self.take_screenshot)
+        self.ui.homeButton.clicked.connect(self.update_status_bar_with_test_data)
+        self.ui.addMapButton.clicked.connect(self.open_set_map_dialog)
+
+        self.ui.menuButton.clicked.connect(self.test_draw_dot)
+        self.ui.radarButton.clicked.connect(self.set_radar_mode)
+        self.ui.mapButton.clicked.connect(self.set_map_mode)
+
+        self.ui.saveRadarSettingsBtn.clicked.connect(self.handle_radar_radius_change)
+
+        self.ui.saveRadioRangePushButton.clicked.connect(self.set_radio_range)
+        self.ui.saveSoundRangePushButton.clicked.connect(self.set_sound_range)
+        self.ui.clearRadioRangePushButton.clicked.connect(self.clear_radio_range_values)
+        self.ui.clearSoundRangePushButton.clicked.connect(self.clear_sound_range_values)
+
+        self.ui.radioStartDoubleSpinBox.valueChanged.connect(
+            self.handle_signal_range_change
+        )
+        self.ui.radioEndDoubleSpinBox.valueChanged.connect(
+            self.handle_signal_range_change
+        )
+        self.ui.soundStartDoubleSpinBox.valueChanged.connect(
+            self.handle_signal_range_change
+        )
+        self.ui.soundEndDoubleSpinBox.valueChanged.connect(
+            self.handle_signal_range_change
+        )
+
+    def _setup_timers(self):
+        self.timer_1sec = QTimer(self)
+        self.timer_1sec.timeout.connect(self.update_time_and_date)
+        self.timer_1sec.start(1000)
+
+        self.timer_radar = QTimer(self)
+        self.timer_radar.timeout.connect(self.rotate_radar_animation)
+        self.timer_radar.start(60)
+
+        self.test_update_timer = QTimer(self)
+        self.test_update_timer.timeout.connect(self.update_status_bar_with_test_data)
+        self.test_update_timer.start(10 * 60 * 1000)
+
+        self.timer_wifi = QTimer(self)
+        self.timer_wifi.timeout.connect(self.update_wifi_signal_info)
+        self.timer_wifi.start(2 * 60 * 1000)
+
+    def _setup_state_variables(self):
+        self.current_map_type_index = 0
+        self.map_types = [e for e in MapTypes]
+        self.current_coords = [49.43440, 27.00543]
+        self.isRadarMode = False
+        self.is_warning = False
+        self.translator = QTranslator()
+
+    def _update_map_geometry(self):
+        """
+        Обчислює та оновлює коефіцієнти та зміщення
+        на основі ПОТОЧНИХ розмірів віджетів.
+        (з розширеним логуванням)
+        """
+
+        # Перевірка, чи віджети вже завантажені
+        if not self.ui.Radar.width() or not self.ui.Radar.height():
+            return
+
+        # --- 1. Збір вхідних даних ---
+        radar_width = self.ui.RadarFrame.width()
+        radar_height = self.ui.RadarFrame.height()
+
+        map_bg_width = self.ui.map_background_label.width()
+        map_bg_height = self.ui.map_background_label.height()
+
+        # --- 2. Розрахунок коефіцієнтів ---
+        self.add_sizes_map_k = [
+            map_bg_width / radar_width,
+            map_bg_height / radar_height,
+        ]
+
+    def load_language(self):
+        # Видаляємо старий перекладач
+        lang_code = self.settings_service.lang_code
+
+        if lang_code == None:
+            return
+
+        QCoreApplication.removeTranslator(self.translator)
+
+        # Завантажуємо та встановлюємо новий
+        path = f"app/i18n/qm/app_{lang_code}.qm"  # Перевірте правильність шляху
+        if self.translator.load(path):
+            QCoreApplication.installTranslator(self.translator)
+        else:
+            print(f"Помилка: не вдалося завантажити {path}")
 
     @asyncSlot()
     async def start_async_tasks(self):
@@ -128,53 +221,6 @@ class MainWindow(QMainWindow):
             await asyncio.sleep(1)
             # self.handle_rf_data(data) # Викликаємо обробник, коли дані прийшли
 
-    def _setup_timers(self):
-        self.timer_1sec = QTimer(self)
-        self.timer_1sec.timeout.connect(self.update_time_and_date)
-        self.timer_1sec.start(1000)
-
-        self.timer_radar = QTimer(self)
-        self.timer_radar.timeout.connect(self.rotate_radar_animation)
-        self.timer_radar.start(60)
-
-        self.test_update_timer = QTimer(self)
-        self.test_update_timer.timeout.connect(self.update_status_bar_with_test_data)
-        self.test_update_timer.start(10 * 60 * 1000)
-
-        self.timer_wifi = QTimer(self)
-        self.timer_wifi.timeout.connect(self.update_wifi_signal_info)
-        self.timer_wifi.start(2 * 60 * 1000)
-
-    def _setup_state_variables(self):
-        self.current_map_type_index = 0
-        self.map_types = [e for e in MapTypes]
-        self.current_coords = [49.43440, 27.00543]
-        self.isRadarMode = False
-
-    def _update_map_geometry(self):
-        """
-        Обчислює та оновлює коефіцієнти та зміщення
-        на основі ПОТОЧНИХ розмірів віджетів.
-        (з розширеним логуванням)
-        """
-
-        # Перевірка, чи віджети вже завантажені
-        if not self.Radar.width() or not self.Radar.height():
-            return
-
-        # --- 1. Збір вхідних даних ---
-        radar_width = self.RadarFrame.width()
-        radar_height = self.RadarFrame.height()
-
-        map_bg_width = self.map_background_label.width()
-        map_bg_height = self.map_background_label.height()
-
-        # --- 2. Розрахунок коефіцієнтів ---
-        self.add_sizes_map_k = [
-            map_bg_width / radar_width,
-            map_bg_height / radar_height,
-        ]
-
     def handle_rf_data(self, analyzed_results):
         print(f"Слот отримав проаналізовані RF дані: {analyzed_results}")
         self.flush_radar_dots()
@@ -186,10 +232,10 @@ class MainWindow(QMainWindow):
 
     def handle_audio_alert(self, status):
         print(f"Слот отримав звукову тривогу: {status}")
-        self.Sound_alert.setProperty("alert", status)
+        self.ui.Sound_alert.setProperty("alert", status)
 
     def handle_radar_radius_change(self):
-        new_radar_radius = self.radarRadiusSpinbox.value()
+        new_radar_radius = self.ui.radarRadiusSpinbox.value()
         self.settings_service.radar_radius = new_radar_radius
         self.scale_map()
 
@@ -236,7 +282,7 @@ class MainWindow(QMainWindow):
             return
 
         self.isRadarMode = True
-        self.map_background_label.setPixmap(QPixmap())
+        self.ui.map_background_label.setPixmap(QPixmap())
 
     def set_map_mode(self):
         if self.isRadarMode == False:
@@ -246,8 +292,8 @@ class MainWindow(QMainWindow):
         self.scale_map()
 
     def set_radio_range(self):
-        start_value = self.radioStartDoubleSpinBox.value()
-        end_value = self.radioEndDoubleSpinBox.value()
+        start_value = self.ui.radioStartDoubleSpinBox.value()
+        end_value = self.ui.radioEndDoubleSpinBox.value()
 
         self.settings_service.radio_range_GHz = [start_value, end_value]
         self.reset_radio_range_status()
@@ -255,21 +301,21 @@ class MainWindow(QMainWindow):
     def clear_radio_range_values(self):
         radio_range = self.settings_service.radio_range_GHz
 
-        self.radioStartDoubleSpinBox.setValue(float(radio_range[0]))
-        self.radioEndDoubleSpinBox.setValue(float(radio_range[1]))
+        self.ui.radioStartDoubleSpinBox.setValue(float(radio_range[0]))
+        self.ui.radioEndDoubleSpinBox.setValue(float(radio_range[1]))
 
         self.reset_radio_range_status()
 
     def reset_radio_range_status(self):
-        self.radioStartDoubleSpinBox.setProperty("status", "saved")
-        self.radioEndDoubleSpinBox.setProperty("status", "saved")
+        self.ui.radioStartDoubleSpinBox.setProperty("status", "saved")
+        self.ui.radioEndDoubleSpinBox.setProperty("status", "saved")
 
-        self.update_element_styles(self.radioStartDoubleSpinBox)
-        self.update_element_styles(self.radioEndDoubleSpinBox)
+        self.update_element_styles(self.ui.radioStartDoubleSpinBox)
+        self.update_element_styles(self.ui.radioEndDoubleSpinBox)
 
     def set_sound_range(self):
-        start_value = self.soundStartDoubleSpinBox.value()
-        end_value = self.soundEndDoubleSpinBox.value()
+        start_value = self.ui.soundStartDoubleSpinBox.value()
+        end_value = self.ui.soundEndDoubleSpinBox.value()
 
         self.settings_service.sound_range_GHz = [start_value, end_value]
 
@@ -278,17 +324,17 @@ class MainWindow(QMainWindow):
     def clear_sound_range_values(self):
         sound_range = self.settings_service.sound_range_GHz
 
-        self.soundStartDoubleSpinBox.setValue(float(sound_range[0]))
-        self.soundEndDoubleSpinBox.setValue(float(sound_range[1]))
+        self.ui.soundStartDoubleSpinBox.setValue(float(sound_range[0]))
+        self.ui.soundEndDoubleSpinBox.setValue(float(sound_range[1]))
 
         self.reset_sound_range_status()
 
     def reset_sound_range_status(self):
-        self.soundStartDoubleSpinBox.setProperty("status", "saved")
-        self.soundEndDoubleSpinBox.setProperty("status", "saved")
+        self.ui.soundStartDoubleSpinBox.setProperty("status", "saved")
+        self.ui.soundEndDoubleSpinBox.setProperty("status", "saved")
 
-        self.update_element_styles(self.soundStartDoubleSpinBox)
-        self.update_element_styles(self.soundEndDoubleSpinBox)
+        self.update_element_styles(self.ui.soundStartDoubleSpinBox)
+        self.update_element_styles(self.ui.soundEndDoubleSpinBox)
 
     def update_element_styles(self, element):
         element.style().unpolish(element)
@@ -304,15 +350,15 @@ class MainWindow(QMainWindow):
         match current_spin_box.objectName():
             case "radioStartDoubleSpinBox":
                 start_spin_box = current_spin_box
-                end_spin_box = self.radioEndDoubleSpinBox
+                end_spin_box = self.ui.radioEndDoubleSpinBox
             case "radioEndDoubleSpinBox":
-                start_spin_box = self.radioStartDoubleSpinBox
+                start_spin_box = self.ui.radioStartDoubleSpinBox
                 end_spin_box = current_spin_box
             case "soundStartDoubleSpinBox":
                 start_spin_box = current_spin_box
-                end_spin_box = self.soundEndDoubleSpinBox
+                end_spin_box = self.ui.soundEndDoubleSpinBox
             case "soundEndDoubleSpinBox":
-                start_spin_box = self.soundStartDoubleSpinBox
+                start_spin_box = self.ui.soundStartDoubleSpinBox
                 end_spin_box = current_spin_box
 
         if start_spin_box is None or end_spin_box is None:
@@ -333,8 +379,8 @@ class MainWindow(QMainWindow):
 
     def update_time_and_date(self):
         current_datetime = QDateTime.currentDateTime()
-        self.DateLabel.setText(current_datetime.toString("dd.MM.yyyy"))
-        self.TimeLabel.setText(current_datetime.toString("hh:mm:ss"))
+        self.ui.DateLabel.setText(current_datetime.toString("dd.MM.yyyy"))
+        self.ui.TimeLabel.setText(current_datetime.toString("hh:mm:ss"))
 
     def rotate_radar_animation(self):
         current_angle = getattr(self, "radar_angle", 0)
@@ -343,10 +389,10 @@ class MainWindow(QMainWindow):
 
         base_pixmap = self.draw_radar_section(current_angle)
 
-        self.Radar_Green.setPixmap(base_pixmap)
+        self.ui.Radar_Green.setPixmap(base_pixmap)
 
     def draw_radar_section(self, angle):
-        base_pixmap = QPixmap(self.Radar.size())
+        base_pixmap = QPixmap(self.ui.Radar.size())
         base_pixmap.fill(Qt.GlobalColor.transparent)
 
         painter = QPainter(base_pixmap)
@@ -376,11 +422,11 @@ class MainWindow(QMainWindow):
         return base_pixmap
 
     def flush_radar_dots(self):
-        self.Radar.setPixmap(QPixmap(":/images/radar.png"))
+        self.ui.Radar.setPixmap(QPixmap(":/images/radar.png"))
 
     def create_radar_dot(self, angle, distance):
-        pixmap = self.Radar.pixmap()
-        self.radar_background = self.Radar.pixmap()
+        pixmap = self.ui.Radar.pixmap()
+        self.radar_background = self.ui.Radar.pixmap()
         if not pixmap or pixmap.isNull():
             return
 
@@ -397,7 +443,7 @@ class MainWindow(QMainWindow):
 
         painter.drawPoint(int(x), int(y))
         painter.end()
-        self.Radar.setPixmap(pixmap)
+        self.ui.Radar.setPixmap(pixmap)
 
     def clear_radar_dots(self):
         """Видаляє намальовані точки з радара, відновлюючи фон."""
@@ -406,7 +452,7 @@ class MainWindow(QMainWindow):
             return
 
         clean_pixmap = self.radar_background.copy()
-        self.Radar.setPixmap(clean_pixmap)
+        self.ui.Radar.setPixmap(clean_pixmap)
 
     @asyncSlot()
     async def refresh_map(self):
@@ -440,7 +486,7 @@ class MainWindow(QMainWindow):
         if pixmap:
             radar_radius_m = self.settings_service.radar_radius  # у метрах
             radar_max_radius_m = self.settings_service.radar_max_radius  # у метрах
-            radius_px = self.RadarFrame.width() / 2  # піксельний розмір радара
+            radius_px = self.ui.RadarFrame.width() / 2  # піксельний розмір радара
 
             scale_factor = (radius_px / current_radius_px) * (
                 radar_max_radius_m / radar_radius_m
@@ -455,21 +501,21 @@ class MainWindow(QMainWindow):
             )
 
             # === Центрування карти ===
-            self.map_background_label.setPixmap(scaled_pixmap)
-            self.map_background_label.resize(scaled_pixmap.size())
+            self.ui.map_background_label.setPixmap(scaled_pixmap)
+            self.ui.map_background_label.resize(scaled_pixmap.size())
 
             # Отримуємо центр радара
-            radar_center = self.RadarFrame.geometry().center()
+            radar_center = self.ui.RadarFrame.geometry().center()
 
             # Отримуємо центр зображення
-            pixmap_center = self.map_background_label.rect().center()
+            pixmap_center = self.ui.map_background_label.rect().center()
 
             # Розраховуємо нову позицію для QLabel, щоб центри співпали
             new_x = radar_center.x() - pixmap_center.x()
             new_y = radar_center.y() - pixmap_center.y()
 
             # Переміщуємо фон карти
-            self.map_background_label.move(new_x, new_y)
+            self.ui.map_background_label.move(new_x, new_y)
         else:
             print("При зміні радіусу карта не буда знайдена.")
 
@@ -492,8 +538,8 @@ class MainWindow(QMainWindow):
         data = self.test_data_provider.get_next_test_data()
         # self.ghz24_1.setProperty("band_active", data["ghz24_1"])
         # self.ghz58_1.setProperty("band_active", data["ghz58_1"])
-        self.RF_alert.setProperty("alert", data["rf_alert"])
-        self.Sound_alert.setProperty("alert", data["sound_alert"])
+        self.ui.RF_alert.setProperty("alert", data["rf_alert"])
+        self.ui.Sound_alert.setProperty("alert", data["sound_alert"])
         self.current_coords = data["coord"]
         print(f"Оновлено тестові дані. Координати: {self.current_coords}")
 
@@ -518,8 +564,8 @@ class MainWindow(QMainWindow):
         if wifi_strength:
             wifi_level = math.ceil(wifi_strength / 25)
 
-        self.WiFi_level.setProperty("level", wifi_level)
-        self.update_element_styles(self.WiFi_level)
+        self.ui.WiFi_level.setProperty("level", wifi_level)
+        self.update_element_styles(self.ui.WiFi_level)
 
     def get_wifi_signal_strength(self):
         """

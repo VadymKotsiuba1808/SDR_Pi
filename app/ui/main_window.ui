@@ -1,138 +1,138 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
-      <class>MainWindow</class>
-      <widget class="QMainWindow" name="MainWindow">
-            <property name="enabled">
-                  <bool>true</bool>
-            </property>
-            <property name="geometry">
-                  <rect>
-                        <x>0</x>
-                        <y>0</y>
-                        <width>1920</width>
-                        <height>1080</height>
-                  </rect>
-            </property>
-            <property name="sizePolicy">
-                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                        <horstretch>0</horstretch>
-                        <verstretch>0</verstretch>
-                  </sizepolicy>
-            </property>
-            <property name="minimumSize">
-                  <size>
-                        <width>1920</width>
-                        <height>1080</height>
-                  </size>
-            </property>
-            <property name="maximumSize">
-                  <size>
-                        <width>1920</width>
-                        <height>1080</height>
-                  </size>
-            </property>
-            <property name="windowTitle">
-                  <string>SDR Drone Detector</string>
-            </property>
-            <property name="styleSheet">
-                  <string notr="true">background-color:rgba(0, 47, 0, 139);</string>
-            </property>
-            <widget class="QWidget" name="centralwidget">
-                  <property name="maximumSize">
-                        <size>
-                              <width>1920</width>
-                              <height>1080</height>
-                        </size>
-                  </property>
-                  <widget class="QFrame" name="Header">
-                        <property name="enabled">
-                              <bool>true</bool>
-                        </property>
-                        <property name="geometry">
-                              <rect>
-                                    <x>0</x>
-                                    <y>0</y>
-                                    <width>1920</width>
-                                    <height>94</height>
-                              </rect>
-                        </property>
-                        <property name="frameShape">
-                              <enum>QFrame::Shape::StyledPanel</enum>
-                        </property>
-                        <property name="frameShadow">
-                              <enum>QFrame::Shadow::Raised</enum>
-                        </property>
-                        <widget class="QLabel" name="HeaderBack">
-                              <property name="geometry">
-                                    <rect>
-                                          <x>0</x>
-                                          <y>0</y>
-                                          <width>1920</width>
-                                          <height>94</height>
-                                    </rect>
-                              </property>
-                              <property name="styleSheet">
-                                    <string notr="true">background: rgba(0, 10, 0, 0.8);
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1920</width>
+    <height>1080</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>1920</width>
+    <height>1080</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>1920</width>
+    <height>1080</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>SDR Drone Detector</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">background-color:rgba(0, 47, 0, 139);</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <property name="maximumSize">
+    <size>
+     <width>1920</width>
+     <height>1080</height>
+    </size>
+   </property>
+   <widget class="QFrame" name="Header">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>1920</width>
+      <height>94</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::Shape::StyledPanel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Shadow::Raised</enum>
+    </property>
+    <widget class="QLabel" name="HeaderBack">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>1920</width>
+       <height>94</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background: rgba(0, 10, 0, 0.8);
 border: 3px solid #328844;</string>
-                              </property>
-                              <property name="text">
-                                    <string/>
-                              </property>
-                        </widget>
-                        <widget class="QLabel" name="DateLabel">
-                              <property name="geometry">
-                                    <rect>
-                                          <x>30</x>
-                                          <y>14</y>
-                                          <width>141</width>
-                                          <height>29</height>
-                                    </rect>
-                              </property>
-                              <property name="styleSheet">
-                                    <string notr="true">font-family: 'Roboto';
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QLabel" name="DateLabel">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>14</y>
+       <width>141</width>
+       <height>29</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">font-family: 'Roboto';
 font-style: normal;
 font-weight: 400;
 font-size: 24px;
 color: #FFFFFF;
 background: rgba(0, 10, 0, 0.1);</string>
-                              </property>
-                              <property name="text">
-                                    <string>05.01.2022</string>
-                              </property>
-                              <property name="alignment">
-                                    <set>Qt::AlignmentFlag::AlignCenter</set>
-                              </property>
-                        </widget>
-                        <widget class="QFrame" name="signals_range">
-                              <property name="geometry">
-                                    <rect>
-                                          <x>640</x>
-                                          <y>-4</y>
-                                          <width>621</width>
-                                          <height>101</height>
-                                    </rect>
-                              </property>
-                              <property name="styleSheet">
-                                    <string notr="true">border: 2px solid #328843;
+     </property>
+     <property name="text">
+      <string>05.01.2022</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QFrame" name="signals_range">
+     <property name="geometry">
+      <rect>
+       <x>640</x>
+       <y>-4</y>
+       <width>621</width>
+       <height>101</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border: 2px solid #328843;
 background: rgba(0, 10, 0, 0.1);</string>
-                              </property>
-                              <property name="frameShape">
-                                    <enum>QFrame::Shape::StyledPanel</enum>
-                              </property>
-                              <property name="frameShadow">
-                                    <enum>QFrame::Shadow::Raised</enum>
-                              </property>
-                              <widget class="QDoubleSpinBox" name="radioStartDoubleSpinBox">
-                                    <property name="geometry">
-                                          <rect>
-                                                <x>146</x>
-                                                <y>9</y>
-                                                <width>130</width>
-                                                <height>41</height>
-                                          </rect>
-                                    </property>
-                                    <property name="styleSheet">
-                                          <string notr="true">QDoubleSpinBox{
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Shape::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Shadow::Raised</enum>
+     </property>
+     <widget class="QDoubleSpinBox" name="radioStartDoubleSpinBox">
+      <property name="geometry">
+       <rect>
+        <x>146</x>
+        <y>9</y>
+        <width>130</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QDoubleSpinBox{
 	font-size:24px;
 	padding:2px;
 }
@@ -145,31 +145,31 @@ QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {
     width: 22px;
     height: 18px;
 }</string>
-                                    </property>
-                                    <property name="buttonSymbols">
-                                          <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
-                                    </property>
-                                    <property name="showGroupSeparator" stdset="0">
-                                          <bool>false</bool>
-                                    </property>
-                                    <property name="singleStep">
-                                          <double>0.100000000000000</double>
-                                    </property>
-                                    <property name="status" stdset="0">
-                                          <string>saved</string>
-                                    </property>
-                              </widget>
-                              <widget class="QDoubleSpinBox" name="soundStartDoubleSpinBox">
-                                    <property name="geometry">
-                                          <rect>
-                                                <x>146</x>
-                                                <y>52</y>
-                                                <width>130</width>
-                                                <height>41</height>
-                                          </rect>
-                                    </property>
-                                    <property name="styleSheet">
-                                          <string notr="true">QDoubleSpinBox{
+      </property>
+      <property name="buttonSymbols">
+       <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
+      </property>
+      <property name="showGroupSeparator" stdset="0">
+       <bool>false</bool>
+      </property>
+      <property name="singleStep">
+       <double>0.100000000000000</double>
+      </property>
+      <property name="status" stdset="0">
+       <string>saved</string>
+      </property>
+     </widget>
+     <widget class="QDoubleSpinBox" name="soundStartDoubleSpinBox">
+      <property name="geometry">
+       <rect>
+        <x>146</x>
+        <y>52</y>
+        <width>130</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QDoubleSpinBox{
 	font-size:24px;
 	padding:2px;
 }
@@ -182,31 +182,31 @@ QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {
     width: 22px;
     height: 18px;
 }</string>
-                                    </property>
-                                    <property name="buttonSymbols">
-                                          <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
-                                    </property>
-                                    <property name="showGroupSeparator" stdset="0">
-                                          <bool>false</bool>
-                                    </property>
-                                    <property name="singleStep">
-                                          <double>0.100000000000000</double>
-                                    </property>
-                                    <property name="status" stdset="0">
-                                          <string>saved</string>
-                                    </property>
-                              </widget>
-                              <widget class="QDoubleSpinBox" name="soundEndDoubleSpinBox">
-                                    <property name="geometry">
-                                          <rect>
-                                                <x>310</x>
-                                                <y>52</y>
-                                                <width>130</width>
-                                                <height>41</height>
-                                          </rect>
-                                    </property>
-                                    <property name="styleSheet">
-                                          <string notr="true">QDoubleSpinBox{
+      </property>
+      <property name="buttonSymbols">
+       <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
+      </property>
+      <property name="showGroupSeparator" stdset="0">
+       <bool>false</bool>
+      </property>
+      <property name="singleStep">
+       <double>0.100000000000000</double>
+      </property>
+      <property name="status" stdset="0">
+       <string>saved</string>
+      </property>
+     </widget>
+     <widget class="QDoubleSpinBox" name="soundEndDoubleSpinBox">
+      <property name="geometry">
+       <rect>
+        <x>310</x>
+        <y>52</y>
+        <width>130</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QDoubleSpinBox{
 	font-size:24px;
 	padding:2px;
 }
@@ -219,31 +219,31 @@ QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {
     width: 22px;
     height: 18px;
 }</string>
-                                    </property>
-                                    <property name="buttonSymbols">
-                                          <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
-                                    </property>
-                                    <property name="showGroupSeparator" stdset="0">
-                                          <bool>false</bool>
-                                    </property>
-                                    <property name="singleStep">
-                                          <double>0.100000000000000</double>
-                                    </property>
-                                    <property name="status" stdset="0">
-                                          <string>saved</string>
-                                    </property>
-                              </widget>
-                              <widget class="QDoubleSpinBox" name="radioEndDoubleSpinBox">
-                                    <property name="geometry">
-                                          <rect>
-                                                <x>310</x>
-                                                <y>9</y>
-                                                <width>130</width>
-                                                <height>41</height>
-                                          </rect>
-                                    </property>
-                                    <property name="styleSheet">
-                                          <string notr="true">QDoubleSpinBox{
+      </property>
+      <property name="buttonSymbols">
+       <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
+      </property>
+      <property name="showGroupSeparator" stdset="0">
+       <bool>false</bool>
+      </property>
+      <property name="singleStep">
+       <double>0.100000000000000</double>
+      </property>
+      <property name="status" stdset="0">
+       <string>saved</string>
+      </property>
+     </widget>
+     <widget class="QDoubleSpinBox" name="radioEndDoubleSpinBox">
+      <property name="geometry">
+       <rect>
+        <x>310</x>
+        <y>9</y>
+        <width>130</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QDoubleSpinBox{
 	font-size:24px;
 	padding:2px;
 }
@@ -256,124 +256,124 @@ QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {
     width: 22px;
     height: 18px;
 }</string>
-                                    </property>
-                                    <property name="wrapping">
-                                          <bool>false</bool>
-                                    </property>
-                                    <property name="buttonSymbols">
-                                          <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
-                                    </property>
-                                    <property name="accelerated">
-                                          <bool>false</bool>
-                                    </property>
-                                    <property name="keyboardTracking">
-                                          <bool>true</bool>
-                                    </property>
-                                    <property name="showGroupSeparator" stdset="0">
-                                          <bool>false</bool>
-                                    </property>
-                                    <property name="singleStep">
-                                          <double>0.100000000000000</double>
-                                    </property>
-                                    <property name="status" stdset="0">
-                                          <string>saved</string>
-                                    </property>
-                              </widget>
-                              <widget class="QLabel" name="rangeDivideLabel_1">
-                                    <property name="geometry">
-                                          <rect>
-                                                <x>278</x>
-                                                <y>10</y>
-                                                <width>30</width>
-                                                <height>31</height>
-                                          </rect>
-                                    </property>
-                                    <property name="styleSheet">
-                                          <string notr="true">QLabel{
+      </property>
+      <property name="wrapping">
+       <bool>false</bool>
+      </property>
+      <property name="buttonSymbols">
+       <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
+      </property>
+      <property name="accelerated">
+       <bool>false</bool>
+      </property>
+      <property name="keyboardTracking">
+       <bool>true</bool>
+      </property>
+      <property name="showGroupSeparator" stdset="0">
+       <bool>false</bool>
+      </property>
+      <property name="singleStep">
+       <double>0.100000000000000</double>
+      </property>
+      <property name="status" stdset="0">
+       <string>saved</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="rangeDivideLabel_1">
+      <property name="geometry">
+       <rect>
+        <x>278</x>
+        <y>10</y>
+        <width>30</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QLabel{
 border:none;
 font-size:56px;
 }</string>
-                                    </property>
-                                    <property name="text">
-                                          <string>-</string>
-                                    </property>
-                                    <property name="alignment">
-                                          <set>Qt::AlignmentFlag::AlignCenter</set>
-                                    </property>
-                                    <property name="indent">
-                                          <number>-1</number>
-                                    </property>
-                              </widget>
-                              <widget class="QLabel" name="rangeDivideLabel_2">
-                                    <property name="geometry">
-                                          <rect>
-                                                <x>278</x>
-                                                <y>50</y>
-                                                <width>30</width>
-                                                <height>31</height>
-                                          </rect>
-                                    </property>
-                                    <property name="styleSheet">
-                                          <string notr="true">QLabel{
+      </property>
+      <property name="text">
+       <string>-</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
+      </property>
+      <property name="indent">
+       <number>-1</number>
+      </property>
+     </widget>
+     <widget class="QLabel" name="rangeDivideLabel_2">
+      <property name="geometry">
+       <rect>
+        <x>278</x>
+        <y>50</y>
+        <width>30</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QLabel{
 border:none;
 font-size:56px;
 }</string>
-                                    </property>
-                                    <property name="text">
-                                          <string>-</string>
-                                    </property>
-                                    <property name="alignment">
-                                          <set>Qt::AlignmentFlag::AlignCenter</set>
-                                    </property>
-                                    <property name="indent">
-                                          <number>-1</number>
-                                    </property>
-                              </widget>
-                              <widget class="QLabel" name="radioRangeLabel">
-                                    <property name="geometry">
-                                          <rect>
-                                                <x>10</x>
-                                                <y>20</y>
-                                                <width>121</width>
-                                                <height>20</height>
-                                          </rect>
-                                    </property>
-                                    <property name="styleSheet">
-                                          <string notr="true">border:none;
+      </property>
+      <property name="text">
+       <string>-</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
+      </property>
+      <property name="indent">
+       <number>-1</number>
+      </property>
+     </widget>
+     <widget class="QLabel" name="radioRangeLabel">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>20</y>
+        <width>121</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">border:none;
 font-size:24px;</string>
-                                    </property>
-                                    <property name="text">
-                                          <string>Radio, GHz</string>
-                                    </property>
-                              </widget>
-                              <widget class="QLabel" name="soundRangeLabel">
-                                    <property name="geometry">
-                                          <rect>
-                                                <x>10</x>
-                                                <y>63</y>
-                                                <width>131</width>
-                                                <height>20</height>
-                                          </rect>
-                                    </property>
-                                    <property name="styleSheet">
-                                          <string notr="true">border:none;
+      </property>
+      <property name="text">
+       <string>Radio, GHz</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="soundRangeLabel">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>63</y>
+        <width>131</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">border:none;
 font-size:24px;</string>
-                                    </property>
-                                    <property name="text">
-                                          <string>Sound, GHz</string>
-                                    </property>
-                              </widget>
-                              <widget class="QPushButton" name="saveRadioRangePushButton">
-                                    <property name="geometry">
-                                          <rect>
-                                                <x>515</x>
-                                                <y>9</y>
-                                                <width>41</width>
-                                                <height>41</height>
-                                          </rect>
-                                    </property>
-                                    <property name="styleSheet">
-                                          <string notr="true">QPushButton{background-image: url(:/icons/save.svg);
+      </property>
+      <property name="text">
+       <string>Sound, GHz</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="saveRadioRangePushButton">
+      <property name="geometry">
+       <rect>
+        <x>515</x>
+        <y>9</y>
+        <width>41</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton{background-image: url(:/icons/save.svg);
 background-position:center;
 border-radius:6px;
 }
@@ -381,25 +381,25 @@ border-radius:6px;
 QPushButton:pressed, QPushButton:checked{
 background-color:#2b6425
 }</string>
-                                    </property>
-                                    <property name="text">
-                                          <string/>
-                                    </property>
-                                    <property name="checkable">
-                                          <bool>false</bool>
-                                    </property>
-                              </widget>
-                              <widget class="QPushButton" name="saveSoundRangePushButton">
-                                    <property name="geometry">
-                                          <rect>
-                                                <x>515</x>
-                                                <y>52</y>
-                                                <width>41</width>
-                                                <height>41</height>
-                                          </rect>
-                                    </property>
-                                    <property name="styleSheet">
-                                          <string notr="true">QPushButton{background-image: url(:/icons/save.svg);
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="checkable">
+       <bool>false</bool>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="saveSoundRangePushButton">
+      <property name="geometry">
+       <rect>
+        <x>515</x>
+        <y>52</y>
+        <width>41</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton{background-image: url(:/icons/save.svg);
 background-position:center;
 border-radius:6px;
 }
@@ -407,25 +407,25 @@ border-radius:6px;
 QPushButton:pressed, QPushButton:checked{
 background-color:#2b6425
 }</string>
-                                    </property>
-                                    <property name="text">
-                                          <string/>
-                                    </property>
-                                    <property name="checkable">
-                                          <bool>false</bool>
-                                    </property>
-                              </widget>
-                              <widget class="QPushButton" name="chartRadioRangePushButton">
-                                    <property name="geometry">
-                                          <rect>
-                                                <x>570</x>
-                                                <y>9</y>
-                                                <width>41</width>
-                                                <height>41</height>
-                                          </rect>
-                                    </property>
-                                    <property name="styleSheet">
-                                          <string notr="true">QPushButton{background-image: url(:/icons/chart.svg);
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="checkable">
+       <bool>false</bool>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="chartRadioRangePushButton">
+      <property name="geometry">
+       <rect>
+        <x>570</x>
+        <y>9</y>
+        <width>41</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton{background-image: url(:/icons/chart.svg);
 background-position:center;
 border-radius:6px;
 }
@@ -433,25 +433,25 @@ border-radius:6px;
 QPushButton:pressed, QPushButton:checked{
 background-color:#2b6425
 }</string>
-                                    </property>
-                                    <property name="text">
-                                          <string/>
-                                    </property>
-                                    <property name="checkable">
-                                          <bool>false</bool>
-                                    </property>
-                              </widget>
-                              <widget class="QPushButton" name="chartSoundRangePushButton">
-                                    <property name="geometry">
-                                          <rect>
-                                                <x>570</x>
-                                                <y>52</y>
-                                                <width>41</width>
-                                                <height>41</height>
-                                          </rect>
-                                    </property>
-                                    <property name="styleSheet">
-                                          <string notr="true">QPushButton{background-image: url(:/icons/chart.svg);
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="checkable">
+       <bool>false</bool>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="chartSoundRangePushButton">
+      <property name="geometry">
+       <rect>
+        <x>570</x>
+        <y>52</y>
+        <width>41</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton{background-image: url(:/icons/chart.svg);
 background-position:center;
 border-radius:6px;
 }
@@ -459,25 +459,25 @@ border-radius:6px;
 QPushButton:pressed, QPushButton:checked{
 background-color:#2b6425
 }</string>
-                                    </property>
-                                    <property name="text">
-                                          <string/>
-                                    </property>
-                                    <property name="checkable">
-                                          <bool>false</bool>
-                                    </property>
-                              </widget>
-                              <widget class="QPushButton" name="clearRadioRangePushButton">
-                                    <property name="geometry">
-                                          <rect>
-                                                <x>460</x>
-                                                <y>9</y>
-                                                <width>41</width>
-                                                <height>41</height>
-                                          </rect>
-                                    </property>
-                                    <property name="styleSheet">
-                                          <string notr="true">QPushButton{background-image: url(:/icons/clear.svg);
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="checkable">
+       <bool>false</bool>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="clearRadioRangePushButton">
+      <property name="geometry">
+       <rect>
+        <x>460</x>
+        <y>9</y>
+        <width>41</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton{background-image: url(:/icons/clear.svg);
 background-position:center;
 border-radius:6px;
 }
@@ -485,25 +485,25 @@ border-radius:6px;
 QPushButton:pressed, QPushButton:checked{
 background-color:#2b6425
 }</string>
-                                    </property>
-                                    <property name="text">
-                                          <string/>
-                                    </property>
-                                    <property name="checkable">
-                                          <bool>false</bool>
-                                    </property>
-                              </widget>
-                              <widget class="QPushButton" name="clearSoundRangePushButton">
-                                    <property name="geometry">
-                                          <rect>
-                                                <x>460</x>
-                                                <y>52</y>
-                                                <width>41</width>
-                                                <height>41</height>
-                                          </rect>
-                                    </property>
-                                    <property name="styleSheet">
-                                          <string notr="true">QPushButton{background-image: url(:/icons/clear.svg);
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="checkable">
+       <bool>false</bool>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="clearSoundRangePushButton">
+      <property name="geometry">
+       <rect>
+        <x>460</x>
+        <y>52</y>
+        <width>41</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton{background-image: url(:/icons/clear.svg);
 background-position:center;
 border-radius:6px;
 }
@@ -511,30 +511,31 @@ border-radius:6px;
 QPushButton:pressed, QPushButton:checked{
 background-color:#2b6425
 }</string>
-                                    </property>
-                                    <property name="text">
-                                          <string/>
-                                    </property>
-                                    <property name="checkable">
-                                          <bool>false</bool>
-                                    </property>
-                              </widget>
-                        </widget>
-                        <widget class="QLabel" name="RF_alert">
-                              <property name="geometry">
-                                    <rect>
-                                          <x>1280</x>
-                                          <y>9</y>
-                                          <width>267</width>
-                                          <height>76</height>
-                                    </rect>
-                              </property>
-                              <property name="styleSheet">
-                                    <string notr="true">*{font-family: 'Roboto';
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="checkable">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QLabel" name="RF_alert">
+     <property name="geometry">
+      <rect>
+       <x>1280</x>
+       <y>9</y>
+       <width>267</width>
+       <height>76</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">*{font-family: 'Roboto';
 font-weight: 600;
 font-size: 30px;
 color: #FFFFFF;
 background-color: transparent;
+padding-left:60px;
 }
 
 *[alert=&quot;true&quot;]{
@@ -544,42 +545,43 @@ border-image: url(:/images/rf_alert_on.png) stretch stretch;
 *[alert=&quot;false&quot;]{
 border-image: url(:/images/rf_alert_off.png) stretch stretch;
 }</string>
-                              </property>
-                              <property name="text">
-                                    <string>Тривога RF</string>
-                              </property>
-                              <property name="alignment">
-                                    <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-                              </property>
-                              <property name="margin">
-                                    <number>15</number>
-                              </property>
-                              <property name="alert" stdset="0">
-                                    <bool>false</bool>
-                              </property>
-                        </widget>
-                        <widget class="QLabel" name="Sound_alert">
-                              <property name="geometry">
-                                    <rect>
-                                          <x>1568</x>
-                                          <y>9</y>
-                                          <width>322</width>
-                                          <height>76</height>
-                                    </rect>
-                              </property>
-                              <property name="font">
-                                    <font>
-                                          <family>Roboto</family>
-                                          <pointsize>-1</pointsize>
-                                          <fontweight>DemiBold</fontweight>
-                                    </font>
-                              </property>
-                              <property name="styleSheet">
-                                    <string notr="true">*{font-family: 'Roboto';
+     </property>
+     <property name="text">
+      <string>Тривога RF</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
+     </property>
+     <property name="margin">
+      <number>0</number>
+     </property>
+     <property name="alert" stdset="0">
+      <bool>false</bool>
+     </property>
+    </widget>
+    <widget class="QLabel" name="Sound_alert">
+     <property name="geometry">
+      <rect>
+       <x>1568</x>
+       <y>9</y>
+       <width>322</width>
+       <height>76</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Roboto</family>
+       <pointsize>-1</pointsize>
+       <fontweight>DemiBold</fontweight>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">*{font-family: 'Roboto';
 font-weight: 600;
 font-size: 30px;
 color: #FFFFFF;
 background-color: transparent;
+padding-left:60px;
 }
 
 *[alert=&quot;true&quot;]{
@@ -589,222 +591,222 @@ border-image: url(:/images/sound_alert_on.png) stretch stretch;
 *[alert=&quot;false&quot;]{
 border-image: url(:/images/sound_alert_off.png) stretch stretch;
 }</string>
-                              </property>
-                              <property name="text">
-                                    <string>Тривога Sound</string>
-                              </property>
-                              <property name="alignment">
-                                    <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-                              </property>
-                              <property name="margin">
-                                    <number>15</number>
-                              </property>
-                              <property name="indent">
-                                    <number>-1</number>
-                              </property>
-                              <property name="alert" stdset="0">
-                                    <bool>true</bool>
-                              </property>
-                        </widget>
-                        <widget class="QFrame" name="GPS">
-                              <property name="geometry">
-                                    <rect>
-                                          <x>200</x>
-                                          <y>17</y>
-                                          <width>198</width>
-                                          <height>60</height>
-                                    </rect>
-                              </property>
-                              <property name="styleSheet">
-                                    <string notr="true">border: none;
+     </property>
+     <property name="text">
+      <string>Тривога Sound</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
+     </property>
+     <property name="margin">
+      <number>0</number>
+     </property>
+     <property name="indent">
+      <number>-1</number>
+     </property>
+     <property name="alert" stdset="0">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QFrame" name="GPS">
+     <property name="geometry">
+      <rect>
+       <x>200</x>
+       <y>17</y>
+       <width>198</width>
+       <height>60</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border: none;
 background: rgba(0, 10, 0, 0.1);</string>
-                              </property>
-                              <property name="frameShape">
-                                    <enum>QFrame::Shape::StyledPanel</enum>
-                              </property>
-                              <property name="frameShadow">
-                                    <enum>QFrame::Shadow::Raised</enum>
-                              </property>
-                              <widget class="QLabel" name="label">
-                                    <property name="geometry">
-                                          <rect>
-                                                <x>0</x>
-                                                <y>0</y>
-                                                <width>99</width>
-                                                <height>60</height>
-                                          </rect>
-                                    </property>
-                                    <property name="styleSheet">
-                                          <string notr="true">font-family: 'Roboto';
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Shape::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Shadow::Raised</enum>
+     </property>
+     <widget class="QLabel" name="label">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>99</width>
+        <height>60</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font-family: 'Roboto';
 font-weight: 500;
 font-size: 48px;
 color: #FFFFFF;</string>
-                                    </property>
-                                    <property name="text">
-                                          <string>GPS</string>
-                                    </property>
-                                    <property name="alignment">
-                                          <set>Qt::AlignmentFlag::AlignCenter</set>
-                                    </property>
-                              </widget>
-                              <widget class="QLabel" name="GPS_level">
-                                    <property name="geometry">
-                                          <rect>
-                                                <x>122</x>
-                                                <y>10</y>
-                                                <width>76</width>
-                                                <height>39</height>
-                                          </rect>
-                                    </property>
-                                    <property name="styleSheet">
-                                          <string notr="true">*[level=&quot;0&quot;] { background-image: url(:/images/level_0.png); }
+      </property>
+      <property name="text">
+       <string>GPS</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QLabel" name="GPS_level">
+      <property name="geometry">
+       <rect>
+        <x>122</x>
+        <y>10</y>
+        <width>76</width>
+        <height>39</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">*[level=&quot;0&quot;] { background-image: url(:/images/level_0.png); }
 *[level=&quot;1&quot;] { background-image: url(:/images/level_1.png); }
 *[level=&quot;2&quot;] { background-image: url(:/images/level_2.png); }
 *[level=&quot;3&quot;] { background-image: url(:/images/level_3.png); }
 *[level=&quot;4&quot;] { background-image: url(:/images/level_4.png); }</string>
-                                    </property>
-                                    <property name="text">
-                                          <string/>
-                                    </property>
-                                    <property name="level" stdset="0">
-                                          <number>4</number>
-                                    </property>
-                              </widget>
-                        </widget>
-                        <widget class="QFrame" name="WiFi">
-                              <property name="geometry">
-                                    <rect>
-                                          <x>420</x>
-                                          <y>17</y>
-                                          <width>198</width>
-                                          <height>60</height>
-                                    </rect>
-                              </property>
-                              <property name="styleSheet">
-                                    <string notr="true">border: none;
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="level" stdset="0">
+       <number>4</number>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QFrame" name="WiFi">
+     <property name="geometry">
+      <rect>
+       <x>420</x>
+       <y>17</y>
+       <width>198</width>
+       <height>60</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border: none;
 background: rgba(0, 10, 0, 0.1);</string>
-                              </property>
-                              <property name="frameShape">
-                                    <enum>QFrame::Shape::StyledPanel</enum>
-                              </property>
-                              <property name="frameShadow">
-                                    <enum>QFrame::Shadow::Raised</enum>
-                              </property>
-                              <widget class="QLabel" name="label_2">
-                                    <property name="geometry">
-                                          <rect>
-                                                <x>0</x>
-                                                <y>0</y>
-                                                <width>111</width>
-                                                <height>60</height>
-                                          </rect>
-                                    </property>
-                                    <property name="styleSheet">
-                                          <string notr="true">font-family: 'Roboto';
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Shape::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Shadow::Raised</enum>
+     </property>
+     <widget class="QLabel" name="label_2">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>111</width>
+        <height>60</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font-family: 'Roboto';
 font-weight: 500;
 font-size: 48px;
 color: #FFFFFF;</string>
-                                    </property>
-                                    <property name="text">
-                                          <string>Wi Fi</string>
-                                    </property>
-                                    <property name="alignment">
-                                          <set>Qt::AlignmentFlag::AlignCenter</set>
-                                    </property>
-                              </widget>
-                              <widget class="QLabel" name="WiFi_level">
-                                    <property name="geometry">
-                                          <rect>
-                                                <x>122</x>
-                                                <y>10</y>
-                                                <width>76</width>
-                                                <height>39</height>
-                                          </rect>
-                                    </property>
-                                    <property name="styleSheet">
-                                          <string notr="true">*[level=&quot;0&quot;] { background-image: url(:/images/level_0.png); }
+      </property>
+      <property name="text">
+       <string>Wi Fi</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QLabel" name="WiFi_level">
+      <property name="geometry">
+       <rect>
+        <x>122</x>
+        <y>10</y>
+        <width>76</width>
+        <height>39</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">*[level=&quot;0&quot;] { background-image: url(:/images/level_0.png); }
 *[level=&quot;1&quot;] { background-image: url(:/images/level_1.png); }
 *[level=&quot;2&quot;] { background-image: url(:/images/level_2.png); }
 *[level=&quot;3&quot;] { background-image: url(:/images/level_3.png); }
 *[level=&quot;4&quot;] { background-image: url(:/images/level_4.png); }</string>
-                                    </property>
-                                    <property name="text">
-                                          <string/>
-                                    </property>
-                                    <property name="level" stdset="0">
-                                          <number>2</number>
-                                    </property>
-                              </widget>
-                        </widget>
-                        <widget class="QLabel" name="TimeLabel">
-                              <property name="geometry">
-                                    <rect>
-                                          <x>30</x>
-                                          <y>50</y>
-                                          <width>141</width>
-                                          <height>29</height>
-                                    </rect>
-                              </property>
-                              <property name="font">
-                                    <font>
-                                          <family>Roboto</family>
-                                          <pointsize>-1</pointsize>
-                                          <italic>false</italic>
-                                          <bold>false</bold>
-                                    </font>
-                              </property>
-                              <property name="styleSheet">
-                                    <string notr="true">font-family: 'Roboto';
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="level" stdset="0">
+       <number>2</number>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QLabel" name="TimeLabel">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>50</y>
+       <width>141</width>
+       <height>29</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Roboto</family>
+       <pointsize>-1</pointsize>
+       <italic>false</italic>
+       <bold>false</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">font-family: 'Roboto';
 font-style: normal;
 font-weight: 400;
 font-size: 24px;
 color: #FFFFFF;
 background: rgba(0, 10, 0, 0.1);</string>
-                              </property>
-                              <property name="text">
-                                    <string>17:54</string>
-                              </property>
-                              <property name="alignment">
-                                    <set>Qt::AlignmentFlag::AlignCenter</set>
-                              </property>
-                        </widget>
-                  </widget>
-                  <widget class="QFrame" name="Body">
-                        <property name="enabled">
-                              <bool>true</bool>
-                        </property>
-                        <property name="geometry">
-                              <rect>
-                                    <x>0</x>
-                                    <y>95</y>
-                                    <width>1920</width>
-                                    <height>985</height>
-                              </rect>
-                        </property>
-                        <property name="styleSheet">
-                              <string notr="true">border: none;
+     </property>
+     <property name="text">
+      <string>17:54</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignCenter</set>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QFrame" name="Body">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>95</y>
+      <width>1920</width>
+      <height>985</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">border: none;
 background: none;</string>
-                        </property>
-                        <property name="frameShape">
-                              <enum>QFrame::Shape::StyledPanel</enum>
-                        </property>
-                        <property name="frameShadow">
-                              <enum>QFrame::Shadow::Raised</enum>
-                        </property>
-                        <widget class="QPushButton" name="homeButton">
-                              <property name="enabled">
-                                    <bool>true</bool>
-                              </property>
-                              <property name="geometry">
-                                    <rect>
-                                          <x>30</x>
-                                          <y>437</y>
-                                          <width>110</width>
-                                          <height>110</height>
-                                    </rect>
-                              </property>
-                              <property name="styleSheet">
-                                    <string notr="true">QPushButton#homeButton{
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::Shape::StyledPanel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Shadow::Raised</enum>
+    </property>
+    <widget class="QPushButton" name="homeButton">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>437</y>
+       <width>110</width>
+       <height>110</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton#homeButton{
 	background-image: url(:/images/homeBtn_off.png);
 }
 
@@ -815,25 +817,25 @@ QPushButton#homeButton:pressed{
 QPushButton#homeButton[enabled=&quot;false&quot;]{
 	background-image: url(:/images/homeBtn_disabled.png);
 }</string>
-                              </property>
-                              <property name="text">
-                                    <string/>
-                              </property>
-                        </widget>
-                        <widget class="QPushButton" name="mapLayoutButton">
-                              <property name="enabled">
-                                    <bool>true</bool>
-                              </property>
-                              <property name="geometry">
-                                    <rect>
-                                          <x>30</x>
-                                          <y>709</y>
-                                          <width>110</width>
-                                          <height>110</height>
-                                    </rect>
-                              </property>
-                              <property name="styleSheet">
-                                    <string notr="true">QPushButton#mapLayoutButton{
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="mapLayoutButton">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>709</y>
+       <width>110</width>
+       <height>110</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton#mapLayoutButton{
 	background-image: url(:/images/map_layout_off.png);
 }
 
@@ -844,25 +846,25 @@ QPushButton#mapLayoutButton:pressed{
 QPushButton#mapLayoutButton[enabled=&quot;false&quot;]{
 	background-image: url(:/images/map_layout_disabled.png);
 }</string>
-                              </property>
-                              <property name="text">
-                                    <string/>
-                              </property>
-                        </widget>
-                        <widget class="QPushButton" name="screenSaveButton">
-                              <property name="enabled">
-                                    <bool>true</bool>
-                              </property>
-                              <property name="geometry">
-                                    <rect>
-                                          <x>30</x>
-                                          <y>845</y>
-                                          <width>110</width>
-                                          <height>110</height>
-                                    </rect>
-                              </property>
-                              <property name="styleSheet">
-                                    <string notr="true">QPushButton#screenSaveButton{
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="screenSaveButton">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>845</y>
+       <width>110</width>
+       <height>110</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton#screenSaveButton{
 	background-image: url(:/images/screen_save_off.png);
 }
 
@@ -873,44 +875,44 @@ QPushButton#screenSaveButton:pressed{
 QPushButton#screenSaveButton[enabled=&quot;false&quot;]{
 	background-image: url(:/images/screen_save_disabled.png);
 }</string>
-                              </property>
-                              <property name="text">
-                                    <string/>
-                              </property>
-                        </widget>
-                        <widget class="QFrame" name="MainButtons">
-                              <property name="geometry">
-                                    <rect>
-                                          <x>1538</x>
-                                          <y>0</y>
-                                          <width>382</width>
-                                          <height>393</height>
-                                    </rect>
-                              </property>
-                              <property name="styleSheet">
-                                    <string notr="true">background: rgba(0, 10, 0, 0.8);
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QFrame" name="MainButtons">
+     <property name="geometry">
+      <rect>
+       <x>1538</x>
+       <y>0</y>
+       <width>382</width>
+       <height>393</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background: rgba(0, 10, 0, 0.8);
 border: 2px solid #328844;</string>
-                              </property>
-                              <property name="frameShape">
-                                    <enum>QFrame::Shape::StyledPanel</enum>
-                              </property>
-                              <property name="frameShadow">
-                                    <enum>QFrame::Shadow::Raised</enum>
-                              </property>
-                              <widget class="QPushButton" name="radarButton">
-                                    <property name="enabled">
-                                          <bool>true</bool>
-                                    </property>
-                                    <property name="geometry">
-                                          <rect>
-                                                <x>30</x>
-                                                <y>25</y>
-                                                <width>322</width>
-                                                <height>103</height>
-                                          </rect>
-                                    </property>
-                                    <property name="styleSheet">
-                                          <string notr="true">QPushButton{
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Shape::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Shadow::Raised</enum>
+     </property>
+     <widget class="QPushButton" name="radarButton">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>25</y>
+        <width>322</width>
+        <height>103</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton{
 	border: none;
 	background-image: url(:/images/Btn_MainMenu_off.png);
 	font-family: 'Roboto';
@@ -936,31 +938,31 @@ QPushButton[enabled=&quot;false&quot;]{
 	font-size: 36px;
 	color: #FFFFFF;
 }</string>
-                                    </property>
-                                    <property name="text">
-                                          <string>Режим радару</string>
-                                    </property>
-                                    <property name="checkable">
-                                          <bool>true</bool>
-                                    </property>
-                                    <property name="autoExclusive">
-                                          <bool>true</bool>
-                                    </property>
-                              </widget>
-                              <widget class="QPushButton" name="mapButton">
-                                    <property name="enabled">
-                                          <bool>true</bool>
-                                    </property>
-                                    <property name="geometry">
-                                          <rect>
-                                                <x>30</x>
-                                                <y>145</y>
-                                                <width>322</width>
-                                                <height>103</height>
-                                          </rect>
-                                    </property>
-                                    <property name="styleSheet">
-                                          <string notr="true">QPushButton{
+      </property>
+      <property name="text">
+       <string>Режим радару</string>
+      </property>
+      <property name="checkable">
+       <bool>true</bool>
+      </property>
+      <property name="autoExclusive">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="mapButton">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>145</y>
+        <width>322</width>
+        <height>103</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton{
 	border: none;
 	background-image: url(:/images/Btn_MainMenu_off.png);
 	font-family: 'Roboto';
@@ -986,34 +988,34 @@ QPushButton[enabled=&quot;false&quot;]{
 	font-size: 36px;
 	color: #FFFFFF;
 }</string>
-                                    </property>
-                                    <property name="text">
-                                          <string>Режим карти</string>
-                                    </property>
-                                    <property name="checkable">
-                                          <bool>true</bool>
-                                    </property>
-                                    <property name="checked">
-                                          <bool>true</bool>
-                                    </property>
-                                    <property name="autoExclusive">
-                                          <bool>true</bool>
-                                    </property>
-                              </widget>
-                              <widget class="QPushButton" name="menuButton">
-                                    <property name="enabled">
-                                          <bool>true</bool>
-                                    </property>
-                                    <property name="geometry">
-                                          <rect>
-                                                <x>30</x>
-                                                <y>265</y>
-                                                <width>322</width>
-                                                <height>103</height>
-                                          </rect>
-                                    </property>
-                                    <property name="styleSheet">
-                                          <string notr="true">QPushButton{
+      </property>
+      <property name="text">
+       <string>Режим карти</string>
+      </property>
+      <property name="checkable">
+       <bool>true</bool>
+      </property>
+      <property name="checked">
+       <bool>true</bool>
+      </property>
+      <property name="autoExclusive">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="menuButton">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>265</y>
+        <width>322</width>
+        <height>103</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton{
 	border: none;
 	background-image: url(:/images/Btn_MainMenu_off.png);
 	font-family: 'Roboto';
@@ -1039,91 +1041,91 @@ QPushButton[enabled=&quot;false&quot;]{
 	font-size: 36px;
 	color: #FFFFFF;
 }</string>
-                                    </property>
-                                    <property name="text">
-                                          <string>Меню</string>
-                                    </property>
-                              </widget>
-                        </widget>
-                        <widget class="QFrame" name="TimerFrame">
-                              <property name="geometry">
-                                    <rect>
-                                          <x>1538</x>
-                                          <y>553</y>
-                                          <width>382</width>
-                                          <height>432</height>
-                                    </rect>
-                              </property>
-                              <property name="styleSheet">
-                                    <string notr="true">background: rgba(0, 10, 0, 0.8);
+      </property>
+      <property name="text">
+       <string>Меню</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QFrame" name="TimerFrame">
+     <property name="geometry">
+      <rect>
+       <x>1538</x>
+       <y>553</y>
+       <width>382</width>
+       <height>432</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background: rgba(0, 10, 0, 0.8);
 border: 2px solid #328844;</string>
-                              </property>
-                              <property name="frameShape">
-                                    <enum>QFrame::Shape::StyledPanel</enum>
-                              </property>
-                              <property name="frameShadow">
-                                    <enum>QFrame::Shadow::Raised</enum>
-                              </property>
-                              <widget class="QLabel" name="label_3">
-                                    <property name="geometry">
-                                          <rect>
-                                                <x>127</x>
-                                                <y>8</y>
-                                                <width>127</width>
-                                                <height>40</height>
-                                          </rect>
-                                    </property>
-                                    <property name="styleSheet">
-                                          <string notr="true">background: none;
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Shape::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Shadow::Raised</enum>
+     </property>
+     <widget class="QLabel" name="label_3">
+      <property name="geometry">
+       <rect>
+        <x>127</x>
+        <y>8</y>
+        <width>127</width>
+        <height>40</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background: none;
 border: none;
 font-family: 'Roboto';
 font-weight: 500;
 font-size: 34px;
 color: #FFF500;</string>
-                                    </property>
-                                    <property name="text">
-                                          <string>Jammer</string>
-                                    </property>
-                                    <property name="alignment">
-                                          <set>Qt::AlignmentFlag::AlignCenter</set>
-                                    </property>
-                              </widget>
-                              <widget class="QLabel" name="TimerTime">
-                                    <property name="geometry">
-                                          <rect>
-                                                <x>76</x>
-                                                <y>52</y>
-                                                <width>229</width>
-                                                <height>68</height>
-                                          </rect>
-                                    </property>
-                                    <property name="styleSheet">
-                                          <string notr="true">background: none;
+      </property>
+      <property name="text">
+       <string>Jammer</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QLabel" name="TimerTime">
+      <property name="geometry">
+       <rect>
+        <x>76</x>
+        <y>52</y>
+        <width>229</width>
+        <height>68</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background: none;
 border: none;
 font-family: 'Roboto';
 font-weight: 500;
 font-size: 52px;
 color: #E4E7E4;
 </string>
-                                    </property>
-                                    <property name="text">
-                                          <string>00:00:00</string>
-                                    </property>
-                                    <property name="alignment">
-                                          <set>Qt::AlignmentFlag::AlignCenter</set>
-                                    </property>
-                              </widget>
-                              <widget class="QPushButton" name="onTimerButton">
-                                    <property name="geometry">
-                                          <rect>
-                                                <x>30</x>
-                                                <y>312</y>
-                                                <width>322</width>
-                                                <height>90</height>
-                                          </rect>
-                                    </property>
-                                    <property name="styleSheet">
-                                          <string notr="true">QPushButton{
+      </property>
+      <property name="text">
+       <string>00:00:00</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="onTimerButton">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>312</y>
+        <width>322</width>
+        <height>90</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton{
 	border: none;
 	border-image: url(:/images/Btn_MainMenu_off.png);
 	font-family: 'Roboto';
@@ -1149,22 +1151,22 @@ QPushButton[enabled=&quot;false&quot;]{
 	font-size: 36px;
 	color: #FFFFFF;
 }</string>
-                                    </property>
-                                    <property name="text">
-                                          <string>ON</string>
-                                    </property>
-                              </widget>
-                              <widget class="QPushButton" name="offTimerButton">
-                                    <property name="geometry">
-                                          <rect>
-                                                <x>30</x>
-                                                <y>132</y>
-                                                <width>322</width>
-                                                <height>166</height>
-                                          </rect>
-                                    </property>
-                                    <property name="styleSheet">
-                                          <string notr="true">QPushButton{
+      </property>
+      <property name="text">
+       <string>ON</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="offTimerButton">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>132</y>
+        <width>322</width>
+        <height>166</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton{
 	border: none;
 	border-image: url(:/images/Btn_MainMenu_red.png);
 	font-family: 'Roboto';
@@ -1190,26 +1192,26 @@ QPushButton[enabled=&quot;false&quot;]{
 	font-size: 52px;
 	color: #FFFFFF;
 }</string>
-                                    </property>
-                                    <property name="text">
-                                          <string>OFF</string>
-                                    </property>
-                              </widget>
-                        </widget>
-                        <widget class="QLabel" name="k_label_1">
-                              <property name="enabled">
-                                    <bool>false</bool>
-                              </property>
-                              <property name="geometry">
-                                    <rect>
-                                          <x>1550</x>
-                                          <y>453</y>
-                                          <width>102</width>
-                                          <height>101</height>
-                                    </rect>
-                              </property>
-                              <property name="styleSheet">
-                                    <string notr="true">*{
+      </property>
+      <property name="text">
+       <string>OFF</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QLabel" name="k_label_1">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>1550</x>
+       <y>453</y>
+       <width>102</width>
+       <height>101</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">*{
 	font-family: 'Roboto';
 	font-weight: 500;
 	font-size: 38px;
@@ -1225,28 +1227,28 @@ QPushButton[enabled=&quot;false&quot;]{
 {
 	background-image: url(:/images/k_relay_off.png);
 }</string>
-                              </property>
-                              <property name="text">
-                                    <string>K1</string>
-                              </property>
-                              <property name="alignment">
-                                    <set>Qt::AlignmentFlag::AlignCenter</set>
-                              </property>
-                        </widget>
-                        <widget class="QLabel" name="k_label_2">
-                              <property name="enabled">
-                                    <bool>false</bool>
-                              </property>
-                              <property name="geometry">
-                                    <rect>
-                                          <x>1678</x>
-                                          <y>453</y>
-                                          <width>102</width>
-                                          <height>101</height>
-                                    </rect>
-                              </property>
-                              <property name="styleSheet">
-                                    <string notr="true">*{
+     </property>
+     <property name="text">
+      <string>K1</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="k_label_2">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>1678</x>
+       <y>453</y>
+       <width>102</width>
+       <height>101</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">*{
 	font-family: 'Roboto';
 	font-weight: 500;
 	font-size: 38px;
@@ -1262,28 +1264,28 @@ QPushButton[enabled=&quot;false&quot;]{
 {
 	background-image: url(:/images/k_relay_off.png);
 }</string>
-                              </property>
-                              <property name="text">
-                                    <string>K2</string>
-                              </property>
-                              <property name="alignment">
-                                    <set>Qt::AlignmentFlag::AlignCenter</set>
-                              </property>
-                        </widget>
-                        <widget class="QLabel" name="k_label_3">
-                              <property name="enabled">
-                                    <bool>false</bool>
-                              </property>
-                              <property name="geometry">
-                                    <rect>
-                                          <x>1806</x>
-                                          <y>453</y>
-                                          <width>102</width>
-                                          <height>101</height>
-                                    </rect>
-                              </property>
-                              <property name="styleSheet">
-                                    <string notr="true">*{
+     </property>
+     <property name="text">
+      <string>K2</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="k_label_3">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>1806</x>
+       <y>453</y>
+       <width>102</width>
+       <height>101</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">*{
 	font-family: 'Roboto';
 	font-weight: 500;
 	font-size: 38px;
@@ -1299,201 +1301,179 @@ QPushButton[enabled=&quot;false&quot;]{
 {
 	background-image: url(:/images/k_relay_off.png);
 }</string>
-                              </property>
-                              <property name="text">
-                                    <string>K3</string>
-                              </property>
-                              <property name="alignment">
-                                    <set>Qt::AlignmentFlag::AlignCenter</set>
-                              </property>
-                        </widget>
-                        <widget class="QFrame" name="RadarFrame">
-                              <property name="geometry">
-                                    <rect>
-                                          <x>300</x>
-                                          <y>25</y>
-                                          <width>901</width>
-                                          <height>901</height>
-                                    </rect>
-                              </property>
-                              <property name="frameShape">
-                                    <enum>QFrame::Shape::StyledPanel</enum>
-                              </property>
-                              <property name="frameShadow">
-                                    <enum>QFrame::Shadow::Raised</enum>
-                              </property>
-                              <widget class="QLabel" name="Radar">
-                                    <property name="geometry">
-                                          <rect>
-                                                <x>0</x>
-                                                <y>0</y>
-                                                <width>901</width>
-                                                <height>901</height>
-                                          </rect>
-                                    </property>
-                                    <property name="text">
-                                          <string/>
-                                    </property>
-                                    <property name="pixmap">
-                                          <pixmap resource="../resources.qrc">:/images/radar.png</pixmap>
-                                    </property>
-                              </widget>
-                              <widget class="QLabel" name="Radar_Green">
-                                    <property name="geometry">
-                                          <rect>
-                                                <x>0</x>
-                                                <y>0</y>
-                                                <width>901</width>
-                                                <height>901</height>
-                                          </rect>
-                                    </property>
-                                    <property name="text">
-                                          <string/>
-                                    </property>
-                                    <property name="pixmap">
-                                          <pixmap resource="../resources.qrc">:/images/radar_green.png</pixmap>
-                                    </property>
-                                    <property name="alignment">
-                                          <set>Qt::AlignmentFlag::AlignCenter</set>
-                                    </property>
-                              </widget>
-                              <widget class="QLabel" name="Radar_Red">
-                                    <property name="geometry">
-                                          <rect>
-                                                <x>0</x>
-                                                <y>0</y>
-                                                <width>901</width>
-                                                <height>901</height>
-                                          </rect>
-                                    </property>
-                                    <property name="text">
-                                          <string/>
-                                    </property>
-                                    <property name="pixmap">
-                                          <pixmap resource="../resources.qrc">:/images/radar_red.png</pixmap>
-                                    </property>
-                                    <property name="alignment">
-                                          <set>Qt::AlignmentFlag::AlignCenter</set>
-                                    </property>
-                              </widget>
-                        </widget>
-                        <widget class="QLabel" name="map_background_label">
-                              <property name="enabled">
-                                    <bool>true</bool>
-                              </property>
-                              <property name="geometry">
-                                    <rect>
-                                          <x>0</x>
-                                          <y>0</y>
-                                          <width>1920</width>
-                                          <height>985</height>
-                                    </rect>
-                              </property>
-                              <property name="minimumSize">
-                                    <size>
-                                          <width>1920</width>
-                                          <height>985</height>
-                                    </size>
-                              </property>
-                              <property name="frameShape">
-                                    <enum>QFrame::Shape::Panel</enum>
-                              </property>
-                              <property name="frameShadow">
-                                    <enum>QFrame::Shadow::Raised</enum>
-                              </property>
-                              <property name="text">
-                                    <string/>
-                              </property>
-                              <property name="scaledContents">
-                                    <bool>false</bool>
-                              </property>
-                        </widget>
-                        <widget class="QFrame" name="RadarSettings">
-                              <property name="geometry">
-                                    <rect>
-                                          <x>0</x>
-                                          <y>0</y>
-                                          <width>241</width>
-                                          <height>201</height>
-                                    </rect>
-                              </property>
-                              <property name="styleSheet">
-                                    <string notr="true">background: rgba(0, 10, 0, 0.8);
+     </property>
+     <property name="text">
+      <string>K3</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QFrame" name="RadarFrame">
+     <property name="geometry">
+      <rect>
+       <x>300</x>
+       <y>25</y>
+       <width>901</width>
+       <height>901</height>
+      </rect>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Shape::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Shadow::Raised</enum>
+     </property>
+     <widget class="QLabel" name="Radar">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>901</width>
+        <height>901</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="pixmap">
+       <pixmap resource="../resources.qrc">:/images/radar.png</pixmap>
+      </property>
+     </widget>
+     <widget class="QLabel" name="Radar_Section">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>901</width>
+        <height>901</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QLabel" name="map_background_label">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>1920</width>
+       <height>985</height>
+      </rect>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>1920</width>
+       <height>985</height>
+      </size>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Shape::Panel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Shadow::Raised</enum>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="scaledContents">
+      <bool>false</bool>
+     </property>
+    </widget>
+    <widget class="QFrame" name="RadarSettings">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>241</width>
+       <height>201</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background: rgba(0, 10, 0, 0.8);
 border: 2px solid #328844;</string>
-                              </property>
-                              <property name="frameShape">
-                                    <enum>QFrame::Shape::StyledPanel</enum>
-                              </property>
-                              <property name="frameShadow">
-                                    <enum>QFrame::Shadow::Raised</enum>
-                              </property>
-                              <layout class="QVBoxLayout" name="verticalLayout">
-                                    <item>
-                                          <widget class="QLabel" name="labelRadarSettings">
-                                                <property name="maximumSize">
-                                                      <size>
-                                                            <width>16777215</width>
-                                                            <height>40</height>
-                                                      </size>
-                                                </property>
-                                                <property name="styleSheet">
-                                                      <string notr="true">font-family: 'Roboto';
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Shape::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Shadow::Raised</enum>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <widget class="QLabel" name="labelRadarSettings">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>40</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">font-family: 'Roboto';
 font-weight: 500;
 font-size: 26px;
 color: #FFFFFF;
 text-align:left;
 border:none;
 background-color:transparent;</string>
-                                                </property>
-                                                <property name="text">
-                                                      <string>Радіус дії радару</string>
-                                                </property>
-                                                <property name="alignment">
-                                                      <set>Qt::AlignmentFlag::AlignCenter</set>
-                                                </property>
-                                          </widget>
-                                    </item>
-                                    <item>
-                                          <widget class="QSpinBox" name="radarRadiusSpinbox">
-                                                <property name="font">
-                                                      <font>
-                                                            <family>Roboto</family>
-                                                            <pointsize>-1</pointsize>
-                                                            <fontweight>Medium</fontweight>
-                                                      </font>
-                                                </property>
-                                                <property name="styleSheet">
-                                                      <string notr="true">font-family: 'Roboto';
+        </property>
+        <property name="text">
+         <string>Радіус дії радару</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSpinBox" name="radarRadiusSpinbox">
+        <property name="font">
+         <font>
+          <family>Roboto</family>
+          <pointsize>-1</pointsize>
+          <fontweight>Medium</fontweight>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">font-family: 'Roboto';
 font-weight: 500;
 font-size: 26px;</string>
-                                                </property>
-                                                <property name="wrapping">
-                                                      <bool>false</bool>
-                                                </property>
-                                                <property name="buttonSymbols">
-                                                      <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
-                                                </property>
-                                                <property name="minimum">
-                                                      <number>1</number>
-                                                </property>
-                                                <property name="maximum">
-                                                      <number>100000</number>
-                                                </property>
-                                                <property name="singleStep">
-                                                      <number>10</number>
-                                                </property>
-                                          </widget>
-                                    </item>
-                                    <item>
-                                          <widget class="QPushButton" name="saveRadarSettingsBtn">
-                                                <property name="minimumSize">
-                                                      <size>
-                                                            <width>0</width>
-                                                            <height>55</height>
-                                                      </size>
-                                                </property>
-                                                <property name="styleSheet">
-                                                      <string notr="true">QPushButton{
+        </property>
+        <property name="wrapping">
+         <bool>false</bool>
+        </property>
+        <property name="buttonSymbols">
+         <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
+        </property>
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>100000</number>
+        </property>
+        <property name="singleStep">
+         <number>10</number>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="saveRadarSettingsBtn">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>55</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton{
 	border: none;
 	border-image: url(:/images/Btn_MainMenu_off.png);
 	font-family: 'Roboto';
@@ -1515,63 +1495,153 @@ QPushButton[enabled=&quot;false&quot;]{
 	color: #FFFFFF;
 }
 </string>
-                                                </property>
-                                                <property name="text">
-                                                      <string>Зберегти</string>
-                                                </property>
-                                          </widget>
-                                    </item>
-                              </layout>
-                        </widget>
-                        <widget class="QPushButton" name="addMapButton">
-                              <property name="enabled">
-                                    <bool>true</bool>
-                              </property>
-                              <property name="geometry">
-                                    <rect>
-                                          <x>30</x>
-                                          <y>573</y>
-                                          <width>110</width>
-                                          <height>110</height>
-                                    </rect>
-                              </property>
-                              <property name="styleSheet">
-                                    <string notr="true">QPushButton#addMapButton{
+        </property>
+        <property name="text">
+         <string>Зберегти</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QPushButton" name="addMapButton">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>573</y>
+       <width>110</width>
+       <height>110</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton#addMapButton{
 	border-image: url(:/images/addMapBtn_off.png) stretch stretch;
 	background-color:rgba(0,0,0,0.8)
 }
 
-QPushButton#addMapButton:pressed{
+QPushButton#addMapButton:pressed,
+QPushButton#addMapButton:checked{
 	border-image: url(:/images/addMapBtn_on.png) stretch stretch;
 }
 
 QPushButton#addMapButton[enabled=&quot;false&quot;]{
 	border-image: url(:/images/addMapBtn_disabled.png) stretch stretch;
 }</string>
-                              </property>
-                              <property name="text">
-                                    <string/>
-                              </property>
-                        </widget>
-                        <zorder>map_background_label</zorder>
-                        <zorder>homeButton</zorder>
-                        <zorder>mapLayoutButton</zorder>
-                        <zorder>screenSaveButton</zorder>
-                        <zorder>MainButtons</zorder>
-                        <zorder>TimerFrame</zorder>
-                        <zorder>k_label_1</zorder>
-                        <zorder>k_label_2</zorder>
-                        <zorder>k_label_3</zorder>
-                        <zorder>RadarFrame</zorder>
-                        <zorder>RadarSettings</zorder>
-                        <zorder>addMapButton</zorder>
-                  </widget>
-            </widget>
-      </widget>
-      <resources>
-            <include location="../resources.qrc"/>
-            <include location="../resources.qrc"/>
-            <include location="../resources.qrc"/>
-      </resources>
-      <connections/>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QFrame" name="MainButtons_2">
+     <property name="geometry">
+      <rect>
+       <x>1397</x>
+       <y>0</y>
+       <width>141</width>
+       <height>111</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background: rgba(0, 10, 0, 0.8);
+border: 2px solid #328844;</string>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Shape::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Shadow::Raised</enum>
+     </property>
+     <widget class="QComboBox" name="langComboBox">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>50</y>
+        <width>121</width>
+        <height>51</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Roboto</family>
+        <pointsize>-1</pointsize>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QComboBox {
+	font-family: 'Roboto';
+	font-size: 28px;
+	color: #FFFFFF;
+	background-color: rgba(0, 20, 0, 0.8);
+	border: 2px solid #328844;
+	padding: 8px;
+	border-radius: 4px;
+}
+
+QComboBox QAbstractItemView{
+background-color: #002509; 
+color: #FFFFFF;
+selection-background-color: #328844; 
+selection-color: #FFFFFF;
+}
+</string>
+      </property>
+      <item>
+       <property name="text">
+        <string>uk</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>en</string>
+       </property>
+      </item>
+     </widget>
+     <widget class="QLabel" name="langLabel">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>91</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QLabel{
+font-size:30px;
+border:none;
+background-color:none;
+}</string>
+      </property>
+      <property name="text">
+       <string>Мова:</string>
+      </property>
+     </widget>
+    </widget>
+    <zorder>map_background_label</zorder>
+    <zorder>homeButton</zorder>
+    <zorder>mapLayoutButton</zorder>
+    <zorder>screenSaveButton</zorder>
+    <zorder>MainButtons</zorder>
+    <zorder>TimerFrame</zorder>
+    <zorder>k_label_1</zorder>
+    <zorder>k_label_2</zorder>
+    <zorder>k_label_3</zorder>
+    <zorder>RadarFrame</zorder>
+    <zorder>RadarSettings</zorder>
+    <zorder>addMapButton</zorder>
+    <zorder>MainButtons_2</zorder>
+   </widget>
+  </widget>
+ </widget>
+ <resources>
+  <include location="../resources.qrc"/>
+  <include location="../resources.qrc"/>
+  <include location="../resources.qrc"/>
+ </resources>
+ <connections/>
 </ui>

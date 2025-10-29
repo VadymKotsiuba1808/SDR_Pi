@@ -1,12 +1,18 @@
 import sys
 import asyncio
 import qasync
+import os
 from PyQt6.QtWidgets import QApplication, QDialog, QMainWindow
 
 from app.widgets.main_window import MainWindow
 from app.widgets.login_dialog import LoginDialog
 from app.services.settings_service import SettingsService
-from app.widgets.autosize_window import make_scalable, make_window_stretched
+from app.widgets.autosize_window import (
+    make_scalable,
+    make_window_stretched,
+    setup_auto_scaling,
+    enable_auto_scaling,
+)
 from app.utils.async_utils import make_safe_set_result
 
 
@@ -42,9 +48,11 @@ async def main():
 
         app.setQuitOnLastWindowClosed(True)
         window = MainWindow(settings=settings_service)
-        ScalableMainWindow = make_scalable(QMainWindow)
-        scalable_window = ScalableMainWindow(window)
-        scalable_window.showFullScreen()
+        # ScalableMainWindow = make_scalable(QMainWindow)
+        # scalable_window = ScalableMainWindow(window, window.centralwidget)
+        # scalable_window.showFullScreen()
+        enable_auto_scaling(window)
+        window.showFullScreen()
 
         if remember_me == False:
             await asyncio.sleep(0.05)

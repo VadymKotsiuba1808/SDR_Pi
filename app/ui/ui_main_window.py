@@ -246,6 +246,7 @@ class Ui_MainWindow(object):
 "font-size: 30px;\n"
 "color: #FFFFFF;\n"
 "background-color: transparent;\n"
+"padding-left:60px;\n"
 "}\n"
 "\n"
 "*[alert=\"true\"]{\n"
@@ -255,7 +256,7 @@ class Ui_MainWindow(object):
 "*[alert=\"false\"]{\n"
 "border-image: url(:/images/rf_alert_off.png) stretch stretch;\n"
 "}")
-        self.RF_alert.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignTrailing|QtCore.Qt.AlignmentFlag.AlignVCenter)
+        self.RF_alert.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeading|QtCore.Qt.AlignmentFlag.AlignLeft|QtCore.Qt.AlignmentFlag.AlignVCenter)
         self.RF_alert.setProperty("alert", False)
         self.RF_alert.setObjectName("RF_alert")
         self.Sound_alert = QtWidgets.QLabel(parent=self.Header)
@@ -269,6 +270,7 @@ class Ui_MainWindow(object):
 "font-size: 30px;\n"
 "color: #FFFFFF;\n"
 "background-color: transparent;\n"
+"padding-left:60px;\n"
 "}\n"
 "\n"
 "*[alert=\"true\"]{\n"
@@ -278,7 +280,7 @@ class Ui_MainWindow(object):
 "*[alert=\"false\"]{\n"
 "border-image: url(:/images/sound_alert_off.png) stretch stretch;\n"
 "}")
-        self.Sound_alert.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignTrailing|QtCore.Qt.AlignmentFlag.AlignVCenter)
+        self.Sound_alert.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeading|QtCore.Qt.AlignmentFlag.AlignLeft|QtCore.Qt.AlignmentFlag.AlignVCenter)
         self.Sound_alert.setIndent(-1)
         self.Sound_alert.setProperty("alert", True)
         self.Sound_alert.setObjectName("Sound_alert")
@@ -665,18 +667,11 @@ class Ui_MainWindow(object):
         self.Radar.setText("")
         self.Radar.setPixmap(QtGui.QPixmap(":/images/radar.png"))
         self.Radar.setObjectName("Radar")
-        self.Radar_Green = QtWidgets.QLabel(parent=self.RadarFrame)
-        self.Radar_Green.setGeometry(QtCore.QRect(0, 0, 901, 901))
-        self.Radar_Green.setText("")
-        self.Radar_Green.setPixmap(QtGui.QPixmap(":/images/radar_green.png"))
-        self.Radar_Green.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.Radar_Green.setObjectName("Radar_Green")
-        self.Radar_Red = QtWidgets.QLabel(parent=self.RadarFrame)
-        self.Radar_Red.setGeometry(QtCore.QRect(0, 0, 901, 901))
-        self.Radar_Red.setText("")
-        self.Radar_Red.setPixmap(QtGui.QPixmap(":/images/radar_red.png"))
-        self.Radar_Red.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.Radar_Red.setObjectName("Radar_Red")
+        self.Radar_Section = QtWidgets.QLabel(parent=self.RadarFrame)
+        self.Radar_Section.setGeometry(QtCore.QRect(0, 0, 901, 901))
+        self.Radar_Section.setText("")
+        self.Radar_Section.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.Radar_Section.setObjectName("Radar_Section")
         self.map_background_label = QtWidgets.QLabel(parent=self.Body)
         self.map_background_label.setEnabled(True)
         self.map_background_label.setGeometry(QtCore.QRect(0, 0, 1920, 985))
@@ -756,7 +751,8 @@ class Ui_MainWindow(object):
 "    background-color:rgba(0,0,0,0.8)\n"
 "}\n"
 "\n"
-"QPushButton#addMapButton:pressed{\n"
+"QPushButton#addMapButton:pressed,\n"
+"QPushButton#addMapButton:checked{\n"
 "    border-image: url(:/images/addMapBtn_on.png) stretch stretch;\n"
 "}\n"
 "\n"
@@ -764,7 +760,49 @@ class Ui_MainWindow(object):
 "    border-image: url(:/images/addMapBtn_disabled.png) stretch stretch;\n"
 "}")
         self.addMapButton.setText("")
+        self.addMapButton.setCheckable(True)
         self.addMapButton.setObjectName("addMapButton")
+        self.MainButtons_2 = QtWidgets.QFrame(parent=self.Body)
+        self.MainButtons_2.setGeometry(QtCore.QRect(1397, 0, 141, 111))
+        self.MainButtons_2.setStyleSheet("background: rgba(0, 10, 0, 0.8);\n"
+"border: 2px solid #328844;")
+        self.MainButtons_2.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
+        self.MainButtons_2.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
+        self.MainButtons_2.setObjectName("MainButtons_2")
+        self.langComboBox = QtWidgets.QComboBox(parent=self.MainButtons_2)
+        self.langComboBox.setGeometry(QtCore.QRect(10, 50, 121, 51))
+        font = QtGui.QFont()
+        font.setFamily("Roboto")
+        font.setPointSize(-1)
+        self.langComboBox.setFont(font)
+        self.langComboBox.setStyleSheet("QComboBox {\n"
+"    font-family: \'Roboto\';\n"
+"    font-size: 28px;\n"
+"    color: #FFFFFF;\n"
+"    background-color: rgba(0, 20, 0, 0.8);\n"
+"    border: 2px solid #328844;\n"
+"    padding: 8px;\n"
+"    border-radius: 4px;\n"
+"}\n"
+"\n"
+"QComboBox QAbstractItemView{\n"
+"background-color: #002509; \n"
+"color: #FFFFFF;\n"
+"selection-background-color: #328844; \n"
+"selection-color: #FFFFFF;\n"
+"}\n"
+"")
+        self.langComboBox.setObjectName("langComboBox")
+        self.langComboBox.addItem("")
+        self.langComboBox.addItem("")
+        self.langLabel = QtWidgets.QLabel(parent=self.MainButtons_2)
+        self.langLabel.setGeometry(QtCore.QRect(10, 10, 91, 27))
+        self.langLabel.setStyleSheet("QLabel{\n"
+"font-size:30px;\n"
+"border:none;\n"
+"background-color:none;\n"
+"}")
+        self.langLabel.setObjectName("langLabel")
         self.map_background_label.raise_()
         self.homeButton.raise_()
         self.mapLayoutButton.raise_()
@@ -777,6 +815,7 @@ class Ui_MainWindow(object):
         self.RadarFrame.raise_()
         self.RadarSettings.raise_()
         self.addMapButton.raise_()
+        self.MainButtons_2.raise_()
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)
@@ -811,3 +850,6 @@ class Ui_MainWindow(object):
         self.k_label_3.setText(_translate("MainWindow", "K3"))
         self.labelRadarSettings.setText(_translate("MainWindow", "Радіус дії радару"))
         self.saveRadarSettingsBtn.setText(_translate("MainWindow", "Зберегти"))
+        self.langComboBox.setItemText(0, _translate("MainWindow", "uk"))
+        self.langComboBox.setItemText(1, _translate("MainWindow", "en"))
+        self.langLabel.setText(_translate("MainWindow", "Мова:"))

@@ -15,7 +15,7 @@ from PyQt6.QtCore import (
 )
 from PyQt6.QtGui import QPixmap, QConicalGradient, QPainter, QColor, QPen
 
-# from PyQt6 import uic
+from PyQt6 import uic
 from qasync import asyncSlot
 
 from app.ui.ui_main_window import Ui_MainWindow
@@ -34,10 +34,15 @@ class MainWindow(QMainWindow):
         super().__init__(parent)
         self.settings_service = settings
 
+        # class Ui:
+        #     pass
+
         # uic.loadUi("app/ui/main_window.ui", self)
+        # self.ui = self
         self.ui = Ui_MainWindow()  # Створюємо екземпляр UI
         self.ui.setupUi(self)
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
+        # self.ui.langComboBox.view().setWindowFlags(Qt.WindowType.SubWindow)
 
         self.test_data_provider = TestDataProvider()
 
@@ -57,9 +62,7 @@ class MainWindow(QMainWindow):
 
         self.update_wifi_signal_info()
 
-        self.ui.Radar_Red.hide()
-
-        self.load_language()
+        self.change_language()
 
         self.start_async_tasks()
 
@@ -103,6 +106,9 @@ class MainWindow(QMainWindow):
         self.ui.soundStartDoubleSpinBox.setValue(float(sound_range[0]))
         self.ui.soundEndDoubleSpinBox.setValue(float(sound_range[1]))
 
+        current_lang = self.settings_service.lang_code
+        self.ui.langComboBox.setCurrentIndex(1 if current_lang == "en" else 0)
+
     def _connect_handlers(self):
         self.ui.mapLayoutButton.clicked.connect(self.change_map_type)
         self.ui.screenSaveButton.clicked.connect(self.take_screenshot)
@@ -132,6 +138,8 @@ class MainWindow(QMainWindow):
         self.ui.soundEndDoubleSpinBox.valueChanged.connect(
             self.handle_signal_range_change
         )
+
+        self.ui.langComboBox.currentIndexChanged.connect(self.change_language)
 
     def _setup_timers(self):
         self.timer_1sec = QTimer(self)
@@ -197,6 +205,19 @@ class MainWindow(QMainWindow):
             QCoreApplication.installTranslator(self.translator)
         else:
             print(f"Помилка: не вдалося завантажити {path}")
+
+    def change_language(self):
+        index = self.ui.langComboBox.currentIndex()
+        new_lang_code = None
+
+        if index == 1:
+            new_lang_code = "en"
+        else:
+            new_lang_code = "uk"
+
+        self.settings_service.lang_code = new_lang_code
+        print("Ok")
+        self.load_language()
 
     @asyncSlot()
     async def start_async_tasks(self):
@@ -389,7 +410,7 @@ class MainWindow(QMainWindow):
 
         base_pixmap = self.draw_radar_section(current_angle)
 
-        self.ui.Radar_Green.setPixmap(base_pixmap)
+        self.ui.Radar_Section.setPixmap(base_pixmap)
 
     def draw_radar_section(self, angle):
         base_pixmap = QPixmap(self.ui.Radar.size())

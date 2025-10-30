@@ -406,129 +406,6 @@ class Ui_MainWindow(object):
 "}")
         self.screenSaveButton.setText("")
         self.screenSaveButton.setObjectName("screenSaveButton")
-        self.MainButtons = QtWidgets.QFrame(parent=self.Body)
-        self.MainButtons.setGeometry(QtCore.QRect(1538, 0, 382, 501))
-        self.MainButtons.setStyleSheet("background: rgba(0, 10, 0, 0.8);\n"
-"border: 2px solid #328844;")
-        self.MainButtons.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
-        self.MainButtons.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
-        self.MainButtons.setObjectName("MainButtons")
-        self.radarButton = QtWidgets.QPushButton(parent=self.MainButtons)
-        self.radarButton.setEnabled(True)
-        self.radarButton.setGeometry(QtCore.QRect(30, 140, 322, 103))
-        self.radarButton.setStyleSheet("QPushButton{\n"
-"    border: none;\n"
-"    background-image: url(:/images/Btn_MainMenu_off.png);\n"
-"    font-family: \'Roboto\';\n"
-"    font-weight: 500;\n"
-"    font-size: 36px;\n"
-"    color: #FFFFFF;\n"
-"}\n"
-"\n"
-"QPushButton:pressed, QPushButton:checked{\n"
-"    border: none;\n"
-"    background-image: url(:/images/Btn_MainMenu_on.png);\n"
-"    font-family: \'Roboto\';\n"
-"    font-weight: 500;\n"
-"    font-size: 36px;\n"
-"    color: #002509;\n"
-"}\n"
-"\n"
-"QPushButton[enabled=\"false\"]{\n"
-"    border: none;\n"
-"    background-image: url(:/images/Btn_MainMenu_disabled.png);\n"
-"    font-family: \'Roboto\';\n"
-"    font-weight: 500;\n"
-"    font-size: 36px;\n"
-"    color: #FFFFFF;\n"
-"}")
-        self.radarButton.setCheckable(True)
-        self.radarButton.setAutoExclusive(True)
-        self.radarButton.setObjectName("radarButton")
-        self.mapButton = QtWidgets.QPushButton(parent=self.MainButtons)
-        self.mapButton.setEnabled(True)
-        self.mapButton.setGeometry(QtCore.QRect(30, 260, 322, 103))
-        self.mapButton.setStyleSheet("QPushButton{\n"
-"    border: none;\n"
-"    background-image: url(:/images/Btn_MainMenu_off.png);\n"
-"    font-family: \'Roboto\';\n"
-"    font-weight: 500;\n"
-"    font-size: 36px;\n"
-"    color: #FFFFFF;\n"
-"}\n"
-"\n"
-"QPushButton:pressed, QPushButton:checked{\n"
-"    border: none;\n"
-"    background-image: url(:/images/Btn_MainMenu_on.png);\n"
-"    font-family: \'Roboto\';\n"
-"    font-weight: 500;\n"
-"    font-size: 36px;\n"
-"    color: #002509;\n"
-"}\n"
-"\n"
-"QPushButton[enabled=\"false\"]{\n"
-"    border: none;\n"
-"    background-image: url(:/images/Btn_MainMenu_disabled.png);\n"
-"    font-family: \'Roboto\';\n"
-"    font-weight: 500;\n"
-"    font-size: 36px;\n"
-"    color: #FFFFFF;\n"
-"}")
-        self.mapButton.setCheckable(True)
-        self.mapButton.setChecked(True)
-        self.mapButton.setAutoExclusive(True)
-        self.mapButton.setObjectName("mapButton")
-        self.menuButton = QtWidgets.QPushButton(parent=self.MainButtons)
-        self.menuButton.setEnabled(True)
-        self.menuButton.setGeometry(QtCore.QRect(30, 380, 322, 103))
-        self.menuButton.setStyleSheet("QPushButton{\n"
-"    border: none;\n"
-"    background-image: url(:/images/Btn_MainMenu_off.png);\n"
-"    font-family: \'Roboto\';\n"
-"    font-weight: 500;\n"
-"    font-size: 36px;\n"
-"    color: #FFFFFF;\n"
-"}\n"
-"\n"
-"QPushButton:pressed{\n"
-"    border: none;\n"
-"    background-image: url(:/images/Btn_MainMenu_on.png);\n"
-"    font-family: \'Roboto\';\n"
-"    font-weight: 500;\n"
-"    font-size: 36px;\n"
-"    color: #002509;\n"
-"}\n"
-"\n"
-"QPushButton[enabled=\"false\"]{\n"
-"    border: none;\n"
-"    background-image: url(:/images/Btn_MainMenu_disabled.png);\n"
-"    font-family: \'Roboto\';\n"
-"    font-weight: 500;\n"
-"    font-size: 36px;\n"
-"    color: #FFFFFF;\n"
-"}")
-        self.menuButton.setObjectName("menuButton")
-        self.falseAlarmButton = QtWidgets.QPushButton(parent=self.MainButtons)
-        self.falseAlarmButton.setEnabled(False)
-        self.falseAlarmButton.setGeometry(QtCore.QRect(30, 20, 322, 103))
-        self.falseAlarmButton.setStyleSheet("QPushButton:enabled{\n"
-"    border: none;\n"
-"    border-image: url(:/images/Btn_MainMenu_red.png);\n"
-"    font-family: \'Roboto\';\n"
-"    font-weight: 500;\n"
-"    font-size: 40px;\n"
-"    color: #FFFFFF;\n"
-"}\n"
-"\n"
-"QPushButton:pressed{\n"
-"    border-image: url(:/images/Btn_MainMenu_on.png);\n"
-"    color: #002509;\n"
-"}\n"
-"\n"
-"QPushButton:disabled{\n"
-"    border-image: url(:/images/Btn_MainMenu_disabled.png);\n"
-"}")
-        self.falseAlarmButton.setObjectName("falseAlarmButton")
         self.TimerFrame = QtWidgets.QFrame(parent=self.Body)
         self.TimerFrame.setGeometry(QtCore.QRect(1538, 614, 382, 371))
         self.TimerFrame.setStyleSheet("background: rgba(0, 10, 0, 0.8);\n"
@@ -783,14 +660,14 @@ class Ui_MainWindow(object):
         self.addMapButton.setText("")
         self.addMapButton.setCheckable(True)
         self.addMapButton.setObjectName("addMapButton")
-        self.MainButtons_2 = QtWidgets.QFrame(parent=self.Body)
-        self.MainButtons_2.setGeometry(QtCore.QRect(1397, 0, 141, 111))
-        self.MainButtons_2.setStyleSheet("background: rgba(0, 10, 0, 0.8);\n"
+        self.LangSettings = QtWidgets.QFrame(parent=self.Body)
+        self.LangSettings.setGeometry(QtCore.QRect(1397, 0, 141, 111))
+        self.LangSettings.setStyleSheet("background: rgba(0, 10, 0, 0.8);\n"
 "border: 2px solid #328844;")
-        self.MainButtons_2.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
-        self.MainButtons_2.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
-        self.MainButtons_2.setObjectName("MainButtons_2")
-        self.langComboBox = QtWidgets.QComboBox(parent=self.MainButtons_2)
+        self.LangSettings.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
+        self.LangSettings.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
+        self.LangSettings.setObjectName("LangSettings")
+        self.langComboBox = QtWidgets.QComboBox(parent=self.LangSettings)
         self.langComboBox.setGeometry(QtCore.QRect(10, 50, 121, 51))
         font = QtGui.QFont()
         font.setFamily("Roboto")
@@ -816,7 +693,7 @@ class Ui_MainWindow(object):
         self.langComboBox.setObjectName("langComboBox")
         self.langComboBox.addItem("")
         self.langComboBox.addItem("")
-        self.langLabel = QtWidgets.QLabel(parent=self.MainButtons_2)
+        self.langLabel = QtWidgets.QLabel(parent=self.LangSettings)
         self.langLabel.setGeometry(QtCore.QRect(10, 10, 91, 27))
         self.langLabel.setStyleSheet("QLabel{\n"
 "font-size:30px;\n"
@@ -824,11 +701,156 @@ class Ui_MainWindow(object):
 "background-color:none;\n"
 "}")
         self.langLabel.setObjectName("langLabel")
+        self.MainButtons_Container = QtWidgets.QFrame(parent=self.Body)
+        self.MainButtons_Container.setGeometry(QtCore.QRect(1538, 0, 382, 501))
+        self.MainButtons_Container.setMinimumSize(QtCore.QSize(382, 501))
+        self.MainButtons_Container.setStyleSheet("background-color: transparent;\n"
+"border: none")
+        self.MainButtons_Container.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
+        self.MainButtons_Container.setFrameShadow(QtWidgets.QFrame.Shadow.Plain)
+        self.MainButtons_Container.setObjectName("MainButtons_Container")
+        self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.MainButtons_Container)
+        self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout_2.setSpacing(0)
+        self.verticalLayout_2.setObjectName("verticalLayout_2")
+        self.MainButtons = QtWidgets.QFrame(parent=self.MainButtons_Container)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.MainButtons.sizePolicy().hasHeightForWidth())
+        self.MainButtons.setSizePolicy(sizePolicy)
+        self.MainButtons.setStyleSheet("background: rgba(0, 10, 0, 0.8);\n"
+"border: 2px solid #328844;")
+        self.MainButtons.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
+        self.MainButtons.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
+        self.MainButtons.setObjectName("MainButtons")
+        self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.MainButtons)
+        self.verticalLayout_3.setContentsMargins(28, 15, 28, 15)
+        self.verticalLayout_3.setSpacing(15)
+        self.verticalLayout_3.setObjectName("verticalLayout_3")
+        self.falseAlarmButton = QtWidgets.QPushButton(parent=self.MainButtons)
+        self.falseAlarmButton.setEnabled(False)
+        self.falseAlarmButton.setMinimumSize(QtCore.QSize(322, 103))
+        self.falseAlarmButton.setMaximumSize(QtCore.QSize(322, 103))
+        self.falseAlarmButton.setStyleSheet("QPushButton:enabled{\n"
+"    border: none;\n"
+"    border-image: url(:/images/Btn_MainMenu_red.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 40px;\n"
+"    color: #FFFFFF;\n"
+"}\n"
+"QPushButton:pressed{\n"
+"    border-image: url(:/images/Btn_MainMenu_on.png);\n"
+"    color: #002509;\n"
+"}\n"
+"QPushButton:disabled{\n"
+"    border-image: url(:/images/Btn_MainMenu_disabled.png);\n"
+"}")
+        self.falseAlarmButton.setObjectName("falseAlarmButton")
+        self.verticalLayout_3.addWidget(self.falseAlarmButton)
+        self.menuButton = QtWidgets.QPushButton(parent=self.MainButtons)
+        self.menuButton.setEnabled(True)
+        self.menuButton.setMinimumSize(QtCore.QSize(322, 103))
+        self.menuButton.setMaximumSize(QtCore.QSize(322, 103))
+        self.menuButton.setStyleSheet("QPushButton{\n"
+"    border: none;\n"
+"    background-image: url(:/images/Btn_MainMenu_off.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 36px;\n"
+"    color: #FFFFFF;\n"
+"}\n"
+"QPushButton:pressed{\n"
+"    border: none;\n"
+"    background-image: url(:/images/Btn_MainMenu_on.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 36px;\n"
+"    color: #002509;\n"
+"}\n"
+"QPushButton[enabled=\"false\"]{\n"
+"    border: none;\n"
+"    background-image: url(:/images/Btn_MainMenu_disabled.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 36px;\n"
+"    color: #FFFFFF;\n"
+"}")
+        self.menuButton.setObjectName("menuButton")
+        self.verticalLayout_3.addWidget(self.menuButton)
+        self.radarButton = QtWidgets.QPushButton(parent=self.MainButtons)
+        self.radarButton.setEnabled(True)
+        self.radarButton.setMinimumSize(QtCore.QSize(322, 103))
+        self.radarButton.setMaximumSize(QtCore.QSize(322, 103))
+        self.radarButton.setStyleSheet("QPushButton{\n"
+"    border: none;\n"
+"    background-image: url(:/images/Btn_MainMenu_off.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 36px;\n"
+"    color: #FFFFFF;\n"
+"}\n"
+"QPushButton:pressed, QPushButton:checked{\n"
+"    border: none;\n"
+"    background-image: url(:/images/Btn_MainMenu_on.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 36px;\n"
+"    color: #002509;\n"
+"}\n"
+"QPushButton[enabled=\"false\"]{\n"
+"    border: none;\n"
+"    background-image: url(:/images/Btn_MainMenu_disabled.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 36px;\n"
+"    color: #FFFFFF;\n"
+"}")
+        self.radarButton.setCheckable(True)
+        self.radarButton.setAutoExclusive(True)
+        self.radarButton.setObjectName("radarButton")
+        self.verticalLayout_3.addWidget(self.radarButton)
+        self.mapButton = QtWidgets.QPushButton(parent=self.MainButtons)
+        self.mapButton.setEnabled(True)
+        self.mapButton.setMinimumSize(QtCore.QSize(322, 103))
+        self.mapButton.setMaximumSize(QtCore.QSize(322, 103))
+        self.mapButton.setStyleSheet("QPushButton{\n"
+"    border: none;\n"
+"    background-image: url(:/images/Btn_MainMenu_off.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 36px;\n"
+"    color: #FFFFFF;\n"
+"}\n"
+"QPushButton:pressed, QPushButton:checked{\n"
+"    border: none;\n"
+"    background-image: url(:/images/Btn_MainMenu_on.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 36px;\n"
+"    color: #002509;\n"
+"}\n"
+"QPushButton[enabled=\"false\"]{\n"
+"    border: none;\n"
+"    background-image: url(:/images/Btn_MainMenu_disabled.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 36px;\n"
+"    color: #FFFFFF;\n"
+"}")
+        self.mapButton.setCheckable(True)
+        self.mapButton.setChecked(True)
+        self.mapButton.setAutoExclusive(True)
+        self.mapButton.setObjectName("mapButton")
+        self.verticalLayout_3.addWidget(self.mapButton)
+        self.verticalLayout_2.addWidget(self.MainButtons, 0, QtCore.Qt.AlignmentFlag.AlignHCenter|QtCore.Qt.AlignmentFlag.AlignTop)
+        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
+        self.verticalLayout_2.addItem(spacerItem)
         self.map_background_label.raise_()
         self.homeButton.raise_()
         self.mapLayoutButton.raise_()
         self.screenSaveButton.raise_()
-        self.MainButtons.raise_()
         self.TimerFrame.raise_()
         self.k_label_1.raise_()
         self.k_label_2.raise_()
@@ -836,7 +858,8 @@ class Ui_MainWindow(object):
         self.RadarFrame.raise_()
         self.RadarSettings.raise_()
         self.addMapButton.raise_()
-        self.MainButtons_2.raise_()
+        self.LangSettings.raise_()
+        self.MainButtons_Container.raise_()
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)
@@ -859,10 +882,6 @@ class Ui_MainWindow(object):
         self.label.setText(_translate("MainWindow", "GPS"))
         self.label_2.setText(_translate("MainWindow", "Wi Fi"))
         self.TimeLabel.setText(_translate("MainWindow", "17:54"))
-        self.radarButton.setText(_translate("MainWindow", "Режим радару"))
-        self.mapButton.setText(_translate("MainWindow", "Режим карти"))
-        self.menuButton.setText(_translate("MainWindow", "Меню"))
-        self.falseAlarmButton.setText(_translate("MainWindow", "Хибна тривога"))
         self.label_3.setText(_translate("MainWindow", "Jammer"))
         self.TimerTime.setText(_translate("MainWindow", "00:00:00"))
         self.onTimerButton.setText(_translate("MainWindow", "ON"))
@@ -875,3 +894,7 @@ class Ui_MainWindow(object):
         self.langComboBox.setItemText(0, _translate("MainWindow", "uk"))
         self.langComboBox.setItemText(1, _translate("MainWindow", "en"))
         self.langLabel.setText(_translate("MainWindow", "Мова:"))
+        self.falseAlarmButton.setText(_translate("MainWindow", "Хибна тривога"))
+        self.menuButton.setText(_translate("MainWindow", "Меню"))
+        self.radarButton.setText(_translate("MainWindow", "Режим радару"))
+        self.mapButton.setText(_translate("MainWindow", "Режим карти"))

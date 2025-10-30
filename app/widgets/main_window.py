@@ -121,6 +121,11 @@ class MainWindow(QMainWindow):
         current_lang = self.settings_service.lang_code
         self.ui.langComboBox.setCurrentIndex(1 if current_lang == "en" else 0)
 
+        role = self.settings_service.role
+        if role != "owner":
+            self.ui.falseAlarmButton.setVisible(False)
+            self.ui.menuButton.setVisible(False)
+
     def _connect_handlers(self):
         self.ui.mapLayoutButton.clicked.connect(self.change_map_type)
         self.ui.screenSaveButton.clicked.connect(self.take_screenshot)

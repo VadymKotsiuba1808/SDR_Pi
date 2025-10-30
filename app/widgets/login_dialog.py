@@ -26,6 +26,7 @@ class LoginDialog(QDialog):
         self._connect_handlers()
         print("[LoginDialog] Сигнали підключено.")
 
+        self.toggle_password_field()
         self._load_language()
 
     def changeEvent(self, event):

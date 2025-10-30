@@ -880,208 +880,6 @@ QPushButton#screenSaveButton[enabled=&quot;false&quot;]{
       <string/>
      </property>
     </widget>
-    <widget class="QFrame" name="MainButtons">
-     <property name="geometry">
-      <rect>
-       <x>1538</x>
-       <y>0</y>
-       <width>382</width>
-       <height>501</height>
-      </rect>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">background: rgba(0, 10, 0, 0.8);
-border: 2px solid #328844;</string>
-     </property>
-     <property name="frameShape">
-      <enum>QFrame::Shape::StyledPanel</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Shadow::Raised</enum>
-     </property>
-     <widget class="QPushButton" name="radarButton">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>140</y>
-        <width>322</width>
-        <height>103</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QPushButton{
-	border: none;
-	background-image: url(:/images/Btn_MainMenu_off.png);
-	font-family: 'Roboto';
-	font-weight: 500;
-	font-size: 36px;
-	color: #FFFFFF;
-}
-
-QPushButton:pressed, QPushButton:checked{
-	border: none;
-	background-image: url(:/images/Btn_MainMenu_on.png);
-	font-family: 'Roboto';
-	font-weight: 500;
-	font-size: 36px;
-	color: #002509;
-}
-
-QPushButton[enabled=&quot;false&quot;]{
-	border: none;
-	background-image: url(:/images/Btn_MainMenu_disabled.png);
-	font-family: 'Roboto';
-	font-weight: 500;
-	font-size: 36px;
-	color: #FFFFFF;
-}</string>
-      </property>
-      <property name="text">
-       <string>Режим радару</string>
-      </property>
-      <property name="checkable">
-       <bool>true</bool>
-      </property>
-      <property name="autoExclusive">
-       <bool>true</bool>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="mapButton">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>260</y>
-        <width>322</width>
-        <height>103</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QPushButton{
-	border: none;
-	background-image: url(:/images/Btn_MainMenu_off.png);
-	font-family: 'Roboto';
-	font-weight: 500;
-	font-size: 36px;
-	color: #FFFFFF;
-}
-
-QPushButton:pressed, QPushButton:checked{
-	border: none;
-	background-image: url(:/images/Btn_MainMenu_on.png);
-	font-family: 'Roboto';
-	font-weight: 500;
-	font-size: 36px;
-	color: #002509;
-}
-
-QPushButton[enabled=&quot;false&quot;]{
-	border: none;
-	background-image: url(:/images/Btn_MainMenu_disabled.png);
-	font-family: 'Roboto';
-	font-weight: 500;
-	font-size: 36px;
-	color: #FFFFFF;
-}</string>
-      </property>
-      <property name="text">
-       <string>Режим карти</string>
-      </property>
-      <property name="checkable">
-       <bool>true</bool>
-      </property>
-      <property name="checked">
-       <bool>true</bool>
-      </property>
-      <property name="autoExclusive">
-       <bool>true</bool>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="menuButton">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>380</y>
-        <width>322</width>
-        <height>103</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QPushButton{
-	border: none;
-	background-image: url(:/images/Btn_MainMenu_off.png);
-	font-family: 'Roboto';
-	font-weight: 500;
-	font-size: 36px;
-	color: #FFFFFF;
-}
-
-QPushButton:pressed{
-	border: none;
-	background-image: url(:/images/Btn_MainMenu_on.png);
-	font-family: 'Roboto';
-	font-weight: 500;
-	font-size: 36px;
-	color: #002509;
-}
-
-QPushButton[enabled=&quot;false&quot;]{
-	border: none;
-	background-image: url(:/images/Btn_MainMenu_disabled.png);
-	font-family: 'Roboto';
-	font-weight: 500;
-	font-size: 36px;
-	color: #FFFFFF;
-}</string>
-      </property>
-      <property name="text">
-       <string>Меню</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="falseAlarmButton">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>20</y>
-        <width>322</width>
-        <height>103</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QPushButton:enabled{
-	border: none;
-	border-image: url(:/images/Btn_MainMenu_red.png);
-	font-family: 'Roboto';
-	font-weight: 500;
-	font-size: 40px;
-	color: #FFFFFF;
-}
-
-QPushButton:pressed{
-	border-image: url(:/images/Btn_MainMenu_on.png);
-	color: #002509;
-}
-
-QPushButton:disabled{
-	border-image: url(:/images/Btn_MainMenu_disabled.png);
-}</string>
-      </property>
-      <property name="text">
-       <string>Хибна тривога</string>
-      </property>
-     </widget>
-    </widget>
     <widget class="QFrame" name="TimerFrame">
      <property name="geometry">
       <rect>
@@ -1572,7 +1370,7 @@ QPushButton#addMapButton[enabled=&quot;false&quot;]{
       <bool>true</bool>
      </property>
     </widget>
-    <widget class="QFrame" name="MainButtons_2">
+    <widget class="QFrame" name="LangSettings">
      <property name="geometry">
       <rect>
        <x>1397</x>
@@ -1657,11 +1455,301 @@ background-color:none;
       </property>
      </widget>
     </widget>
+    <widget class="QFrame" name="MainButtons_Container">
+     <property name="geometry">
+      <rect>
+       <x>1538</x>
+       <y>0</y>
+       <width>382</width>
+       <height>501</height>
+      </rect>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>382</width>
+       <height>501</height>
+      </size>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: transparent;
+border: none</string>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Shape::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Shadow::Plain</enum>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignTop">
+       <widget class="QFrame" name="MainButtons">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">background: rgba(0, 10, 0, 0.8);
+border: 2px solid #328844;</string>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::Shape::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Shadow::Raised</enum>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <property name="spacing">
+          <number>15</number>
+         </property>
+         <property name="leftMargin">
+          <number>28</number>
+         </property>
+         <property name="topMargin">
+          <number>15</number>
+         </property>
+         <property name="rightMargin">
+          <number>28</number>
+         </property>
+         <property name="bottomMargin">
+          <number>15</number>
+         </property>
+         <item>
+          <widget class="QPushButton" name="falseAlarmButton">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>322</width>
+             <height>103</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>322</width>
+             <height>103</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton:enabled{
+	border: none;
+	border-image: url(:/images/Btn_MainMenu_red.png);
+	font-family: 'Roboto';
+	font-weight: 500;
+	font-size: 40px;
+	color: #FFFFFF;
+}
+QPushButton:pressed{
+	border-image: url(:/images/Btn_MainMenu_on.png);
+	color: #002509;
+}
+QPushButton:disabled{
+	border-image: url(:/images/Btn_MainMenu_disabled.png);
+}</string>
+           </property>
+           <property name="text">
+            <string>Хибна тривога</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="menuButton">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>322</width>
+             <height>103</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>322</width>
+             <height>103</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton{
+	border: none;
+	background-image: url(:/images/Btn_MainMenu_off.png);
+	font-family: 'Roboto';
+	font-weight: 500;
+	font-size: 36px;
+	color: #FFFFFF;
+}
+QPushButton:pressed{
+	border: none;
+	background-image: url(:/images/Btn_MainMenu_on.png);
+	font-family: 'Roboto';
+	font-weight: 500;
+	font-size: 36px;
+	color: #002509;
+}
+QPushButton[enabled=&quot;false&quot;]{
+	border: none;
+	background-image: url(:/images/Btn_MainMenu_disabled.png);
+	font-family: 'Roboto';
+	font-weight: 500;
+	font-size: 36px;
+	color: #FFFFFF;
+}</string>
+           </property>
+           <property name="text">
+            <string>Меню</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="radarButton">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>322</width>
+             <height>103</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>322</width>
+             <height>103</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton{
+	border: none;
+	background-image: url(:/images/Btn_MainMenu_off.png);
+	font-family: 'Roboto';
+	font-weight: 500;
+	font-size: 36px;
+	color: #FFFFFF;
+}
+QPushButton:pressed, QPushButton:checked{
+	border: none;
+	background-image: url(:/images/Btn_MainMenu_on.png);
+	font-family: 'Roboto';
+	font-weight: 500;
+	font-size: 36px;
+	color: #002509;
+}
+QPushButton[enabled=&quot;false&quot;]{
+	border: none;
+	background-image: url(:/images/Btn_MainMenu_disabled.png);
+	font-family: 'Roboto';
+	font-weight: 500;
+	font-size: 36px;
+	color: #FFFFFF;
+}</string>
+           </property>
+           <property name="text">
+            <string>Режим радару</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <property name="autoExclusive">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="mapButton">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>322</width>
+             <height>103</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>322</width>
+             <height>103</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton{
+	border: none;
+	background-image: url(:/images/Btn_MainMenu_off.png);
+	font-family: 'Roboto';
+	font-weight: 500;
+	font-size: 36px;
+	color: #FFFFFF;
+}
+QPushButton:pressed, QPushButton:checked{
+	border: none;
+	background-image: url(:/images/Btn_MainMenu_on.png);
+	font-family: 'Roboto';
+	font-weight: 500;
+	font-size: 36px;
+	color: #002509;
+}
+QPushButton[enabled=&quot;false&quot;]{
+	border: none;
+	background-image: url(:/images/Btn_MainMenu_disabled.png);
+	font-family: 'Roboto';
+	font-weight: 500;
+	font-size: 36px;
+	color: #FFFFFF;
+}</string>
+           </property>
+           <property name="text">
+            <string>Режим карти</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+           <property name="autoExclusive">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <spacer name="verticalSpacer_in_Container">
+        <property name="orientation">
+         <enum>Qt::Orientation::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </widget>
     <zorder>map_background_label</zorder>
     <zorder>homeButton</zorder>
     <zorder>mapLayoutButton</zorder>
     <zorder>screenSaveButton</zorder>
-    <zorder>MainButtons</zorder>
     <zorder>TimerFrame</zorder>
     <zorder>k_label_1</zorder>
     <zorder>k_label_2</zorder>
@@ -1669,7 +1757,8 @@ background-color:none;
     <zorder>RadarFrame</zorder>
     <zorder>RadarSettings</zorder>
     <zorder>addMapButton</zorder>
-    <zorder>MainButtons_2</zorder>
+    <zorder>LangSettings</zorder>
+    <zorder>MainButtons_Container</zorder>
    </widget>
   </widget>
  </widget>

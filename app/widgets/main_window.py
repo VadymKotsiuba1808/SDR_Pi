@@ -34,36 +34,21 @@ class MainWindow(QMainWindow):
         super().__init__(parent)
         self.settings_service = settings
 
-        if self.settings_service.compiled_ui_using_enabled:
-            self.ui = Ui_MainWindow()  # Створюємо екземпляр UI
-            self.ui.setupUi(self)
-        else:
-            uic.loadUi("app/ui/main_window.ui", self)
-            self.ui = self
+        self._load_ui()
+        print("[MainWindow] Інтерфейс завантажено.")
 
-        # self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
-
-        self.test_data_provider = TestDataProvider()
-
-        self.map_service = MapService(settings=self.settings_service)
-
-        self.api_server = ApiServer(settings=self.settings_service)
-
-        # 2. Передаємо йому методи з MainWindow як callback-функції
-        self.api_server.on_rf_data = self.handle_rf_data
-        self.api_server.on_audio_alert = self.handle_audio_alert
-
-        self._setup_timers()
         self._setup_state_variables()
 
         self._adjust_fields()
+
         self._connect_handlers()
+        self._setup_timers()
 
         self.update_wifi_signal_info()
 
         self.change_language()
 
-        self.start_async_tasks()
+        self._start_async_tasks()
 
         print("Головне вікно успішно ініціалізовано.")
 
@@ -89,6 +74,33 @@ class MainWindow(QMainWindow):
             # Передаємо всі інші події (натискання клавіш, зміна розміру тощо)
             # на стандартну обробку
             super().changeEvent(event)
+
+    def _load_ui(self):
+        if self.settings_service.compiled_ui_using_enabled:
+            self.ui = Ui_MainWindow()
+            self.ui.setupUi(self)
+        else:
+            uic.loadUi("app/ui/main_window.ui", self)
+            self.ui = self
+
+    def _setup_state_variables(self):
+
+        self.test_data_provider = TestDataProvider()
+
+        self.map_service = MapService(settings=self.settings_service)
+
+        self.api_server = ApiServer(settings=self.settings_service)
+
+        # Передаємо йому методи з MainWindow як callback-функції
+        self.api_server.on_rf_data = self.handle_rf_data
+        self.api_server.on_audio_alert = self.handle_audio_alert
+
+        self.current_map_type_index = 0
+        self.map_types = [e for e in MapTypes]
+        self.current_coords = [49.43440, 27.00543]
+        self.isRadarMode = False
+        self.is_alert = False
+        self.translator = QTranslator()
 
     def _adjust_fields(self):
         radar_max_radius = self.settings_service.radar_max_radius
@@ -159,13 +171,15 @@ class MainWindow(QMainWindow):
         self.timer_wifi.timeout.connect(self.update_wifi_signal_info)
         self.timer_wifi.start(2 * 60 * 1000)
 
-    def _setup_state_variables(self):
-        self.current_map_type_index = 0
-        self.map_types = [e for e in MapTypes]
-        self.current_coords = [49.43440, 27.00543]
-        self.isRadarMode = False
-        self.is_alert = False
-        self.translator = QTranslator()
+    @asyncSlot()
+    async def _start_async_tasks(self):
+        """
+        Запускає всі фонові асинхронні задачі.
+        Цей метод має викликатися з 'main' ПІСЛЯ створення вікна.
+        """
+        print("Запуск фонових асинхронних задач (сервер та слухач)...")
+        self.api_server.run_server()
+        self.listen_for_pi_data()
 
     def _update_map_geometry(self):
         """
@@ -220,16 +234,6 @@ class MainWindow(QMainWindow):
         print("Ok")
         if self.settings_service.compiled_ui_using_enabled:
             self.load_language()
-
-    @asyncSlot()
-    async def start_async_tasks(self):
-        """
-        Запускає всі фонові асинхронні задачі.
-        Цей метод має викликатися з 'main' ПІСЛЯ створення вікна.
-        """
-        print("Запуск фонових асинхронних задач (сервер та слухач)...")
-        self.api_server.run_server()
-        self.listen_for_pi_data()
 
     @asyncSlot()
     async def listen_for_pi_data(self):

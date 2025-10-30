@@ -37,11 +37,11 @@ class MainWindow(QMainWindow):
         # class Ui:
         #     pass
 
-        # uic.loadUi("app/ui/main_window.ui", self)
-        # self.ui = self
-        self.ui = Ui_MainWindow()  # Створюємо екземпляр UI
-        self.ui.setupUi(self)
-        self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
+        uic.loadUi("app/ui/main_window.ui", self)
+        self.ui = self
+        # self.ui = Ui_MainWindow()  # Створюємо екземпляр UI
+        # self.ui.setupUi(self)
+        # self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
         # self.ui.langComboBox.view().setWindowFlags(Qt.WindowType.SubWindow)
 
         self.test_data_provider = TestDataProvider()
@@ -84,7 +84,7 @@ class MainWindow(QMainWindow):
         if event.type() == QEvent.Type.LanguageChange:
             print("Зміна мови, оновлюю UI...")
             # Викликаємо авто-згенеровану функцію
-            self.ui.retranslateUi(self)
+            # self.ui.retranslateUi(self)
         else:
             # Передаємо всі інші події (натискання клавіш, зміна розміру тощо)
             # на стандартну обробку
@@ -113,7 +113,7 @@ class MainWindow(QMainWindow):
         self.ui.mapLayoutButton.clicked.connect(self.change_map_type)
         self.ui.screenSaveButton.clicked.connect(self.take_screenshot)
         self.ui.homeButton.clicked.connect(self.update_status_bar_with_test_data)
-        self.ui.addMapButton.clicked.connect(self.open_set_map_dialog)
+        self.ui.addMapButton.clicked.connect(self.handle_add_map)
 
         self.ui.menuButton.clicked.connect(self.test_draw_dot)
         self.ui.radarButton.clicked.connect(self.set_radar_mode)
@@ -217,7 +217,7 @@ class MainWindow(QMainWindow):
 
         self.settings_service.lang_code = new_lang_code
         print("Ok")
-        self.load_language()
+        # self.load_language()
 
     @asyncSlot()
     async def start_async_tasks(self):
@@ -260,6 +260,15 @@ class MainWindow(QMainWindow):
         self.settings_service.radar_radius = new_radar_radius
         self.scale_map()
 
+    def handle_add_map(self):
+        btn = self.sender()
+
+        if btn.isChecked() == False:
+            self.refresh_map()
+            return
+
+        self.open_set_map_dialog()
+
     def open_set_map_dialog(self):
 
         # 1. Створюємо екземпляр діалогу
@@ -293,6 +302,7 @@ class MainWindow(QMainWindow):
 
         else:
             # Якщо користувач натиснув "Скасувати" або закрив вікно
+            self.ui.addMapButton.setChecked(False)
             print("ГОЛОВНЕ ВІКНО: Налаштування скасовано.")
 
         # 6. Очищуємо посилання

@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QDialog, QLineEdit
 from PyQt6.QtCore import QCoreApplication, QTranslator, QEvent
 
-# from PyQt6 import uic
+from PyQt6 import uic
 
 from app.ui.ui_login_dialog import Ui_LoginDialog
 
@@ -17,9 +17,13 @@ class LoginDialog(QDialog):
         self.settings_service = settings
 
         print("[LoginDialog] Завантаження UI...")
-        # uic.loadUi("app/ui/login_dialog.ui", self)
-        self.ui = Ui_LoginDialog()
-        self.ui.setupUi(self)
+
+        if self.settings_service.compiled_ui_using_enabled:
+            self.ui = Ui_LoginDialog()
+            self.ui.setupUi(self)
+        else:
+            uic.loadUi("app/ui/login_dialog.ui", self)
+            self.ui = self
 
         role = self.settings_service.role
         print(f"[LoginDialog] Поточна роль із налаштувань: {role}")
@@ -40,9 +44,10 @@ class LoginDialog(QDialog):
     def changeEvent(self, event):
         # Ловимо подію, яку надіслав installTranslator
         if event.type() == QEvent.Type.LanguageChange:
-            print("Зміна мови, оновлюю UI...")
-            # Викликаємо авто-згенеровану функцію
-            self.ui.retranslateUi(self)
+            if self.settings_service.compiled_ui_using_enabled:
+                print("Зміна мови, оновлюю UI...")
+                # Викликаємо авто-згенеровану функцію
+                self.ui.retranslateUi(self)
         else:
             # Передаємо всі інші події (натискання клавіш, зміна розміру тощо)
             # на стандартну обробку

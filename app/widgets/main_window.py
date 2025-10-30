@@ -34,15 +34,14 @@ class MainWindow(QMainWindow):
         super().__init__(parent)
         self.settings_service = settings
 
-        # class Ui:
-        #     pass
+        if self.settings_service.compiled_ui_using_enabled:
+            self.ui = Ui_MainWindow()  # Створюємо екземпляр UI
+            self.ui.setupUi(self)
+        else:
+            uic.loadUi("app/ui/main_window.ui", self)
+            self.ui = self
 
-        uic.loadUi("app/ui/main_window.ui", self)
-        self.ui = self
-        # self.ui = Ui_MainWindow()  # Створюємо екземпляр UI
-        # self.ui.setupUi(self)
         # self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
-        # self.ui.langComboBox.view().setWindowFlags(Qt.WindowType.SubWindow)
 
         self.test_data_provider = TestDataProvider()
 
@@ -82,9 +81,10 @@ class MainWindow(QMainWindow):
     def changeEvent(self, event):
         # Ловимо подію, яку надіслав installTranslator
         if event.type() == QEvent.Type.LanguageChange:
-            print("Зміна мови, оновлюю UI...")
-            # Викликаємо авто-згенеровану функцію
-            # self.ui.retranslateUi(self)
+            if self.settings_service.compiled_ui_using_enabled:
+                print("Зміна мови, оновлюю UI...")
+                # Викликаємо авто-згенеровану функцію
+                self.ui.retranslateUi(self)
         else:
             # Передаємо всі інші події (натискання клавіш, зміна розміру тощо)
             # на стандартну обробку
@@ -217,7 +217,8 @@ class MainWindow(QMainWindow):
 
         self.settings_service.lang_code = new_lang_code
         print("Ok")
-        # self.load_language()
+        if self.settings_service.compiled_ui_using_enabled:
+            self.load_language()
 
     @asyncSlot()
     async def start_async_tasks(self):

@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QDialog, QLineEdit
 from PyQt6.QtCore import QCoreApplication, QEvent, QTranslator
 
-# from PyQt6 import uic
+from PyQt6 import uic
 
 from app.ui.ui_change_pwd_dialog import Ui_ChangePwdDialog
 
@@ -15,9 +15,12 @@ class ChangePwdDialog(QDialog):
 
         self.settings_service = settings
 
-        # uic.loadUi("app/ui/change_pwd_dialog.ui", self)
-        self.ui = Ui_ChangePwdDialog()
-        self.ui.setupUi(self)
+        if self.settings_service.compiled_ui_using_enabled:
+            self.ui = Ui_ChangePwdDialog()
+            self.ui.setupUi(self)
+        else:
+            uic.loadUi("app/ui/change_pwd_dialog.ui", self)
+            self.ui = self
 
         self.ui.passwordLineEdit.textChanged.connect(self.change_password_status)
         self.ui.confirmPasswordLineEdit.textChanged.connect(self.change_password_status)
@@ -36,9 +39,10 @@ class ChangePwdDialog(QDialog):
     def changeEvent(self, event):
         # Ловимо подію, яку надіслав installTranslator
         if event.type() == QEvent.Type.LanguageChange:
-            print("Зміна мови, оновлюю UI...")
-            # Викликаємо авто-згенеровану функцію
-            self.ui.retranslateUi(self)
+            if self.settings_service.compiled_ui_using_enabled:
+                print("Зміна мови, оновлюю UI...")
+                # Викликаємо авто-згенеровану функцію
+                self.ui.retranslateUi(self)
         else:
             # Передаємо всі інші події (натискання клавіш, зміна розміру тощо)
             # на стандартну обробку

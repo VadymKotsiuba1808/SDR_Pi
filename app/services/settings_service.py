@@ -15,8 +15,10 @@ class SettingsService(QObject):
 
     # Єдиний словник конфігурації: ключ → (секція, тип, значення за замовчуванням)
     _config_schema = {
+        # Network
         "host": ("network", str, "0.0.0.0"),
         "port": ("network", int, 5000),
+        # Maps
         "radar_radius": ("maps", int, 500),
         "radar_max_radius": ("maps", int, 1000),
         "api_key": ("maps", str, ""),
@@ -24,12 +26,17 @@ class SettingsService(QObject):
         "scale": ("maps", str, "@2x"),
         "zoom": ("maps", int, 15),
         "img_format": Setting("maps", str, "png"),
+        # Auth
         "role": Setting("auth", str, "operator"),
         "owner_password_hash": Setting("auth", str, ""),
         "remember_me": Setting("auth", bool, False),
+        # Dev
         "tile_divider_enabled": Setting("dev", bool, False),
+        "compiled_ui_using_enabled": Setting("dev", bool, True),
+        # Signal
         "radio_range_GHz": ("signal", list, [0.0, 9.9]),
         "sound_range_GHz": ("signal", list, [0.0, 9.9]),
+        # UI
         "lang_code": ("ui", str, "uk"),
     }
 

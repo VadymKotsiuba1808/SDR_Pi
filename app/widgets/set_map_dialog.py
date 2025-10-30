@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtGui import QPixmap, QPainter, QTransform
 from PyQt6.QtCore import Qt, QEvent, QPointF, QCoreApplication, QTranslator
 
-# from PyQt6 import uic
+from PyQt6 import uic
 
 from app.protocols import SetMapDialogSettings
 from app.ui.ui_set_map_dialog import Ui_SetMapDialog
@@ -22,15 +22,16 @@ class SetMapDialog(QDialog):
         super().__init__(parent)
         print("[Init] Ініціалізація SetMapDialog...")
 
-        # Зберігаємо цільовий радіус радару
         self.settings_service = settings
         self.add_sizes_map_k = add_sizes_map_k
 
-        # uic.loadUi("app/ui/set_map_dialog.ui", self)
-
         # Завантажуємо ui
-        self.ui = Ui_SetMapDialog()
-        self.ui.setupUi(self)
+        if self.settings_service.compiled_ui_using_enabled:
+            self.ui = Ui_SetMapDialog()
+            self.ui.setupUi(self)
+        else:
+            uic.loadUi("app/ui/set_map_dialog.ui", self)
+            self.ui = self
 
         print("[Init] UI завантажено")
 
@@ -76,9 +77,10 @@ class SetMapDialog(QDialog):
     def changeEvent(self, event):
         # Ловимо подію, яку надіслав installTranslator
         if event.type() == QEvent.Type.LanguageChange:
-            print("Зміна мови, оновлюю UI...")
-            # Викликаємо авто-згенеровану функцію
-            self.ui.retranslateUi(self)
+            if self.settings_service.compiled_ui_using_enabled:
+                print("Зміна мови, оновлюю UI...")
+                # Викликаємо авто-згенеровану функцію
+                self.ui.retranslateUi(self)
         else:
             # Передаємо всі інші події (натискання клавіш, зміна розміру тощо)
             # на стандартну обробку

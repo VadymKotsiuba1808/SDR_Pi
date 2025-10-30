@@ -17,29 +17,16 @@ class LoginDialog(QDialog):
         self.settings_service = settings
 
         print("[LoginDialog] Завантаження UI...")
+        self._load_ui()
 
-        if self.settings_service.compiled_ui_using_enabled:
-            self.ui = Ui_LoginDialog()
-            self.ui.setupUi(self)
-        else:
-            uic.loadUi("app/ui/login_dialog.ui", self)
-            self.ui = self
+        self._setup_state_variables()
 
-        role = self.settings_service.role
-        print(f"[LoginDialog] Поточна роль із налаштувань: {role}")
+        self._adjust_fields()
 
-        self.ui.roleComboBox.currentIndexChanged.connect(self.toggle_password_field)
-        self.ui.roleComboBox.setCurrentIndex(0 if role == "operator" else 1)
-        self.ui.passwordLineEdit.textChanged.connect(self.change_password_status)
-
-        self.ui.passwordHideBtn.clicked.connect(self.hide_unhide_password)
-        self.ui.loginButton.clicked.connect(self.handle_login)
-
+        self._connect_handlers()
         print("[LoginDialog] Сигнали підключено.")
 
-        self.translator = QTranslator()
-
-        self.load_language()
+        self._load_language()
 
     def changeEvent(self, event):
         # Ловимо подію, яку надіслав installTranslator
@@ -53,7 +40,30 @@ class LoginDialog(QDialog):
             # на стандартну обробку
             super().changeEvent(event)
 
-    def load_language(self):
+    def _load_ui(self):
+        if self.settings_service.compiled_ui_using_enabled:
+            self.ui = Ui_LoginDialog()
+            self.ui.setupUi(self)
+        else:
+            uic.loadUi("app/ui/login_dialog.ui", self)
+            self.ui = self
+
+    def _setup_state_variables(self):
+        self.translator = QTranslator()
+
+    def _adjust_fields(self):
+        role = self.settings_service.role
+        self.ui.roleComboBox.setCurrentIndex(0 if role == "operator" else 1)
+
+    def _connect_handlers(self):
+        self.ui.roleComboBox.currentIndexChanged.connect(self.toggle_password_field)
+
+        self.ui.passwordLineEdit.textChanged.connect(self.change_password_status)
+
+        self.ui.passwordHideBtn.clicked.connect(self.hide_unhide_password)
+        self.ui.loginButton.clicked.connect(self.handle_login)
+
+    def _load_language(self):
         # Видаляємо старий перекладач
         lang_code = self.settings_service.lang_code
 

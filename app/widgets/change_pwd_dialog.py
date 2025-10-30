@@ -15,26 +15,15 @@ class ChangePwdDialog(QDialog):
 
         self.settings_service = settings
 
-        if self.settings_service.compiled_ui_using_enabled:
-            self.ui = Ui_ChangePwdDialog()
-            self.ui.setupUi(self)
-        else:
-            uic.loadUi("app/ui/change_pwd_dialog.ui", self)
-            self.ui = self
+        self._load_ui()
+        print("[ChangePwdDialog] Інтерфейс завантажено.")
 
-        self.ui.passwordLineEdit.textChanged.connect(self.change_password_status)
-        self.ui.confirmPasswordLineEdit.textChanged.connect(self.change_password_status)
+        self._setup_state_variables()
 
-        self.ui.passwordHideBtn.clicked.connect(self.hide_unhide_password)
-        self.ui.confirmPasswordHideBtn.clicked.connect(self.hide_unhide_password)
-
-        self.ui.saveButton.clicked.connect(self.handle_save_pwd)
-
-        self.translator = QTranslator()
-
-        self.load_language()
-
+        self._connect_handlers()
         print("[ChangePwdDialog] Сигнали підключено.")
+
+        self._load_language()
 
     def changeEvent(self, event):
         # Ловимо подію, яку надіслав installTranslator
@@ -48,7 +37,27 @@ class ChangePwdDialog(QDialog):
             # на стандартну обробку
             super().changeEvent(event)
 
-    def load_language(self):
+    def _load_ui(self):
+        if self.settings_service.compiled_ui_using_enabled:
+            self.ui = Ui_ChangePwdDialog()
+            self.ui.setupUi(self)
+        else:
+            uic.loadUi("app/ui/change_pwd_dialog.ui", self)
+            self.ui = self
+
+    def _setup_state_variables(self):
+        self.translator = QTranslator()
+
+    def _connect_handlers(self):
+        self.ui.passwordLineEdit.textChanged.connect(self.change_password_status)
+        self.ui.confirmPasswordLineEdit.textChanged.connect(self.change_password_status)
+
+        self.ui.passwordHideBtn.clicked.connect(self.hide_unhide_password)
+        self.ui.confirmPasswordHideBtn.clicked.connect(self.hide_unhide_password)
+
+        self.ui.saveButton.clicked.connect(self.handle_save_pwd)
+
+    def _load_language(self):
         # Видаляємо старий перекладач
         lang_code = self.settings_service.lang_code
 
@@ -72,7 +81,6 @@ class ChangePwdDialog(QDialog):
         self.ui.passwordIncorrectLabel.setVisible(False)
 
     def hide_unhide_password(self):
-
         button = self.sender()
         target_line_edit = None
 

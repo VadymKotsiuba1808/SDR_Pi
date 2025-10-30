@@ -115,6 +115,7 @@ class MainWindow(QMainWindow):
         self.ui.homeButton.clicked.connect(self.update_status_bar_with_test_data)
         self.ui.addMapButton.clicked.connect(self.handle_add_map)
 
+        self.ui.falseAlarmButton.clicked.connect(self.stop_alert)
         self.ui.menuButton.clicked.connect(self.test_draw_dot)
         self.ui.radarButton.clicked.connect(self.set_radar_mode)
         self.ui.mapButton.clicked.connect(self.set_map_mode)
@@ -163,7 +164,7 @@ class MainWindow(QMainWindow):
         self.map_types = [e for e in MapTypes]
         self.current_coords = [49.43440, 27.00543]
         self.isRadarMode = False
-        self.is_warning = False
+        self.is_alert = False
         self.translator = QTranslator()
 
     def _update_map_geometry(self):
@@ -436,7 +437,7 @@ class MainWindow(QMainWindow):
         # Малюємо градієнтний промінь
         gradient = QConicalGradient(center, -angle)
 
-        if self.is_warning:
+        if self.is_alert:
             gradient.setColorAt(0.0, QColor(215, 40, 30, 100))
             gradient.setColorAt(0.25, QColor(180, 30, 30, 70))
             gradient.setColorAt(1.0, QColor(100, 30, 30, 20))
@@ -578,14 +579,21 @@ class MainWindow(QMainWindow):
         await self.refresh_map()
 
     def test_draw_dot(self):
+        if self.is_alert == True:
+            self.stop_alert()
+            return
 
-        if self.is_warning == True:
-            self.clear_radar_dots()
-            self.is_warning = False
+        self.start_alert()
 
-        else:
-            self.create_radar_dot(45, 200)
-            self.is_warning = True
+    def start_alert(self):
+        self.create_radar_dot(45, 200)
+        self.is_alert = True
+        self.ui.falseAlarmButton.setEnabled(True)
+
+    def stop_alert(self):
+        self.clear_radar_dots()
+        self.is_alert = False
+        self.ui.falseAlarmButton.setEnabled(False)
 
     def update_wifi_signal_info(self):
         wifi_strength = self.get_wifi_signal_strength()

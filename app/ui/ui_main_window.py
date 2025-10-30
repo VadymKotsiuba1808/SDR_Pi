@@ -407,7 +407,7 @@ class Ui_MainWindow(object):
         self.screenSaveButton.setText("")
         self.screenSaveButton.setObjectName("screenSaveButton")
         self.MainButtons = QtWidgets.QFrame(parent=self.Body)
-        self.MainButtons.setGeometry(QtCore.QRect(1538, 0, 382, 393))
+        self.MainButtons.setGeometry(QtCore.QRect(1538, 0, 382, 501))
         self.MainButtons.setStyleSheet("background: rgba(0, 10, 0, 0.8);\n"
 "border: 2px solid #328844;")
         self.MainButtons.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
@@ -415,7 +415,7 @@ class Ui_MainWindow(object):
         self.MainButtons.setObjectName("MainButtons")
         self.radarButton = QtWidgets.QPushButton(parent=self.MainButtons)
         self.radarButton.setEnabled(True)
-        self.radarButton.setGeometry(QtCore.QRect(30, 25, 322, 103))
+        self.radarButton.setGeometry(QtCore.QRect(30, 140, 322, 103))
         self.radarButton.setStyleSheet("QPushButton{\n"
 "    border: none;\n"
 "    background-image: url(:/images/Btn_MainMenu_off.png);\n"
@@ -447,7 +447,7 @@ class Ui_MainWindow(object):
         self.radarButton.setObjectName("radarButton")
         self.mapButton = QtWidgets.QPushButton(parent=self.MainButtons)
         self.mapButton.setEnabled(True)
-        self.mapButton.setGeometry(QtCore.QRect(30, 145, 322, 103))
+        self.mapButton.setGeometry(QtCore.QRect(30, 260, 322, 103))
         self.mapButton.setStyleSheet("QPushButton{\n"
 "    border: none;\n"
 "    background-image: url(:/images/Btn_MainMenu_off.png);\n"
@@ -480,7 +480,7 @@ class Ui_MainWindow(object):
         self.mapButton.setObjectName("mapButton")
         self.menuButton = QtWidgets.QPushButton(parent=self.MainButtons)
         self.menuButton.setEnabled(True)
-        self.menuButton.setGeometry(QtCore.QRect(30, 265, 322, 103))
+        self.menuButton.setGeometry(QtCore.QRect(30, 380, 322, 103))
         self.menuButton.setStyleSheet("QPushButton{\n"
 "    border: none;\n"
 "    background-image: url(:/images/Btn_MainMenu_off.png);\n"
@@ -508,15 +508,36 @@ class Ui_MainWindow(object):
 "    color: #FFFFFF;\n"
 "}")
         self.menuButton.setObjectName("menuButton")
+        self.falseAlarmButton = QtWidgets.QPushButton(parent=self.MainButtons)
+        self.falseAlarmButton.setEnabled(False)
+        self.falseAlarmButton.setGeometry(QtCore.QRect(30, 20, 322, 103))
+        self.falseAlarmButton.setStyleSheet("QPushButton:enabled{\n"
+"    border: none;\n"
+"    border-image: url(:/images/Btn_MainMenu_red.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 40px;\n"
+"    color: #FFFFFF;\n"
+"}\n"
+"\n"
+"QPushButton:pressed{\n"
+"    border-image: url(:/images/Btn_MainMenu_on.png);\n"
+"    color: #002509;\n"
+"}\n"
+"\n"
+"QPushButton:disabled{\n"
+"    border-image: url(:/images/Btn_MainMenu_disabled.png);\n"
+"}")
+        self.falseAlarmButton.setObjectName("falseAlarmButton")
         self.TimerFrame = QtWidgets.QFrame(parent=self.Body)
-        self.TimerFrame.setGeometry(QtCore.QRect(1538, 553, 382, 432))
+        self.TimerFrame.setGeometry(QtCore.QRect(1538, 614, 382, 371))
         self.TimerFrame.setStyleSheet("background: rgba(0, 10, 0, 0.8);\n"
 "border: 2px solid #328844;")
         self.TimerFrame.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
         self.TimerFrame.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
         self.TimerFrame.setObjectName("TimerFrame")
         self.label_3 = QtWidgets.QLabel(parent=self.TimerFrame)
-        self.label_3.setGeometry(QtCore.QRect(127, 8, 127, 40))
+        self.label_3.setGeometry(QtCore.QRect(127, 10, 127, 40))
         self.label_3.setStyleSheet("background: none;\n"
 "border: none;\n"
 "font-family: \'Roboto\';\n"
@@ -526,7 +547,7 @@ class Ui_MainWindow(object):
         self.label_3.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.label_3.setObjectName("label_3")
         self.TimerTime = QtWidgets.QLabel(parent=self.TimerFrame)
-        self.TimerTime.setGeometry(QtCore.QRect(76, 52, 229, 68))
+        self.TimerTime.setGeometry(QtCore.QRect(76, 54, 229, 68))
         self.TimerTime.setStyleSheet("background: none;\n"
 "border: none;\n"
 "font-family: \'Roboto\';\n"
@@ -537,7 +558,7 @@ class Ui_MainWindow(object):
         self.TimerTime.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.TimerTime.setObjectName("TimerTime")
         self.onTimerButton = QtWidgets.QPushButton(parent=self.TimerFrame)
-        self.onTimerButton.setGeometry(QtCore.QRect(30, 312, 322, 90))
+        self.onTimerButton.setGeometry(QtCore.QRect(30, 250, 322, 100))
         self.onTimerButton.setStyleSheet("QPushButton{\n"
 "    border: none;\n"
 "    border-image: url(:/images/Btn_MainMenu_off.png);\n"
@@ -566,7 +587,7 @@ class Ui_MainWindow(object):
 "}")
         self.onTimerButton.setObjectName("onTimerButton")
         self.offTimerButton = QtWidgets.QPushButton(parent=self.TimerFrame)
-        self.offTimerButton.setGeometry(QtCore.QRect(30, 132, 322, 166))
+        self.offTimerButton.setGeometry(QtCore.QRect(30, 130, 322, 100))
         self.offTimerButton.setStyleSheet("QPushButton{\n"
 "    border: none;\n"
 "    border-image: url(:/images/Btn_MainMenu_red.png);\n"
@@ -596,7 +617,7 @@ class Ui_MainWindow(object):
         self.offTimerButton.setObjectName("offTimerButton")
         self.k_label_1 = QtWidgets.QLabel(parent=self.Body)
         self.k_label_1.setEnabled(False)
-        self.k_label_1.setGeometry(QtCore.QRect(1550, 453, 102, 101))
+        self.k_label_1.setGeometry(QtCore.QRect(1550, 513, 102, 101))
         self.k_label_1.setStyleSheet("*{\n"
 "    font-family: \'Roboto\';\n"
 "    font-weight: 500;\n"
@@ -617,7 +638,7 @@ class Ui_MainWindow(object):
         self.k_label_1.setObjectName("k_label_1")
         self.k_label_2 = QtWidgets.QLabel(parent=self.Body)
         self.k_label_2.setEnabled(False)
-        self.k_label_2.setGeometry(QtCore.QRect(1678, 453, 102, 101))
+        self.k_label_2.setGeometry(QtCore.QRect(1678, 513, 102, 101))
         self.k_label_2.setStyleSheet("*{\n"
 "    font-family: \'Roboto\';\n"
 "    font-weight: 500;\n"
@@ -638,7 +659,7 @@ class Ui_MainWindow(object):
         self.k_label_2.setObjectName("k_label_2")
         self.k_label_3 = QtWidgets.QLabel(parent=self.Body)
         self.k_label_3.setEnabled(False)
-        self.k_label_3.setGeometry(QtCore.QRect(1806, 453, 102, 101))
+        self.k_label_3.setGeometry(QtCore.QRect(1806, 513, 102, 101))
         self.k_label_3.setStyleSheet("*{\n"
 "    font-family: \'Roboto\';\n"
 "    font-weight: 500;\n"
@@ -841,6 +862,7 @@ class Ui_MainWindow(object):
         self.radarButton.setText(_translate("MainWindow", "Режим радару"))
         self.mapButton.setText(_translate("MainWindow", "Режим карти"))
         self.menuButton.setText(_translate("MainWindow", "Меню"))
+        self.falseAlarmButton.setText(_translate("MainWindow", "Хибна тривога"))
         self.label_3.setText(_translate("MainWindow", "Jammer"))
         self.TimerTime.setText(_translate("MainWindow", "00:00:00"))
         self.onTimerButton.setText(_translate("MainWindow", "ON"))

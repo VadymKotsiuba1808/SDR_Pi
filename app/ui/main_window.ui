@@ -1059,7 +1059,7 @@ QPushButton[enabled=&quot;false&quot;]{
        </rect>
       </property>
       <property name="styleSheet">
-       <string notr="true">QPushButton{
+       <string notr="true">QPushButton:enabled{
 	border: none;
 	border-image: url(:/images/Btn_MainMenu_red.png);
 	font-family: 'Roboto';
@@ -1073,7 +1073,7 @@ QPushButton:pressed{
 	color: #002509;
 }
 
-QPushButton[enabled=&quot;false&quot;]{
+QPushButton:disabled{
 	border-image: url(:/images/Btn_MainMenu_disabled.png);
 }</string>
       </property>

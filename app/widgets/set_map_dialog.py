@@ -25,52 +25,20 @@ class SetMapDialog(QDialog):
         self.settings_service = settings
         self.add_sizes_map_k = add_sizes_map_k
 
-        # Завантажуємо ui
-        if self.settings_service.compiled_ui_using_enabled:
-            self.ui = Ui_SetMapDialog()
-            self.ui.setupUi(self)
-        else:
-            uic.loadUi("app/ui/set_map_dialog.ui", self)
-            self.ui = self
-
+        self._load_ui()
         print("[Init] UI завантажено")
 
-        # Внутрішні змінні стану
-        self.original_pixmap = None
-        self.image_path = ""
-        self.current_scale = 1.0
-        self.current_rotation = 0.0  # Нова змінна для обертання
-
-        self.center_point_f = QPointF()
-        self.current_offset_f = QPointF()
-        # ---
-
-        self.is_centering_mode = False
-        circle_radius = self.ui.centerCircleLabel.width() / 2
-
-        self.screen_center_f = QPointF(
-            self.ui.centerCircleLabel.x() + circle_radius,
-            self.ui.centerCircleLabel.y() + circle_radius,
-        )
-
+        self._setup_state_variables()
         print(
             f"[Init] Розмір екрану карти: {self.ui.mapDisplayLabel.width()}x{self.ui.mapDisplayLabel.height()}"
         )
         print(f"[Init] Центр екрана карти: {self.screen_center_f}")
 
+        self._adjust_fields()
         self._connect_handlers()
         print("[Init] Сигнали підключено")
 
-        self.ui.mapDisplayLabel.installEventFilter(self)
-        self.ui.centerCircleLabel.installEventFilter(self)
-        self.ui.centerPointIconLabel.installEventFilter(self)
-
-        # Це буде словник, який ми повернемо
-        self.result_settings = {}
-
-        self.translator = QTranslator()
-
-        self.load_language()
+        self._load_language()
 
         print("[Init] Ініціалізацію завершено\n")
 
@@ -86,7 +54,53 @@ class SetMapDialog(QDialog):
             # на стандартну обробку
             super().changeEvent(event)
 
-    def load_language(self):
+    def _load_ui(self):
+        if self.settings_service.compiled_ui_using_enabled:
+            self.ui = Ui_SetMapDialog()
+            self.ui.setupUi(self)
+        else:
+            uic.loadUi("app/ui/set_map_dialog.ui", self)
+            self.ui = self
+
+    def _setup_state_variables(self):
+        self.original_pixmap = None
+        self.image_path = ""
+        self.current_scale = 1.0
+        self.current_rotation = 0.0
+
+        self.center_point_f = QPointF()
+        self.current_offset_f = QPointF()
+
+        self.is_centering_mode = False
+        circle_radius = self.ui.centerCircleLabel.width() / 2
+
+        self.screen_center_f = QPointF(
+            self.ui.centerCircleLabel.x() + circle_radius,
+            self.ui.centerCircleLabel.y() + circle_radius,
+        )
+
+        self.result_settings = {}
+        self.translator = QTranslator()
+
+    def _adjust_fields(self):
+        self.ui.mapDisplayLabel.installEventFilter(self)
+        self.ui.centerCircleLabel.installEventFilter(self)
+
+    def _connect_handlers(self):
+        self.ui.selectImageButton.clicked.connect(self.handle_select_image)
+        self.ui.setCenterButton.clicked.connect(self.handle_set_center)
+        self.ui.zoomInButton.clicked.connect(self.handle_zoom_in)
+        self.ui.zoomOutButton.clicked.connect(self.handle_zoom_out)
+        self.ui.scaleSpinBox.valueChanged.connect(self.handle_scale_changed)
+        self.ui.rotateSpinBox.valueChanged.connect(self.handle_rotation_changed)
+        self.ui.rotateHorizontalSlider.valueChanged.connect(
+            self.handle_rotation_changed
+        )
+
+        self.ui.saveButton.clicked.connect(self.handle_save)
+        self.ui.cancelButton.clicked.connect(self.handle_cancel)
+
+    def _load_language(self):
         # Видаляємо старий перекладач
         lang_code = self.settings_service.lang_code
 
@@ -102,20 +116,7 @@ class SetMapDialog(QDialog):
         else:
             print(f"Помилка: не вдалося завантажити {path}")
 
-    def _connect_handlers(self):
-        self.ui.selectImageButton.clicked.connect(self.on_select_image)
-        self.ui.setCenterButton.clicked.connect(self.on_set_center)
-        self.ui.zoomInButton.clicked.connect(self.on_zoom_in)
-        self.ui.zoomOutButton.clicked.connect(self.on_zoom_out)
-        self.ui.scaleSpinBox.valueChanged.connect(self.on_scale_changed)
-        self.ui.rotateSpinBox.valueChanged.connect(self.on_rotation_changed)
-        self.ui.rotateHorizontalSlider.valueChanged.connect(self.on_rotation_changed)
-
-        # Підключаємо кнопки до вбудованих слотів QDialog
-        self.ui.saveButton.clicked.connect(self.save)
-        self.ui.cancelButton.clicked.connect(self.cancel)
-
-    def on_select_image(self):
+    def handle_select_image(self):
         print("[on_select_image] Відкривається діалог вибору зображення...")
         file_path, _ = QFileDialog.getOpenFileName(
             None,  # Використовуємо None для уникнення проблем з модальністю
@@ -153,10 +154,9 @@ class SetMapDialog(QDialog):
         self.ui.scaleSpinBox.setValue(100)
         self.ui.rotateSpinBox.setValue(0)  # Скидаємо кут
 
-        self.ui.centerPointIconLabel.setVisible(False)
         self.update_map_display()
 
-    def on_set_center(self):
+    def handle_set_center(self):
         print("[on_set_center] Активовано режим вибору центру")
         if not self.original_pixmap:
             QMessageBox.warning(None, "Увага", "Спочатку завантажте зображення карти.")
@@ -167,26 +167,24 @@ class SetMapDialog(QDialog):
     def set_cross_cursor(self):
         self.ui.mapDisplayLabel.setCursor(Qt.CursorShape.CrossCursor)
         self.ui.centerCircleLabel.setCursor(Qt.CursorShape.CrossCursor)
-        self.ui.centerPointIconLabel.setCursor(Qt.CursorShape.CrossCursor)
 
     def clear_cross_cursor(self):
         self.ui.mapDisplayLabel.setCursor(Qt.CursorShape.ArrowCursor)
         self.ui.centerCircleLabel.setCursor(Qt.CursorShape.ArrowCursor)
-        self.ui.centerPointIconLabel.setCursor(Qt.CursorShape.ArrowCursor)
 
-    def on_zoom_in(self):
+    def handle_zoom_in(self):
         print("[on_zoom_in] Збільшення масштабу")
         self.ui.scaleSpinBox.setValue(self.ui.scaleSpinBox.value() + 1)
 
-    def on_zoom_out(self):
+    def handle_zoom_out(self):
         print("[on_zoom_out] Зменшення масштабу")
         self.ui.scaleSpinBox.setValue(self.ui.scaleSpinBox.value() - 1)
 
-    def on_scale_changed(self, value):
+    def handle_scale_changed(self, value):
         print(f"[on_scale_changed] Масштаб змінено: {value}%")
         self.update_map_display()
 
-    def on_rotation_changed(self, value):
+    def handle_rotation_changed(self, value):
         print(f"[on_rotation_changed] Кут змінено: {value}°")
 
         # Визначаємо, хто викликав зміну (спінбокс чи слайдер)
@@ -258,15 +256,9 @@ class SetMapDialog(QDialog):
         print("[update_map_display] Відображення оновлено\n")
 
     def eventFilter(self, source, event):
-        if (
-            source is self.ui.mapDisplayLabel
-            or source is self.ui.centerCircleLabel
-            or source is self.ui.centerPointIconLabel
-        ):
+        if source is self.ui.mapDisplayLabel or source is self.ui.centerCircleLabel:
             if event.type() == QEvent.Type.MouseButtonPress and self.is_centering_mode:
                 if event.button() == Qt.MouseButton.LeftButton:
-
-                    # --- ОНОВЛЕННЯ: Математика для обертання ---
 
                     # 1. Отримуємо позицію кліку (у координатах mapDisplayLabel)
                     label_click_pos_f = QPointF(
@@ -312,13 +304,12 @@ class SetMapDialog(QDialog):
 
                     self.is_centering_mode = False
                     self.clear_cross_cursor()
-                    self.ui.centerPointIconLabel.setVisible(True)
                     self.update_map_display()
                     return True
 
         return super().eventFilter(source, event)
 
-    def save(self):
+    def handle_save(self):
         """
         Цей метод тепер автоматично викликається при натисканні 'saveButton'.
         """
@@ -397,7 +388,7 @@ class SetMapDialog(QDialog):
 
         self.accept()
 
-    def cancel(self):
+    def handle_cancel(self):
         """
         Цей метод автоматично викликається при натисканні 'cancelButton'.
         """

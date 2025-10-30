@@ -265,16 +265,6 @@ class Ui_SetMapDialog(object):
 "}")
         self.cancelButton.setObjectName("cancelButton")
         self.verticalLayout.addWidget(self.cancelButton)
-        self.centerPointIconLabel = QtWidgets.QLabel(parent=SetMapDialog)
-        self.centerPointIconLabel.setGeometry(QtCore.QRect(749, 490, 56, 56))
-        self.centerPointIconLabel.setVisible(False)
-        self.centerPointIconLabel.setStyleSheet("background-color: transparent;\n"
-"background-image: url(:/icons/point_location.svg);\n"
-"background-position:center;\n"
-"background-repeat:no-repeat;\n"
-"")
-        self.centerPointIconLabel.setText("")
-        self.centerPointIconLabel.setObjectName("centerPointIconLabel")
 
         self.retranslateUi(SetMapDialog)
         self.saveButton.clicked.connect(SetMapDialog.accept) # type: ignore

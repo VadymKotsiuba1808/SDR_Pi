@@ -532,29 +532,6 @@ QPushButton:pressed{
     </item>
    </layout>
   </widget>
-  <widget class="QLabel" name="centerPointIconLabel">
-   <property name="geometry">
-    <rect>
-     <x>749</x>
-     <y>490</y>
-     <width>56</width>
-     <height>56</height>
-    </rect>
-   </property>
-   <property name="visible">
-    <bool>false</bool>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">background-color: transparent;
-background-image: url(:/icons/point_location.svg);
-background-position:center;
-background-repeat:no-repeat;
-</string>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-  </widget>
  </widget>
  <resources>
   <include location="../resources.qrc"/>

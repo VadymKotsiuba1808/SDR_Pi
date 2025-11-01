@@ -12,7 +12,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 class Ui_RecordingStatusWidget(object):
     def setupUi(self, RecordingStatusWidget):
         RecordingStatusWidget.setObjectName("RecordingStatusWidget")
-        RecordingStatusWidget.resize(110, 28)
+        RecordingStatusWidget.resize(172, 28)
         self.horizontalLayout = QtWidgets.QHBoxLayout(RecordingStatusWidget)
         self.horizontalLayout.setContentsMargins(5, 0, 5, 0)
         self.horizontalLayout.setObjectName("horizontalLayout")
@@ -40,4 +40,4 @@ class Ui_RecordingStatusWidget(object):
         _translate = QtCore.QCoreApplication.translate
         RecordingStatusWidget.setWindowTitle(_translate("RecordingStatusWidget", "Form"))
         self.rec_label.setText(_translate("RecordingStatusWidget", "🔴"))
-        self.duration_label.setText(_translate("RecordingStatusWidget", "00:00"))
+        self.duration_label.setText(_translate("RecordingStatusWidget", "00:00:00"))

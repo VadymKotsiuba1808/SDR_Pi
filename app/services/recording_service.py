@@ -10,7 +10,7 @@ class RecordingService(QObject):
 
     # НОВІ СИГНАЛИ
     recording_paused = pyqtSignal(bool)  # true = on pause, false = resumed
-    duration_updated = pyqtSignal(str)  # Будемо відправляти час у форматі "MM:SS"
+    duration_updated = pyqtSignal(str)  # Будемо відправляти час у форматі "HH:MM:SS"
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -80,10 +80,11 @@ class RecordingService(QObject):
         elapsed_ms = self.start_time.elapsed()
         seconds = elapsed_ms // 1000
 
-        # Форматуємо у "MM:SS"
+        # Форматуємо у "HH:MM:SS"
+        hours = (seconds / 60) // 60
         minutes = seconds // 60
         seconds = seconds % 60
-        self.duration_updated.emit(f"{minutes:02}:{seconds:02}")
+        self.duration_updated.emit(f"{hours:02}:{minutes:02}:{seconds:02}")
 
     @pyqtSlot()  # Робимо це публічним слотом
     def stop_recording(self):
@@ -106,7 +107,7 @@ class RecordingService(QObject):
 
         self.stream = None
         self.recording_stopped.emit()
-        self.duration_updated.emit("00:00")  # Скидаємо лічильник
+        self.duration_updated.emit("00:00:00")  # Скидаємо лічильник
         print("Запис зупинено.")
 
     @pyqtSlot(bool)  # Публічний слот, який приймає стан кнопки "пауза"

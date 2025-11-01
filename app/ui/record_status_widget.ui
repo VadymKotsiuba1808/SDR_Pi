@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>110</width>
+    <width>172</width>
     <height>28</height>
    </rect>
   </property>
@@ -48,7 +48,7 @@
       <string notr="true">font-family: 'Courier New';</string>
      </property>
      <property name="text">
-      <string>00:00</string>
+      <string>00:00:00</string>
      </property>
     </widget>
    </item>

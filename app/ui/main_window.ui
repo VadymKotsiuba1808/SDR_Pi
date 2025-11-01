@@ -1173,22 +1173,6 @@ QPushButton[enabled=&quot;false&quot;]{
        <pixmap resource="../resources.qrc">:/images/radar.png</pixmap>
       </property>
      </widget>
-     <widget class="QLabel" name="Radar_Section">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>0</y>
-        <width>901</width>
-        <height>901</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignmentFlag::AlignCenter</set>
-      </property>
-     </widget>
     </widget>
     <widget class="QLabel" name="map_background_label">
      <property name="enabled">
@@ -1746,6 +1730,39 @@ QPushButton[enabled=&quot;false&quot;]{
       </item>
      </layout>
     </widget>
+    <widget class="QPushButton" name="screenRecordButton">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>166</x>
+       <y>845</y>
+       <width>110</width>
+       <height>110</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton#screenRecordButton{
+	border-image: url(:/images/Btn_MainMenu_off.png);
+}
+
+QPushButton#screenRecordButton:pressed,
+QPushButton#screenRecordButton:checked{
+	background-image: url(:/images/screen_save_on.png);
+}
+
+QPushButton#screenRecordButton:disabled{
+	background-image: url(:/images/screen_save_disabled.png);
+}</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+    </widget>
     <zorder>map_background_label</zorder>
     <zorder>homeButton</zorder>
     <zorder>mapLayoutButton</zorder>
@@ -1759,6 +1776,7 @@ QPushButton[enabled=&quot;false&quot;]{
     <zorder>addMapButton</zorder>
     <zorder>LangSettings</zorder>
     <zorder>MainButtons_Container</zorder>
+    <zorder>screenRecordButton</zorder>
    </widget>
   </widget>
  </widget>

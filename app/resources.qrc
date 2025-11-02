@@ -40,6 +40,10 @@
     <file alias="icons/chart.svg">assets/icons/chart.svg</file>
     <file alias="icons/save.svg">assets/icons/save.svg</file>
     <file alias="icons/clear.svg">assets/icons/clear.svg</file>
+    <file alias="icons/pause.svg">assets/icons/pause.svg</file>
+    <file alias="icons/play.svg">assets/icons/play.svg</file>
+    <file alias="icons/record_indicator.svg">assets/icons/record_indicator.svg</file>
+    <file alias="icons/record_off_indicator.svg">assets/icons/record_off_indicator.svg</file>
 </qresource>
 </RCC>
 

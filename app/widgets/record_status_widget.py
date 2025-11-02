@@ -5,11 +5,14 @@ from PyQt6 import uic
 import os
 
 from app.ui.ui_record_status_widget import Ui_RecordingStatusWidget
+from app.services.settings_service import SettingsService
 
 
 class RecordingStatusWidget(QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, settings: SettingsService, parent=None):
         super().__init__(parent)
+
+        self.settings_service = settings
 
         self._load_ui()
 
@@ -18,7 +21,7 @@ class RecordingStatusWidget(QWidget):
         self.resume_icon = QIcon("images/homeBtn_off.png")  # TODO: Вкажіть шлях
 
         # Встановлюємо іконку за замовчуванням
-        self.pause_button.setIcon(self.pause_icon)
+        self.ui.pause_button.setIcon(self.pause_icon)
 
         # Підключаємо сигнал до слота, який вже є в цьому класі
         # self.pause_button.toggled.connect(self.on_pause_toggled) # Це вже зроблено у MainWindow
@@ -37,20 +40,20 @@ class RecordingStatusWidget(QWidget):
     @pyqtSlot(str)
     def update_duration(self, time_str):
         # self.duration_label - це ім'я (name) віджета з .ui файлу
-        self.duration_label.setText(time_str)
+        self.ui.duration_label.setText(time_str)
 
     @pyqtSlot(bool)
     def on_pause_toggled(self, is_paused):
         # Оновлюємо іконку кнопки
         if is_paused:
-            self.pause_button.setIcon(self.resume_icon)
-            self.rec_label.setText("⏸️")  # Міняємо іконку статусу
+            self.ui.pause_button.setIcon(self.resume_icon)
+            self.ui.rec_label.setText("⏸️")  # Міняємо іконку статусу
         else:
-            self.pause_button.setIcon(self.pause_icon)
-            self.rec_label.setText("🔴")
+            self.ui.pause_button.setIcon(self.pause_icon)
+            self.ui.rec_label.setText("🔴")
 
     # Цей слот викликається з MainWindow, коли запис зупиняється
     def reset_state(self):
         self.setVisible(False)
-        self.pause_button.setChecked(False)  # "Віджати" кнопку
+        self.ui.pause_button.setChecked(False)  # "Віджати" кнопку
         self.update_duration("00:00:00")

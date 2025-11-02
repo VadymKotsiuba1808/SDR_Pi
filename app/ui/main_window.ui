@@ -1173,6 +1173,22 @@ QPushButton[enabled=&quot;false&quot;]{
        <pixmap resource="../resources.qrc">:/images/radar.png</pixmap>
       </property>
      </widget>
+     <widget class="QLabel" name="Radar_Section">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>901</width>
+        <height>901</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
+      </property>
+     </widget>
     </widget>
     <widget class="QLabel" name="map_background_label">
      <property name="enabled">
@@ -1744,12 +1760,12 @@ QPushButton[enabled=&quot;false&quot;]{
      </property>
      <property name="styleSheet">
       <string notr="true">QPushButton#screenRecordButton{
-	border-image: url(:/images/Btn_MainMenu_off.png);
+	background-image: url(:/images/Btn_MainMenu_off.png);
 }
 
 QPushButton#screenRecordButton:pressed,
 QPushButton#screenRecordButton:checked{
-	background-image: url(:/images/screen_save_on.png);
+	background-image: url(:/images/Btn_MainMenu_on.png);
 }
 
 QPushButton#screenRecordButton:disabled{
@@ -1762,8 +1778,58 @@ QPushButton#screenRecordButton:disabled{
      <property name="checkable">
       <bool>true</bool>
      </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+    </widget>
+    <widget class="QFrame" name="RecordStatusContainer">
+     <property name="geometry">
+      <rect>
+       <x>290</x>
+       <y>910</y>
+       <width>200</width>
+       <height>45</height>
+      </rect>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color:transparent;
+border: none;</string>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Shape::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Shadow::Raised</enum>
+     </property>
+     <layout class="QHBoxLayout" name="screenRecordingLayout">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <property name="sizeConstraint">
+       <enum>QLayout::SizeConstraint::SetMinimumSize</enum>
+      </property>
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+     </layout>
     </widget>
     <zorder>map_background_label</zorder>
+    <zorder>screenRecordButton</zorder>
     <zorder>homeButton</zorder>
     <zorder>mapLayoutButton</zorder>
     <zorder>screenSaveButton</zorder>
@@ -1776,7 +1842,8 @@ QPushButton#screenRecordButton:disabled{
     <zorder>addMapButton</zorder>
     <zorder>LangSettings</zorder>
     <zorder>MainButtons_Container</zorder>
-    <zorder>screenRecordButton</zorder>
+    <zorder>verticalLayoutWidget</zorder>
+    <zorder>RecordStatusContainer</zorder>
    </widget>
   </widget>
  </widget>

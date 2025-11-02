@@ -1,6 +1,7 @@
 
 /temp_data/*.png
 /screenshots/*.png
+/screen_records/*.mp4
 
 .vscode/
 # Byte-compiled / optimized / DLL files

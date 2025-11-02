@@ -1,9 +1,10 @@
+import os
 import math
 import asyncio
 import platform
 import subprocess
 import re
-from PyQt6.QtWidgets import QMainWindow, QApplication, QDialog
+from PyQt6.QtWidgets import QMainWindow, QApplication, QDialog, QMessageBox
 from PyQt6.QtCore import (
     QTimer,
     QDateTime,
@@ -12,8 +13,19 @@ from PyQt6.QtCore import (
     QEvent,
     QCoreApplication,
     QTranslator,
+    pyqtSlot,
+    pyqtSignal,
+    QThread,
 )
-from PyQt6.QtGui import QPixmap, QConicalGradient, QPainter, QColor, QPen
+from PyQt6.QtGui import (
+    QPixmap,
+    QConicalGradient,
+    QPainter,
+    QColor,
+    QPen,
+    QAction,
+    QIcon,
+)
 
 from PyQt6 import uic
 from qasync import asyncSlot
@@ -27,9 +39,14 @@ from app.utils.test_data_provider import TestDataProvider
 from app.services.settings_service import SettingsService
 from app.widgets.set_map_dialog import SetMapDialog
 from app.widgets.autosize_window import make_scalable
+from app.widgets.record_status_widget import RecordingStatusWidget
+from app.services.recording_service import RecordingService
 
 
 class MainWindow(QMainWindow):
+    _sig_start_recording = pyqtSignal(str)
+    _sig_stop_recording = pyqtSignal()
+
     def __init__(self, settings: SettingsService, parent=None):
         super().__init__(parent)
         self.settings_service = settings
@@ -38,6 +55,7 @@ class MainWindow(QMainWindow):
         print("[MainWindow] Інтерфейс завантажено.")
 
         self._setup_state_variables()
+        self._init_recording_service()
 
         self._adjust_fields()
 
@@ -102,6 +120,21 @@ class MainWindow(QMainWindow):
         self.is_alert = False
         self.translator = QTranslator()
 
+        self.record_status_widget = RecordingStatusWidget(self.settings_service, self)
+
+    def _init_recording_service(self):
+        self.recorder = RecordingService(self)
+
+        self.recorder.recording_started.connect(self.on_recording_started)
+        self.recorder.recording_stopped.connect(self.on_recording_stopped)
+        self.recorder.recording_error.connect(self.show_error_message)
+        self.recorder.duration_updated.connect(
+            self.record_status_widget.update_duration
+        )
+        self.recorder.recording_paused.connect(
+            self.record_status_widget.on_pause_toggled
+        )
+
     def _adjust_fields(self):
         radar_max_radius = self.settings_service.radar_max_radius
         self.ui.radarRadiusSpinbox.setMaximum(radar_max_radius)
@@ -126,11 +159,14 @@ class MainWindow(QMainWindow):
             self.ui.falseAlarmButton.setVisible(False)
             self.ui.menuButton.setVisible(False)
 
+        self.ui.screenRecordingLayout.addWidget(self.record_status_widget)
+
     def _connect_handlers(self):
         self.ui.mapLayoutButton.clicked.connect(self.change_map_type)
         self.ui.screenSaveButton.clicked.connect(self.take_screenshot)
         self.ui.homeButton.clicked.connect(self.update_status_bar_with_test_data)
         self.ui.addMapButton.clicked.connect(self.handle_add_map)
+        self.ui.screenRecordButton.clicked.connect(self.handle_toggle_recording)
 
         self.ui.falseAlarmButton.clicked.connect(self.stop_alert)
         self.ui.menuButton.clicked.connect(self.test_draw_dot)
@@ -175,6 +211,39 @@ class MainWindow(QMainWindow):
         self.timer_wifi = QTimer(self)
         self.timer_wifi.timeout.connect(self.update_wifi_signal_info)
         self.timer_wifi.start(2 * 60 * 1000)
+
+    @pyqtSlot(bool)
+    def handle_toggle_recording(self):
+        button = self.sender()
+
+        if button.isChecked():
+            # --- Кнопку НАТИСНУЛИ (Початок) ---
+            filename = f"./screen_records/record_{QDateTime.currentDateTime().toString('yyyy-MM-dd_hh-mm-ss')}.mp4"
+            os.makedirs(os.path.dirname(filename), exist_ok=True)
+
+            # Напряму викликаємо метод-слот
+            self.recorder.start_recording(filename)
+        else:
+            # --- Кнопку ВІДЖАЛИ (Зупинка) ---
+            self.recorder.stop_recording()
+
+    @pyqtSlot()
+    def on_recording_started(self):
+        print("[MainWindow] Отримано підтвердження старту. Показ віджета.")
+        self.record_status_widget.setVisible(True)
+
+    @pyqtSlot()
+    def on_recording_stopped(self):
+        print("[MainWindow] Отримано підтвердження зупинки. Ховаємо віджет.")
+        if self.ui.screenRecordButton.isChecked():
+            self.ui.screenRecordButton.setChecked(False)
+        self.record_status_widget.reset_state()
+
+    @pyqtSlot(str)
+    def show_error_message(self, error_text):
+        print(f"ПОМИЛКА ЗАПИСУ: {error_text}")
+        QMessageBox.critical(self, "Помилка запису", error_text)
+        self.on_recording_stopped()
 
     @asyncSlot()
     async def _start_async_tasks(self):
@@ -664,5 +733,14 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event):
         print("Закриття програми...")
+
+        if self.recorder.isRunning():
+            print("[MainWindow] Закриття. Зупиняю потік запису...")
+            self.recorder.stop_recording()  # Кажемо потоку зупинитися
+
+            # Чекаємо до 3 секунд, поки він зупиниться
+            if not self.recorder.wait(3000):
+                print("[MainWindow] Потік не відповів. Примусова зупинка.")
+                self.recorder.terminate()  # Аварійний варіант
 
         event.accept()

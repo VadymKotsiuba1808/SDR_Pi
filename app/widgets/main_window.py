@@ -648,6 +648,8 @@ class MainWindow(QMainWindow):
     def take_screenshot(self):
         screenshot = self.grab()
         filename = f"./screenshots/screenshot_{QDateTime.currentDateTime().toString('yyyy-MM-dd_hh-mm-ss')}.png"
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+
         screenshot.save(filename, "png")
         print(f"Знімок екрану збережено як {filename}")
 

@@ -45,6 +45,7 @@ class Ui_MainWindow(object):
 "font-size: 24px;\n"
 "color: #FFFFFF;\n"
 "background: rgba(0, 10, 0, 0.1);")
+        self.DateLabel.setText("00.00.0000")
         self.DateLabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.DateLabel.setObjectName("DateLabel")
         self.signals_range = QtWidgets.QFrame(parent=self.Header)
@@ -348,6 +349,7 @@ class Ui_MainWindow(object):
 "font-size: 24px;\n"
 "color: #FFFFFF;\n"
 "background: rgba(0, 10, 0, 0.1);")
+        self.TimeLabel.setText("00:00")
         self.TimeLabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.TimeLabel.setObjectName("TimeLabel")
         self.Body = QtWidgets.QFrame(parent=self.centralwidget)
@@ -432,6 +434,7 @@ class Ui_MainWindow(object):
 "font-size: 52px;\n"
 "color: #E4E7E4;\n"
 "")
+        self.TimerTime.setText("00:00:00")
         self.TimerTime.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.TimerTime.setObjectName("TimerTime")
         self.onTimerButton = QtWidgets.QPushButton(parent=self.TimerFrame)
@@ -694,7 +697,7 @@ class Ui_MainWindow(object):
         self.langComboBox.addItem("")
         self.langComboBox.addItem("")
         self.langLabel = QtWidgets.QLabel(parent=self.LangSettings)
-        self.langLabel.setGeometry(QtCore.QRect(10, 10, 91, 27))
+        self.langLabel.setGeometry(QtCore.QRect(10, 0, 91, 41))
         self.langLabel.setStyleSheet("QLabel{\n"
 "font-size:30px;\n"
 "border:none;\n"
@@ -907,7 +910,6 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "SDR Drone Detector"))
-        self.DateLabel.setText(_translate("MainWindow", "05.01.2022"))
         self.radioStartDoubleSpinBox.setProperty("status", _translate("MainWindow", "saved"))
         self.soundStartDoubleSpinBox.setProperty("status", _translate("MainWindow", "saved"))
         self.soundEndDoubleSpinBox.setProperty("status", _translate("MainWindow", "saved"))
@@ -920,9 +922,7 @@ class Ui_MainWindow(object):
         self.Sound_alert.setText(_translate("MainWindow", "Тривога Sound"))
         self.label.setText(_translate("MainWindow", "GPS"))
         self.label_2.setText(_translate("MainWindow", "Wi Fi"))
-        self.TimeLabel.setText(_translate("MainWindow", "17:54"))
         self.label_3.setText(_translate("MainWindow", "Jammer"))
-        self.TimerTime.setText(_translate("MainWindow", "00:00:00"))
         self.onTimerButton.setText(_translate("MainWindow", "ON"))
         self.offTimerButton.setText(_translate("MainWindow", "OFF"))
         self.k_label_1.setText(_translate("MainWindow", "K1"))

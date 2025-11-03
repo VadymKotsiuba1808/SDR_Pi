@@ -97,7 +97,7 @@ color: #FFFFFF;
 background: rgba(0, 10, 0, 0.1);</string>
      </property>
      <property name="text">
-      <string>05.01.2022</string>
+      <string notr="true">00.00.0000</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -764,7 +764,7 @@ color: #FFFFFF;
 background: rgba(0, 10, 0, 0.1);</string>
      </property>
      <property name="text">
-      <string>17:54</string>
+      <string notr="true">00:00</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -942,7 +942,7 @@ color: #E4E7E4;
 </string>
       </property>
       <property name="text">
-       <string>00:00:00</string>
+       <string notr="true">00:00:00</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -1170,7 +1170,7 @@ QPushButton[enabled=&quot;false&quot;]{
        <string/>
       </property>
       <property name="pixmap">
-       <pixmap>:/images/radar.png</pixmap>
+       <pixmap resource="../resources.qrc">:/images/radar.png</pixmap>
       </property>
      </widget>
      <widget class="QLabel" name="Radar_Section">
@@ -1438,9 +1438,9 @@ selection-color: #FFFFFF;
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>10</y>
+        <y>0</y>
         <width>91</width>
-        <height>27</height>
+        <height>41</height>
        </rect>
       </property>
       <property name="styleSheet">

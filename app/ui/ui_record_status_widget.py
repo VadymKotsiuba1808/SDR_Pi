@@ -71,6 +71,7 @@ class Ui_RecordingStatusWidget(object):
 "border:none;\n"
 "font-size:18px;\n"
 "background-color:transparent;")
+        self.duration_label.setText("00:00:00")
         self.duration_label.setObjectName("duration_label")
         self.horizontalLayout.addWidget(self.duration_label, 0, QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignVCenter)
         self.pause_button = QtWidgets.QPushButton(parent=self.RecordStatusFrame)
@@ -98,4 +99,3 @@ class Ui_RecordingStatusWidget(object):
     def retranslateUi(self, RecordingStatusWidget):
         _translate = QtCore.QCoreApplication.translate
         RecordingStatusWidget.setWindowTitle(_translate("RecordingStatusWidget", "Form"))
-        self.duration_label.setText(_translate("RecordingStatusWidget", "00:00:00"))

@@ -2,11 +2,10 @@ from PyQt6.QtCore import QThread, pyqtSignal, pyqtSlot, QElapsedTimer
 from vidgear.gears import WriteGear
 import mss
 import numpy as np
-import time  # Нам потрібен time.sleep
+import time
 
 
-class RecordingService(QThread):  # Змінено QObject на QThread
-    # Сигнали тепер визначаються тут
+class RecordingService(QThread):
     recording_started = pyqtSignal()
     recording_stopped = pyqtSignal()
     recording_error = pyqtSignal(str)
@@ -16,22 +15,16 @@ class RecordingService(QThread):  # Змінено QObject на QThread
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        # Прапорці для керування потоком
-        self.is_running = False  # Замість is_recording
+        self._setup_state_variables()
+
+    def _setup_state_variables(self):
+        self.is_running = False
         self.is_paused = False
 
-        # Вхідні дані
-        self._filename = ""
-        self.fps = 20
+        self.filename = ""
+        self.fps = 35
+        self.video_quality_crf = 26
 
-        # Внутрішні об'єкти (будуть створені у run())
-        self.sct = None
-        self.writer = None
-        self.monitor = None
-
-        self.prev_total_ms = None
-        self.dif_time_ms = None
-        self.pause_start = None
         self.start_time = QElapsedTimer()
 
     def run(self):
@@ -45,34 +38,29 @@ class RecordingService(QThread):  # Змінено QObject на QThread
             width = self.monitor["width"]
             height = self.monitor["height"]
 
-            # --- ЗМІНЕНО: Налаштування параметрів ---
-
-            # Створюємо ОДИН СЛОВНИК
-            # vidgear передасть це все в командний рядок ffmpeg
-
             all_params = {
                 "-vcodec": "libx264",  # Кодек для вихідного файлу
-                "-crf": "20",  # Рівень якості (менше = краща якість)
-                "-preset": "ultrafast",  # Швидкість кодування
+                "-crf": str(
+                    self.video_quality_crf
+                ),  # Рівень якості (менше = краща якість)
+                "-preset": "faster",  # Швидкість кодування
                 "-pix_fmt": "yuv420p",  # Формат пікселів для сумісності
                 "-r": str(self.fps),  # Частота кадрів
                 "-s": f"{width}x{height}",  # Розмір кадру
             }
 
-            # 3. Викликаємо WriteGear, передаючи ТІЛЬКИ **kwargs
             self.writer = WriteGear(
-                output=self._filename,
-                logging=True,
-                **all_params,  # <--- Передаємо всі параметри як один розпакований словник
+                output=self.filename,
+                logging=False,
+                **all_params,
             )
-            # ----------------------------------------
 
             self.start_time.start()
             self.prev_total_ms = 0
             self.dif_time_ms = 0
             self.pause_start = 0
             self.recording_started.emit()
-            print(f"Запис розпочато... {self._filename}")
+            print(f"Запис розпочато... {self.filename}")
 
             # --- ГОЛОВНИЙ ЦИКЛ ЗАПИСУ ---
             while self.is_running:
@@ -98,7 +86,6 @@ class RecordingService(QThread):  # Змінено QObject на QThread
             self.recording_error.emit(str(e))
 
         finally:
-            # (Блок finally без змін)
             if self.sct:
                 self.sct.close()
                 self.sct = None
@@ -129,31 +116,25 @@ class RecordingService(QThread):  # Змінено QObject на QThread
 
         self.duration_updated.emit(f"{hours:02}:{minutes:02}:{seconds:02}")
 
-    # --- СЛОТИ КЕРУВАННЯ (будуть викликані з GUI) ---
-
     @pyqtSlot(str)
     def start_recording(self, filename):
         # Це НЕ запускає запис, це запускає потік
         if not self.isRunning():
-            self._filename = filename
-            self.start()  # Це запускає метод run()
+            self.filename = filename
+            self.start()
         else:
             print("[Recorder] Помилка: потік вже запущено.")
 
     @pyqtSlot()
     def stop_recording(self):
-        # Це просто встановлює прапорець. Цикл run() зупиниться сам
         print("[Recorder] Отримано команду stop_recording.")
         self.is_running = False
 
     @pyqtSlot(bool)
     def toggle_pause(self, is_paused):
-        # змінюємо стан
         if is_paused and not self.is_paused:
-            # користувач натиснув "Пауза"
             self.pause_start = self.start_time.elapsed()
         elif not is_paused and self.is_paused:
-            # користувач зняв "Пауза"
             paused_for = self.start_time.elapsed() - self.pause_start
             self.dif_time_ms += paused_for
             self.pause_start = 0

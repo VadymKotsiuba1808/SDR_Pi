@@ -195,7 +195,7 @@ class MainWindow(QMainWindow):
 
         self.ui.langComboBox.currentIndexChanged.connect(self.change_language)
 
-        self.ui.record_status_widget.pause_button.toggled.connect(
+        self.record_status_widget.ui.pause_button.toggled.connect(
             self.handle_toggle_recording_pause
         )
 

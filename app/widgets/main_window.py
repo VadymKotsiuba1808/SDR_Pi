@@ -592,7 +592,9 @@ class MainWindow(QMainWindow):
             self.scale_map()
 
         else:
-            QMessageBox.warning(None, "Помилка", f"Не вдалося завантажити карту.")
+            QMessageBox.warning(
+                None, self.tr("Помилка"), self.tr("Не вдалося завантажити карту.")
+            )
             print("Не вдалося завантажити карту.")
 
     def scale_map(self):

@@ -28,6 +28,10 @@ class RecordingService(QThread):  # Змінено QObject на QThread
         self.sct = None
         self.writer = None
         self.monitor = None
+
+        self.prev_total_ms = None
+        self.dif_time_ms = None
+        self.pause_start = None
         self.start_time = QElapsedTimer()
 
     def run(self):
@@ -64,6 +68,9 @@ class RecordingService(QThread):  # Змінено QObject на QThread
             # ----------------------------------------
 
             self.start_time.start()
+            self.prev_total_ms = 0
+            self.dif_time_ms = 0
+            self.pause_start = 0
             self.recording_started.emit()
             print(f"Запис розпочато... {self._filename}")
 
@@ -76,13 +83,13 @@ class RecordingService(QThread):  # Змінено QObject на QThread
                     frame = np.array(sct_img)
                     if frame is not None:
                         self.writer.write(frame)
-                        self._update_duration()
+                        self.update_duration()
 
                     # реальна затримка, що враховує час обробки кадру
                     elapsed = time.time() - start
                     sleep_time = max(0, (1 / self.fps) - elapsed)
                     # time.sleep(sleep_time)
-                    self.msleep(int(sleep_time))
+                    self.msleep(int(sleep_time * 1000))
 
             print("Цикл запису завершено.")
 
@@ -103,14 +110,23 @@ class RecordingService(QThread):  # Змінено QObject на QThread
             self.duration_updated.emit("00:00:00")
             print("Ресурси запису очищено. Потік зупинено.")
 
-    def _update_duration(self):
-        # Цей метод тепер викликається зсередини run()
+    def update_duration(self):
         if self.is_paused:
             return
-        total_seconds = self.start_time.elapsed() // 1000
+
+        total_ms = self.start_time.elapsed() - self.dif_time_ms
+
+        # оновлюємо раз на секунду
+        if total_ms - self.prev_total_ms < 1000:
+            return
+
+        self.prev_total_ms = total_ms
+
+        total_seconds = total_ms // 1000
         hours = total_seconds // 3600
         minutes = (total_seconds % 3600) // 60
         seconds = total_seconds % 60
+
         self.duration_updated.emit(f"{hours:02}:{minutes:02}:{seconds:02}")
 
     # --- СЛОТИ КЕРУВАННЯ (будуть викликані з GUI) ---
@@ -132,6 +148,16 @@ class RecordingService(QThread):  # Змінено QObject на QThread
 
     @pyqtSlot(bool)
     def toggle_pause(self, is_paused):
+        # змінюємо стан
+        if is_paused and not self.is_paused:
+            # користувач натиснув "Пауза"
+            self.pause_start = self.start_time.elapsed()
+        elif not is_paused and self.is_paused:
+            # користувач зняв "Пауза"
+            paused_for = self.start_time.elapsed() - self.pause_start
+            self.dif_time_ms += paused_for
+            self.pause_start = 0
+
         self.is_paused = is_paused
         self.recording_paused.emit(self.is_paused)
         print(f"Запис на паузі: {is_paused}")

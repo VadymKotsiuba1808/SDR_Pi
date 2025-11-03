@@ -30,7 +30,6 @@
     <file alias="images/radar_red.png">assets/images/radar_red.png</file>
     <file alias="icons/eye_off.svg">assets/icons/eye_off.svg</file>
     <file alias="icons/eye_on.svg">assets/icons/eye_on.svg</file>
-    <file alias="icons/point_location.svg">assets/icons/point_location.svg</file>
     <file alias="images/Btn_Square_on.png">assets/images/Btn_Square_on.png</file>
     <file alias="images/Btn_Square_off.png">assets/images/Btn_Square_off.png</file>
     <file alias="images/Btn_Square_disabled.png">assets/images/Btn_Square_disabled.png</file>

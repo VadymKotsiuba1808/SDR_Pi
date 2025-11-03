@@ -1170,7 +1170,7 @@ QPushButton[enabled=&quot;false&quot;]{
        <string/>
       </property>
       <property name="pixmap">
-       <pixmap resource="../resources.qrc">:/images/radar.png</pixmap>
+       <pixmap>:/images/radar.png</pixmap>
       </property>
      </widget>
      <widget class="QLabel" name="Radar_Section">

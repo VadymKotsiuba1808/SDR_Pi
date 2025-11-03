@@ -3,6 +3,7 @@ from vidgear.gears import WriteGear
 import mss
 import numpy as np
 import time
+import platform
 
 
 class RecordingService(QThread):
@@ -25,6 +26,11 @@ class RecordingService(QThread):
         self.fps = 35
         self.video_quality_crf = 26
 
+        if platform.system() == "Windows":
+            self.pix_fmt = "bgra"
+        else:
+            self.pix_fmt = "rgb24"
+
         self.start_time = QElapsedTimer()
 
     def run(self):
@@ -39,14 +45,21 @@ class RecordingService(QThread):
             height = self.monitor["height"]
 
             all_params = {
-                "-vcodec": "libx264",  # Кодек для вихідного файлу
-                "-crf": str(
-                    self.video_quality_crf
-                ),  # Рівень якості (менше = краща якість)
-                "-preset": "faster",  # Швидкість кодування
-                "-pix_fmt": "yuv420p",  # Формат пікселів для сумісності
-                "-r": str(self.fps),  # Частота кадрів
-                "-s": f"{width}x{height}",  # Розмір кадру
+                # "-vcodec": "libx264",  # Кодек для вихідного файлу
+                # "-crf": str(
+                #     self.video_quality_crf
+                # ),  # Рівень якості (менше = краща якість)
+                # "-preset": "faster",  # Швидкість кодування
+                # "-pix_fmt": self.pix_fmt,  # Формат пікселів для сумісності
+                # "-r": str(self.fps),  # Частота кадрів
+                # "-s": f"{width}x{height}",  # Розмір кадру
+                "-input_framerate": str(self.fps),
+                "-input_pixfmt": self.pix_fmt,  # 'bgra' (Win) або 'rgb24' (Lin)
+                # --- Стандартні ключі FFmpeg для ВИХОДУ ---
+                "-vcodec": "libx264",
+                "-crf": str(self.video_quality_crf),
+                "-preset": "faster",
+                "-pix_fmt": "yuv420p",
             }
 
             self.writer = WriteGear(

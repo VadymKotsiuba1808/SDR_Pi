@@ -189,12 +189,12 @@
     <message>
         <location filename="../ui/main_window.ui" line="1428"/>
         <source>uk</source>
-        <translation type="unfinished"></translation>
+        <translation>en</translation>
     </message>
     <message>
         <location filename="../ui/main_window.ui" line="1433"/>
         <source>en</source>
-        <translation type="unfinished"></translation>
+        <translation>en</translation>
     </message>
     <message>
         <location filename="../ui/main_window.ui" line="1454"/>
@@ -204,7 +204,7 @@
     <message>
         <location filename="../ui/main_window.ui" line="1568"/>
         <source>Хибна тривога</source>
-        <translation type="unfinished"></translation>
+        <translation>Хибна тривога</translation>
     </message>
     <message>
         <location filename="../ui/main_window.ui" line="1664"/>
@@ -269,12 +269,12 @@
     <message>
         <location filename="../widgets/main_window.py" line="596"/>
         <source>Помилка</source>
-        <translation type="unfinished"></translation>
+        <translation>Помилка</translation>
     </message>
     <message>
         <location filename="../widgets/main_window.py" line="597"/>
         <source>Не вдалося завантажити карту.</source>
-        <translation type="unfinished"></translation>
+        <translation>Не вдалося завантажити карту.</translation>
     </message>
 </context>
 <context>
@@ -325,94 +325,94 @@
     <message>
         <location filename="../ui/set_map_dialog.ui" line="26"/>
         <source>Налаштування власної карти</source>
-        <translation type="unfinished">Налаштування власної карти</translation>
+        <translation>Налаштування власної карти</translation>
     </message>
     <message>
         <location filename="../ui/set_map_dialog.ui" line="131"/>
         <source>Обрати зображення</source>
-        <translation type="unfinished">Обрати зображення</translation>
+        <translation>Обрати зображення</translation>
     </message>
     <message>
         <location filename="../ui/set_map_dialog.ui" line="160"/>
         <source>Встановити центр</source>
-        <translation type="unfinished">Встановити центр</translation>
+        <translation>Встановити центр</translation>
     </message>
     <message>
         <location filename="../ui/set_map_dialog.ui" line="181"/>
         <source>Масштаб (%)</source>
-        <translation type="unfinished">Масштаб (%)</translation>
+        <translation>Масштаб (%)</translation>
     </message>
     <message>
         <location filename="../ui/set_map_dialog.ui" line="220"/>
         <source>-</source>
-        <translation type="unfinished">-</translation>
+        <translation>-</translation>
     </message>
     <message>
         <location filename="../ui/set_map_dialog.ui" line="292"/>
         <source>+</source>
-        <translation type="unfinished">+</translation>
+        <translation>+</translation>
     </message>
     <message>
         <location filename="../ui/set_map_dialog.ui" line="315"/>
         <source>Радіус кола (м)</source>
-        <translation type="unfinished">Радіус кола (м)</translation>
+        <translation>Радіус кола (м)</translation>
     </message>
     <message>
         <location filename="../ui/set_map_dialog.ui" line="377"/>
         <source>Кут повороту</source>
-        <translation type="unfinished">Кут повороту</translation>
+        <translation>Кут повороту</translation>
     </message>
     <message>
         <location filename="../ui/set_map_dialog.ui" line="500"/>
         <source>Зберегти</source>
-        <translation type="unfinished">Зберегти</translation>
+        <translation>Зберегти</translation>
     </message>
     <message>
         <location filename="../ui/set_map_dialog.ui" line="529"/>
         <source>Скасувати</source>
-        <translation type="unfinished">Скасувати</translation>
+        <translation>Скасувати</translation>
     </message>
     <message>
         <location filename="../widgets/set_map_dialog.py" line="123"/>
         <source>Виберіть зображення карти</source>
-        <translation type="unfinished"></translation>
+        <translation>Виберіть зображення карти</translation>
     </message>
     <message>
         <location filename="../widgets/set_map_dialog.py" line="125"/>
         <source>Зображення (*.png *.jpg *.bmp *.jpeg)</source>
-        <translation type="unfinished"></translation>
+        <translation>Зображення (*.png *.jpg *.bmp *.jpeg)</translation>
     </message>
     <message>
         <location filename="../widgets/set_map_dialog.py" line="139"/>
         <location filename="../widgets/set_map_dialog.py" line="322"/>
         <location filename="../widgets/set_map_dialog.py" line="339"/>
         <source>Помилка</source>
-        <translation type="unfinished"></translation>
+        <translation>Помилка</translation>
     </message>
     <message>
         <location filename="../widgets/set_map_dialog.py" line="140"/>
         <source>Не вдалося завантажити зображення.</source>
-        <translation type="unfinished"></translation>
+        <translation>Не вдалося завантажити зображення.</translation>
     </message>
     <message>
         <location filename="../widgets/set_map_dialog.py" line="163"/>
         <source>Увага</source>
-        <translation type="unfinished"></translation>
+        <translation>Увага</translation>
     </message>
     <message>
         <location filename="../widgets/set_map_dialog.py" line="164"/>
         <source>Спочатку завантажте зображення карти.</source>
-        <translation type="unfinished"></translation>
+        <translation>Спочатку завантажте зображення карти.</translation>
     </message>
     <message>
         <location filename="../widgets/set_map_dialog.py" line="323"/>
         <source>Зображення не вибрано!</source>
-        <translation type="unfinished"></translation>
+        <translation>Зображення не вибрано!</translation>
     </message>
     <message>
         <location filename="../widgets/set_map_dialog.py" line="340"/>
         <source>Радіус в метрах та масштаб мають бути &gt; 0.</source>
-        <translation type="unfinished"></translation>
+        <translation>Радіус в метрах та масштаб мають бути &gt; 0.</translation>
     </message>
 </context>
 </TS>

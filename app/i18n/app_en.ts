@@ -189,12 +189,12 @@
     <message>
         <location filename="../ui/main_window.ui" line="1428"/>
         <source>uk</source>
-        <translation type="unfinished"></translation>
+        <translation>uk</translation>
     </message>
     <message>
         <location filename="../ui/main_window.ui" line="1433"/>
         <source>en</source>
-        <translation type="unfinished"></translation>
+        <translation>en</translation>
     </message>
     <message>
         <location filename="../ui/main_window.ui" line="1454"/>
@@ -204,7 +204,7 @@
     <message>
         <location filename="../ui/main_window.ui" line="1568"/>
         <source>Хибна тривога</source>
-        <translation type="unfinished"></translation>
+        <translation>False Alarm</translation>
     </message>
     <message>
         <location filename="../ui/main_window.ui" line="1664"/>
@@ -269,12 +269,12 @@
     <message>
         <location filename="../widgets/main_window.py" line="596"/>
         <source>Помилка</source>
-        <translation type="unfinished"></translation>
+        <translation>Error</translation>
     </message>
     <message>
         <location filename="../widgets/main_window.py" line="597"/>
         <source>Не вдалося завантажити карту.</source>
-        <translation type="unfinished"></translation>
+        <translation>Failed to load map.</translation>
     </message>
 </context>
 <context>
@@ -325,94 +325,94 @@
     <message>
         <location filename="../ui/set_map_dialog.ui" line="26"/>
         <source>Налаштування власної карти</source>
-        <translation type="unfinished">Custom Map Settings</translation>
+        <translation>Custom Map Settings</translation>
     </message>
     <message>
         <location filename="../ui/set_map_dialog.ui" line="131"/>
         <source>Обрати зображення</source>
-        <translation type="unfinished">Select Image</translation>
+        <translation>Select Image</translation>
     </message>
     <message>
         <location filename="../ui/set_map_dialog.ui" line="160"/>
         <source>Встановити центр</source>
-        <translation type="unfinished">Set Center</translation>
+        <translation>Set Center</translation>
     </message>
     <message>
         <location filename="../ui/set_map_dialog.ui" line="181"/>
         <source>Масштаб (%)</source>
-        <translation type="unfinished">Scale (%)</translation>
+        <translation>Scale (%)</translation>
     </message>
     <message>
         <location filename="../ui/set_map_dialog.ui" line="220"/>
         <source>-</source>
-        <translation type="unfinished">-</translation>
+        <translation>-</translation>
     </message>
     <message>
         <location filename="../ui/set_map_dialog.ui" line="292"/>
         <source>+</source>
-        <translation type="unfinished">+</translation>
+        <translation>+</translation>
     </message>
     <message>
         <location filename="../ui/set_map_dialog.ui" line="315"/>
         <source>Радіус кола (м)</source>
-        <translation type="unfinished">Circle Radius (m)</translation>
+        <translation>Circle Radius (m)</translation>
     </message>
     <message>
         <location filename="../ui/set_map_dialog.ui" line="377"/>
         <source>Кут повороту</source>
-        <translation type="unfinished">Rotation Angle</translation>
+        <translation>Rotation Angle</translation>
     </message>
     <message>
         <location filename="../ui/set_map_dialog.ui" line="500"/>
         <source>Зберегти</source>
-        <translation type="unfinished">Save</translation>
+        <translation>Save</translation>
     </message>
     <message>
         <location filename="../ui/set_map_dialog.ui" line="529"/>
         <source>Скасувати</source>
-        <translation type="unfinished">Cancel</translation>
+        <translation>Cancel</translation>
     </message>
     <message>
         <location filename="../widgets/set_map_dialog.py" line="123"/>
         <source>Виберіть зображення карти</source>
-        <translation type="unfinished"></translation>
+        <translation>Select map image</translation>
     </message>
     <message>
         <location filename="../widgets/set_map_dialog.py" line="125"/>
         <source>Зображення (*.png *.jpg *.bmp *.jpeg)</source>
-        <translation type="unfinished"></translation>
+        <translation>Images (.png *.jpg *.bmp *.jpeg)</translation>
     </message>
     <message>
         <location filename="../widgets/set_map_dialog.py" line="139"/>
         <location filename="../widgets/set_map_dialog.py" line="322"/>
         <location filename="../widgets/set_map_dialog.py" line="339"/>
         <source>Помилка</source>
-        <translation type="unfinished"></translation>
+        <translation>Error</translation>
     </message>
     <message>
         <location filename="../widgets/set_map_dialog.py" line="140"/>
         <source>Не вдалося завантажити зображення.</source>
-        <translation type="unfinished"></translation>
+        <translation>Failed to load image.</translation>
     </message>
     <message>
         <location filename="../widgets/set_map_dialog.py" line="163"/>
         <source>Увага</source>
-        <translation type="unfinished"></translation>
+        <translation>Warning</translation>
     </message>
     <message>
         <location filename="../widgets/set_map_dialog.py" line="164"/>
         <source>Спочатку завантажте зображення карти.</source>
-        <translation type="unfinished"></translation>
+        <translation>Please load a map image first.</translation>
     </message>
     <message>
         <location filename="../widgets/set_map_dialog.py" line="323"/>
         <source>Зображення не вибрано!</source>
-        <translation type="unfinished"></translation>
+        <translation>Image not selected!</translation>
     </message>
     <message>
         <location filename="../widgets/set_map_dialog.py" line="340"/>
         <source>Радіус в метрах та масштаб мають бути &gt; 0.</source>
-        <translation type="unfinished"></translation>
+        <translation>Radius in meters and scale must be &gt; 0.</translation>
     </message>
 </context>
 </TS>

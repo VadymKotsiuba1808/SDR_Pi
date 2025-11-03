@@ -12,26 +12,85 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 class Ui_RecordingStatusWidget(object):
     def setupUi(self, RecordingStatusWidget):
         RecordingStatusWidget.setObjectName("RecordingStatusWidget")
-        RecordingStatusWidget.resize(172, 28)
-        self.horizontalLayout = QtWidgets.QHBoxLayout(RecordingStatusWidget)
-        self.horizontalLayout.setContentsMargins(5, 0, 5, 0)
+        RecordingStatusWidget.resize(192, 52)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(RecordingStatusWidget.sizePolicy().hasHeightForWidth())
+        RecordingStatusWidget.setSizePolicy(sizePolicy)
+        RecordingStatusWidget.setStyleSheet("")
+        self.RecordStatusFrame = QtWidgets.QFrame(parent=RecordingStatusWidget)
+        self.RecordStatusFrame.setGeometry(QtCore.QRect(0, 0, 191, 50))
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.RecordStatusFrame.sizePolicy().hasHeightForWidth())
+        self.RecordStatusFrame.setSizePolicy(sizePolicy)
+        self.RecordStatusFrame.setStyleSheet("background: rgba(0, 10, 0, 0.8);\n"
+"border: 2px solid #328844;")
+        self.RecordStatusFrame.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
+        self.RecordStatusFrame.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
+        self.RecordStatusFrame.setObjectName("RecordStatusFrame")
+        self.horizontalLayout = QtWidgets.QHBoxLayout(self.RecordStatusFrame)
+        self.horizontalLayout.setContentsMargins(9, 9, 9, -1)
         self.horizontalLayout.setObjectName("horizontalLayout")
-        self.rec_label = QtWidgets.QLabel(parent=RecordingStatusWidget)
-        self.rec_label.setStyleSheet("font-weight: bold;")
+        self.rec_label = QtWidgets.QLabel(parent=self.RecordStatusFrame)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.rec_label.sizePolicy().hasHeightForWidth())
+        self.rec_label.setSizePolicy(sizePolicy)
+        self.rec_label.setMinimumSize(QtCore.QSize(28, 28))
+        self.rec_label.setMaximumSize(QtCore.QSize(28, 28))
+        self.rec_label.setStyleSheet("QLabel{font-weight: bold;\n"
+"border:none;\n"
+"font-size:18px;\n"
+"background-color:transparent;\n"
+"}\n"
+"\n"
+"QLabel[active=\"true\"]{\n"
+"border-image:url(:/icons/record_indicator.svg)  stretch stretch;\n"
+"}\n"
+"\n"
+"QLabel[active=\"false\"]{\n"
+"border-image:url(:/icons/record_off_indicator.svg)  stretch stretch;\n"
+"}")
+        self.rec_label.setText("")
+        self.rec_label.setProperty("active", True)
         self.rec_label.setObjectName("rec_label")
-        self.horizontalLayout.addWidget(self.rec_label)
-        self.duration_label = QtWidgets.QLabel(parent=RecordingStatusWidget)
-        self.duration_label.setMinimumSize(QtCore.QSize(40, 0))
-        self.duration_label.setStyleSheet("font-family: \'Courier New\';")
+        self.horizontalLayout.addWidget(self.rec_label, 0, QtCore.Qt.AlignmentFlag.AlignLeft|QtCore.Qt.AlignmentFlag.AlignVCenter)
+        self.duration_label = QtWidgets.QLabel(parent=self.RecordStatusFrame)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.duration_label.sizePolicy().hasHeightForWidth())
+        self.duration_label.setSizePolicy(sizePolicy)
+        self.duration_label.setMinimumSize(QtCore.QSize(40, 24))
+        self.duration_label.setMaximumSize(QtCore.QSize(90, 16777215))
+        self.duration_label.setStyleSheet("font-family: \'Courier New\';\n"
+"border:none;\n"
+"font-size:18px;\n"
+"background-color:transparent;")
         self.duration_label.setObjectName("duration_label")
-        self.horizontalLayout.addWidget(self.duration_label)
-        self.pause_button = QtWidgets.QPushButton(parent=RecordingStatusWidget)
+        self.horizontalLayout.addWidget(self.duration_label, 0, QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignVCenter)
+        self.pause_button = QtWidgets.QPushButton(parent=self.RecordStatusFrame)
         self.pause_button.setMinimumSize(QtCore.QSize(24, 24))
         self.pause_button.setMaximumSize(QtCore.QSize(24, 24))
+        self.pause_button.setStyleSheet("QPushButton{border:none;\n"
+"font-size:18px;\n"
+"background-color:transparent;\n"
+"border-image:url(:/icons/pause.svg)\n"
+"}\n"
+"\n"
+"QPushButton:checked{\n"
+"border-image:url(:/icons/play.svg)\n"
+"}")
         self.pause_button.setText("")
+        self.pause_button.setIconSize(QtCore.QSize(20, 20))
         self.pause_button.setCheckable(True)
+        self.pause_button.setChecked(False)
         self.pause_button.setObjectName("pause_button")
-        self.horizontalLayout.addWidget(self.pause_button)
+        self.horizontalLayout.addWidget(self.pause_button, 0, QtCore.Qt.AlignmentFlag.AlignVCenter)
 
         self.retranslateUi(RecordingStatusWidget)
         QtCore.QMetaObject.connectSlotsByName(RecordingStatusWidget)
@@ -39,5 +98,4 @@ class Ui_RecordingStatusWidget(object):
     def retranslateUi(self, RecordingStatusWidget):
         _translate = QtCore.QCoreApplication.translate
         RecordingStatusWidget.setWindowTitle(_translate("RecordingStatusWidget", "Form"))
-        self.rec_label.setText(_translate("RecordingStatusWidget", "🔴"))
         self.duration_label.setText(_translate("RecordingStatusWidget", "00:00:00"))

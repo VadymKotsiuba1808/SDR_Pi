@@ -16,17 +16,6 @@ class RecordingStatusWidget(QWidget):
 
         self._load_ui()
 
-        # --- Налаштування іконок (це все ще робиться в коді) ---
-        self.pause_icon = QIcon("images/homeBtn_off.png")  # TODO: Вкажіть шлях
-        self.resume_icon = QIcon("images/homeBtn_off.png")  # TODO: Вкажіть шлях
-
-        # Встановлюємо іконку за замовчуванням
-        self.ui.pause_button.setIcon(self.pause_icon)
-
-        # Підключаємо сигнал до слота, який вже є в цьому класі
-        # self.pause_button.toggled.connect(self.on_pause_toggled) # Це вже зроблено у MainWindow
-
-        # Схований по замовчуванню
         self.setVisible(False)
 
     def _load_ui(self):
@@ -39,21 +28,25 @@ class RecordingStatusWidget(QWidget):
 
     @pyqtSlot(str)
     def update_duration(self, time_str):
-        # self.duration_label - це ім'я (name) віджета з .ui файлу
         self.ui.duration_label.setText(time_str)
 
     @pyqtSlot(bool)
     def on_pause_toggled(self, is_paused):
-        # Оновлюємо іконку кнопки
+
         if is_paused:
-            self.ui.pause_button.setIcon(self.resume_icon)
-            self.ui.rec_label.setText("⏸️")  # Міняємо іконку статусу
+            self.ui.rec_label.setProperty("active", False)  # Міняємо іконку статусу
         else:
-            self.ui.pause_button.setIcon(self.pause_icon)
-            self.ui.rec_label.setText("🔴")
+            self.ui.rec_label.setProperty("active", True)
+
+        self.update_element_styles(self.ui.rec_label)
 
     # Цей слот викликається з MainWindow, коли запис зупиняється
     def reset_state(self):
         self.setVisible(False)
         self.ui.pause_button.setChecked(False)  # "Віджати" кнопку
         self.update_duration("00:00:00")
+
+    def update_element_styles(self, element):
+        element.style().unpolish(element)
+        element.style().polish(element)
+        element.update()

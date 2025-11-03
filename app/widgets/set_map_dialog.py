@@ -120,9 +120,9 @@ class SetMapDialog(QDialog):
         print("[on_select_image] Відкривається діалог вибору зображення...")
         file_path, _ = QFileDialog.getOpenFileName(
             None,  # Використовуємо None для уникнення проблем з модальністю
-            "Виберіть зображення карти",
+            self.tr("Виберіть зображення карти"),
             "",
-            "Зображення (*.png *.jpg *.bmp *.jpeg)",
+            self.tr("Зображення (*.png *.jpg *.bmp *.jpeg)"),
         )
 
         if not file_path:
@@ -136,7 +136,7 @@ class SetMapDialog(QDialog):
         if self.original_pixmap.isNull():
             print("[on_select_image] ПОМИЛКА: не вдалося завантажити зображення")
             QMessageBox.warning(
-                None, "Помилка", f"Не вдалося завантажити зображення: {file_path}"
+                None, self.tr("Помилка"), self.tr("Не вдалося завантажити зображення.")
             )
             self.original_pixmap = None
             self.image_path = ""
@@ -159,7 +159,9 @@ class SetMapDialog(QDialog):
     def handle_set_center(self):
         print("[on_set_center] Активовано режим вибору центру")
         if not self.original_pixmap:
-            QMessageBox.warning(None, "Увага", "Спочатку завантажте зображення карти.")
+            QMessageBox.warning(
+                None, self.tr("Увага"), self.tr("Спочатку завантажте зображення карти.")
+            )
             return
         self.is_centering_mode = True
         self.set_cross_cursor()
@@ -316,7 +318,9 @@ class SetMapDialog(QDialog):
         print("[accept] Підтвердження та збереження налаштувань...")
         if not self.original_pixmap or not self.image_path:
             print("[accept] ПОМИЛКА: зображення не вибрано")
-            QMessageBox.warning(None, "Помилка", "Зображення не вибрано!")
+            QMessageBox.warning(
+                None, self.tr("Помилка"), self.tr("Зображення не вибрано!")
+            )
             return  # Важливо: не викликаємо super().accept()
 
         screen_circle_radius_px = self.ui.centerCircleLabel.width() / 2
@@ -331,7 +335,9 @@ class SetMapDialog(QDialog):
         if user_defined_radius_m <= 0 or current_view_scale <= 0:
             print("[accept] ПОМИЛКА: некоректні значення радіуса або масштабу")
             QMessageBox.warning(
-                None, "Помилка", "Радіус в метрах та масштаб мають бути > 0."
+                None,
+                self.tr("Помилка"),
+                self.tr("Радіус в метрах та масштаб мають бути > 0."),
             )
             return  # Не викликаємо super().accept()
 
@@ -344,10 +350,6 @@ class SetMapDialog(QDialog):
         print(
             f"[accept] Цільовий розмір карти: {target_size_px}px ({target_diameter_m}м)"
         )
-
-        if target_size_px <= 0:
-            # ... (обробка помилки) ...
-            return
 
         final_pixmap = QPixmap(
             int(target_size_px * self.add_sizes_map_k[0]),

@@ -44,6 +44,9 @@
     <file alias="icons/play.svg">assets/icons/play.svg</file>
     <file alias="icons/record_indicator.svg">assets/icons/record_indicator.svg</file>
     <file alias="icons/record_off_indicator.svg">assets/icons/record_off_indicator.svg</file>
+    <file alias="images/toggleRecordBtn_on.png">assets/images/toggleRecordBtn_on.png</file>
+    <file alias="images/toggleRecordBtn_off.png">assets/images/toggleRecordBtn_off.png</file>
+    <file alias="images/toggleRecordBtn_disabled.png">assets/images/toggleRecordBtn_disabled.png</file>
 </qresource>
 </RCC>
 

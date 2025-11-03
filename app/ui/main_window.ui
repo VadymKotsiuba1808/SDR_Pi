@@ -1760,16 +1760,17 @@ QPushButton[enabled=&quot;false&quot;]{
      </property>
      <property name="styleSheet">
       <string notr="true">QPushButton#screenRecordButton{
-	background-image: url(:/images/Btn_MainMenu_off.png);
+	background-color:rgba(0,0,0,0.8);
+	border-image: url(:/images/toggleRecordBtn_off.png);
 }
 
 QPushButton#screenRecordButton:pressed,
 QPushButton#screenRecordButton:checked{
-	background-image: url(:/images/Btn_MainMenu_on.png);
+	border-image: url(:/images/toggleRecordBtn_on.png);
 }
 
 QPushButton#screenRecordButton:disabled{
-	background-image: url(:/images/screen_save_disabled.png);
+	border-image: url(:/images/toggleRecordBtn_disabled.png);
 }</string>
      </property>
      <property name="text">
@@ -1786,9 +1787,9 @@ QPushButton#screenRecordButton:disabled{
      <property name="geometry">
       <rect>
        <x>290</x>
-       <y>910</y>
+       <y>905</y>
        <width>200</width>
-       <height>45</height>
+       <height>50</height>
       </rect>
      </property>
      <property name="sizePolicy">
@@ -1842,7 +1843,6 @@ border: none;</string>
     <zorder>addMapButton</zorder>
     <zorder>LangSettings</zorder>
     <zorder>MainButtons_Container</zorder>
-    <zorder>verticalLayoutWidget</zorder>
     <zorder>RecordStatusContainer</zorder>
    </widget>
   </widget>

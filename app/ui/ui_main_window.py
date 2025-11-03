@@ -847,7 +847,45 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.addWidget(self.MainButtons, 0, QtCore.Qt.AlignmentFlag.AlignHCenter|QtCore.Qt.AlignmentFlag.AlignTop)
         spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
         self.verticalLayout_2.addItem(spacerItem)
+        self.screenRecordButton = QtWidgets.QPushButton(parent=self.Body)
+        self.screenRecordButton.setEnabled(True)
+        self.screenRecordButton.setGeometry(QtCore.QRect(166, 845, 110, 110))
+        self.screenRecordButton.setStyleSheet("QPushButton#screenRecordButton{\n"
+"    background-color:rgba(0,0,0,0.8);\n"
+"    border-image: url(:/images/toggleRecordBtn_off.png);\n"
+"}\n"
+"\n"
+"QPushButton#screenRecordButton:pressed,\n"
+"QPushButton#screenRecordButton:checked{\n"
+"    border-image: url(:/images/toggleRecordBtn_on.png);\n"
+"}\n"
+"\n"
+"QPushButton#screenRecordButton:disabled{\n"
+"    border-image: url(:/images/toggleRecordBtn_disabled.png);\n"
+"}")
+        self.screenRecordButton.setText("")
+        self.screenRecordButton.setCheckable(True)
+        self.screenRecordButton.setChecked(False)
+        self.screenRecordButton.setObjectName("screenRecordButton")
+        self.RecordStatusContainer = QtWidgets.QFrame(parent=self.Body)
+        self.RecordStatusContainer.setGeometry(QtCore.QRect(290, 905, 200, 50))
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.RecordStatusContainer.sizePolicy().hasHeightForWidth())
+        self.RecordStatusContainer.setSizePolicy(sizePolicy)
+        self.RecordStatusContainer.setStyleSheet("background-color:transparent;\n"
+"border: none;")
+        self.RecordStatusContainer.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
+        self.RecordStatusContainer.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
+        self.RecordStatusContainer.setObjectName("RecordStatusContainer")
+        self.screenRecordingLayout = QtWidgets.QHBoxLayout(self.RecordStatusContainer)
+        self.screenRecordingLayout.setSizeConstraint(QtWidgets.QLayout.SizeConstraint.SetMinimumSize)
+        self.screenRecordingLayout.setContentsMargins(0, 0, 0, 0)
+        self.screenRecordingLayout.setSpacing(0)
+        self.screenRecordingLayout.setObjectName("screenRecordingLayout")
         self.map_background_label.raise_()
+        self.screenRecordButton.raise_()
         self.homeButton.raise_()
         self.mapLayoutButton.raise_()
         self.screenSaveButton.raise_()
@@ -860,6 +898,7 @@ class Ui_MainWindow(object):
         self.addMapButton.raise_()
         self.LangSettings.raise_()
         self.MainButtons_Container.raise_()
+        self.RecordStatusContainer.raise_()
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)

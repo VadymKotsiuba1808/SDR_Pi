@@ -195,6 +195,10 @@ class MainWindow(QMainWindow):
 
         self.ui.langComboBox.currentIndexChanged.connect(self.change_language)
 
+        self.ui.record_status_widget.pause_button.toggled.connect(
+            self.handle_toggle_recording_pause
+        )
+
     def _setup_timers(self):
         self.timer_1sec = QTimer(self)
         self.timer_1sec.timeout.connect(self.update_time_and_date)
@@ -244,6 +248,10 @@ class MainWindow(QMainWindow):
         print(f"ПОМИЛКА ЗАПИСУ: {error_text}")
         QMessageBox.critical(self, "Помилка запису", error_text)
         self.on_recording_stopped()
+
+    def handle_toggle_recording_pause(self, is_paused):
+        # self.record_status_widget.on
+        self.recorder.toggle_pause(is_paused)
 
     @asyncSlot()
     async def _start_async_tasks(self):

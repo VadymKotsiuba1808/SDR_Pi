@@ -35,7 +35,7 @@ class RecordingStatusWidget(QWidget):
     def on_pause_toggled(self, is_paused):
 
         if is_paused:
-            self.ui.rec_label.setProperty("active", False)  # Міняємо іконку статусу
+            self.ui.rec_label.setProperty("active", False)
         else:
             self.ui.rec_label.setProperty("active", True)
 
@@ -44,5 +44,5 @@ class RecordingStatusWidget(QWidget):
     # Цей слот викликається з MainWindow, коли запис зупиняється
     def reset_state(self):
         self.setVisible(False)
-        self.ui.pause_button.setChecked(False)  # "Віджати" кнопку
+        self.ui.pause_button.setChecked(False)
         self.update_duration("00:00:00")

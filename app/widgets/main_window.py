@@ -41,6 +41,7 @@ from app.widgets.set_map_dialog import SetMapDialog
 from app.widgets.autosize_window import make_scalable
 from app.widgets.record_status_widget import RecordingStatusWidget
 from app.services.recording_service import RecordingService
+from app.utils.ui_utils import update_element_styles
 
 
 class MainWindow(QMainWindow):
@@ -429,8 +430,8 @@ class MainWindow(QMainWindow):
         self.ui.radioStartDoubleSpinBox.setProperty("status", "saved")
         self.ui.radioEndDoubleSpinBox.setProperty("status", "saved")
 
-        self.update_element_styles(self.ui.radioStartDoubleSpinBox)
-        self.update_element_styles(self.ui.radioEndDoubleSpinBox)
+        update_element_styles(self.ui.radioStartDoubleSpinBox)
+        update_element_styles(self.ui.radioEndDoubleSpinBox)
 
     def set_sound_range(self):
         start_value = self.ui.soundStartDoubleSpinBox.value()
@@ -452,13 +453,8 @@ class MainWindow(QMainWindow):
         self.ui.soundStartDoubleSpinBox.setProperty("status", "saved")
         self.ui.soundEndDoubleSpinBox.setProperty("status", "saved")
 
-        self.update_element_styles(self.ui.soundStartDoubleSpinBox)
-        self.update_element_styles(self.ui.soundEndDoubleSpinBox)
-
-    def update_element_styles(self, element):
-        element.style().unpolish(element)
-        element.style().polish(element)
-        element.update()
+        update_element_styles(self.ui.soundStartDoubleSpinBox)
+        update_element_styles(self.ui.soundEndDoubleSpinBox)
 
     def handle_signal_range_change(self, value):
         current_spin_box = self.sender()
@@ -485,7 +481,7 @@ class MainWindow(QMainWindow):
 
         current_spin_box.setProperty("status", "unsaved")
 
-        self.update_element_styles(current_spin_box)
+        update_element_styles(current_spin_box)
 
         start_spin_box.blockSignals(True)
         end_spin_box.blockSignals(True)
@@ -696,7 +692,7 @@ class MainWindow(QMainWindow):
             wifi_level = math.ceil(wifi_strength / 25)
 
         self.ui.WiFi_level.setProperty("level", wifi_level)
-        self.update_element_styles(self.ui.WiFi_level)
+        update_element_styles(self.ui.WiFi_level)
 
     def get_wifi_signal_strength(self):
         """

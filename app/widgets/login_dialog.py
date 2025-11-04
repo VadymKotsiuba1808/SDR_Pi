@@ -7,6 +7,7 @@ from app.ui.ui_login_dialog import Ui_LoginDialog
 
 from app.protocols import LoginDialogSettings
 from app.utils.password_utils import verify_password
+from app.utils.ui_utils import update_element_styles
 
 
 class LoginDialog(QDialog):
@@ -114,9 +115,7 @@ class LoginDialog(QDialog):
             self.ui.passwordHideBtn.setProperty("status", "hidden")
             self.ui.passwordLineEdit.setEchoMode(QLineEdit.EchoMode.Password)
 
-        self.ui.passwordHideBtn.style().unpolish(self.ui.passwordHideBtn)
-        self.ui.passwordHideBtn.style().polish(self.ui.passwordHideBtn)
-        self.ui.passwordHideBtn.update()
+        update_element_styles(self.ui.passwordHideBtn)
         print("[hide_unhide_password] Оновлення стилю завершено.")
 
     def handle_login(self):

@@ -1,0 +1,15 @@
+httpx
+numpy
+passlib
+pillow
+PyQt6
+qasync
+Quart
+vidgear
+mss
+opencv-python
+bcrypt==4.0.1
+
+#Dev
+deptry
+black

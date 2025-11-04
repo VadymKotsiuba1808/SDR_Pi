@@ -45,9 +45,9 @@ QLineEdit, QComboBox {
 }
 
 QComboBox QAbstractItemView {
-    background-color: #002509; /* Темний фон для списку */
-    color: #FFFFFF;
-    selection-background-color: #328844; /* Зелений при виборі */
+    background-color: #002509; /* Темний фон для списку */
+    color: #FFFFFF;
+    selection-background-color: #328844; /* Зелений при виборі */
 	selection-color: #FFFFFF;
 }
 
@@ -59,16 +59,16 @@ QCheckBox {
 }
 
 QCheckBox::indicator {
-    width: 20px;
-    height: 20px;
-    border: 1px solid #328844;
-    background-color: rgba(0, 20, 0, 0.8);
+    width: 20px;
+    height: 20px;
+    border: 1px solid #328844;
+    background-color: rgba(0, 20, 0, 0.8);
 	border-radius: 3px;
 }
 
 QCheckBox::indicator:checked {
-    background-color: #50E37F; /* Яскраво-зелена галочка */
-    image: url(:/images/checkbox_checked_icon.png); /* (Опціонально) якщо маєш свою іконку галочки */
+    background-color: #50E37F; /* Яскраво-зелена галочка */
+    image: url(:/images/checkbox_checked_icon.png); /* (Опціонально) якщо маєш свою іконку галочки */
 }
 </string>
   </property>
@@ -76,20 +76,7 @@ QCheckBox::indicator:checked {
    <bool>true</bool>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
-    <spacer name="verticalSpacer_2">
-     <property name="orientation">
-      <enum>Qt::Orientation::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item alignment="Qt::AlignmentFlag::AlignHCenter">
+   <item alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
     <widget class="QFrame" name="loginFrame">
      <property name="minimumSize">
       <size>
@@ -178,190 +165,288 @@ font-weight: 600;</string>
         <property name="styleSheet">
          <string notr="true">background: none;</string>
         </property>
-        <layout class="QGridLayout" name="gridLayout_2">
-         <item row="1" column="0">
-          <widget class="QLineEdit" name="passwordLineEdit">
-           <property name="maximumSize">
-            <size>
-             <width>295</width>
-             <height>16777215</height>
-            </size>
-           </property>
-           <property name="text">
-            <string/>
-           </property>
-           <property name="echoMode">
-            <enum>QLineEdit::EchoMode::Password</enum>
-           </property>
-           <property name="placeholderText">
-            <string>Введіть пароль</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="0">
-          <widget class="QLineEdit" name="confirmPasswordLineEdit">
-           <property name="maximumSize">
-            <size>
-             <width>295</width>
-             <height>16777215</height>
-            </size>
-           </property>
-           <property name="text">
-            <string/>
-           </property>
-           <property name="echoMode">
-            <enum>QLineEdit::EchoMode::Password</enum>
-           </property>
-           <property name="placeholderText">
-            <string>Введіть пароль</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="0">
-          <widget class="QWidget" name="widget" native="true">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>30</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>24</height>
-            </size>
-           </property>
-           <layout class="QGridLayout" name="gridLayout"/>
-           <widget class="QLabel" name="passwordIncorrectLabel">
-            <property name="geometry">
-             <rect>
-              <x>10</x>
-              <y>0</y>
-              <width>201</width>
-              <height>22</height>
-             </rect>
-            </property>
-            <property name="font">
-             <font>
-              <family>Roboto</family>
-              <pointsize>-1</pointsize>
-             </font>
-            </property>
-            <property name="visible">
-             <bool>false</bool>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">QLabel[status=&quot;error&quot;]{
-font-size:18px;
-color:darkred;
-margin-left:8px;
-}</string>
-            </property>
-            <property name="text">
-             <string>Паролі не співпадають</string>
-            </property>
-            <property name="status" stdset="0">
-             <string>error</string>
-            </property>
-           </widget>
-          </widget>
-         </item>
-         <item row="3" column="1">
-          <widget class="QPushButton" name="confirmPasswordHideBtn">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>42</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>42</width>
-             <height>42</height>
-            </size>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">QPushButton[id=&quot;eye_btn&quot;]{
-	border: 2px solid #328844;
-border-radius:8px;
-	background-repeat:no-repeat;
-background-position:center;
-background-color:transparent;
-}
-
-QPushButton[id=&quot;eye_btn&quot;][status=&quot;hidden&quot;]{
-background-image:url(:/icons/eye_off.svg);
-}
-
-QPushButton[id=&quot;eye_btn&quot;][status=&quot;unhidden&quot;]{
-background-image:url(:/icons/eye_on.svg);
-}</string>
-           </property>
-           <property name="text">
-            <string/>
-           </property>
-           <property name="id" stdset="0">
-            <string>eye_btn</string>
-           </property>
-           <property name="status" stdset="0">
-            <string>hidden</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QPushButton" name="passwordHideBtn">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>42</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>42</width>
-             <height>42</height>
-            </size>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">QPushButton[id=&quot;eye_btn&quot;]{
-	border: 2px solid #328844;
-border-radius:8px;
-	background-repeat:no-repeat;
-background-position:center;
-background-color:transparent;
-}
-
-QPushButton[id=&quot;eye_btn&quot;][status=&quot;hidden&quot;]{
-background-image:url(:/icons/eye_off.svg);
-}
-
-QPushButton[id=&quot;eye_btn&quot;][status=&quot;unhidden&quot;]{
-background-image:url(:/icons/eye_on.svg);
-}</string>
-           </property>
-           <property name="text">
-            <string/>
-           </property>
-           <property name="id" stdset="0">
-            <string>eye_btn</string>
-           </property>
-           <property name="status" stdset="0">
-            <string>hidden</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
           <widget class="QLabel" name="passwordLabel">
            <property name="text">
             <string>Введіть пароль:</string>
            </property>
           </widget>
          </item>
-         <item row="2" column="0">
+         <item>
+          <layout class="QGridLayout" name="gridLayout_3">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <property name="spacing">
+            <number>10</number>
+           </property>
+           <item row="0" column="0">
+            <widget class="QLineEdit" name="passwordLineEdit">
+             <property name="maximumSize">
+              <size>
+               <width>295</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="echoMode">
+              <enum>QLineEdit::EchoMode::Password</enum>
+             </property>
+             <property name="placeholderText">
+              <string>Введіть пароль</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QPushButton" name="passwordHideBtn">
+             <property name="minimumSize">
+              <size>
+               <width>42</width>
+               <height>42</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>42</width>
+               <height>42</height>
+              </size>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">QPushButton[id=&quot;eye_btn&quot;]{
+	border: 2px solid #328844;
+border-radius:8px;
+	background-repeat:no-repeat;
+background-position:center;
+background-color:transparent;
+}
+
+QPushButton[id=&quot;eye_btn&quot;][status=&quot;hidden&quot;]{
+background-image:url(:/icons/eye_off.svg);
+}
+
+QPushButton[id=&quot;eye_btn&quot;][status=&quot;unhidden&quot;]{
+background-image:url(:/icons/eye_on.svg);
+}</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="id" stdset="0">
+              <string>eye_btn</string>
+             </property>
+             <property name="status" stdset="0">
+              <string>hidden</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QWidget" name="errorWidget_1" native="true">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="visible">
+            <bool>false</bool>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_2">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>5</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item row="0" column="0">
+             <widget class="QLabel" name="passwordIncorrectLabel">
+              <property name="font">
+               <font>
+                <family>Roboto</family>
+                <pointsize>-1</pointsize>
+               </font>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QLabel[status=&quot;error&quot;]{
+font-size:18px;
+color:darkred;
+margin-left:8px;
+}</string>
+              </property>
+              <property name="text">
+               <string>Паролі не співпадають</string>
+              </property>
+              <property name="wordWrap">
+               <bool>true</bool>
+              </property>
+              <property name="status" stdset="0">
+               <string>error</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
           <widget class="QLabel" name="confirmPasswordLabel">
            <property name="text">
             <string>Підтвердіть пароль:</string>
            </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QGridLayout" name="gridLayout_4">
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="horizontalSpacing">
+            <number>10</number>
+           </property>
+           <item row="0" column="0">
+            <widget class="QLineEdit" name="confirmPasswordLineEdit">
+             <property name="maximumSize">
+              <size>
+               <width>295</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="echoMode">
+              <enum>QLineEdit::EchoMode::Password</enum>
+             </property>
+             <property name="placeholderText">
+              <string>Введіть пароль</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QPushButton" name="confirmPasswordHideBtn">
+             <property name="minimumSize">
+              <size>
+               <width>42</width>
+               <height>42</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>42</width>
+               <height>42</height>
+              </size>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">QPushButton[id=&quot;eye_btn&quot;]{
+	border: 2px solid #328844;
+border-radius:8px;
+	background-repeat:no-repeat;
+background-position:center;
+background-color:transparent;
+}
+
+QPushButton[id=&quot;eye_btn&quot;][status=&quot;hidden&quot;]{
+background-image:url(:/icons/eye_off.svg);
+}
+
+QPushButton[id=&quot;eye_btn&quot;][status=&quot;unhidden&quot;]{
+background-image:url(:/icons/eye_on.svg);
+}</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="id" stdset="0">
+              <string>eye_btn</string>
+             </property>
+             <property name="status" stdset="0">
+              <string>hidden</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QWidget" name="errorWidget_2" native="true">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="visible">
+            <bool>false</bool>
+           </property>
+           <layout class="QGridLayout" name="gridLayout">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item row="0" column="0">
+             <widget class="QLabel" name="confirmPasswordIncorrectLabel">
+              <property name="font">
+               <font>
+                <family>Roboto</family>
+                <pointsize>-1</pointsize>
+               </font>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QLabel[status=&quot;error&quot;]{
+font-size:18px;
+color:darkred;
+margin-left:8px;
+}</string>
+              </property>
+              <property name="text">
+               <string>Паролі не співпадають</string>
+              </property>
+              <property name="wordWrap">
+               <bool>true</bool>
+              </property>
+              <property name="status" stdset="0">
+               <string>error</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </widget>
          </item>
         </layout>
@@ -372,7 +457,7 @@ background-image:url(:/icons/eye_on.svg);
         <property name="minimumSize">
          <size>
           <width>320</width>
-          <height>60</height>
+          <height>100</height>
          </size>
         </property>
         <property name="styleSheet">
@@ -412,19 +497,6 @@ QPushButton[enabled=&quot;false&quot;]{
       </item>
      </layout>
     </widget>
-   </item>
-   <item>
-    <spacer name="verticalSpacer_3">
-     <property name="orientation">
-      <enum>Qt::Orientation::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
    </item>
   </layout>
  </widget>

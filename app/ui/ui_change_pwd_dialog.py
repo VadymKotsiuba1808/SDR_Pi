@@ -39,9 +39,9 @@ class Ui_ChangePwdDialog(object):
 "}\n"
 "\n"
 "QComboBox QAbstractItemView {\n"
-"    background-color: #002509; /* Темний фон для списку */\n"
-"    color: #FFFFFF;\n"
-"    selection-background-color: #328844; /* Зелений при виборі */\n"
+"    background-color: #002509; /* Темний фон для списку */\n"
+"    color: #FFFFFF;\n"
+"    selection-background-color: #328844; /* Зелений при виборі */\n"
 "    selection-color: #FFFFFF;\n"
 "}\n"
 "\n"
@@ -53,23 +53,21 @@ class Ui_ChangePwdDialog(object):
 "}\n"
 "\n"
 "QCheckBox::indicator {\n"
-"    width: 20px;\n"
-"    height: 20px;\n"
-"    border: 1px solid #328844;\n"
-"    background-color: rgba(0, 20, 0, 0.8);\n"
+"    width: 20px;\n"
+"    height: 20px;\n"
+"    border: 1px solid #328844;\n"
+"    background-color: rgba(0, 20, 0, 0.8);\n"
 "    border-radius: 3px;\n"
 "}\n"
 "\n"
 "QCheckBox::indicator:checked {\n"
-"    background-color: #50E37F; /* Яскраво-зелена галочка */\n"
-"    image: url(:/images/checkbox_checked_icon.png); /* (Опціонально) якщо маєш свою іконку галочки */\n"
+"    background-color: #50E37F; /* Яскраво-зелена галочка */\n"
+"    image: url(:/images/checkbox_checked_icon.png); /* (Опціонально) якщо маєш свою іконку галочки */\n"
 "}\n"
 "")
         ChangePwdDialog.setModal(True)
         self.verticalLayout = QtWidgets.QVBoxLayout(ChangePwdDialog)
         self.verticalLayout.setObjectName("verticalLayout")
-        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
-        self.verticalLayout.addItem(spacerItem)
         self.loginFrame = QtWidgets.QFrame(parent=ChangePwdDialog)
         self.loginFrame.setMinimumSize(QtCore.QSize(400, 0))
         self.loginFrame.setMaximumSize(QtCore.QSize(400, 16777215))
@@ -96,69 +94,29 @@ class Ui_ChangePwdDialog(object):
         self.titleLabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.titleLabel.setObjectName("titleLabel")
         self.frameLayout.addWidget(self.titleLabel)
-        spacerItem1 = QtWidgets.QSpacerItem(20, 10, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Fixed)
-        self.frameLayout.addItem(spacerItem1)
+        spacerItem = QtWidgets.QSpacerItem(20, 10, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Fixed)
+        self.frameLayout.addItem(spacerItem)
         self.passwordContainer = QtWidgets.QWidget(parent=self.loginFrame)
         self.passwordContainer.setEnabled(True)
         self.passwordContainer.setStyleSheet("background: none;")
         self.passwordContainer.setObjectName("passwordContainer")
-        self.gridLayout_2 = QtWidgets.QGridLayout(self.passwordContainer)
-        self.gridLayout_2.setObjectName("gridLayout_2")
+        self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.passwordContainer)
+        self.verticalLayout_2.setObjectName("verticalLayout_2")
+        self.passwordLabel = QtWidgets.QLabel(parent=self.passwordContainer)
+        self.passwordLabel.setObjectName("passwordLabel")
+        self.verticalLayout_2.addWidget(self.passwordLabel)
+        self.gridLayout_3 = QtWidgets.QGridLayout()
+        self.gridLayout_3.setContentsMargins(0, 0, 0, 0)
+        self.gridLayout_3.setSpacing(10)
+        self.gridLayout_3.setObjectName("gridLayout_3")
         self.passwordLineEdit = QtWidgets.QLineEdit(parent=self.passwordContainer)
         self.passwordLineEdit.setMaximumSize(QtCore.QSize(295, 16777215))
         self.passwordLineEdit.setText("")
         self.passwordLineEdit.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
         self.passwordLineEdit.setObjectName("passwordLineEdit")
-        self.gridLayout_2.addWidget(self.passwordLineEdit, 1, 0, 1, 1)
-        self.confirmPasswordLineEdit = QtWidgets.QLineEdit(parent=self.passwordContainer)
-        self.confirmPasswordLineEdit.setMaximumSize(QtCore.QSize(295, 16777215))
-        self.confirmPasswordLineEdit.setText("")
-        self.confirmPasswordLineEdit.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
-        self.confirmPasswordLineEdit.setObjectName("confirmPasswordLineEdit")
-        self.gridLayout_2.addWidget(self.confirmPasswordLineEdit, 3, 0, 1, 1)
-        self.widget = QtWidgets.QWidget(parent=self.passwordContainer)
-        self.widget.setMinimumSize(QtCore.QSize(0, 30))
-        self.widget.setMaximumSize(QtCore.QSize(16777215, 24))
-        self.widget.setObjectName("widget")
-        self.gridLayout = QtWidgets.QGridLayout(self.widget)
-        self.gridLayout.setObjectName("gridLayout")
-        self.passwordIncorrectLabel = QtWidgets.QLabel(parent=self.widget)
-        self.passwordIncorrectLabel.setGeometry(QtCore.QRect(10, 0, 201, 22))
-        font = QtGui.QFont()
-        font.setFamily("Roboto")
-        font.setPointSize(-1)
-        self.passwordIncorrectLabel.setFont(font)
-        self.passwordIncorrectLabel.setVisible(False)
-        self.passwordIncorrectLabel.setStyleSheet("QLabel[status=\"error\"]{\n"
-"font-size:18px;\n"
-"color:darkred;\n"
-"margin-left:8px;\n"
-"}")
-        self.passwordIncorrectLabel.setObjectName("passwordIncorrectLabel")
-        self.gridLayout_2.addWidget(self.widget, 4, 0, 1, 1)
-        self.confirmPasswordHideBtn = QtWidgets.QPushButton(parent=self.passwordContainer)
-        self.confirmPasswordHideBtn.setMinimumSize(QtCore.QSize(0, 42))
-        self.confirmPasswordHideBtn.setMaximumSize(QtCore.QSize(42, 42))
-        self.confirmPasswordHideBtn.setStyleSheet("QPushButton[id=\"eye_btn\"]{\n"
-"    border: 2px solid #328844;\n"
-"border-radius:8px;\n"
-"    background-repeat:no-repeat;\n"
-"background-position:center;\n"
-"background-color:transparent;\n"
-"}\n"
-"\n"
-"QPushButton[id=\"eye_btn\"][status=\"hidden\"]{\n"
-"background-image:url(:/icons/eye_off.svg);\n"
-"}\n"
-"\n"
-"QPushButton[id=\"eye_btn\"][status=\"unhidden\"]{\n"
-"background-image:url(:/icons/eye_on.svg);\n"
-"}")
-        self.confirmPasswordHideBtn.setText("")
-        self.confirmPasswordHideBtn.setObjectName("confirmPasswordHideBtn")
-        self.gridLayout_2.addWidget(self.confirmPasswordHideBtn, 3, 1, 1, 1)
+        self.gridLayout_3.addWidget(self.passwordLineEdit, 0, 0, 1, 1)
         self.passwordHideBtn = QtWidgets.QPushButton(parent=self.passwordContainer)
-        self.passwordHideBtn.setMinimumSize(QtCore.QSize(0, 42))
+        self.passwordHideBtn.setMinimumSize(QtCore.QSize(42, 42))
         self.passwordHideBtn.setMaximumSize(QtCore.QSize(42, 42))
         self.passwordHideBtn.setStyleSheet("QPushButton[id=\"eye_btn\"]{\n"
 "    border: 2px solid #328844;\n"
@@ -177,16 +135,90 @@ class Ui_ChangePwdDialog(object):
 "}")
         self.passwordHideBtn.setText("")
         self.passwordHideBtn.setObjectName("passwordHideBtn")
-        self.gridLayout_2.addWidget(self.passwordHideBtn, 1, 1, 1, 1)
-        self.passwordLabel = QtWidgets.QLabel(parent=self.passwordContainer)
-        self.passwordLabel.setObjectName("passwordLabel")
-        self.gridLayout_2.addWidget(self.passwordLabel, 0, 0, 1, 1)
+        self.gridLayout_3.addWidget(self.passwordHideBtn, 0, 1, 1, 1)
+        self.verticalLayout_2.addLayout(self.gridLayout_3)
+        self.errorWidget_1 = QtWidgets.QWidget(parent=self.passwordContainer)
+        self.errorWidget_1.setMinimumSize(QtCore.QSize(0, 20))
+        self.errorWidget_1.setMaximumSize(QtCore.QSize(16777215, 16777215))
+        self.errorWidget_1.setVisible(False)
+        self.errorWidget_1.setObjectName("errorWidget_1")
+        self.gridLayout_2 = QtWidgets.QGridLayout(self.errorWidget_1)
+        self.gridLayout_2.setContentsMargins(0, 5, 0, 0)
+        self.gridLayout_2.setObjectName("gridLayout_2")
+        self.passwordIncorrectLabel = QtWidgets.QLabel(parent=self.errorWidget_1)
+        font = QtGui.QFont()
+        font.setFamily("Roboto")
+        font.setPointSize(-1)
+        self.passwordIncorrectLabel.setFont(font)
+        self.passwordIncorrectLabel.setStyleSheet("QLabel[status=\"error\"]{\n"
+"font-size:18px;\n"
+"color:darkred;\n"
+"margin-left:8px;\n"
+"}")
+        self.passwordIncorrectLabel.setWordWrap(True)
+        self.passwordIncorrectLabel.setObjectName("passwordIncorrectLabel")
+        self.gridLayout_2.addWidget(self.passwordIncorrectLabel, 0, 0, 1, 1)
+        self.verticalLayout_2.addWidget(self.errorWidget_1)
         self.confirmPasswordLabel = QtWidgets.QLabel(parent=self.passwordContainer)
         self.confirmPasswordLabel.setObjectName("confirmPasswordLabel")
-        self.gridLayout_2.addWidget(self.confirmPasswordLabel, 2, 0, 1, 1)
+        self.verticalLayout_2.addWidget(self.confirmPasswordLabel)
+        self.gridLayout_4 = QtWidgets.QGridLayout()
+        self.gridLayout_4.setContentsMargins(-1, 0, -1, -1)
+        self.gridLayout_4.setHorizontalSpacing(10)
+        self.gridLayout_4.setObjectName("gridLayout_4")
+        self.confirmPasswordLineEdit = QtWidgets.QLineEdit(parent=self.passwordContainer)
+        self.confirmPasswordLineEdit.setMaximumSize(QtCore.QSize(295, 16777215))
+        self.confirmPasswordLineEdit.setText("")
+        self.confirmPasswordLineEdit.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
+        self.confirmPasswordLineEdit.setObjectName("confirmPasswordLineEdit")
+        self.gridLayout_4.addWidget(self.confirmPasswordLineEdit, 0, 0, 1, 1)
+        self.confirmPasswordHideBtn = QtWidgets.QPushButton(parent=self.passwordContainer)
+        self.confirmPasswordHideBtn.setMinimumSize(QtCore.QSize(42, 42))
+        self.confirmPasswordHideBtn.setMaximumSize(QtCore.QSize(42, 42))
+        self.confirmPasswordHideBtn.setStyleSheet("QPushButton[id=\"eye_btn\"]{\n"
+"    border: 2px solid #328844;\n"
+"border-radius:8px;\n"
+"    background-repeat:no-repeat;\n"
+"background-position:center;\n"
+"background-color:transparent;\n"
+"}\n"
+"\n"
+"QPushButton[id=\"eye_btn\"][status=\"hidden\"]{\n"
+"background-image:url(:/icons/eye_off.svg);\n"
+"}\n"
+"\n"
+"QPushButton[id=\"eye_btn\"][status=\"unhidden\"]{\n"
+"background-image:url(:/icons/eye_on.svg);\n"
+"}")
+        self.confirmPasswordHideBtn.setText("")
+        self.confirmPasswordHideBtn.setObjectName("confirmPasswordHideBtn")
+        self.gridLayout_4.addWidget(self.confirmPasswordHideBtn, 0, 1, 1, 1)
+        self.verticalLayout_2.addLayout(self.gridLayout_4)
+        self.errorWidget_2 = QtWidgets.QWidget(parent=self.passwordContainer)
+        self.errorWidget_2.setMinimumSize(QtCore.QSize(0, 20))
+        self.errorWidget_2.setMaximumSize(QtCore.QSize(16777215, 16777215))
+        self.errorWidget_2.setVisible(False)
+        self.errorWidget_2.setObjectName("errorWidget_2")
+        self.gridLayout = QtWidgets.QGridLayout(self.errorWidget_2)
+        self.gridLayout.setContentsMargins(0, 0, 0, 0)
+        self.gridLayout.setObjectName("gridLayout")
+        self.confirmPasswordIncorrectLabel = QtWidgets.QLabel(parent=self.errorWidget_2)
+        font = QtGui.QFont()
+        font.setFamily("Roboto")
+        font.setPointSize(-1)
+        self.confirmPasswordIncorrectLabel.setFont(font)
+        self.confirmPasswordIncorrectLabel.setStyleSheet("QLabel[status=\"error\"]{\n"
+"font-size:18px;\n"
+"color:darkred;\n"
+"margin-left:8px;\n"
+"}")
+        self.confirmPasswordIncorrectLabel.setWordWrap(True)
+        self.confirmPasswordIncorrectLabel.setObjectName("confirmPasswordIncorrectLabel")
+        self.gridLayout.addWidget(self.confirmPasswordIncorrectLabel, 0, 0, 1, 1)
+        self.verticalLayout_2.addWidget(self.errorWidget_2)
         self.frameLayout.addWidget(self.passwordContainer)
         self.saveButton = QtWidgets.QPushButton(parent=self.loginFrame)
-        self.saveButton.setMinimumSize(QtCore.QSize(320, 60))
+        self.saveButton.setMinimumSize(QtCore.QSize(320, 100))
         self.saveButton.setStyleSheet("\n"
 "QPushButton{\n"
 "    border: none;\n"
@@ -217,9 +249,7 @@ class Ui_ChangePwdDialog(object):
 "}")
         self.saveButton.setObjectName("saveButton")
         self.frameLayout.addWidget(self.saveButton, 0, QtCore.Qt.AlignmentFlag.AlignHCenter)
-        self.verticalLayout.addWidget(self.loginFrame, 0, QtCore.Qt.AlignmentFlag.AlignHCenter)
-        spacerItem2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
-        self.verticalLayout.addItem(spacerItem2)
+        self.verticalLayout.addWidget(self.loginFrame, 0, QtCore.Qt.AlignmentFlag.AlignHCenter|QtCore.Qt.AlignmentFlag.AlignVCenter)
 
         self.retranslateUi(ChangePwdDialog)
         QtCore.QMetaObject.connectSlotsByName(ChangePwdDialog)
@@ -228,14 +258,16 @@ class Ui_ChangePwdDialog(object):
         _translate = QtCore.QCoreApplication.translate
         ChangePwdDialog.setWindowTitle(_translate("ChangePwdDialog", "Зміна паролю"))
         self.titleLabel.setText(_translate("ChangePwdDialog", "ЗМІНА ПАРОЛЮ"))
+        self.passwordLabel.setText(_translate("ChangePwdDialog", "Введіть пароль:"))
         self.passwordLineEdit.setPlaceholderText(_translate("ChangePwdDialog", "Введіть пароль"))
-        self.confirmPasswordLineEdit.setPlaceholderText(_translate("ChangePwdDialog", "Введіть пароль"))
-        self.passwordIncorrectLabel.setText(_translate("ChangePwdDialog", "Паролі не співпадають"))
-        self.passwordIncorrectLabel.setProperty("status", _translate("ChangePwdDialog", "error"))
-        self.confirmPasswordHideBtn.setProperty("id", _translate("ChangePwdDialog", "eye_btn"))
-        self.confirmPasswordHideBtn.setProperty("status", _translate("ChangePwdDialog", "hidden"))
         self.passwordHideBtn.setProperty("id", _translate("ChangePwdDialog", "eye_btn"))
         self.passwordHideBtn.setProperty("status", _translate("ChangePwdDialog", "hidden"))
-        self.passwordLabel.setText(_translate("ChangePwdDialog", "Введіть пароль:"))
+        self.passwordIncorrectLabel.setText(_translate("ChangePwdDialog", "Паролі не співпадають"))
+        self.passwordIncorrectLabel.setProperty("status", _translate("ChangePwdDialog", "error"))
         self.confirmPasswordLabel.setText(_translate("ChangePwdDialog", "Підтвердіть пароль:"))
+        self.confirmPasswordLineEdit.setPlaceholderText(_translate("ChangePwdDialog", "Введіть пароль"))
+        self.confirmPasswordHideBtn.setProperty("id", _translate("ChangePwdDialog", "eye_btn"))
+        self.confirmPasswordHideBtn.setProperty("status", _translate("ChangePwdDialog", "hidden"))
+        self.confirmPasswordIncorrectLabel.setText(_translate("ChangePwdDialog", "Паролі не співпадають"))
+        self.confirmPasswordIncorrectLabel.setProperty("status", _translate("ChangePwdDialog", "error"))
         self.saveButton.setText(_translate("ChangePwdDialog", "Зберегти"))

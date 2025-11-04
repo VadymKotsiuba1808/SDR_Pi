@@ -13,6 +13,30 @@ class SettingsService(QObject):
 
     settings_changed = pyqtSignal()
 
+    # Network
+    host: str
+    port: int
+    # Maps
+    radar_radius: int
+    radar_max_radius: int
+    api_key: str
+    base_url: str
+    scale: str
+    zoom: int
+    img_format: str
+    # Auth
+    role: str
+    owner_password_hash: str
+    remember_me: bool
+    # Dev
+    tile_divider_enabled: bool
+    compiled_ui_using_enabled: bool
+    # Signal
+    radio_range_GHz: list
+    sound_range_GHz: list
+    # UI
+    lang_code: str
+
     # Єдиний словник конфігурації: ключ → (секція, тип, значення за замовчуванням)
     _config_schema = {
         # Network

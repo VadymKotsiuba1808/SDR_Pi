@@ -60,6 +60,7 @@ class RecordingService(QThread):
                 "-crf": str(self.video_quality_crf),
                 "-preset": "faster",
                 "-pix_fmt": "yuv420p",
+                "-s": f"{width}x{height}",
             }
 
             self.writer = WriteGear(

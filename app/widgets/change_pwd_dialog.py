@@ -7,6 +7,8 @@ from app.ui.ui_change_pwd_dialog import Ui_ChangePwdDialog
 
 from app.protocols import ChangePwdDialogSettings
 from app.utils.password_utils import hash_password
+from app.validators.password_validator import PasswordValidator
+from app.utils.ui_utils import update_element_styles
 
 
 class ChangePwdDialog(QDialog):
@@ -75,10 +77,15 @@ class ChangePwdDialog(QDialog):
 
     def change_password_status(self):
         # Приховую Label зі статусом
+
+        if self.sender() == self.ui.passwordLineEdit:
+            self.ui.errorWidget_1.setVisible(False)
+            self.ui.passwordIncorrectLabel.setText("")
+
         print(
             "[change_password_status] Зміна тексту в полі пароля — ховаємо мітку помилки."
         )
-        self.ui.passwordIncorrectLabel.setVisible(False)
+        self.ui.errorWidget_2.setVisible(False)
 
     def hide_unhide_password(self):
         button = self.sender()
@@ -103,18 +110,26 @@ class ChangePwdDialog(QDialog):
             button.setProperty("status", "hidden")
             target_line_edit.setEchoMode(QLineEdit.EchoMode.Password)
 
-        button.style().unpolish(button)
-        button.style().polish(button)
-        button.update()
+        update_element_styles(button)
         print("[hide_unhide_password] Оновлення стилю завершено.")
 
     def handle_save_pwd(self):
 
         password = self.ui.passwordLineEdit.text()
+
+        pwd_validator = PasswordValidator()
+
+        if pwd_validator.validate(password) == False:
+            error_message = "\n".join(pwd_validator.get_errors()["password"])
+            self.ui.passwordIncorrectLabel.setText(error_message)
+            self.ui.errorWidget_1.setVisible(True)
+            print("[handle_change_pwd] Пароль не валідний.")
+            return
+
         confirmedPassword = self.ui.confirmPasswordLineEdit.text()
 
         if password != confirmedPassword:
-            self.ui.passwordIncorrectLabel.setVisible(True)
+            self.ui.errorWidget_2.setVisible(True)
             print("[handle_change_pwd] Паролі не співпадають.")
             return
 

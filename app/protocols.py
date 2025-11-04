@@ -34,3 +34,7 @@ class SetMapDialogSettings(Protocol):
     radar_max_radius: int
     compiled_ui_using_enabled: bool
     lang_code: str
+
+
+class RecordingStatusWidgetSettings(Protocol):
+    compiled_ui_using_enabled: bool

@@ -5,12 +5,12 @@ from PyQt6 import uic
 import os
 
 from app.ui.ui_record_status_widget import Ui_RecordingStatusWidget
-from app.services.settings_service import SettingsService
 from app.utils.ui_utils import update_element_styles
+from app.protocols import RecordingStatusWidgetSettings
 
 
 class RecordingStatusWidget(QWidget):
-    def __init__(self, settings: SettingsService, parent=None):
+    def __init__(self, settings: RecordingStatusWidgetSettings, parent=None):
         super().__init__(parent)
 
         self.settings_service = settings

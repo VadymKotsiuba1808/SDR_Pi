@@ -21,13 +21,16 @@ class LoginDialogSettings(Protocol):
     owner_password_hash: str
     remember_me: bool
     compiled_ui_using_enabled: bool
+    lang_code: str
 
 
 class ChangePwdDialogSettings(Protocol):
     owner_password_hash: str
     compiled_ui_using_enabled: bool
+    lang_code: str
 
 
 class SetMapDialogSettings(Protocol):
     radar_max_radius: int
     compiled_ui_using_enabled: bool
+    lang_code: str

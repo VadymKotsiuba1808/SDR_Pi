@@ -1829,6 +1829,43 @@ border: none;</string>
       </property>
      </layout>
     </widget>
+    <widget class="QPushButton" name="filesViewButton">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>166</x>
+       <y>709</y>
+       <width>110</width>
+       <height>110</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton#filesViewButton{
+	background-color:rgba(0,0,0,0.8);
+	border-image: url(:/images/filesViewBtn_off.png);
+}
+
+QPushButton#filesViewButton:pressed,
+QPushButton#screenRecordButton:checked{
+	border-image: url(:/images/filesViewBtn_on.png);
+}
+
+QPushButton#filesViewButton:disabled{
+	border-image: url(:/images/filesViewBtn_disabled.png);
+}</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+    </widget>
     <zorder>map_background_label</zorder>
     <zorder>screenRecordButton</zorder>
     <zorder>homeButton</zorder>
@@ -1844,6 +1881,7 @@ border: none;</string>
     <zorder>LangSettings</zorder>
     <zorder>MainButtons_Container</zorder>
     <zorder>RecordStatusContainer</zorder>
+    <zorder>filesViewButton</zorder>
    </widget>
   </widget>
  </widget>

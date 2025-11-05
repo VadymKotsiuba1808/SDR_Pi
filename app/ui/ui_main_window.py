@@ -565,6 +565,8 @@ class Ui_MainWindow(object):
         self.RadarFrame.setObjectName("RadarFrame")
         self.Radar = QtWidgets.QLabel(parent=self.RadarFrame)
         self.Radar.setGeometry(QtCore.QRect(0, 0, 901, 901))
+        self.Radar.setStyleSheet("background-color:rgba(21,21,21,0.1);\n"
+"border-radius:450px;")
         self.Radar.setText("")
         self.Radar.setPixmap(QtGui.QPixmap(":/images/radar.png"))
         self.Radar.setObjectName("Radar")

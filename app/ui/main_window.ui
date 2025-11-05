@@ -1166,6 +1166,10 @@ QPushButton[enabled=&quot;false&quot;]{
         <height>901</height>
        </rect>
       </property>
+      <property name="styleSheet">
+       <string notr="true">background-color:rgba(21,21,21,0.1);
+border-radius:450px;</string>
+      </property>
       <property name="text">
        <string/>
       </property>

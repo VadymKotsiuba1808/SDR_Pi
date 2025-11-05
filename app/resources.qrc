@@ -46,6 +46,9 @@
     <file alias="images/toggleRecordBtn_on.png">assets/images/toggleRecordBtn_on.png</file>
     <file alias="images/toggleRecordBtn_off.png">assets/images/toggleRecordBtn_off.png</file>
     <file alias="images/toggleRecordBtn_disabled.png">assets/images/toggleRecordBtn_disabled.png</file>
+    <file alias="images/filesViewBtn_on.png">assets/images/filesViewBtn_on.png</file>
+    <file alias="images/filesViewBtn_off.png">assets/images/filesViewBtn_off.png</file>
+    <file alias="images/filesViewBtn_disabled.png">assets/images/filesViewBtn_disabled.png</file>
 </qresource>
 </RCC>
 

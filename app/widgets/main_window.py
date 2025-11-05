@@ -2,6 +2,7 @@ import os
 import math
 import asyncio
 import platform
+import shutil
 import subprocess
 import keyboard
 import re
@@ -489,17 +490,22 @@ class MainWindow(QMainWindow):
         if not file_path:
             return
 
-        program_path = r"C:\Program Files\VideoLAN\VLC\vlc.exe"
+        program_path = self.get_vlc_executable()
 
         url = QUrl.fromLocalFile(file_path)
+
+        if not program_path:
+            print("VLC не знайдено. Відкриваємо у дефолтній програмі...")
+            QDesktopServices.openUrl(url)
+            return
 
         arguments = [
             program_path,
             "--fullscreen",
             "--play-and-pause",
             "--image-duration=-1",
-            "--no-qt-privacy-ask",  # Щоб не спливали діалоги
-            "--no-qt-error-dialogs",  # Не показувати помилки
+            # "--no-qt-privacy-ask",  # Щоб не спливали діалоги
+            # "--no-qt-error-dialogs",  # Не показувати помилки
             "--global-key-quit=q",  # Закривається на q
             "--loop",
             url.toString(),
@@ -518,6 +524,35 @@ class MainWindow(QMainWindow):
         finally:
             # Відновлюємо ESC
             keyboard.unblock_key("esc")
+
+    def get_vlc_executable(self):
+        """
+        Знаходить шлях до виконуваного файлу VLC в залежності від ОС.
+        """
+        system = platform.system()
+
+        if system == "Windows":
+            # Шукаємо у стандартних папках Windows
+            possible_paths = [
+                r"C:\Program Files\VideoLAN\VLC\vlc.exe",
+                r"C:\Program Files (x86)\VideoLAN\VLC\vlc.exe",
+            ]
+            for path in possible_paths:
+                if os.path.exists(path):
+                    return path
+
+            # Якщо не знайшли, шукаємо в системному PATH
+            path_in_env = shutil.which("vlc")
+            if path_in_env:
+                return path_in_env
+
+        elif system == "Linux" or system == "Darwin":
+            path_in_env = shutil.which("vlc")
+            if path_in_env:
+                return path_in_env
+
+        # Якщо нічого не знайшли
+        return None
 
     def set_radar_mode(self):
         if self.isRadarMode:

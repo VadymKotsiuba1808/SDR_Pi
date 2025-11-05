@@ -3,8 +3,9 @@ import math
 import asyncio
 import platform
 import subprocess
+import keyboard
 import re
-from PyQt6.QtWidgets import QMainWindow, QApplication, QDialog, QMessageBox
+from PyQt6.QtWidgets import QMainWindow, QApplication, QDialog, QMessageBox, QFileDialog
 from PyQt6.QtCore import (
     QTimer,
     QDateTime,
@@ -16,6 +17,8 @@ from PyQt6.QtCore import (
     pyqtSlot,
     pyqtSignal,
     QThread,
+    QUrl,
+    QProcess,
 )
 from PyQt6.QtGui import (
     QPixmap,
@@ -25,6 +28,7 @@ from PyQt6.QtGui import (
     QPen,
     QAction,
     QIcon,
+    QDesktopServices,
 )
 
 from PyQt6 import uic
@@ -168,6 +172,7 @@ class MainWindow(QMainWindow):
         self.ui.homeButton.clicked.connect(self.update_status_bar_with_test_data)
         self.ui.addMapButton.clicked.connect(self.handle_add_map)
         self.ui.screenRecordButton.clicked.connect(self.handle_toggle_recording)
+        self.ui.filesViewButton.clicked.connect(self.handle_open_file)
 
         self.ui.falseAlarmButton.clicked.connect(self.stop_alert)
         self.ui.menuButton.clicked.connect(self.test_draw_dot)
@@ -216,43 +221,6 @@ class MainWindow(QMainWindow):
         self.timer_wifi = QTimer(self)
         self.timer_wifi.timeout.connect(self.update_wifi_signal_info)
         self.timer_wifi.start(2 * 60 * 1000)
-
-    @pyqtSlot(bool)
-    def handle_toggle_recording(self):
-        button = self.sender()
-
-        if button.isChecked():
-            # --- Кнопку НАТИСНУЛИ (Початок) ---
-            filename = f"./screen_records/record_{QDateTime.currentDateTime().toString('yyyy-MM-dd_hh-mm-ss')}.mp4"
-            os.makedirs(os.path.dirname(filename), exist_ok=True)
-
-            # Напряму викликаємо метод-слот
-            self.recorder.start_recording(filename)
-        else:
-            # --- Кнопку ВІДЖАЛИ (Зупинка) ---
-            self.recorder.stop_recording()
-
-    @pyqtSlot()
-    def on_recording_started(self):
-        print("[MainWindow] Отримано підтвердження старту. Показ віджета.")
-        self.record_status_widget.setVisible(True)
-
-    @pyqtSlot()
-    def on_recording_stopped(self):
-        print("[MainWindow] Отримано підтвердження зупинки. Ховаємо віджет.")
-        if self.ui.screenRecordButton.isChecked():
-            self.ui.screenRecordButton.setChecked(False)
-        self.record_status_widget.reset_state()
-
-    @pyqtSlot(str)
-    def show_error_message(self, error_text):
-        print(f"ПОМИЛКА ЗАПИСУ: {error_text}")
-        QMessageBox.critical(self, "Помилка запису", error_text)
-        self.on_recording_stopped()
-
-    def handle_toggle_recording_pause(self, is_paused):
-        # self.record_status_widget.on
-        self.recorder.toggle_pause(is_paused)
 
     @asyncSlot()
     async def _start_async_tasks(self):
@@ -396,6 +364,160 @@ class MainWindow(QMainWindow):
 
         # 6. Очищуємо посилання
         self.scalable_dialog = None
+
+    @pyqtSlot(bool)
+    def handle_toggle_recording(self):
+        button = self.sender()
+
+        if button.isChecked():
+            # --- Кнопку НАТИСНУЛИ (Початок) ---
+            filename = f"./screen_records/record_{QDateTime.currentDateTime().toString('yyyy-MM-dd_hh-mm-ss')}.mp4"
+            os.makedirs(os.path.dirname(filename), exist_ok=True)
+
+            # Напряму викликаємо метод-слот
+            self.recorder.start_recording(filename)
+        else:
+            # --- Кнопку ВІДЖАЛИ (Зупинка) ---
+            self.recorder.stop_recording()
+
+    @pyqtSlot()
+    def on_recording_started(self):
+        print("[MainWindow] Отримано підтвердження старту. Показ віджета.")
+        self.record_status_widget.setVisible(True)
+
+    @pyqtSlot()
+    def on_recording_stopped(self):
+        print("[MainWindow] Отримано підтвердження зупинки. Ховаємо віджет.")
+        if self.ui.screenRecordButton.isChecked():
+            self.ui.screenRecordButton.setChecked(False)
+        self.record_status_widget.reset_state()
+
+    @pyqtSlot(str)
+    def show_error_message(self, error_text):
+        print(f"ПОМИЛКА ЗАПИСУ: {error_text}")
+        QMessageBox.critical(self, "Помилка запису", error_text)
+        self.on_recording_stopped()
+
+    def handle_toggle_recording_pause(self, is_paused):
+        self.recorder.toggle_pause(is_paused)
+
+    # def handle_open_file(self):
+    #     # Створюємо рядок фільтрів, що включає зображення та відео
+    #     file_filters = (
+    #         f"{self.tr('Медіа файли (*.png *.jpg *.jpeg *.bmp *.mp4 *.avi *.mkv)')};;"
+    #         # f"{self.tr('Зображення (*.png *.jpg *.jpeg *.bmp)')};;"
+    #         # f"{self.tr('Відео файли (*.mp4 *.avi *.mkv *.mov *.wmv)')};;"
+    #         f"{self.tr('Всі файли (*.*)')}"
+    #     )
+
+    #     file_path, _ = QFileDialog.getOpenFileName(
+    #         self,
+    #         self.tr("Оберіть файл для перегляду"),
+    #         "",
+    #         file_filters,
+    #     )
+
+    #     if file_path:
+
+    #         url = QUrl.fromLocalFile(file_path)
+
+    #         # Використовуємо QDesktopServices, щоб відкрити цей URL у дефолтній програмі системи
+    #         QDesktopServices.openUrl(url)
+
+    # def handle_open_file(self):
+    #     file_filters = (
+    #         f"{self.tr('Медіа файли (*.png *.jpg *.jpeg *.bmp *.mp4 *.avi *.mkv)')};;"
+    #         f"{self.tr('Всі файли (*.*)')}"
+    #     )
+
+    #     file_path, _ = QFileDialog.getOpenFileName(
+    #         self,
+    #         self.tr("Оберіть файл для перегляду"),
+    #         "",
+    #         file_filters,
+    #     )
+
+    #     if not file_path:
+    #         return
+
+    #     #    Приклади шляхів:
+    #     #    Windows: r"C:\Program Files\VideoLAN\VLC\vlc.exe"
+    #     #    Linux:   "vlc" (якщо він є у вашому $PATH)
+
+    #     program_path = r"C:\Program Files\VideoLAN\VLC\vlc.exe"
+    #     url = QUrl.fromLocalFile(file_path)
+
+    #     arguments = [
+    #         "--fullscreen",
+    #         "--play-and-pause",
+    #         # "--global-key-quit=q",
+    #         "--image-duration=-1",
+    #         # "--global-key-fullscreen=Ctrl+Alt+Shift+F12",
+    #         "--no-qt-privacy-ask",  # Щоб не спливали діалоги
+    #         "--no-qt-error-dialogs",  # Не показувати помилки
+    #         "--no-keyboard-events",  # Відключає обробку всіх клавіш у вікні
+    #         "--global-key-quit=q",  # Закривається на q
+    #         url.toString(),
+    #     ]
+
+    #     process = QProcess(self)
+
+    #     # Запускаємо програму в окремому, "від'єднаному" процесі
+    #     #    startDetached повертає True/False про успіх *запуску*
+    #     success = process.startDetached(program_path, arguments)
+
+    #     if not success:
+    #         print(
+    #             f"Не вдалося запустити {program_path}, відкриваємо дефолтним методом..."
+    #         )
+    #         url = QUrl.fromLocalFile(file_path)
+    #         QDesktopServices.openUrl(url)
+
+    def handle_open_file(self):
+        file_filters = (
+            f"{self.tr('Медіа файли (*.png *.jpg *.jpeg *.bmp *.mp4 *.avi *.mkv)')};;"
+            f"{self.tr('Всі файли (*.*)')}"
+        )
+
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            self.tr("Оберіть файл для перегляду"),
+            "",
+            file_filters,
+        )
+
+        if not file_path:
+            return
+
+        program_path = r"C:\Program Files\VideoLAN\VLC\vlc.exe"
+
+        url = QUrl.fromLocalFile(file_path)
+
+        arguments = [
+            program_path,
+            "--fullscreen",
+            "--play-and-pause",
+            "--image-duration=-1",
+            "--no-qt-privacy-ask",  # Щоб не спливали діалоги
+            "--no-qt-error-dialogs",  # Не показувати помилки
+            "--global-key-quit=q",  # Закривається на q
+            "--loop",
+            url.toString(),
+        ]
+
+        try:
+            keyboard.block_key("esc")
+
+            # Запускаємо VLC як зовнішній процес
+            proc = subprocess.Popen(arguments)
+
+            proc.wait()
+        except Exception as e:
+            print(f"Не вдалося запустити VLC: {e}")
+            QDesktopServices.openUrl(url)
+        finally:
+            # Відновлюємо ESC
+            keyboard.unblock_key("esc")
 
     def set_radar_mode(self):
         if self.isRadarMode:

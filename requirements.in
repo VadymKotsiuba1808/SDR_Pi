@@ -9,6 +9,7 @@ vidgear
 mss
 opencv-python
 bcrypt==4.0.1
+keyboard
 
 #Dev
 deptry

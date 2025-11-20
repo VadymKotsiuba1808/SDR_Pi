@@ -27,8 +27,6 @@ from PyQt6.QtGui import (
     QPainter,
     QColor,
     QPen,
-    QAction,
-    QIcon,
     QDesktopServices,
 )
 
@@ -42,6 +40,7 @@ from app.services.api_server import ApiServer
 from app.services.map_service import MapService, MapTypes
 from app.utils.test_data_provider import TestDataProvider
 from app.services.settings_service import SettingsService
+from app.services.keyboard_service import KeyboardService
 from app.widgets.set_map_dialog import SetMapDialog
 from app.widgets.autosize_window import make_scalable
 from app.widgets.record_status_widget import RecordingStatusWidget
@@ -53,9 +52,12 @@ class MainWindow(QMainWindow):
     _sig_start_recording = pyqtSignal(str)
     _sig_stop_recording = pyqtSignal()
 
-    def __init__(self, settings: SettingsService, parent=None):
+    def __init__(
+        self, settings: SettingsService, keyboard: KeyboardService, parent=None
+    ):
         super().__init__(parent)
         self.settings_service = settings
+        self.keyboard_service = keyboard
 
         self._load_ui()
         print("[MainWindow] Інтерфейс завантажено.")
@@ -115,7 +117,6 @@ class MainWindow(QMainWindow):
 
         self.api_server = ApiServer(settings=self.settings_service)
 
-        # Передаємо йому методи з MainWindow як callback-функції
         self.api_server.on_rf_data = self.handle_rf_data
         self.api_server.on_audio_alert = self.handle_audio_alert
 
@@ -127,6 +128,8 @@ class MainWindow(QMainWindow):
         self.translator = QTranslator()
 
         self.record_status_widget = RecordingStatusWidget(self.settings_service, self)
+
+        self.media_process = None
 
     def _init_recording_service(self):
         self.recorder = RecordingService(self)
@@ -221,7 +224,7 @@ class MainWindow(QMainWindow):
 
         self.timer_wifi = QTimer(self)
         self.timer_wifi.timeout.connect(self.update_wifi_signal_info)
-        self.timer_wifi.start(2 * 60 * 1000)
+        self.timer_wifi.start(30 * 1000)
 
     @asyncSlot()
     async def _start_async_tasks(self):
@@ -267,7 +270,7 @@ class MainWindow(QMainWindow):
         QCoreApplication.removeTranslator(self.translator)
 
         # Завантажуємо та встановлюємо новий
-        path = f"app/i18n/qm/app_{lang_code}.qm"  # Перевірте правильність шляху
+        path = f"app/i18n/qm/app_{lang_code}.qm"
         if self.translator.load(path):
             QCoreApplication.installTranslator(self.translator)
         else:
@@ -295,8 +298,6 @@ class MainWindow(QMainWindow):
         print("Запущено асинхронний слухач даних...")
         while True:
             # `await asyncio.sleep(1)` імітує асинхронне очікування.
-            # Замініть це на ваш реальний код очікування даних.
-            # наприклад: data = await get_data_from_pi()
             await asyncio.sleep(1)
             # self.handle_rf_data(data) # Викликаємо обробник, коли дані прийшли
 
@@ -342,7 +343,6 @@ class MainWindow(QMainWindow):
 
         # 4. Перевіряємо результат
         if result == QDialog.DialogCode.Accepted:
-            # Якщо користувач натиснув "Зберегти" і валідація пройшла:
 
             # 5. Отримуємо дані
             settings_data = self.scalable_dialog.get_settings()
@@ -359,11 +359,9 @@ class MainWindow(QMainWindow):
             print("ГОЛОВНЕ ВІКНО: Отримано налаштування!")
 
         else:
-            # Якщо користувач натиснув "Скасувати" або закрив вікно
             self.ui.addMapButton.setChecked(False)
             print("ГОЛОВНЕ ВІКНО: Налаштування скасовано.")
 
-        # 6. Очищуємо посилання
         self.scalable_dialog = None
 
     @pyqtSlot(bool)
@@ -371,14 +369,12 @@ class MainWindow(QMainWindow):
         button = self.sender()
 
         if button.isChecked():
-            # --- Кнопку НАТИСНУЛИ (Початок) ---
             filename = f"./screen_records/record_{QDateTime.currentDateTime().toString('yyyy-MM-dd_hh-mm-ss')}.mp4"
             os.makedirs(os.path.dirname(filename), exist_ok=True)
 
             # Напряму викликаємо метод-слот
             self.recorder.start_recording(filename)
         else:
-            # --- Кнопку ВІДЖАЛИ (Зупинка) ---
             self.recorder.stop_recording()
 
     @pyqtSlot()
@@ -402,82 +398,18 @@ class MainWindow(QMainWindow):
     def handle_toggle_recording_pause(self, is_paused):
         self.recorder.toggle_pause(is_paused)
 
-    # def handle_open_file(self):
-    #     # Створюємо рядок фільтрів, що включає зображення та відео
-    #     file_filters = (
-    #         f"{self.tr('Медіа файли (*.png *.jpg *.jpeg *.bmp *.mp4 *.avi *.mkv)')};;"
-    #         # f"{self.tr('Зображення (*.png *.jpg *.jpeg *.bmp)')};;"
-    #         # f"{self.tr('Відео файли (*.mp4 *.avi *.mkv *.mov *.wmv)')};;"
-    #         f"{self.tr('Всі файли (*.*)')}"
-    #     )
-
-    #     file_path, _ = QFileDialog.getOpenFileName(
-    #         self,
-    #         self.tr("Оберіть файл для перегляду"),
-    #         "",
-    #         file_filters,
-    #     )
-
-    #     if file_path:
-
-    #         url = QUrl.fromLocalFile(file_path)
-
-    #         # Використовуємо QDesktopServices, щоб відкрити цей URL у дефолтній програмі системи
-    #         QDesktopServices.openUrl(url)
-
-    # def handle_open_file(self):
-    #     file_filters = (
-    #         f"{self.tr('Медіа файли (*.png *.jpg *.jpeg *.bmp *.mp4 *.avi *.mkv)')};;"
-    #         f"{self.tr('Всі файли (*.*)')}"
-    #     )
-
-    #     file_path, _ = QFileDialog.getOpenFileName(
-    #         self,
-    #         self.tr("Оберіть файл для перегляду"),
-    #         "",
-    #         file_filters,
-    #     )
-
-    #     if not file_path:
-    #         return
-
-    #     #    Приклади шляхів:
-    #     #    Windows: r"C:\Program Files\VideoLAN\VLC\vlc.exe"
-    #     #    Linux:   "vlc" (якщо він є у вашому $PATH)
-
-    #     program_path = r"C:\Program Files\VideoLAN\VLC\vlc.exe"
-    #     url = QUrl.fromLocalFile(file_path)
-
-    #     arguments = [
-    #         "--fullscreen",
-    #         "--play-and-pause",
-    #         # "--global-key-quit=q",
-    #         "--image-duration=-1",
-    #         # "--global-key-fullscreen=Ctrl+Alt+Shift+F12",
-    #         "--no-qt-privacy-ask",  # Щоб не спливали діалоги
-    #         "--no-qt-error-dialogs",  # Не показувати помилки
-    #         "--no-keyboard-events",  # Відключає обробку всіх клавіш у вікні
-    #         "--global-key-quit=q",  # Закривається на q
-    #         url.toString(),
-    #     ]
-
-    #     process = QProcess(self)
-
-    #     # Запускаємо програму в окремому, "від'єднаному" процесі
-    #     #    startDetached повертає True/False про успіх *запуску*
-    #     success = process.startDetached(program_path, arguments)
-
-    #     if not success:
-    #         print(
-    #             f"Не вдалося запустити {program_path}, відкриваємо дефолтним методом..."
-    #         )
-    #         url = QUrl.fromLocalFile(file_path)
-    #         QDesktopServices.openUrl(url)
-
     def handle_open_file(self):
+        btn = self.sender()
+
+        if btn.isChecked() == False:
+            if self.media_process:
+                self.media_process.close()
+                print("Переглядач успішно закритий")
+            return
+
         file_filters = (
             f"{self.tr('Медіа файли (*.png *.jpg *.jpeg *.bmp *.mp4 *.avi *.mkv)')};;"
-            f"{self.tr('Всі файли (*.*)')}"
+            # f"{self.tr('Всі файли (*.*)')}"
         )
 
         file_path, _ = QFileDialog.getOpenFileName(
@@ -488,6 +420,7 @@ class MainWindow(QMainWindow):
         )
 
         if not file_path:
+            self.ui.filesViewButton.setChecked(False)
             return
 
         program_path = self.get_vlc_executable()
@@ -500,7 +433,6 @@ class MainWindow(QMainWindow):
             return
 
         arguments = [
-            program_path,
             "--fullscreen",
             "--play-and-pause",
             "--image-duration=-1",
@@ -512,18 +444,15 @@ class MainWindow(QMainWindow):
         ]
 
         try:
-            keyboard.block_key("esc")
+            self.media_process = QProcess(self)
+            self.media_process.finished.connect(
+                lambda *_: self.ui.filesViewButton.setChecked(False)
+            )
 
-            # Запускаємо VLC як зовнішній процес
-            proc = subprocess.Popen(arguments)
-
-            proc.wait()
+            self.media_process.start(program_path, arguments)
         except Exception as e:
             print(f"Не вдалося запустити VLC: {e}")
             QDesktopServices.openUrl(url)
-        finally:
-            # Відновлюємо ESC
-            keyboard.unblock_key("esc")
 
     def get_vlc_executable(self):
         """

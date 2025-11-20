@@ -1852,7 +1852,7 @@ border: none;</string>
 }
 
 QPushButton#filesViewButton:pressed,
-QPushButton#screenRecordButton:checked{
+QPushButton#filesViewButton:checked{
 	border-image: url(:/images/filesViewBtn_on.png);
 }
 

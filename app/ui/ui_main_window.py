@@ -898,7 +898,7 @@ class Ui_MainWindow(object):
 "}\n"
 "\n"
 "QPushButton#filesViewButton:pressed,\n"
-"QPushButton#screenRecordButton:checked{\n"
+"QPushButton#filesViewButton:checked{\n"
 "    border-image: url(:/images/filesViewBtn_on.png);\n"
 "}\n"
 "\n"

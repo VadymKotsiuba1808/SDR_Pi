@@ -1,68 +1,61 @@
-"""
-Сервіс клавіатури.
-Керує перемиканням розкладки (EN/UA) та глобальними хоткеями.
-"""
-
+import sys
+import platform
 import subprocess
-from app.protocols import OSService
+
+# Для Windows
+if platform.system() == "Windows":
+    import win32api
+    import win32con
+    import win32gui
+    import keyboard
+
+# Для Linux (X11)
+elif platform.system() == "Linux":
+    from pynput import keyboard as pynput_keyboard
 
 
 class KeyboardService:
+    """
+    Клас для керування мовою клавіатури з програми.
+    Підтримує Windows та Linux (X11).
+    """
 
-    def __init__(self, system: OSService, callback=None):
-        self.system_service = system
-
-        self.callback = callback
-
-        self._setup_state_variables()
-
-        self._init_os_modules()
-
-        self._start_listener()
-        self._apply_layout()
-
-    def _setup_state_variables(self):
+    def __init__(self, callback=None):
+        """
+        callback: функція, яку викликаємо після зміни розкладки
+                  наприклад, для оновлення QLabel в PyQt6
+        """
         self.current_layout = "EN"
+        self.callback = callback  # функція для UI
+
+        # Словники для Windows / Linux
         self.layouts_win = {"EN": "00000409", "UA": "00000422"}
         self.layouts_linux = {"EN": "us", "UA": "ua"}
 
-    def _init_os_modules(self):
-        """Імпортує потрібні модулі залежно від ОС."""
-        self.win32api = self.win32gui = self.keyboard = None
-        self.pynput_keyboard = None
-
-        if self.system_service.is_windows:
-            import win32api
-            import win32gui
-            import keyboard
-
-            self.win32api = win32api
-            self.win32gui = win32gui
-            self.keyboard = keyboard
-        elif self.system_service.is_linux:
-            from pynput import keyboard as pynput_keyboard
-            import subprocess
-
-            self.pynput_keyboard = pynput_keyboard
-            self.subprocess = subprocess
+        # Запуск прослуховування клавіш
+        self._start_listener()
 
     def _start_listener(self):
-        if self.system_service.is_windows:
-            self.keyboard.add_hotkey("alt+shift", self.toggle_layout)
-        elif self.system_service.is_linux:
-            listener = self.pynput_keyboard.Listener(on_press=self._on_key_press)
+        system = platform.system()
+        if system == "Windows":
+            # Використовуємо бібліотеку keyboard
+            keyboard.add_hotkey("alt+shift", self.toggle_layout)
+        elif system == "Linux":
+            # Використовуємо pynput для перехоплення Alt+Shift
+            listener = pynput_keyboard.Listener(on_press=self._on_key_press)
             listener.start()
         else:
-            print(f"KeyboardLayoutManager: OS не підтримується.")
+            print(f"KeyboardLayoutManager: OS {system} не підтримується.")
 
     # ------------------- Linux -------------------
     def _on_key_press(self, key):
+        """
+        Linux: простий перехоплювач Alt+Shift
+        """
         try:
             if (
-                key == self.pynput_keyboard.Key.shift
-                and self.pynput_keyboard.Controller().pressed(
-                    self.pynput_keyboard.Key.alt_l
-                )
+                key == pynput_keyboard.Key.shift
+                and pynput_keyboard.Controller().pressed(pynput_keyboard.Key.alt_l)
             ):
                 self.toggle_layout()
         except Exception:
@@ -77,7 +70,6 @@ class KeyboardService:
         """
         self.current_layout = "UA" if self.current_layout == "EN" else "EN"
         self._apply_layout()
-        print("Toggled layout")
         if self.callback:
             self.callback(self.current_layout)
 
@@ -85,44 +77,26 @@ class KeyboardService:
         """
         Встановлює розкладку у системі
         """
-        if self.system_service.is_windows:
+        system = platform.system()
+        if system == "Windows":
             self._set_windows_layout()
-        elif self.system_service.is_linux:
+        elif system == "Linux":
             self._set_linux_layout()
         else:
             print("OS не підтримується")
 
+    # ------------------- Windows -------------------
     def _set_windows_layout(self):
+        lid = self.layouts_win[self.current_layout]
         try:
-            lid = self.layouts_win[self.current_layout]
-
-            self.win32api.LoadKeyboardLayout(lid, 1)
-
-            hwnd = self.win32gui.GetForegroundWindow()
-
-            if hwnd:
-                lang_id_int = int(lid, 16)
-
-                self.win32api.PostMessage(hwnd, 0x0050, 0, lang_id_int)
-
+            win32api.LoadKeyboardLayout(lid, 1)
         except Exception as e:
-            print(f"Windows API Error: {e}")
+            print(f"Не вдалося змінити розкладку Windows: {e}")
 
+    # ------------------- Linux -------------------
     def _set_linux_layout(self):
+        layout = self.layouts_linux[self.current_layout]
         try:
-            target_lang = self.layouts_linux[self.current_layout]
-
-            second_lang = "us" if target_lang == "ua" else "ua"
-
-            cmd = [
-                "setxkbmap",
-                "-layout",
-                f"{target_lang},{second_lang}",
-                "-option",
-                "grp:alt_shift_toggle",
-            ]
-
-            subprocess.Popen(cmd)
-
+            subprocess.call(["setxkbmap", layout])
         except Exception as e:
             print(f"Не вдалося змінити розкладку Linux: {e}")

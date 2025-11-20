@@ -43,6 +43,11 @@ from qasync import asyncSlot
 from app.ui.ui_main_window import Ui_MainWindow
 from app.assets import resources_rc
 
+from app.services.api_server import ApiServer
+from app.services.map_service import MapService, MapTypes
+from app.utils.test_data_provider import TestDataProvider
+from app.services.settings_service import SettingsService
+from app.services.keyboard_service import KeyboardService
 from app.widgets.set_map_dialog import SetMapDialog
 from app.widgets.autosize_window import make_scalable
 from app.widgets.record_status_widget import RecordingStatusWidget
@@ -68,15 +73,10 @@ class MainWindow(QMainWindow):
     _sig_stop_recording = pyqtSignal()
 
     def __init__(
-        self,
-        settings: SettingsService,
-        keyboard: KeyboardService,
-        system: OSService,
-        parent=None,
+        self, settings: SettingsService, keyboard: KeyboardService, parent=None
     ):
         super().__init__(parent)
         self.settings_service = settings
-        self.system_service = system
         self.keyboard_service = keyboard
 
         self._load_ui()
@@ -140,15 +140,8 @@ class MainWindow(QMainWindow):
 
         self.searched_index = None
 
-        self.detection_manager = DetectionManager(self)
-        self.detection_manager.detections_changed.connect(self._update_detection_ui)
-
-        self.pi_network = PiNetworkService(self.settings_service, self)
-        self.pi_network.data_received.connect(self.handle_pi_data)
-        self.pi_network.gps_received.connect(self.handle_gps)
-        self.pi_network.detection_received.connect(self.detection_manager.add_detection)
-        self.pi_network.rf_data_received.connect(self.handle_rf_data)
-        self.pi_network.sound_data_received.connect(self.handle_sound_data)
+        self.api_server.on_rf_data = self.handle_rf_data
+        self.api_server.on_audio_alert = self.handle_audio_alert
 
         self.current_map_type_index = 0
         self.map_types = [e for e in MapTypes]
@@ -158,11 +151,6 @@ class MainWindow(QMainWindow):
         self.translator = QTranslator()
 
         self.record_status_widget = RecordingStatusWidget(self.settings_service, self)
-
-        self.media_service = MediaPlayerService(self.system_service)
-        self.media_service.playback_finished.connect(
-            lambda: self.ui.filesViewButton.setChecked(False)
-        )
 
         self.media_process = None
 
@@ -304,6 +292,7 @@ class MainWindow(QMainWindow):
 
         QCoreApplication.removeTranslator(self.translator)
 
+        # Завантажуємо та встановлюємо новий
         path = f"app/i18n/qm/app_{lang_code}.qm"
         if self.translator.load(path):
             QCoreApplication.installTranslator(self.translator)
@@ -324,9 +313,16 @@ class MainWindow(QMainWindow):
         if self.settings_service.compiled_ui_using_enabled:
             self.load_language()
 
-    def handle_rf_data(self, data):
-        """Заглушка для обробки потокових RF-даних."""
-        pass  # Логіка буде додана пізніше
+    @asyncSlot()
+    async def listen_for_pi_data(self):
+        """Асинхронно слухає та обробляє дані з Raspberry Pi."""
+        # Тут буде ваша логіка для постійного отримання даних
+        # Наприклад, через веб-сокет або HTTP-запити
+        print("Запущено асинхронний слухач даних...")
+        while True:
+            # `await asyncio.sleep(1)` імітує асинхронне очікування.
+            await asyncio.sleep(1)
+            # self.handle_rf_data(data) # Викликаємо обробник, коли дані прийшли
 
     def handle_sound_data(self, data):
         """Заглушка для обробки потокових звукових даних."""
@@ -577,17 +573,17 @@ class MainWindow(QMainWindow):
         self.recorder.toggle_pause(is_paused)
 
     def handle_open_file(self):
-
         btn = self.sender()
 
-        if not btn.isChecked():
-            if hasattr(self, "media_service") and self.media_service:
-                self.media_service.stop()
+        if btn.isChecked() == False:
+            if self.media_process:
+                self.media_process.close()
                 print("Переглядач успішно закритий")
             return
 
         file_filters = (
             f"{self.tr('Медіа файли (*.png *.jpg *.jpeg *.bmp *.mp4 *.avi *.mkv)')};;"
+            # f"{self.tr('Всі файли (*.*)')}"
         )
 
         file_path, _ = QFileDialog.getOpenFileName(
@@ -601,12 +597,66 @@ class MainWindow(QMainWindow):
             self.ui.filesViewButton.setChecked(False)
             return
 
+        program_path = self.get_vlc_executable()
+
+        url = QUrl.fromLocalFile(file_path)
+
+        if not program_path:
+            print("VLC не знайдено. Відкриваємо у дефолтній програмі...")
+            QDesktopServices.openUrl(url)
+            return
+
+        arguments = [
+            "--fullscreen",
+            "--play-and-pause",
+            "--image-duration=-1",
+            # "--no-qt-privacy-ask",  # Щоб не спливали діалоги
+            # "--no-qt-error-dialogs",  # Не показувати помилки
+            "--global-key-quit=q",  # Закривається на q
+            "--loop",
+            url.toString(),
+        ]
+
         try:
-            self.media_service.play(file_path)
+            self.media_process = QProcess(self)
+            self.media_process.finished.connect(
+                lambda *_: self.ui.filesViewButton.setChecked(False)
+            )
+
+            self.media_process.start(program_path, arguments)
         except Exception as e:
             print(f"Критична помилка запуску VLC: {e}")
             url = QUrl.fromLocalFile(file_path)
             QDesktopServices.openUrl(url)
+
+    def get_vlc_executable(self):
+        """
+        Знаходить шлях до виконуваного файлу VLC в залежності від ОС.
+        """
+        system = platform.system()
+
+        if system == "Windows":
+            # Шукаємо у стандартних папках Windows
+            possible_paths = [
+                r"C:\Program Files\VideoLAN\VLC\vlc.exe",
+                r"C:\Program Files (x86)\VideoLAN\VLC\vlc.exe",
+            ]
+            for path in possible_paths:
+                if os.path.exists(path):
+                    return path
+
+            # Якщо не знайшли, шукаємо в системному PATH
+            path_in_env = shutil.which("vlc")
+            if path_in_env:
+                return path_in_env
+
+        elif system == "Linux" or system == "Darwin":
+            path_in_env = shutil.which("vlc")
+            if path_in_env:
+                return path_in_env
+
+        # Якщо нічого не знайшли
+        return None
 
     def set_radar_mode(self):
         if self.isRadarMode:

@@ -40,7 +40,7 @@ from app.services.api_server import ApiServer
 from app.services.map_service import MapService, MapTypes
 from app.utils.test_data_provider import TestDataProvider
 from app.services.settings_service import SettingsService
-from app.services.keyboard_service import KeyboardService
+#from app.services.keyboard_service import KeyboardService
 from app.widgets.set_map_dialog import SetMapDialog
 from app.widgets.autosize_window import make_scalable
 from app.widgets.record_status_widget import RecordingStatusWidget
@@ -53,7 +53,7 @@ class MainWindow(QMainWindow):
     _sig_stop_recording = pyqtSignal()
 
     def __init__(
-        self, settings: SettingsService, keyboard: KeyboardService, parent=None
+        self, settings: SettingsService, keyboard, parent=None
     ):
         super().__init__(parent)
         self.settings_service = settings

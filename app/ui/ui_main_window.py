@@ -60,6 +60,7 @@ class Ui_MainWindow(object):
         self.radioStartDoubleSpinBox.setStyleSheet("QDoubleSpinBox{\n"
 "    font-size:24px;\n"
 "    padding:2px;\n"
+"color:#fff;\n"
 "}\n"
 "\n"
 "QDoubleSpinBox[status=\"unsaved\"]{\n"
@@ -79,6 +80,7 @@ class Ui_MainWindow(object):
         self.soundStartDoubleSpinBox.setStyleSheet("QDoubleSpinBox{\n"
 "    font-size:24px;\n"
 "    padding:2px;\n"
+"color:#fff;\n"
 "}\n"
 "\n"
 "QDoubleSpinBox[status=\"unsaved\"]{\n"
@@ -98,6 +100,7 @@ class Ui_MainWindow(object):
         self.soundEndDoubleSpinBox.setStyleSheet("QDoubleSpinBox{\n"
 "    font-size:24px;\n"
 "    padding:2px;\n"
+"color:#fff;\n"
 "}\n"
 "\n"
 "QDoubleSpinBox[status=\"unsaved\"]{\n"
@@ -117,6 +120,7 @@ class Ui_MainWindow(object):
         self.radioEndDoubleSpinBox.setStyleSheet("QDoubleSpinBox{\n"
 "    font-size:24px;\n"
 "    padding:2px;\n"
+"color:#fff;\n"
 "}\n"
 "\n"
 "QDoubleSpinBox[status=\"unsaved\"]{\n"
@@ -139,6 +143,8 @@ class Ui_MainWindow(object):
         self.rangeDivideLabel_1.setStyleSheet("QLabel{\n"
 "border:none;\n"
 "font-size:56px;\n"
+"color:#fff;\n"
+"\n"
 "}")
         self.rangeDivideLabel_1.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.rangeDivideLabel_1.setIndent(-1)
@@ -148,6 +154,8 @@ class Ui_MainWindow(object):
         self.rangeDivideLabel_2.setStyleSheet("QLabel{\n"
 "border:none;\n"
 "font-size:56px;\n"
+"color:#fff;\n"
+"\n"
 "}")
         self.rangeDivideLabel_2.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.rangeDivideLabel_2.setIndent(-1)
@@ -155,18 +163,21 @@ class Ui_MainWindow(object):
         self.radioRangeLabel = QtWidgets.QLabel(parent=self.signals_range)
         self.radioRangeLabel.setGeometry(QtCore.QRect(10, 20, 121, 20))
         self.radioRangeLabel.setStyleSheet("border:none;\n"
-"font-size:24px;")
+"font-size:24px;\n"
+"color:#fff;")
         self.radioRangeLabel.setObjectName("radioRangeLabel")
         self.soundRangeLabel = QtWidgets.QLabel(parent=self.signals_range)
         self.soundRangeLabel.setGeometry(QtCore.QRect(10, 63, 131, 20))
-        self.soundRangeLabel.setStyleSheet("border:none;\n"
+        self.soundRangeLabel.setStyleSheet("color:#fff;\n"
+"border:none;\n"
 "font-size:24px;")
         self.soundRangeLabel.setObjectName("soundRangeLabel")
         self.saveRadioRangePushButton = QtWidgets.QPushButton(parent=self.signals_range)
         self.saveRadioRangePushButton.setGeometry(QtCore.QRect(515, 9, 41, 41))
-        self.saveRadioRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/save.svg);\n"
+        self.saveRadioRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/clear.svg);\n"
 "background-position:center;\n"
 "border-radius:6px;\n"
+"color:#fff;\n"
 "}\n"
 "\n"
 "QPushButton:pressed, QPushButton:checked{\n"
@@ -177,9 +188,10 @@ class Ui_MainWindow(object):
         self.saveRadioRangePushButton.setObjectName("saveRadioRangePushButton")
         self.saveSoundRangePushButton = QtWidgets.QPushButton(parent=self.signals_range)
         self.saveSoundRangePushButton.setGeometry(QtCore.QRect(515, 52, 41, 41))
-        self.saveSoundRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/save.svg);\n"
+        self.saveSoundRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/clear.svg);\n"
 "background-position:center;\n"
 "border-radius:6px;\n"
+"color:#fff;\n"
 "}\n"
 "\n"
 "QPushButton:pressed, QPushButton:checked{\n"
@@ -190,9 +202,10 @@ class Ui_MainWindow(object):
         self.saveSoundRangePushButton.setObjectName("saveSoundRangePushButton")
         self.chartRadioRangePushButton = QtWidgets.QPushButton(parent=self.signals_range)
         self.chartRadioRangePushButton.setGeometry(QtCore.QRect(570, 9, 41, 41))
-        self.chartRadioRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/chart.svg);\n"
+        self.chartRadioRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/clear.svg);\n"
 "background-position:center;\n"
 "border-radius:6px;\n"
+"color:#fff;\n"
 "}\n"
 "\n"
 "QPushButton:pressed, QPushButton:checked{\n"
@@ -203,9 +216,10 @@ class Ui_MainWindow(object):
         self.chartRadioRangePushButton.setObjectName("chartRadioRangePushButton")
         self.chartSoundRangePushButton = QtWidgets.QPushButton(parent=self.signals_range)
         self.chartSoundRangePushButton.setGeometry(QtCore.QRect(570, 52, 41, 41))
-        self.chartSoundRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/chart.svg);\n"
+        self.chartSoundRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/clear.svg);\n"
 "background-position:center;\n"
 "border-radius:6px;\n"
+"color:#fff;\n"
 "}\n"
 "\n"
 "QPushButton:pressed, QPushButton:checked{\n"
@@ -219,6 +233,7 @@ class Ui_MainWindow(object):
         self.clearRadioRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/clear.svg);\n"
 "background-position:center;\n"
 "border-radius:6px;\n"
+"fill:#fff;\n"
 "}\n"
 "\n"
 "QPushButton:pressed, QPushButton:checked{\n"
@@ -232,6 +247,7 @@ class Ui_MainWindow(object):
         self.clearSoundRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/clear.svg);\n"
 "background-position:center;\n"
 "border-radius:6px;\n"
+"color:#fff;\n"
 "}\n"
 "\n"
 "QPushButton:pressed, QPushButton:checked{\n"
@@ -244,18 +260,18 @@ class Ui_MainWindow(object):
         self.RF_alert.setGeometry(QtCore.QRect(1280, 9, 267, 76))
         self.RF_alert.setStyleSheet("*{font-family: \'Roboto\';\n"
 "font-weight: 600;\n"
-"font-size: 30px;\n"
+"font-size: 28px;\n"
 "color: #FFFFFF;\n"
 "background-color: transparent;\n"
 "padding-left:60px;\n"
 "}\n"
 "\n"
 "*[alert=\"true\"]{\n"
-"border-image: url(:/images/rf_alert_on.png) stretch stretch;\n"
+"border-image: url(:/images/sound_alert_on.png) stretch stretch;\n"
 "}\n"
 "\n"
 "*[alert=\"false\"]{\n"
-"border-image: url(:/images/rf_alert_off.png) stretch stretch;\n"
+"border-image: url(:/images/sound_alert_off.png) stretch stretch;\n"
 "}")
         self.RF_alert.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeading|QtCore.Qt.AlignmentFlag.AlignLeft|QtCore.Qt.AlignmentFlag.AlignVCenter)
         self.RF_alert.setProperty("alert", False)
@@ -268,7 +284,7 @@ class Ui_MainWindow(object):
         self.Sound_alert.setFont(font)
         self.Sound_alert.setStyleSheet("*{font-family: \'Roboto\';\n"
 "font-weight: 600;\n"
-"font-size: 30px;\n"
+"font-size: 28px;\n"
 "color: #FFFFFF;\n"
 "background-color: transparent;\n"
 "padding-left:60px;\n"
@@ -595,9 +611,13 @@ class Ui_MainWindow(object):
         self.verticalLayout.setObjectName("verticalLayout")
         self.labelRadarSettings = QtWidgets.QLabel(parent=self.RadarSettings)
         self.labelRadarSettings.setMaximumSize(QtCore.QSize(16777215, 40))
+        font = QtGui.QFont()
+        font.setFamily("Roboto")
+        font.setPointSize(-1)
+        self.labelRadarSettings.setFont(font)
         self.labelRadarSettings.setStyleSheet("font-family: \'Roboto\';\n"
 "font-weight: 500;\n"
-"font-size: 26px;\n"
+"font-size: 24px;\n"
 "color: #FFFFFF;\n"
 "text-align:left;\n"
 "border:none;\n"
@@ -612,7 +632,8 @@ class Ui_MainWindow(object):
         self.radarRadiusSpinbox.setFont(font)
         self.radarRadiusSpinbox.setStyleSheet("font-family: \'Roboto\';\n"
 "font-weight: 500;\n"
-"font-size: 26px;")
+"font-size: 26px;\n"
+"color:#fff;")
         self.radarRadiusSpinbox.setWrapping(False)
         self.radarRadiusSpinbox.setButtonSymbols(QtWidgets.QAbstractSpinBox.ButtonSymbols.NoButtons)
         self.radarRadiusSpinbox.setMinimum(1)
@@ -704,6 +725,7 @@ class Ui_MainWindow(object):
 "font-size:30px;\n"
 "border:none;\n"
 "background-color:none;\n"
+"color:#fff;\n"
 "}")
         self.langLabel.setObjectName("langLabel")
         self.MainButtons_Container = QtWidgets.QFrame(parent=self.Body)
@@ -742,7 +764,7 @@ class Ui_MainWindow(object):
 "    border-image: url(:/images/Btn_MainMenu_red.png);\n"
 "    font-family: \'Roboto\';\n"
 "    font-weight: 500;\n"
-"    font-size: 40px;\n"
+"    font-size: 36px;\n"
 "    color: #FFFFFF;\n"
 "}\n"
 "QPushButton:pressed{\n"

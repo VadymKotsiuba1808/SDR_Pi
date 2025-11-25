@@ -135,6 +135,7 @@ background: rgba(0, 10, 0, 0.1);</string>
        <string notr="true">QDoubleSpinBox{
 	font-size:24px;
 	padding:2px;
+color:#fff;
 }
 
 QDoubleSpinBox[status=&quot;unsaved&quot;]{
@@ -172,6 +173,7 @@ QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {
        <string notr="true">QDoubleSpinBox{
 	font-size:24px;
 	padding:2px;
+color:#fff;
 }
 
 QDoubleSpinBox[status=&quot;unsaved&quot;]{
@@ -209,6 +211,7 @@ QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {
        <string notr="true">QDoubleSpinBox{
 	font-size:24px;
 	padding:2px;
+color:#fff;
 }
 
 QDoubleSpinBox[status=&quot;unsaved&quot;]{
@@ -246,6 +249,7 @@ QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {
        <string notr="true">QDoubleSpinBox{
 	font-size:24px;
 	padding:2px;
+color:#fff;
 }
 
 QDoubleSpinBox[status=&quot;unsaved&quot;]{
@@ -292,6 +296,8 @@ QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {
        <string notr="true">QLabel{
 border:none;
 font-size:56px;
+color:#fff;
+
 }</string>
       </property>
       <property name="text">
@@ -317,6 +323,8 @@ font-size:56px;
        <string notr="true">QLabel{
 border:none;
 font-size:56px;
+color:#fff;
+
 }</string>
       </property>
       <property name="text">
@@ -340,7 +348,8 @@ font-size:56px;
       </property>
       <property name="styleSheet">
        <string notr="true">border:none;
-font-size:24px;</string>
+font-size:24px;
+color:#fff;</string>
       </property>
       <property name="text">
        <string>Radio, GHz</string>
@@ -356,7 +365,8 @@ font-size:24px;</string>
        </rect>
       </property>
       <property name="styleSheet">
-       <string notr="true">border:none;
+       <string notr="true">color:#fff;
+border:none;
 font-size:24px;</string>
       </property>
       <property name="text">
@@ -373,9 +383,10 @@ font-size:24px;</string>
        </rect>
       </property>
       <property name="styleSheet">
-       <string notr="true">QPushButton{background-image: url(:/icons/save.svg);
+       <string notr="true">QPushButton{background-image: url(:/icons/clear.svg);
 background-position:center;
 border-radius:6px;
+color:#fff;
 }
 
 QPushButton:pressed, QPushButton:checked{
@@ -399,9 +410,10 @@ background-color:#2b6425
        </rect>
       </property>
       <property name="styleSheet">
-       <string notr="true">QPushButton{background-image: url(:/icons/save.svg);
+       <string notr="true">QPushButton{background-image: url(:/icons/clear.svg);
 background-position:center;
 border-radius:6px;
+color:#fff;
 }
 
 QPushButton:pressed, QPushButton:checked{
@@ -425,9 +437,10 @@ background-color:#2b6425
        </rect>
       </property>
       <property name="styleSheet">
-       <string notr="true">QPushButton{background-image: url(:/icons/chart.svg);
+       <string notr="true">QPushButton{background-image: url(:/icons/clear.svg);
 background-position:center;
 border-radius:6px;
+color:#fff;
 }
 
 QPushButton:pressed, QPushButton:checked{
@@ -451,9 +464,10 @@ background-color:#2b6425
        </rect>
       </property>
       <property name="styleSheet">
-       <string notr="true">QPushButton{background-image: url(:/icons/chart.svg);
+       <string notr="true">QPushButton{background-image: url(:/icons/clear.svg);
 background-position:center;
 border-radius:6px;
+color:#fff;
 }
 
 QPushButton:pressed, QPushButton:checked{
@@ -480,6 +494,7 @@ background-color:#2b6425
        <string notr="true">QPushButton{background-image: url(:/icons/clear.svg);
 background-position:center;
 border-radius:6px;
+fill:#fff;
 }
 
 QPushButton:pressed, QPushButton:checked{
@@ -506,6 +521,7 @@ background-color:#2b6425
        <string notr="true">QPushButton{background-image: url(:/icons/clear.svg);
 background-position:center;
 border-radius:6px;
+color:#fff;
 }
 
 QPushButton:pressed, QPushButton:checked{
@@ -532,18 +548,18 @@ background-color:#2b6425
      <property name="styleSheet">
       <string notr="true">*{font-family: 'Roboto';
 font-weight: 600;
-font-size: 30px;
+font-size: 28px;
 color: #FFFFFF;
 background-color: transparent;
 padding-left:60px;
 }
 
 *[alert=&quot;true&quot;]{
-border-image: url(:/images/rf_alert_on.png) stretch stretch;
+border-image: url(:/images/sound_alert_on.png) stretch stretch;
 }
 
 *[alert=&quot;false&quot;]{
-border-image: url(:/images/rf_alert_off.png) stretch stretch;
+border-image: url(:/images/sound_alert_off.png) stretch stretch;
 }</string>
      </property>
      <property name="text">
@@ -578,7 +594,7 @@ border-image: url(:/images/rf_alert_off.png) stretch stretch;
      <property name="styleSheet">
       <string notr="true">*{font-family: 'Roboto';
 font-weight: 600;
-font-size: 30px;
+font-size: 28px;
 color: #FFFFFF;
 background-color: transparent;
 padding-left:60px;
@@ -1253,10 +1269,17 @@ border: 2px solid #328844;</string>
           <height>40</height>
          </size>
         </property>
+        <property name="font">
+         <font>
+          <family>Roboto</family>
+          <pointsize>-1</pointsize>
+          <fontweight>Medium</fontweight>
+         </font>
+        </property>
         <property name="styleSheet">
          <string notr="true">font-family: 'Roboto';
 font-weight: 500;
-font-size: 26px;
+font-size: 24px;
 color: #FFFFFF;
 text-align:left;
 border:none;
@@ -1282,7 +1305,8 @@ background-color:transparent;</string>
         <property name="styleSheet">
          <string notr="true">font-family: 'Roboto';
 font-weight: 500;
-font-size: 26px;</string>
+font-size: 26px;
+color:#fff;</string>
         </property>
         <property name="wrapping">
          <bool>false</bool>
@@ -1452,6 +1476,7 @@ selection-color: #FFFFFF;
 font-size:30px;
 border:none;
 background-color:none;
+color:#fff;
 }</string>
       </property>
       <property name="text">
@@ -1557,7 +1582,7 @@ border: 2px solid #328844;</string>
 	border-image: url(:/images/Btn_MainMenu_red.png);
 	font-family: 'Roboto';
 	font-weight: 500;
-	font-size: 40px;
+	font-size: 36px;
 	color: #FFFFFF;
 }
 QPushButton:pressed{

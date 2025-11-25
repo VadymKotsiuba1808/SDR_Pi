@@ -85,11 +85,11 @@ background-color:transparent;
 }
 
 QLabel[active=&quot;true&quot;]{
-border-image:url(:/icons/record_indicator.svg)  stretch stretch;
+border-image:url(:/icons/record_indicator.png)  stretch stretch;
 }
 
 QLabel[active=&quot;false&quot;]{
-border-image:url(:/icons/record_off_indicator.svg)  stretch stretch;
+border-image:url(:/icons/record_off_indicator.png)  stretch stretch;
 }</string>
       </property>
       <property name="text">
@@ -152,11 +152,11 @@ background-color:transparent;</string>
        <string notr="true">QPushButton{border:none;
 font-size:18px;
 background-color:transparent;
-border-image:url(:/icons/pause.svg)
+border-image:url(:/icons/pause.png)
 }
 
 QPushButton:checked{
-border-image:url(:/icons/play.svg)
+border-image:url(:/icons/play.png)
 }</string>
       </property>
       <property name="text">

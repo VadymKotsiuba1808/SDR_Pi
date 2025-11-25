@@ -164,7 +164,7 @@ class Ui_MainWindow(object):
         self.soundRangeLabel.setObjectName("soundRangeLabel")
         self.saveRadioRangePushButton = QtWidgets.QPushButton(parent=self.signals_range)
         self.saveRadioRangePushButton.setGeometry(QtCore.QRect(515, 9, 41, 41))
-        self.saveRadioRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/save.svg);\n"
+        self.saveRadioRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/save.png);\n"
 "background-position:center;\n"
 "border-radius:6px;\n"
 "}\n"
@@ -177,7 +177,7 @@ class Ui_MainWindow(object):
         self.saveRadioRangePushButton.setObjectName("saveRadioRangePushButton")
         self.saveSoundRangePushButton = QtWidgets.QPushButton(parent=self.signals_range)
         self.saveSoundRangePushButton.setGeometry(QtCore.QRect(515, 52, 41, 41))
-        self.saveSoundRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/save.svg);\n"
+        self.saveSoundRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/save.png);\n"
 "background-position:center;\n"
 "border-radius:6px;\n"
 "}\n"
@@ -190,7 +190,7 @@ class Ui_MainWindow(object):
         self.saveSoundRangePushButton.setObjectName("saveSoundRangePushButton")
         self.chartRadioRangePushButton = QtWidgets.QPushButton(parent=self.signals_range)
         self.chartRadioRangePushButton.setGeometry(QtCore.QRect(570, 9, 41, 41))
-        self.chartRadioRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/chart.svg);\n"
+        self.chartRadioRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/chart.png);\n"
 "background-position:center;\n"
 "border-radius:6px;\n"
 "}\n"
@@ -203,7 +203,7 @@ class Ui_MainWindow(object):
         self.chartRadioRangePushButton.setObjectName("chartRadioRangePushButton")
         self.chartSoundRangePushButton = QtWidgets.QPushButton(parent=self.signals_range)
         self.chartSoundRangePushButton.setGeometry(QtCore.QRect(570, 52, 41, 41))
-        self.chartSoundRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/chart.svg);\n"
+        self.chartSoundRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/chart.png);\n"
 "background-position:center;\n"
 "border-radius:6px;\n"
 "}\n"
@@ -216,7 +216,7 @@ class Ui_MainWindow(object):
         self.chartSoundRangePushButton.setObjectName("chartSoundRangePushButton")
         self.clearRadioRangePushButton = QtWidgets.QPushButton(parent=self.signals_range)
         self.clearRadioRangePushButton.setGeometry(QtCore.QRect(460, 9, 41, 41))
-        self.clearRadioRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/clear.svg);\n"
+        self.clearRadioRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/clear.png);\n"
 "background-position:center;\n"
 "border-radius:6px;\n"
 "}\n"
@@ -229,7 +229,7 @@ class Ui_MainWindow(object):
         self.clearRadioRangePushButton.setObjectName("clearRadioRangePushButton")
         self.clearSoundRangePushButton = QtWidgets.QPushButton(parent=self.signals_range)
         self.clearSoundRangePushButton.setGeometry(QtCore.QRect(460, 52, 41, 41))
-        self.clearSoundRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/clear.svg);\n"
+        self.clearSoundRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/clear.png);\n"
 "background-position:center;\n"
 "border-radius:6px;\n"
 "}\n"

@@ -373,7 +373,7 @@ font-size:24px;</string>
        </rect>
       </property>
       <property name="styleSheet">
-       <string notr="true">QPushButton{background-image: url(:/icons/save.svg);
+       <string notr="true">QPushButton{background-image: url(:/icons/save.png);
 background-position:center;
 border-radius:6px;
 }
@@ -399,7 +399,7 @@ background-color:#2b6425
        </rect>
       </property>
       <property name="styleSheet">
-       <string notr="true">QPushButton{background-image: url(:/icons/save.svg);
+       <string notr="true">QPushButton{background-image: url(:/icons/save.png);
 background-position:center;
 border-radius:6px;
 }
@@ -425,7 +425,7 @@ background-color:#2b6425
        </rect>
       </property>
       <property name="styleSheet">
-       <string notr="true">QPushButton{background-image: url(:/icons/chart.svg);
+       <string notr="true">QPushButton{background-image: url(:/icons/chart.png);
 background-position:center;
 border-radius:6px;
 }
@@ -451,7 +451,7 @@ background-color:#2b6425
        </rect>
       </property>
       <property name="styleSheet">
-       <string notr="true">QPushButton{background-image: url(:/icons/chart.svg);
+       <string notr="true">QPushButton{background-image: url(:/icons/chart.png);
 background-position:center;
 border-radius:6px;
 }
@@ -477,7 +477,7 @@ background-color:#2b6425
        </rect>
       </property>
       <property name="styleSheet">
-       <string notr="true">QPushButton{background-image: url(:/icons/clear.svg);
+       <string notr="true">QPushButton{background-image: url(:/icons/clear.png);
 background-position:center;
 border-radius:6px;
 }
@@ -503,7 +503,7 @@ background-color:#2b6425
        </rect>
       </property>
       <property name="styleSheet">
-       <string notr="true">QPushButton{background-image: url(:/icons/clear.svg);
+       <string notr="true">QPushButton{background-image: url(:/icons/clear.png);
 background-position:center;
 border-radius:6px;
 }

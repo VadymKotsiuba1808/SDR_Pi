@@ -348,7 +348,7 @@ color:#fff;
       </property>
       <property name="styleSheet">
        <string notr="true">border:none;
-font-size:24px;
+font-size:22px;
 color:#fff;</string>
       </property>
       <property name="text">
@@ -367,7 +367,7 @@ color:#fff;</string>
       <property name="styleSheet">
        <string notr="true">color:#fff;
 border:none;
-font-size:24px;</string>
+font-size:22px;</string>
       </property>
       <property name="text">
        <string>Sound, GHz</string>
@@ -1651,54 +1651,6 @@ QPushButton[enabled=&quot;false&quot;]{
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="backToLoginButton">
-           <property name="enabled">
-            <bool>true</bool>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>322</width>
-             <height>103</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>322</width>
-             <height>103</height>
-            </size>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">QPushButton{
-	border: none;
-	background-image: url(:/images/Btn_MainMenu_red.png);
-	font-family: 'Roboto';
-	font-weight: 500;
-	font-size: 36px;
-	color: #FFFFFF;
-}
-QPushButton:pressed{
-	border: none;
-	background-image: url(:/images/Btn_MainMenu_on.png);
-	font-family: 'Roboto';
-	font-weight: 500;
-	font-size: 36px;
-	color: #002509;
-}
-QPushButton[enabled=&quot;false&quot;]{
-	border: none;
-	background-image: url(:/images/Btn_MainMenu_disabled.png);
-	font-family: 'Roboto';
-	font-weight: 500;
-	font-size: 36px;
-	color: #FFFFFF;
-}</string>
-           </property>
-           <property name="text">
-            <string>Реавторизація</string>
-           </property>
-          </widget>
-         </item>
-         <item>
           <widget class="QPushButton" name="radarButton">
            <property name="enabled">
             <bool>true</bool>
@@ -1834,13 +1786,10 @@ QPushButton[enabled=&quot;false&quot;]{
      <property name="geometry">
       <rect>
        <x>166</x>
-       <y>709</y>
+       <y>845</y>
        <width>110</width>
        <height>110</height>
       </rect>
-     </property>
-     <property name="visible">
-      <bool>false</bool>
      </property>
      <property name="styleSheet">
       <string notr="true">QPushButton#screenRecordButton{
@@ -1920,7 +1869,7 @@ border: none;</string>
      <property name="geometry">
       <rect>
        <x>166</x>
-       <y>845</y>
+       <y>709</y>
        <width>110</width>
        <height>110</height>
       </rect>
@@ -1950,119 +1899,6 @@ QPushButton#filesViewButton:disabled{
       <bool>false</bool>
      </property>
     </widget>
-    <widget class="QFrame" name="detection_info_box">
-     <property name="geometry">
-      <rect>
-       <x>1230</x>
-       <y>140</y>
-       <width>291</width>
-       <height>471</height>
-      </rect>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">background: rgba(0, 10, 0, 0.8);
-border: 2px solid #328844;</string>
-     </property>
-     <property name="frameShape">
-      <enum>QFrame::Shape::StyledPanel</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Shadow::Raised</enum>
-     </property>
-     <widget class="QLineEdit" name="index_search_edit">
-      <property name="geometry">
-       <rect>
-        <x>110</x>
-        <y>70</y>
-        <width>161</width>
-        <height>41</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">#index_search_edit{
-font-size:26px;
-padding:2px;
-color:#fff;
-}
-#index_search_edit[is_valid=&quot;true&quot;]{
-border: 2px solid #328844;
-}
-#index_search_edit[is_valid=&quot;false&quot;]{
-border: 2px solid red;
-}
-</string>
-      </property>
-      <property name="is_valid" stdset="0">
-       <bool>true</bool>
-      </property>
-     </widget>
-     <widget class="QTextEdit" name="detection_info_text">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>120</y>
-        <width>271</width>
-        <height>341</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">background: rgba(30, 30, 30, 0.8);
-border: 1px solid #328844;
-font-size:24px;
-padding:2px;
-color:#fff;
-</string>
-      </property>
-      <property name="readOnly">
-       <bool>true</bool>
-      </property>
-     </widget>
-     <widget class="QLabel" name="detection_info_label">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>10</y>
-        <width>271</width>
-        <height>41</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QLabel{
-font-size:30px;
-border:none;
-background-color:none;
-color:#fff;
-}</string>
-      </property>
-      <property name="text">
-       <string>Інформація:</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignmentFlag::AlignCenter</set>
-      </property>
-     </widget>
-     <widget class="QLabel" name="langLabel_3">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>70</y>
-        <width>81</width>
-        <height>41</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QLabel{
-font-size:26px;
-border:none;
-background-color:none;
-color:#fff;
-}</string>
-      </property>
-      <property name="text">
-       <string>Індекс:</string>
-      </property>
-     </widget>
-    </widget>
     <zorder>map_background_label</zorder>
     <zorder>screenRecordButton</zorder>
     <zorder>homeButton</zorder>
@@ -2079,7 +1915,6 @@ color:#fff;
     <zorder>MainButtons_Container</zorder>
     <zorder>RecordStatusContainer</zorder>
     <zorder>filesViewButton</zorder>
-    <zorder>detection_info_box</zorder>
    </widget>
   </widget>
  </widget>

@@ -129,11 +129,11 @@ class Ui_ChangePwdDialog(object):
 "}\n"
 "\n"
 "QPushButton[id=\"eye_btn\"][status=\"hidden\"]{\n"
-"background-image:url(:/icons/eye_off.svg);\n"
+"background-image:url(:/icons/eye_off.png);\n"
 "}\n"
 "\n"
 "QPushButton[id=\"eye_btn\"][status=\"unhidden\"]{\n"
-"background-image:url(:/icons/eye_on.svg);\n"
+"background-image:url(:/icons/eye_on.png);\n"
 "}")
         self.passwordHideBtn.setText("")
         self.passwordHideBtn.setObjectName("passwordHideBtn")
@@ -188,11 +188,11 @@ class Ui_ChangePwdDialog(object):
 "}\n"
 "\n"
 "QPushButton[id=\"eye_btn\"][status=\"hidden\"]{\n"
-"background-image:url(:/icons/eye_off.svg);\n"
+"background-image:url(:/icons/eye_off.png);\n"
 "}\n"
 "\n"
 "QPushButton[id=\"eye_btn\"][status=\"unhidden\"]{\n"
-"background-image:url(:/icons/eye_on.svg);\n"
+"background-image:url(:/icons/eye_on.png);\n"
 "}")
         self.confirmPasswordHideBtn.setText("")
         self.confirmPasswordHideBtn.setObjectName("confirmPasswordHideBtn")

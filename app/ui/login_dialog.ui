@@ -336,11 +336,11 @@ background-color:transparent;
 }
 
 QPushButton[id=&quot;eye_btn&quot;][status=&quot;hidden&quot;]{
-background-image:url(:/icons/eye_off.svg);
+background-image:url(:/icons/eye_off.png);
 }
 
 QPushButton[id=&quot;eye_btn&quot;][status=&quot;unhidden&quot;]{
-background-image:url(:/icons/eye_on.svg);
+background-image:url(:/icons/eye_on.png);
 }</string>
                                             </property>
                                             <property name="text">

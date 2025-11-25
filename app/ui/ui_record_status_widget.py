@@ -49,11 +49,11 @@ class Ui_RecordingStatusWidget(object):
 "}\n"
 "\n"
 "QLabel[active=\"true\"]{\n"
-"border-image:url(:/icons/record_indicator.svg)  stretch stretch;\n"
+"border-image:url(:/icons/record_indicator.png)  stretch stretch;\n"
 "}\n"
 "\n"
 "QLabel[active=\"false\"]{\n"
-"border-image:url(:/icons/record_off_indicator.svg)  stretch stretch;\n"
+"border-image:url(:/icons/record_off_indicator.png)  stretch stretch;\n"
 "}")
         self.rec_label.setText("")
         self.rec_label.setProperty("active", True)
@@ -81,11 +81,11 @@ class Ui_RecordingStatusWidget(object):
         self.pause_button.setStyleSheet("QPushButton{border:none;\n"
 "font-size:18px;\n"
 "background-color:transparent;\n"
-"border-image:url(:/icons/pause.svg)\n"
+"border-image:url(:/icons/pause.png)\n"
 "}\n"
 "\n"
 "QPushButton:checked{\n"
-"border-image:url(:/icons/play.svg)\n"
+"border-image:url(:/icons/play.png)\n"
 "}")
         self.pause_button.setText("")
         self.pause_button.setIconSize(QtCore.QSize(20, 20))

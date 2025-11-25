@@ -174,7 +174,7 @@ class Ui_MainWindow(object):
         self.soundRangeLabel.setObjectName("soundRangeLabel")
         self.saveRadioRangePushButton = QtWidgets.QPushButton(parent=self.signals_range)
         self.saveRadioRangePushButton.setGeometry(QtCore.QRect(515, 9, 41, 41))
-        self.saveRadioRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/clear.svg);\n"
+        self.saveRadioRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/save.png);\n"
 "background-position:center;\n"
 "border-radius:6px;\n"
 "color:#fff;\n"
@@ -188,7 +188,7 @@ class Ui_MainWindow(object):
         self.saveRadioRangePushButton.setObjectName("saveRadioRangePushButton")
         self.saveSoundRangePushButton = QtWidgets.QPushButton(parent=self.signals_range)
         self.saveSoundRangePushButton.setGeometry(QtCore.QRect(515, 52, 41, 41))
-        self.saveSoundRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/clear.svg);\n"
+        self.saveSoundRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/save.png);\n"
 "background-position:center;\n"
 "border-radius:6px;\n"
 "color:#fff;\n"
@@ -202,7 +202,7 @@ class Ui_MainWindow(object):
         self.saveSoundRangePushButton.setObjectName("saveSoundRangePushButton")
         self.chartRadioRangePushButton = QtWidgets.QPushButton(parent=self.signals_range)
         self.chartRadioRangePushButton.setGeometry(QtCore.QRect(570, 9, 41, 41))
-        self.chartRadioRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/clear.svg);\n"
+        self.chartRadioRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/chart.png);\n"
 "background-position:center;\n"
 "border-radius:6px;\n"
 "color:#fff;\n"
@@ -216,7 +216,7 @@ class Ui_MainWindow(object):
         self.chartRadioRangePushButton.setObjectName("chartRadioRangePushButton")
         self.chartSoundRangePushButton = QtWidgets.QPushButton(parent=self.signals_range)
         self.chartSoundRangePushButton.setGeometry(QtCore.QRect(570, 52, 41, 41))
-        self.chartSoundRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/clear.svg);\n"
+        self.chartSoundRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/chart.png);\n"
 "background-position:center;\n"
 "border-radius:6px;\n"
 "color:#fff;\n"

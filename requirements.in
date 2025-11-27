@@ -7,9 +7,10 @@ qasync
 Quart
 vidgear
 mss
-opencv-python
+opencv-python-headless
 bcrypt==4.0.1
 keyboard
+numpy
 
 #Dev
 deptry

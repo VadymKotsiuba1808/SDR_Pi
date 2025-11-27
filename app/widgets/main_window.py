@@ -20,6 +20,7 @@ from PyQt6.QtCore import (
     QThread,
     QUrl,
     QProcess,
+    QProcessEnvironment,
 )
 from PyQt6.QtGui import (
     QPixmap,
@@ -398,17 +399,18 @@ class MainWindow(QMainWindow):
         self.recorder.toggle_pause(is_paused)
 
     def handle_open_file(self):
+
         btn = self.sender()
 
         if btn.isChecked() == False:
-            if self.media_process:
+            if hasattr(self, "media_process") and self.media_process:
                 self.media_process.close()
+                self.media_process = None
                 print("Переглядач успішно закритий")
             return
 
         file_filters = (
             f"{self.tr('Медіа файли (*.png *.jpg *.jpeg *.bmp *.mp4 *.avi *.mkv)')};;"
-            # f"{self.tr('Всі файли (*.*)')}"
         )
 
         file_path, _ = QFileDialog.getOpenFileName(
@@ -423,34 +425,68 @@ class MainWindow(QMainWindow):
             return
 
         program_path = self.get_vlc_executable()
-
-        url = QUrl.fromLocalFile(file_path)
-
         if not program_path:
-            print("VLC не знайдено. Відкриваємо у дефолтній програмі...")
-            QDesktopServices.openUrl(url)
-            return
+            program_path = "/usr/bin/vlc"
+
+        print(f"Запускаємо: {program_path} для файлу {file_path}")
 
         arguments = [
             "--fullscreen",
             "--play-and-pause",
             "--image-duration=-1",
-            # "--no-qt-privacy-ask",  # Щоб не спливали діалоги
-            # "--no-qt-error-dialogs",  # Не показувати помилки
-            "--global-key-quit=q",  # Закривається на q
+            "--no-qt-privacy-ask",
+            "--no-qt-error-dialogs",
+            "--global-key-quit=q",
             "--loop",
-            url.toString(),
         ]
+
+        ext = os.path.splitext(file_path)[1].lower()
+        image_extensions = [".png", ".jpg", ".jpeg", ".bmp", ".gif", ".webp", ".tiff"]
+
+        if ext in image_extensions:
+            arguments.append("--vout=xcb_x11")
+
+        arguments.append(file_path)
 
         try:
             self.media_process = QProcess(self)
+
+            env = QProcessEnvironment.systemEnvironment()
+
+            keys_to_clean = [
+                "QT_PLUGIN_PATH",
+                "QT_QPA_PLATFORM_PLUGIN_PATH",
+                "LD_LIBRARY_PATH",
+                "PYTHONPATH",
+                "PYTHONHOME",
+            ]
+
+            for key in keys_to_clean:
+                env.remove(key)
+
+            all_keys = env.keys()
+            for key in all_keys:
+                if key.startswith("QT_"):
+                    env.remove(key)
+
+            self.media_process.setProcessEnvironment(env)
+
             self.media_process.finished.connect(
                 lambda *_: self.ui.filesViewButton.setChecked(False)
             )
 
+            self.media_process.readyReadStandardError.connect(
+                lambda: print(
+                    "VLC Log:",
+                    self.media_process.readAllStandardError().data().decode().strip(),
+                )
+            )
+
             self.media_process.start(program_path, arguments)
+
         except Exception as e:
-            print(f"Не вдалося запустити VLC: {e}")
+            print(f"Критична помилка запуску VLC: {e}")
+            url = QUrl.fromLocalFile(file_path)
             QDesktopServices.openUrl(url)
 
     def get_vlc_executable(self):

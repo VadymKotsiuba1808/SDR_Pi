@@ -54,6 +54,7 @@ from app.services.settings_service import SettingsService
 from app.services.keyboard_service import KeyboardService
 from app.widgets.set_map_dialog import SetMapDialog
 from app.widgets.autosize_window import make_scalable
+from app.services.pi_network_service import PiNetworkService
 from app.widgets.record_status_widget import RecordingStatusWidget
 from app.services.settings_service import SettingsService
 from app.services.map_service import MapService, MapTypes
@@ -142,10 +143,12 @@ class MainWindow(QMainWindow):
 
         self.map_service = MapService(settings=self.settings_service)
 
-        self.searched_index = None
+        # self.api_server = ApiServer(settings=self.settings_service)
+        self.pi_network = PiNetworkService(self.settings_service, self)
+        self.pi_network.data_received.connect(self.handle_pi_data)
 
-        self.api_server.on_rf_data = self.handle_rf_data
-        self.api_server.on_audio_alert = self.handle_audio_alert
+        # self.api_server.on_rf_data = self.handle_rf_data
+        # self.api_server.on_audio_alert = self.handle_audio_alert
 
         self.current_map_type_index = 0
         self.map_types = [e for e in MapTypes]
@@ -265,6 +268,8 @@ class MainWindow(QMainWindow):
         Цей метод має викликатися з 'main' ПІСЛЯ створення вікна.
         """
         print("Запуск фонових асинхронних задач (сервер та слухач)...")
+        # self.api_server.run_server()
+        self.listen_for_pi_data()
         self.pi_network.start()
 
     def _update_map_geometry(self):
@@ -500,7 +505,8 @@ class MainWindow(QMainWindow):
 
         self.scale_map()
 
-        self.update_radar()
+        config_data = {"msg_type": "config", "radar_radius": new_radar_radius}
+        self.pi_network.send_data(config_data)
 
     def handle_add_map(self):
         btn = self.sender()
@@ -966,6 +972,18 @@ class MainWindow(QMainWindow):
     def handle_pi_data(self, data):
         """Обробка загальних даних від іншої Raspberry Pi."""
         print(f"Отримано загальні дані від Pi: {data}")
+
+    @pyqtSlot(dict)
+    def handle_pi_data(self, data):
+        """Обробка даних, отриманих від іншої Raspberry Pi."""
+        # print(f"Отримано дані від Pi: {data}")
+
+        # Приклад: якщо прийшли координати або статус тривоги
+        if "rf_alert" in data:
+            if data["rf_alert"]:
+                self.start_alert()
+            else:
+                self.stop_alert()
 
     def update_wifi_signal_info(self):
         wifi_strength = get_wifi_signal_strength(self.system_service.is_windows)

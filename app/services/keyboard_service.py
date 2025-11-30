@@ -89,8 +89,20 @@ class KeyboardService:
             print(f"Windows API Error: {e}")
 
     def _set_linux_layout(self):
-        layout = self.layouts_linux[self.current_layout]
         try:
-            subprocess.call(["setxkbmap", layout])
+            target_lang = self.layouts_linux[self.current_layout]
+
+            second_lang = "us" if target_lang == "ua" else "ua"
+
+            cmd = [
+                "setxkbmap",
+                "-layout",
+                f"{target_lang},{second_lang}",
+                "-option",
+                "grp:alt_shift_toggle",
+            ]
+
+            subprocess.Popen(cmd)
+
         except Exception as e:
             print(f"Не вдалося змінити розкладку Linux: {e}")

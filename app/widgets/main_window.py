@@ -451,7 +451,8 @@ class MainWindow(QMainWindow):
         image_extensions = [".png", ".jpg", ".jpeg", ".bmp", ".gif", ".webp", ".tiff"]
 
         if ext in image_extensions:
-            arguments.append("--vout=xcb_x11")
+            pass
+        arguments.append("--vout=xcb_x11")
 
         arguments.append(file_path)
 

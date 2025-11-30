@@ -38,3 +38,8 @@ class SetMapDialogSettings(Protocol):
 
 class RecordingStatusWidgetSettings(Protocol):
     compiled_ui_using_enabled: bool
+
+
+class KeyboardWidgetSettings(Protocol):
+    compiled_ui_using_enabled: bool
+    lang_code: str

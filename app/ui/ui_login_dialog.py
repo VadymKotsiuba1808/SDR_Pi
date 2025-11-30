@@ -165,6 +165,7 @@ class Ui_LoginDialog(object):
         self.gridLayout.addWidget(self.rememberCheckBox, 4, 0, 1, 1)
         self.passwordLineEdit = QtWidgets.QLineEdit(parent=self.passwordContainer)
         self.passwordLineEdit.setMaximumSize(QtCore.QSize(295, 16777215))
+        self.passwordLineEdit.setStyleSheet("background-color:transaprent;")
         self.passwordLineEdit.setText("")
         self.passwordLineEdit.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
         self.passwordLineEdit.setObjectName("passwordLineEdit")

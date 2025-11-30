@@ -4,6 +4,7 @@
 """
 
 import os
+import sys
 import math
 import asyncio
 from PyQt6.QtWidgets import (
@@ -708,6 +709,18 @@ class MainWindow(QMainWindow):
 
         self.isRadarMode = False
         self.scale_map()
+
+    def restart_app(self):
+        self.settings_service.remember_me = False
+        self.setEnabled(False)
+        print("Performing restart...")
+
+        QProcess.startDetached(sys.executable, sys.argv)
+
+        QTimer.singleShot(2000, self.close_app)
+
+    def close_app(self):
+        QCoreApplication.quit()
 
     def set_radio_range(self):
         start_value = self.ui.radioStartDoubleSpinBox.value()

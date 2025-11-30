@@ -4,10 +4,17 @@ from PyQt6.QtCore import QEvent, QCoreApplication, QTranslator
 import os
 
 from app.ui.ui_keyboard_widget import Ui_KeyboardWidget
+from app.services.keyboard_service import KeyboardService
+from app.protocols import KeyboardWidgetSettings
 
 
 class KeyboardWidget(QWidget):
-    def __init__(self, settings, keyboard_service, parent=None):
+    def __init__(
+        self,
+        settings: KeyboardWidgetSettings,
+        keyboard_service: KeyboardService,
+        parent=None,
+    ):
         super().__init__(parent)
 
         self.settings_service = settings

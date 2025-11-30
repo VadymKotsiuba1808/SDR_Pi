@@ -233,7 +233,6 @@ class Ui_MainWindow(object):
         self.clearRadioRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/clear.png);\n"
 "background-position:center;\n"
 "border-radius:6px;\n"
-"fill:#fff;\n"
 "}\n"
 "\n"
 "QPushButton:pressed, QPushButton:checked{\n"
@@ -880,7 +879,8 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.addItem(spacerItem)
         self.screenRecordButton = QtWidgets.QPushButton(parent=self.Body)
         self.screenRecordButton.setEnabled(True)
-        self.screenRecordButton.setGeometry(QtCore.QRect(166, 845, 110, 110))
+        self.screenRecordButton.setVisible(False)
+        self.screenRecordButton.setGeometry(QtCore.QRect(166, 709, 110, 110))
         self.screenRecordButton.setStyleSheet("QPushButton#screenRecordButton{\n"
 "    background-color:rgba(0,0,0,0.8);\n"
 "    border-image: url(:/images/toggleRecordBtn_off.png);\n"
@@ -917,7 +917,7 @@ class Ui_MainWindow(object):
         self.screenRecordingLayout.setObjectName("screenRecordingLayout")
         self.filesViewButton = QtWidgets.QPushButton(parent=self.Body)
         self.filesViewButton.setEnabled(True)
-        self.filesViewButton.setGeometry(QtCore.QRect(166, 709, 110, 110))
+        self.filesViewButton.setGeometry(QtCore.QRect(166, 845, 110, 110))
         self.filesViewButton.setStyleSheet("QPushButton#filesViewButton{\n"
 "    background-color:rgba(0,0,0,0.8);\n"
 "    border-image: url(:/images/filesViewBtn_off.png);\n"

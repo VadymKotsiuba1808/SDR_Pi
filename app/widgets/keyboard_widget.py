@@ -1,3 +1,8 @@
+"""
+Віджет перемикача мови.
+Відображає поточну мову (UA/EN) та дозволяє змінювати її через GUI.
+"""
+
 from PyQt6.QtWidgets import QWidget
 from PyQt6 import uic
 from PyQt6.QtCore import QEvent, QCoreApplication, QTranslator

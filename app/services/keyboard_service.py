@@ -1,3 +1,8 @@
+"""
+Сервіс клавіатури.
+Керує перемиканням розкладки (EN/UA) та глобальними хоткеями.
+"""
+
 import sys
 import platform
 import subprocess

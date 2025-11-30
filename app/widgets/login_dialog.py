@@ -1,3 +1,8 @@
+"""
+Діалог авторизації.
+Логіка вікна входу: обробка вводу пароля та перехід до головного вікна.
+"""
+
 from PyQt6.QtWidgets import QDialog, QLineEdit
 from PyQt6.QtCore import QCoreApplication, QTranslator, QEvent
 
@@ -71,7 +76,6 @@ class LoginDialog(QDialog):
         self.ui.loginButton.clicked.connect(self.handle_login)
 
     def _load_language(self):
-        # Видаляємо старий перекладач
         lang_code = self.settings_service.lang_code
 
         if lang_code == None:
@@ -79,8 +83,7 @@ class LoginDialog(QDialog):
 
         QCoreApplication.removeTranslator(self.translator)
 
-        # Завантажуємо та встановлюємо новий
-        path = f"app/i18n/qm/app_{lang_code}.qm"  # Перевірте правильність шляху
+        path = f"app/i18n/qm/app_{lang_code}.qm"
         if self.translator.load(path):
             QCoreApplication.installTranslator(self.translator)
         else:
@@ -101,7 +104,6 @@ class LoginDialog(QDialog):
             self.ui.passwordContainer.setVisible(False)
 
     def change_password_status(self):
-        # Приховую Label зі статусом
         print(
             "[change_password_status] Зміна тексту в полі пароля — ховаємо мітку помилки."
         )
@@ -132,7 +134,6 @@ class LoginDialog(QDialog):
             self.accept_window()
             return
 
-        # 2. Логіка для Власника (потрібна перевірка пароля)
         if index == 1:
             print("[handle_login] Перевірка пароля для власника.")
             password = self.ui.passwordLineEdit.text()

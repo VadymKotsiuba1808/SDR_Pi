@@ -1,3 +1,8 @@
+"""
+Валідатор паролів.
+Перевіряє безпечність пароля при зміні або створенні користувача.
+"""
+
 import string
 from app.validators.base_validator import BaseValidator
 

@@ -1,3 +1,8 @@
+"""
+Віджет статусу запису.
+Показує індикатор (червона крапка/таймер), коли йде запис екрану.
+"""
+
 from PyQt6.QtWidgets import QWidget
 from PyQt6.QtCore import pyqtSlot, QSize
 from PyQt6.QtGui import QIcon

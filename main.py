@@ -1,3 +1,8 @@
+"""
+Головна точка входу в програму.
+Ініціалізує QApplication, та запускає авторизацію і головне вікно (MainWindow).
+"""
+
 import sys
 import asyncio
 import qasync

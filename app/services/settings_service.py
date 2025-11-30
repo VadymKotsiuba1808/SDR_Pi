@@ -18,9 +18,13 @@ class SettingsService(QObject):
 
     settings_changed = pyqtSignal()
 
-    # Network
-    host: str
-    port: int
+    # # Network
+    # host: str
+    # port: int
+    # Pinetwork
+    pi_target_ip: str
+    pi_target_port: int
+    pi_is_receiver: bool
     # Maps
     radar_radius: int
     radar_max_radius: int
@@ -44,9 +48,13 @@ class SettingsService(QObject):
 
     # Єдиний словник конфігурації: ключ → (секція, тип, значення за замовчуванням)
     _config_schema = {
-        # Network
-        "host": ("network", str, "0.0.0.0"),
-        "port": ("network", int, 5000),
+        # # Network
+        # "host": ("network", str, "0.0.0.0"),
+        # "port": ("network", int, 5000),
+        # Pinetwork
+        "pi_target_ip": ("pinetwork", str, "0.0.0.0"),
+        "pi_target_port": ("pinetwork", int, 6000),
+        "pi_is_receiver": ("pinetwork", bool, True),
         # Maps
         "radar_radius": ("maps", int, 500),
         "radar_max_radius": ("maps", int, 1000),

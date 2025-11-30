@@ -11,6 +11,8 @@ opencv-python-headless
 bcrypt==4.0.1
 keyboard
 numpy
+pywin32
+pynput
 
 #Dev
 deptry

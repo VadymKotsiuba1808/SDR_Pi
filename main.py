@@ -12,7 +12,7 @@ from app.widgets.main_window import MainWindow
 from app.widgets.login_dialog import LoginDialog
 from app.services.settings_service import SettingsService
 
-# from app.services.keyboard_service import KeyboardService
+from app.services.keyboard_service import KeyboardService
 from app.widgets.autosize_window import (
     make_window_stretched,
     enable_auto_scaling,
@@ -25,8 +25,7 @@ async def main():
     # Вимикаємо автоматичне завершення програми після закриття останнього вікна
 
     settings_service = SettingsService()
-    # keyboard_service = KeyboardService()
-    keyboard_service = None
+    keyboard_service = KeyboardService()
 
     future = asyncio.Future()
     # Коректне закриття при виході з програми

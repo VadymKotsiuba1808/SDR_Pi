@@ -809,6 +809,36 @@ class Ui_MainWindow(object):
 "}")
         self.menuButton.setObjectName("menuButton")
         self.verticalLayout_3.addWidget(self.menuButton)
+        self.backToLoginButton = QtWidgets.QPushButton(parent=self.MainButtons)
+        self.backToLoginButton.setEnabled(True)
+        self.backToLoginButton.setMinimumSize(QtCore.QSize(322, 103))
+        self.backToLoginButton.setMaximumSize(QtCore.QSize(322, 103))
+        self.backToLoginButton.setStyleSheet("QPushButton{\n"
+"    border: none;\n"
+"    background-image: url(:/images/Btn_MainMenu_red.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 36px;\n"
+"    color: #FFFFFF;\n"
+"}\n"
+"QPushButton:pressed{\n"
+"    border: none;\n"
+"    background-image: url(:/images/Btn_MainMenu_on.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 36px;\n"
+"    color: #002509;\n"
+"}\n"
+"QPushButton[enabled=\"false\"]{\n"
+"    border: none;\n"
+"    background-image: url(:/images/Btn_MainMenu_disabled.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 36px;\n"
+"    color: #FFFFFF;\n"
+"}")
+        self.backToLoginButton.setObjectName("backToLoginButton")
+        self.verticalLayout_3.addWidget(self.backToLoginButton)
         self.radarButton = QtWidgets.QPushButton(parent=self.MainButtons)
         self.radarButton.setEnabled(True)
         self.radarButton.setMinimumSize(QtCore.QSize(322, 103))
@@ -984,5 +1014,6 @@ class Ui_MainWindow(object):
         self.langLabel.setText(_translate("MainWindow", "Мова:"))
         self.falseAlarmButton.setText(_translate("MainWindow", "Хибна тривога"))
         self.menuButton.setText(_translate("MainWindow", "Меню"))
+        self.backToLoginButton.setText(_translate("MainWindow", "Реавторизація"))
         self.radarButton.setText(_translate("MainWindow", "Режим радару"))
         self.mapButton.setText(_translate("MainWindow", "Режим карти"))

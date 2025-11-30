@@ -8,14 +8,19 @@ from app.ui.ui_login_dialog import Ui_LoginDialog
 from app.protocols import LoginDialogSettings
 from app.utils.password_utils import verify_password
 from app.utils.ui_utils import update_element_styles
+from app.widgets.keyboard_widget import KeyboardWidget
+from app.services.keyboard_service import KeyboardService
 
 
 class LoginDialog(QDialog):
-    def __init__(self, settings: LoginDialogSettings, parent=None):
+    def __init__(
+        self, settings: LoginDialogSettings, keyboard: KeyboardService, parent=None
+    ):
         super().__init__(parent)
         print("[LoginDialog] Ініціалізація діалогу входу...")
 
         self.settings_service = settings
+        self.keyboard_service = keyboard
 
         print("[LoginDialog] Завантаження UI...")
         self._load_ui()
@@ -31,15 +36,11 @@ class LoginDialog(QDialog):
         self._load_language()
 
     def changeEvent(self, event):
-        # Ловимо подію, яку надіслав installTranslator
         if event.type() == QEvent.Type.LanguageChange:
             if self.settings_service.compiled_ui_using_enabled:
                 print("Зміна мови, оновлюю UI...")
-                # Викликаємо авто-згенеровану функцію
                 self.ui.retranslateUi(self)
         else:
-            # Передаємо всі інші події (натискання клавіш, зміна розміру тощо)
-            # на стандартну обробку
             super().changeEvent(event)
 
     def _load_ui(self):
@@ -52,10 +53,14 @@ class LoginDialog(QDialog):
 
     def _setup_state_variables(self):
         self.translator = QTranslator()
+        self.keyboard_widget = KeyboardWidget(
+            self.settings_service, self.keyboard_service, parent=self
+        )
 
     def _adjust_fields(self):
         role = self.settings_service.role
         self.ui.roleComboBox.setCurrentIndex(0 if role == "operator" else 1)
+        self.ui.keyboardLayout.addWidget(self.keyboard_widget)
 
     def _connect_handlers(self):
         self.ui.roleComboBox.currentIndexChanged.connect(self.toggle_password_field)

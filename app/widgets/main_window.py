@@ -718,7 +718,7 @@ class MainWindow(QMainWindow):
 
         QProcess.startDetached(sys.executable, sys.argv)
 
-        QTimer.singleShot(2000, self.close_app)
+        QTimer.singleShot(8000, self.close_app)
 
     def close_app(self):
         QCoreApplication.quit()

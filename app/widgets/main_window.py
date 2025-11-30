@@ -1,4 +1,5 @@
 import os
+import sys
 import math
 import asyncio
 import platform
@@ -169,6 +170,9 @@ class MainWindow(QMainWindow):
         if role != "owner":
             self.ui.falseAlarmButton.setVisible(False)
             self.ui.menuButton.setVisible(False)
+            self.ui.backToLoginButton.setVisible(True)
+        else:
+            self.ui.backToLoginButton.setVisible(False)
 
         self.ui.screenRecordingLayout.addWidget(self.record_status_widget)
 
@@ -184,6 +188,7 @@ class MainWindow(QMainWindow):
         self.ui.menuButton.clicked.connect(self.test_draw_dot)
         self.ui.radarButton.clicked.connect(self.set_radar_mode)
         self.ui.mapButton.clicked.connect(self.set_map_mode)
+        self.ui.backToLoginButton.clicked.connect(self.restart_app)
 
         self.ui.saveRadarSettingsBtn.clicked.connect(self.handle_radar_radius_change)
 
@@ -533,6 +538,18 @@ class MainWindow(QMainWindow):
 
         self.isRadarMode = False
         self.scale_map()
+
+    def restart_app(self):
+        self.settings_service.remember_me = False
+        self.setEnabled(False)
+        print("Performing restart...")
+
+        QProcess.startDetached(sys.executable, sys.argv)
+
+        QTimer.singleShot(2000, self.close_app)
+
+    def close_app(self):
+        QCoreApplication.quit()
 
     def set_radio_range(self):
         start_value = self.ui.radioStartDoubleSpinBox.value()

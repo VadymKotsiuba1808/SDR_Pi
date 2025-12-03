@@ -6,12 +6,12 @@
 import sys
 import asyncio
 import qasync
-import os
 from PyQt6.QtWidgets import QApplication, QDialog, QMainWindow
 
 from app.widgets.main_window import MainWindow
 from app.widgets.login_dialog import LoginDialog
 from app.services.settings_service import SettingsService
+from app.services.system_service import SystemService
 
 from app.services.keyboard_service import KeyboardService
 from app.widgets.autosize_window import (
@@ -26,6 +26,7 @@ async def main():
     # Вимикаємо автоматичне завершення програми після закриття останнього вікна
 
     settings_service = SettingsService()
+    system_service = SystemService()
     keyboard_service = KeyboardService()
 
     future = asyncio.Future()
@@ -53,7 +54,9 @@ async def main():
     ):  # .Accepted це зазвичай 1
 
         app.setQuitOnLastWindowClosed(True)
-        window = MainWindow(settings=settings_service, keyboard=keyboard_service)
+        window = MainWindow(
+            settings=settings_service, keyboard=keyboard_service, system=system_service
+        )
 
         enable_auto_scaling(window)
         window.showFullScreen()

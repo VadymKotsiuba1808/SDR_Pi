@@ -7,7 +7,6 @@ import os
 import sys
 import math
 import asyncio
-import platform
 import shutil
 import subprocess
 import keyboard
@@ -47,7 +46,7 @@ from app.services.api_server import ApiServer
 from app.services.map_service import MapService, MapTypes
 from app.utils.test_data_provider import TestDataProvider
 from app.services.settings_service import SettingsService
-
+from app.services.system_service import SystemService
 from app.services.keyboard_service import KeyboardService
 from app.widgets.set_map_dialog import SetMapDialog
 from app.widgets.autosize_window import make_scalable
@@ -62,10 +61,15 @@ class MainWindow(QMainWindow):
     _sig_stop_recording = pyqtSignal()
 
     def __init__(
-        self, settings: SettingsService, keyboard: KeyboardService, parent=None
+        self,
+        settings: SettingsService,
+        keyboard: KeyboardService,
+        system: SystemService,
+        parent=None,
     ):
         super().__init__(parent)
         self.settings_service = settings
+        self.system_service = system
         self.keyboard_service = keyboard
 
         self._load_ui()
@@ -143,7 +147,7 @@ class MainWindow(QMainWindow):
         self.media_process = None
 
     def _init_recording_service(self):
-        self.recorder = RecordingService(self)
+        self.recorder = RecordingService(self.system_service, self)
 
         self.recorder.recording_started.connect(self.on_recording_started)
         self.recorder.recording_stopped.connect(self.on_recording_stopped)
@@ -513,9 +517,8 @@ class MainWindow(QMainWindow):
         """
         Знаходить шлях до виконуваного файлу VLC в залежності від ОС.
         """
-        system = platform.system()
 
-        if system == "Windows":
+        if self.system_service.is_windows:
             # Шукаємо у стандартних папках Windows
             possible_paths = [
                 r"C:\Program Files\VideoLAN\VLC\vlc.exe",
@@ -530,7 +533,7 @@ class MainWindow(QMainWindow):
             if path_in_env:
                 return path_in_env
 
-        elif system == "Linux" or system == "Darwin":
+        elif self.system_service.is_linux:
             path_in_env = shutil.which("vlc")
             if path_in_env:
                 return path_in_env
@@ -864,10 +867,9 @@ class MainWindow(QMainWindow):
         Повертає рівень сигналу Wi-Fi у %, або None якщо не вдалося визначити.
         Підтримує Windows та Linux.
         """
-        system = platform.system().lower()
 
         try:
-            if "windows" in system:
+            if self.system_service.is_windows:
                 # --- Windows ---
                 output = subprocess.check_output(
                     ["netsh", "wlan", "show", "interfaces"], encoding="utf-8"
@@ -876,7 +878,7 @@ class MainWindow(QMainWindow):
                 if match:
                     return int(match.group(1))
 
-            elif "linux" in system:
+            elif self.system_service.is_linux:
                 # --- Linux ---
                 # Спроба через nmcli (нові системи)
                 try:

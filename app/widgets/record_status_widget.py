@@ -7,7 +7,6 @@ from PyQt6.QtWidgets import QWidget
 from PyQt6.QtCore import pyqtSlot, QSize
 from PyQt6.QtGui import QIcon
 from PyQt6 import uic
-import os
 
 from app.ui.ui_record_status_widget import Ui_RecordingStatusWidget
 from app.utils.ui_utils import update_element_styles

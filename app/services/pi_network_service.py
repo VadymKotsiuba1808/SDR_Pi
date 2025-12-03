@@ -7,6 +7,8 @@ import json
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot, QByteArray, QTimer
 from PyQt6.QtNetwork import QTcpServer, QTcpSocket, QHostAddress
 from app.services.settings_service import SettingsService
+from app.models.detection_event import DetectionEvent
+from datetime import datetime
 
 
 class PiNetworkService(QObject):
@@ -114,8 +116,26 @@ class PiNetworkService(QObject):
                 if not json_str:
                     continue
                 data = json.loads(json_str)
-                # print(f"[PiNet] Отримано: {data}") # Розкоментуйте для дебагу
-                self.data_received.emit(data)
+
+                # Приклад обробки різних типів повідомлень:
+                if "type" in data and (data["type"] == "RF" or data["type"] == "Audio"):
+                    # Це подія детекції - перетворюємо в об'єкт
+                    event_obj = DetectionEvent.from_dict(data)
+                    # Емітимо сигнал вже з об'єктом, а не просто dict (потрібно змінити сигнал вгорі класу)
+                    # self.detection_received.emit(event_obj)
+                    self.data_received.emit(
+                        data
+                    )  # Або залишаємо як є, а парсимо в контролері
+
+                elif "gps_lat" in data:
+                    # Це відповідь на наш запит GPS
+                    print(
+                        f"[PiNet] Отримано GPS від партнера: {data['gps_lat']}, {data['gps_lon']}"
+                    )
+                    # self.gps_received.emit(data['gps_lat'], data['gps_lon'])
+
+                else:
+                    self.data_received.emit(data)
             except json.JSONDecodeError:
                 print(f"[PiNet] Помилка JSON: {line}")
             except Exception as e:
@@ -132,3 +152,28 @@ class PiNetworkService(QObject):
                 print(f"[PiNet] Помилка відправки: {e}")
         else:
             print("[PiNet] Немає з'єднання для відправки даних.")
+
+    def request_remote_gps(self):
+        payload = {"action": "get_gps", "timestamp": datetime.now().isoformat()}
+        print(f"[PiNet] Відправляю запит GPS: {payload}")
+        self.send_data(payload)
+
+    def request_rf_data(self):
+        payload = {"action": "get_rf_data", "timestamp": datetime.now().isoformat()}
+        print(f"[PiNet] Відправляю запит rf_data: {payload}")
+        self.send_data(payload)
+
+    def request_sound_data(self):
+        payload = {"action": "get_sound_data", "timestamp": datetime.now().isoformat()}
+        print(f"[PiNet] Відправляю запит sound_data: {payload}")
+        self.send_data(payload)
+
+    def report_false_alarm(self, event: DetectionEvent):
+        payload = {
+            "action": "false_alarm",
+            "event_id": event.event_id,  # Критично важливо передати ID події
+            "object_class": event.object_class,
+            "timestamp": datetime.now().isoformat(),
+        }
+        print(f"[PiNet] Відправляю звіт про хибну тривогу для ID {event.event_id}")
+        self.send_data(payload)

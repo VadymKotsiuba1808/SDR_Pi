@@ -7,13 +7,11 @@ import os
 import sys
 import math
 import asyncio
-from PyQt6.QtWidgets import (
-    QMainWindow,
-    QApplication,
-    QDialog,
-    QMessageBox,
-    QFileDialog,
-)
+import shutil
+import subprocess
+import keyboard
+import re
+from PyQt6.QtWidgets import QMainWindow, QApplication, QDialog, QMessageBox, QFileDialog
 from PyQt6.QtCore import (
     QTimer,
     QDateTime,
@@ -50,7 +48,7 @@ from app.services.api_server import ApiServer
 from app.services.map_service import MapService, MapTypes
 from app.utils.test_data_provider import TestDataProvider
 from app.services.settings_service import SettingsService
-
+from app.services.system_service import SystemService
 from app.services.keyboard_service import KeyboardService
 from app.widgets.set_map_dialog import SetMapDialog
 from app.widgets.autosize_window import make_scalable
@@ -78,10 +76,15 @@ class MainWindow(QMainWindow):
     _sig_stop_recording = pyqtSignal()
 
     def __init__(
-        self, settings: SettingsService, keyboard: KeyboardService, parent=None
+        self,
+        settings: SettingsService,
+        keyboard: KeyboardService,
+        system: SystemService,
+        parent=None,
     ):
         super().__init__(parent)
         self.settings_service = settings
+        self.system_service = system
         self.keyboard_service = keyboard
 
         self._load_ui()
@@ -678,9 +681,8 @@ class MainWindow(QMainWindow):
         """
         Знаходить шлях до виконуваного файлу VLC в залежності від ОС.
         """
-        system = platform.system()
 
-        if system == "Windows":
+        if self.system_service.is_windows:
             # Шукаємо у стандартних папках Windows
             possible_paths = [
                 r"C:\Program Files\VideoLAN\VLC\vlc.exe",
@@ -695,7 +697,7 @@ class MainWindow(QMainWindow):
             if path_in_env:
                 return path_in_env
 
-        elif system == "Linux" or system == "Darwin":
+        elif self.system_service.is_linux:
             path_in_env = shutil.which("vlc")
             if path_in_env:
                 return path_in_env
@@ -997,12 +999,50 @@ class MainWindow(QMainWindow):
         self.ui.WiFi_level.setProperty("level", wifi_level)
         update_element_styles(self.ui.WiFi_level)
 
-    def restart_app(self):
-        self.settings_service.remember_me = False
-        self.setEnabled(False)
-        print("Performing restart...")
+    def get_wifi_signal_strength(self):
+        """
+        Повертає рівень сигналу Wi-Fi у %, або None якщо не вдалося визначити.
+        Підтримує Windows та Linux.
+        """
 
-        QTimer.singleShot(8000, restart_process)
+        try:
+            if self.system_service.is_windows:
+                # --- Windows ---
+                output = subprocess.check_output(
+                    ["netsh", "wlan", "show", "interfaces"], encoding="utf-8"
+                )
+                match = re.search(r"Signal\s*:\s*(\d+)%", output)
+                if match:
+                    return int(match.group(1))
+
+            elif self.system_service.is_linux:
+                # --- Linux ---
+                # Спроба через nmcli (нові системи)
+                try:
+                    output = subprocess.check_output(
+                        ["nmcli", "-t", "-f", "active,ssid,signal", "dev", "wifi"],
+                        encoding="utf-8",
+                    )
+                    for line in output.splitlines():
+                        if line.startswith("yes:"):
+                            parts = line.split(":")
+                            if len(parts) >= 3:
+                                return int(parts[2])
+                except FileNotFoundError:
+                    # Якщо nmcli недоступний, fallback на iwconfig
+                    output = subprocess.check_output(["iwconfig"], encoding="utf-8")
+                    match = re.search(r"Signal level=(-?\d+) dBm", output)
+                    if match:
+                        dbm = int(match.group(1))
+                        quality = 2 * (dbm + 100)
+                        return max(0, min(100, quality))
+
+        except subprocess.CalledProcessError:
+            pass
+        except Exception as e:
+            print(f"⚠️ Error reading Wi-Fi signal: {e}")
+
+        return None
 
     def closeEvent(self, event):
         print("Закриття програми...")

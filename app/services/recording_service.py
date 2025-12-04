@@ -36,7 +36,6 @@ class RecordingService(QThread):
             self.monitor_index = 1
             self.scale_factor = 1.0
         else:
-
             self.fps = 10
             self.monitor_index = 0
 

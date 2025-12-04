@@ -10,7 +10,7 @@ import mss
 import time
 import cv2
 
-from app.services.system_service import SystemService
+from app.protocols import OSService
 
 
 class RecordingService(QThread):
@@ -20,7 +20,7 @@ class RecordingService(QThread):
     recording_paused = pyqtSignal(bool)
     duration_updated = pyqtSignal(str)
 
-    def __init__(self, system: SystemService, parent=None):
+    def __init__(self, system: OSService, parent=None):
         super().__init__(parent)
         self.system_service = system
 
@@ -36,7 +36,6 @@ class RecordingService(QThread):
             self.monitor_index = 1
             self.scale_factor = 1.0
         else:
-
             self.fps = 10
             self.monitor_index = 0
 
@@ -95,7 +94,7 @@ class RecordingService(QThread):
         return params
 
     def run(self):
-        print(f"[Recorder] Thread started on: {self.system_service.os}")
+        print(f"[Recorder] Thread started")
         self.is_running = True
 
         try:

@@ -1,3 +1,8 @@
+"""
+Сервіс мапи.
+Відповідає за роботу з геоданими, завантаження тайлів мапи, тощо.
+"""
+
 import math
 import asyncio
 from io import BytesIO

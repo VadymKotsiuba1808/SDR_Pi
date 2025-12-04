@@ -1,3 +1,8 @@
+"""
+Утиліти для асинхронності.
+Допоміжні функції для інтеграції `asyncio` з головним циклом подій PyQt (qasync).
+"""
+
 import asyncio
 from typing import Callable
 

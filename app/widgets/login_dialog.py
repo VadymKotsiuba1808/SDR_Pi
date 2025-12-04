@@ -1,3 +1,8 @@
+"""
+Діалог авторизації.
+Логіка вікна входу: обробка вводу пароля та перехід до головного вікна.
+"""
+
 from PyQt6.QtWidgets import QDialog, QLineEdit
 from PyQt6.QtCore import QCoreApplication, QTranslator, QEvent
 
@@ -8,14 +13,19 @@ from app.ui.ui_login_dialog import Ui_LoginDialog
 from app.protocols import LoginDialogSettings
 from app.utils.password_utils import verify_password
 from app.utils.ui_utils import update_element_styles
+from app.widgets.keyboard_widget import KeyboardWidget
+from app.services.keyboard_service import KeyboardService
 
 
 class LoginDialog(QDialog):
-    def __init__(self, settings: LoginDialogSettings, parent=None):
+    def __init__(
+        self, settings: LoginDialogSettings, keyboard: KeyboardService, parent=None
+    ):
         super().__init__(parent)
         print("[LoginDialog] Ініціалізація діалогу входу...")
 
         self.settings_service = settings
+        self.keyboard_service = keyboard
 
         print("[LoginDialog] Завантаження UI...")
         self._load_ui()
@@ -31,15 +41,11 @@ class LoginDialog(QDialog):
         self._load_language()
 
     def changeEvent(self, event):
-        # Ловимо подію, яку надіслав installTranslator
         if event.type() == QEvent.Type.LanguageChange:
             if self.settings_service.compiled_ui_using_enabled:
                 print("Зміна мови, оновлюю UI...")
-                # Викликаємо авто-згенеровану функцію
                 self.ui.retranslateUi(self)
         else:
-            # Передаємо всі інші події (натискання клавіш, зміна розміру тощо)
-            # на стандартну обробку
             super().changeEvent(event)
 
     def _load_ui(self):
@@ -52,10 +58,14 @@ class LoginDialog(QDialog):
 
     def _setup_state_variables(self):
         self.translator = QTranslator()
+        self.keyboard_widget = KeyboardWidget(
+            self.settings_service, self.keyboard_service, parent=self
+        )
 
     def _adjust_fields(self):
         role = self.settings_service.role
         self.ui.roleComboBox.setCurrentIndex(0 if role == "operator" else 1)
+        self.ui.keyboardLayout.addWidget(self.keyboard_widget)
 
     def _connect_handlers(self):
         self.ui.roleComboBox.currentIndexChanged.connect(self.toggle_password_field)
@@ -66,7 +76,6 @@ class LoginDialog(QDialog):
         self.ui.loginButton.clicked.connect(self.handle_login)
 
     def _load_language(self):
-        # Видаляємо старий перекладач
         lang_code = self.settings_service.lang_code
 
         if lang_code == None:
@@ -74,8 +83,7 @@ class LoginDialog(QDialog):
 
         QCoreApplication.removeTranslator(self.translator)
 
-        # Завантажуємо та встановлюємо новий
-        path = f"app/i18n/qm/app_{lang_code}.qm"  # Перевірте правильність шляху
+        path = f"app/i18n/qm/app_{lang_code}.qm"
         if self.translator.load(path):
             QCoreApplication.installTranslator(self.translator)
         else:
@@ -96,7 +104,6 @@ class LoginDialog(QDialog):
             self.ui.passwordContainer.setVisible(False)
 
     def change_password_status(self):
-        # Приховую Label зі статусом
         print(
             "[change_password_status] Зміна тексту в полі пароля — ховаємо мітку помилки."
         )
@@ -127,7 +134,6 @@ class LoginDialog(QDialog):
             self.accept_window()
             return
 
-        # 2. Логіка для Власника (потрібна перевірка пароля)
         if index == 1:
             print("[handle_login] Перевірка пароля для власника.")
             password = self.ui.passwordLineEdit.text()

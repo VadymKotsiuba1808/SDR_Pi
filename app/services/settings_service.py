@@ -1,3 +1,8 @@
+"""
+Сервіс налаштувань.
+Відповідає за валідацію, застосування змін на льоту та надання доступу до налаштувань для інших компонентів.
+"""
+
 import os
 from PyQt6.QtCore import QObject, pyqtSignal, QSettings, QFileSystemWatcher
 from typing import NamedTuple, Any

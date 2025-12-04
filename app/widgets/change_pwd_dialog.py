@@ -1,3 +1,8 @@
+"""
+Діалог зміни пароля.
+Реалізує логіку інтерфейсу для оновлення облікових даних: валідація нового та збереження змін.
+"""
+
 from PyQt6.QtWidgets import QDialog, QLineEdit
 from PyQt6.QtCore import QCoreApplication, QEvent, QTranslator
 

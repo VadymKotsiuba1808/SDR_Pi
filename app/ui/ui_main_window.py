@@ -44,7 +44,7 @@ class Ui_MainWindow(object):
 "font-weight: 400;\n"
 "font-size: 24px;\n"
 "color: #FFFFFF;\n"
-"background: rgba(0, 10, 0, 0.1);")
+"background-color:transparent;")
         self.DateLabel.setText("00.00.0000")
         self.DateLabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.DateLabel.setObjectName("DateLabel")
@@ -60,6 +60,7 @@ class Ui_MainWindow(object):
         self.radioStartDoubleSpinBox.setStyleSheet("QDoubleSpinBox{\n"
 "    font-size:24px;\n"
 "    padding:2px;\n"
+"color:#fff;\n"
 "}\n"
 "\n"
 "QDoubleSpinBox[status=\"unsaved\"]{\n"
@@ -79,6 +80,7 @@ class Ui_MainWindow(object):
         self.soundStartDoubleSpinBox.setStyleSheet("QDoubleSpinBox{\n"
 "    font-size:24px;\n"
 "    padding:2px;\n"
+"color:#fff;\n"
 "}\n"
 "\n"
 "QDoubleSpinBox[status=\"unsaved\"]{\n"
@@ -98,6 +100,7 @@ class Ui_MainWindow(object):
         self.soundEndDoubleSpinBox.setStyleSheet("QDoubleSpinBox{\n"
 "    font-size:24px;\n"
 "    padding:2px;\n"
+"color:#fff;\n"
 "}\n"
 "\n"
 "QDoubleSpinBox[status=\"unsaved\"]{\n"
@@ -117,6 +120,7 @@ class Ui_MainWindow(object):
         self.radioEndDoubleSpinBox.setStyleSheet("QDoubleSpinBox{\n"
 "    font-size:24px;\n"
 "    padding:2px;\n"
+"color:#fff;\n"
 "}\n"
 "\n"
 "QDoubleSpinBox[status=\"unsaved\"]{\n"
@@ -139,6 +143,8 @@ class Ui_MainWindow(object):
         self.rangeDivideLabel_1.setStyleSheet("QLabel{\n"
 "border:none;\n"
 "font-size:56px;\n"
+"color:#fff;\n"
+"\n"
 "}")
         self.rangeDivideLabel_1.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.rangeDivideLabel_1.setIndent(-1)
@@ -148,6 +154,8 @@ class Ui_MainWindow(object):
         self.rangeDivideLabel_2.setStyleSheet("QLabel{\n"
 "border:none;\n"
 "font-size:56px;\n"
+"color:#fff;\n"
+"\n"
 "}")
         self.rangeDivideLabel_2.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.rangeDivideLabel_2.setIndent(-1)
@@ -155,18 +163,21 @@ class Ui_MainWindow(object):
         self.radioRangeLabel = QtWidgets.QLabel(parent=self.signals_range)
         self.radioRangeLabel.setGeometry(QtCore.QRect(10, 20, 121, 20))
         self.radioRangeLabel.setStyleSheet("border:none;\n"
-"font-size:24px;")
+"font-size:22px;\n"
+"color:#fff;")
         self.radioRangeLabel.setObjectName("radioRangeLabel")
         self.soundRangeLabel = QtWidgets.QLabel(parent=self.signals_range)
         self.soundRangeLabel.setGeometry(QtCore.QRect(10, 63, 131, 20))
-        self.soundRangeLabel.setStyleSheet("border:none;\n"
-"font-size:24px;")
+        self.soundRangeLabel.setStyleSheet("color:#fff;\n"
+"border:none;\n"
+"font-size:22px;")
         self.soundRangeLabel.setObjectName("soundRangeLabel")
         self.saveRadioRangePushButton = QtWidgets.QPushButton(parent=self.signals_range)
         self.saveRadioRangePushButton.setGeometry(QtCore.QRect(515, 9, 41, 41))
-        self.saveRadioRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/save.svg);\n"
+        self.saveRadioRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/save.png);\n"
 "background-position:center;\n"
 "border-radius:6px;\n"
+"color:#fff;\n"
 "}\n"
 "\n"
 "QPushButton:pressed, QPushButton:checked{\n"
@@ -177,9 +188,10 @@ class Ui_MainWindow(object):
         self.saveRadioRangePushButton.setObjectName("saveRadioRangePushButton")
         self.saveSoundRangePushButton = QtWidgets.QPushButton(parent=self.signals_range)
         self.saveSoundRangePushButton.setGeometry(QtCore.QRect(515, 52, 41, 41))
-        self.saveSoundRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/save.svg);\n"
+        self.saveSoundRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/save.png);\n"
 "background-position:center;\n"
 "border-radius:6px;\n"
+"color:#fff;\n"
 "}\n"
 "\n"
 "QPushButton:pressed, QPushButton:checked{\n"
@@ -190,9 +202,10 @@ class Ui_MainWindow(object):
         self.saveSoundRangePushButton.setObjectName("saveSoundRangePushButton")
         self.chartRadioRangePushButton = QtWidgets.QPushButton(parent=self.signals_range)
         self.chartRadioRangePushButton.setGeometry(QtCore.QRect(570, 9, 41, 41))
-        self.chartRadioRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/chart.svg);\n"
+        self.chartRadioRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/chart.png);\n"
 "background-position:center;\n"
 "border-radius:6px;\n"
+"color:#fff;\n"
 "}\n"
 "\n"
 "QPushButton:pressed, QPushButton:checked{\n"
@@ -203,9 +216,10 @@ class Ui_MainWindow(object):
         self.chartRadioRangePushButton.setObjectName("chartRadioRangePushButton")
         self.chartSoundRangePushButton = QtWidgets.QPushButton(parent=self.signals_range)
         self.chartSoundRangePushButton.setGeometry(QtCore.QRect(570, 52, 41, 41))
-        self.chartSoundRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/chart.svg);\n"
+        self.chartSoundRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/chart.png);\n"
 "background-position:center;\n"
 "border-radius:6px;\n"
+"color:#fff;\n"
 "}\n"
 "\n"
 "QPushButton:pressed, QPushButton:checked{\n"
@@ -216,7 +230,7 @@ class Ui_MainWindow(object):
         self.chartSoundRangePushButton.setObjectName("chartSoundRangePushButton")
         self.clearRadioRangePushButton = QtWidgets.QPushButton(parent=self.signals_range)
         self.clearRadioRangePushButton.setGeometry(QtCore.QRect(460, 9, 41, 41))
-        self.clearRadioRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/clear.svg);\n"
+        self.clearRadioRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/clear.png);\n"
 "background-position:center;\n"
 "border-radius:6px;\n"
 "}\n"
@@ -229,9 +243,10 @@ class Ui_MainWindow(object):
         self.clearRadioRangePushButton.setObjectName("clearRadioRangePushButton")
         self.clearSoundRangePushButton = QtWidgets.QPushButton(parent=self.signals_range)
         self.clearSoundRangePushButton.setGeometry(QtCore.QRect(460, 52, 41, 41))
-        self.clearSoundRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/clear.svg);\n"
+        self.clearSoundRangePushButton.setStyleSheet("QPushButton{background-image: url(:/icons/clear.png);\n"
 "background-position:center;\n"
 "border-radius:6px;\n"
+"color:#fff;\n"
 "}\n"
 "\n"
 "QPushButton:pressed, QPushButton:checked{\n"
@@ -244,18 +259,18 @@ class Ui_MainWindow(object):
         self.RF_alert.setGeometry(QtCore.QRect(1280, 9, 267, 76))
         self.RF_alert.setStyleSheet("*{font-family: \'Roboto\';\n"
 "font-weight: 600;\n"
-"font-size: 30px;\n"
+"font-size: 28px;\n"
 "color: #FFFFFF;\n"
 "background-color: transparent;\n"
 "padding-left:60px;\n"
 "}\n"
 "\n"
 "*[alert=\"true\"]{\n"
-"border-image: url(:/images/rf_alert_on.png) stretch stretch;\n"
+"border-image: url(:/images/sound_alert_on.png) stretch stretch;\n"
 "}\n"
 "\n"
 "*[alert=\"false\"]{\n"
-"border-image: url(:/images/rf_alert_off.png) stretch stretch;\n"
+"border-image: url(:/images/sound_alert_off.png) stretch stretch;\n"
 "}")
         self.RF_alert.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeading|QtCore.Qt.AlignmentFlag.AlignLeft|QtCore.Qt.AlignmentFlag.AlignVCenter)
         self.RF_alert.setProperty("alert", False)
@@ -268,7 +283,7 @@ class Ui_MainWindow(object):
         self.Sound_alert.setFont(font)
         self.Sound_alert.setStyleSheet("*{font-family: \'Roboto\';\n"
 "font-weight: 600;\n"
-"font-size: 30px;\n"
+"font-size: 28px;\n"
 "color: #FFFFFF;\n"
 "background-color: transparent;\n"
 "padding-left:60px;\n"
@@ -297,7 +312,8 @@ class Ui_MainWindow(object):
         self.label.setStyleSheet("font-family: \'Roboto\';\n"
 "font-weight: 500;\n"
 "font-size: 48px;\n"
-"color: #FFFFFF;")
+"color: #FFFFFF;\n"
+"background-color:transparent;")
         self.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.label.setObjectName("label")
         self.GPS_level = QtWidgets.QLabel(parent=self.GPS)
@@ -306,7 +322,8 @@ class Ui_MainWindow(object):
 "*[level=\"1\"] { background-image: url(:/images/level_1.png); }\n"
 "*[level=\"2\"] { background-image: url(:/images/level_2.png); }\n"
 "*[level=\"3\"] { background-image: url(:/images/level_3.png); }\n"
-"*[level=\"4\"] { background-image: url(:/images/level_4.png); }")
+"*[level=\"4\"] { background-image: url(:/images/level_4.png); }\n"
+"*{background-color:transparent;}")
         self.GPS_level.setText("")
         self.GPS_level.setProperty("level", 4)
         self.GPS_level.setObjectName("GPS_level")
@@ -322,7 +339,8 @@ class Ui_MainWindow(object):
         self.label_2.setStyleSheet("font-family: \'Roboto\';\n"
 "font-weight: 500;\n"
 "font-size: 48px;\n"
-"color: #FFFFFF;")
+"color: #FFFFFF;\n"
+"background-color:transparent;")
         self.label_2.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.label_2.setObjectName("label_2")
         self.WiFi_level = QtWidgets.QLabel(parent=self.WiFi)
@@ -331,7 +349,8 @@ class Ui_MainWindow(object):
 "*[level=\"1\"] { background-image: url(:/images/level_1.png); }\n"
 "*[level=\"2\"] { background-image: url(:/images/level_2.png); }\n"
 "*[level=\"3\"] { background-image: url(:/images/level_3.png); }\n"
-"*[level=\"4\"] { background-image: url(:/images/level_4.png); }")
+"*[level=\"4\"] { background-image: url(:/images/level_4.png); }\n"
+"*{background-color:transparent;}")
         self.WiFi_level.setText("")
         self.WiFi_level.setProperty("level", 2)
         self.WiFi_level.setObjectName("WiFi_level")
@@ -348,7 +367,7 @@ class Ui_MainWindow(object):
 "font-weight: 400;\n"
 "font-size: 24px;\n"
 "color: #FFFFFF;\n"
-"background: rgba(0, 10, 0, 0.1);")
+"background-color:transparent;")
         self.TimeLabel.setText("00:00")
         self.TimeLabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.TimeLabel.setObjectName("TimeLabel")
@@ -595,9 +614,13 @@ class Ui_MainWindow(object):
         self.verticalLayout.setObjectName("verticalLayout")
         self.labelRadarSettings = QtWidgets.QLabel(parent=self.RadarSettings)
         self.labelRadarSettings.setMaximumSize(QtCore.QSize(16777215, 40))
+        font = QtGui.QFont()
+        font.setFamily("Roboto")
+        font.setPointSize(-1)
+        self.labelRadarSettings.setFont(font)
         self.labelRadarSettings.setStyleSheet("font-family: \'Roboto\';\n"
 "font-weight: 500;\n"
-"font-size: 26px;\n"
+"font-size: 24px;\n"
 "color: #FFFFFF;\n"
 "text-align:left;\n"
 "border:none;\n"
@@ -612,7 +635,8 @@ class Ui_MainWindow(object):
         self.radarRadiusSpinbox.setFont(font)
         self.radarRadiusSpinbox.setStyleSheet("font-family: \'Roboto\';\n"
 "font-weight: 500;\n"
-"font-size: 26px;")
+"font-size: 26px;\n"
+"color:#fff;")
         self.radarRadiusSpinbox.setWrapping(False)
         self.radarRadiusSpinbox.setButtonSymbols(QtWidgets.QAbstractSpinBox.ButtonSymbols.NoButtons)
         self.radarRadiusSpinbox.setMinimum(1)
@@ -704,6 +728,7 @@ class Ui_MainWindow(object):
 "font-size:30px;\n"
 "border:none;\n"
 "background-color:none;\n"
+"color:#fff;\n"
 "}")
         self.langLabel.setObjectName("langLabel")
         self.MainButtons_Container = QtWidgets.QFrame(parent=self.Body)
@@ -742,7 +767,7 @@ class Ui_MainWindow(object):
 "    border-image: url(:/images/Btn_MainMenu_red.png);\n"
 "    font-family: \'Roboto\';\n"
 "    font-weight: 500;\n"
-"    font-size: 40px;\n"
+"    font-size: 36px;\n"
 "    color: #FFFFFF;\n"
 "}\n"
 "QPushButton:pressed{\n"
@@ -784,6 +809,36 @@ class Ui_MainWindow(object):
 "}")
         self.menuButton.setObjectName("menuButton")
         self.verticalLayout_3.addWidget(self.menuButton)
+        self.backToLoginButton = QtWidgets.QPushButton(parent=self.MainButtons)
+        self.backToLoginButton.setEnabled(True)
+        self.backToLoginButton.setMinimumSize(QtCore.QSize(322, 103))
+        self.backToLoginButton.setMaximumSize(QtCore.QSize(322, 103))
+        self.backToLoginButton.setStyleSheet("QPushButton{\n"
+"    border: none;\n"
+"    background-image: url(:/images/Btn_MainMenu_red.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 36px;\n"
+"    color: #FFFFFF;\n"
+"}\n"
+"QPushButton:pressed{\n"
+"    border: none;\n"
+"    background-image: url(:/images/Btn_MainMenu_on.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 36px;\n"
+"    color: #002509;\n"
+"}\n"
+"QPushButton[enabled=\"false\"]{\n"
+"    border: none;\n"
+"    background-image: url(:/images/Btn_MainMenu_disabled.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 36px;\n"
+"    color: #FFFFFF;\n"
+"}")
+        self.backToLoginButton.setObjectName("backToLoginButton")
+        self.verticalLayout_3.addWidget(self.backToLoginButton)
         self.radarButton = QtWidgets.QPushButton(parent=self.MainButtons)
         self.radarButton.setEnabled(True)
         self.radarButton.setMinimumSize(QtCore.QSize(322, 103))
@@ -854,7 +909,8 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.addItem(spacerItem)
         self.screenRecordButton = QtWidgets.QPushButton(parent=self.Body)
         self.screenRecordButton.setEnabled(True)
-        self.screenRecordButton.setGeometry(QtCore.QRect(166, 845, 110, 110))
+        self.screenRecordButton.setVisible(False)
+        self.screenRecordButton.setGeometry(QtCore.QRect(166, 709, 110, 110))
         self.screenRecordButton.setStyleSheet("QPushButton#screenRecordButton{\n"
 "    background-color:rgba(0,0,0,0.8);\n"
 "    border-image: url(:/images/toggleRecordBtn_off.png);\n"
@@ -891,14 +947,14 @@ class Ui_MainWindow(object):
         self.screenRecordingLayout.setObjectName("screenRecordingLayout")
         self.filesViewButton = QtWidgets.QPushButton(parent=self.Body)
         self.filesViewButton.setEnabled(True)
-        self.filesViewButton.setGeometry(QtCore.QRect(166, 709, 110, 110))
+        self.filesViewButton.setGeometry(QtCore.QRect(166, 845, 110, 110))
         self.filesViewButton.setStyleSheet("QPushButton#filesViewButton{\n"
 "    background-color:rgba(0,0,0,0.8);\n"
 "    border-image: url(:/images/filesViewBtn_off.png);\n"
 "}\n"
 "\n"
 "QPushButton#filesViewButton:pressed,\n"
-"QPushButton#screenRecordButton:checked{\n"
+"QPushButton#filesViewButton:checked{\n"
 "    border-image: url(:/images/filesViewBtn_on.png);\n"
 "}\n"
 "\n"
@@ -958,5 +1014,6 @@ class Ui_MainWindow(object):
         self.langLabel.setText(_translate("MainWindow", "Мова:"))
         self.falseAlarmButton.setText(_translate("MainWindow", "Хибна тривога"))
         self.menuButton.setText(_translate("MainWindow", "Меню"))
+        self.backToLoginButton.setText(_translate("MainWindow", "Реавторизація"))
         self.radarButton.setText(_translate("MainWindow", "Режим радару"))
         self.mapButton.setText(_translate("MainWindow", "Режим карти"))

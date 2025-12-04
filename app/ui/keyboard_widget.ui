@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>KeyboardWidget</class>
+ <widget class="QWidget" name="KeyboardWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>141</width>
+    <height>111</height>
+   </rect>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">#LanguageFrame {
+    background: rgba(0, 10, 0, 0.8);
+    border: 2px solid #328844;
+}</string>
+  </property>
+  <widget class="QFrame" name="LanguageFrame">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>141</width>
+     <height>111</height>
+    </rect>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::Shape::StyledPanel</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Shadow::Raised</enum>
+   </property>
+   <widget class="QLabel" name="langLabel">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>0</y>
+      <width>91</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">font-family: 'Roboto';
+font-size:30px;
+border:none;
+background-color:transparent;
+color:#fff;</string>
+    </property>
+    <property name="text">
+     <string>Мова:</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="langComboBox">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>50</y>
+      <width>121</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Roboto</family>
+      <pointsize>-1</pointsize>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QComboBox {
+      font-family: 'Roboto';
+      font-size: 28px;
+      color: #FFFFFF;
+      background-color: rgba(0, 20, 0, 0.8);
+      border: 2px solid #328844;
+      padding: 8px;
+      border-radius: 4px;
+}
+
+QComboBox QAbstractItemView{
+    background-color: #002509; 
+    color: #FFFFFF;
+    selection-background-color: #328844; 
+    selection-color: #FFFFFF;
+}</string>
+    </property>
+    <item>
+     <property name="text">
+      <string>EN</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>UA</string>
+     </property>
+    </item>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

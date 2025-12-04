@@ -3,11 +3,6 @@
 Ініціалізує QApplication, та запускає авторизацію і головне вікно (MainWindow).
 """
 
-"""
-Головна точка входу в програму.
-Ініціалізує QApplication, та запускає авторизацію і головне вікно (MainWindow).
-"""
-
 import sys
 import asyncio
 import qasync
@@ -43,7 +38,6 @@ async def main():
 
     if remember_me == False:
         app.setQuitOnLastWindowClosed(False)
-        login_dialog = LoginDialog(settings=settings_service, keyboard=keyboard_service)
         login_dialog = LoginDialog(settings=settings_service, keyboard=keyboard_service)
         make_window_stretched(login_dialog)
 

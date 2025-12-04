@@ -3,11 +3,6 @@
 Реалізує функціонал захоплення відео з екрану (Screen Recording) та збереження у файл .mp4.
 """
 
-"""
-Сервіс запису екрану.
-Реалізує функціонал захоплення відео з екрану (Screen Recording) та збереження у файл .mp4.
-"""
-
 from PyQt6.QtCore import QThread, pyqtSignal, pyqtSlot, QElapsedTimer
 from vidgear.gears import WriteGear
 import numpy as np
@@ -41,12 +36,6 @@ class RecordingService(QThread):
             self.monitor_index = 1
             self.scale_factor = 1.0
         else:
-
-            self.fps = 10
-            self.monitor_index = 0
-
-            self.scale_factor = 0.5
-
             self.fps = 10
             self.monitor_index = 0
 
@@ -170,17 +159,7 @@ class RecordingService(QThread):
 
         self.frames_written = 0
         self.start_time_perf = time.perf_counter()
-        self.start_time.start()
-        self.prev_total_ms = 0
-        self.dif_time_ms = 0
-        self.pause_start = 0
 
-        self.recording_started.emit()
-
-        self.frames_written = 0
-        self.start_time_perf = time.perf_counter()
-
-        try:
         try:
             while self.is_running:
                 now = time.perf_counter()
@@ -212,46 +191,9 @@ class RecordingService(QThread):
                     expected_frames = int(elapsed * self.fps)
 
                     if expected_frames > self.frames_written + 1:
-                now = time.perf_counter()
-
-                if self.is_paused:
-                    time.sleep(0.1)
-                    self.start_time_perf += 0.1
-                    continue
-
-                self.update_duration()
-
-                sct_img = self.sct.grab(monitor)
-                frame = np.array(sct_img)
-                frame = frame[:, :, :3]
-
-                if self.scale_factor != 1.0:
-                    frame = cv2.resize(
-                        frame,
-                        (self.record_width, self.record_height),
-                        interpolation=cv2.INTER_NEAREST,
-                    )
-
-                if self.writer:
-
-                    self.writer.write(frame)
-                    self.frames_written += 1
-
-                    elapsed = time.perf_counter() - self.start_time_perf
-                    expected_frames = int(elapsed * self.fps)
-
-                    if expected_frames > self.frames_written + 1:
                         self.writer.write(frame)
                         self.frames_written += 1
-                        self.frames_written += 1
 
-                next_frame_time = self.start_time_perf + (
-                    self.frames_written / self.fps
-                )
-                sleep_time = next_frame_time - time.perf_counter()
-
-                if sleep_time > 0.001:
-                    time.sleep(sleep_time)
                 next_frame_time = self.start_time_perf + (
                     self.frames_written / self.fps
                 )
@@ -263,11 +205,8 @@ class RecordingService(QThread):
         except Exception as e:
             self.recording_error.emit(f"Loop Error: {e}")
             print(f"[Recorder] Error: {e}")
-            self.recording_error.emit(f"Loop Error: {e}")
-            print(f"[Recorder] Error: {e}")
 
         finally:
-            print("[Recorder] Stopping...")
             print("[Recorder] Stopping...")
             if self.sct:
                 self.sct.close()
@@ -289,19 +228,11 @@ class RecordingService(QThread):
             m = (total_seconds % 3600) // 60
             s = total_seconds % 60
             self.duration_updated.emit(f"{h:02}:{m:02}:{s:02}")
-        if total_ms - self.prev_total_ms >= 1000:
-            self.prev_total_ms = total_ms
-            total_seconds = total_ms // 1000
-            h = total_seconds // 3600
-            m = (total_seconds % 3600) // 60
-            s = total_seconds % 60
-            self.duration_updated.emit(f"{h:02}:{m:02}:{s:02}")
 
     @pyqtSlot(str)
     def start_recording(self, filename):
         if not self.isRunning():
             self.filename = filename
-
 
             self.start()
 
@@ -314,7 +245,6 @@ class RecordingService(QThread):
         if is_paused and not self.is_paused:
             self.pause_start = self.start_time.elapsed()
         elif not is_paused and self.is_paused:
-            self.dif_time_ms += self.start_time.elapsed() - self.pause_start
             self.dif_time_ms += self.start_time.elapsed() - self.pause_start
         self.is_paused = is_paused
         self.recording_paused.emit(self.is_paused)

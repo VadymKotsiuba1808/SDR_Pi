@@ -3,13 +3,7 @@
 Зв'язує графічний інтерфейс (View) з сервісами та логікою. Обробляє навігацію та глобальні події.
 """
 
-"""
-Головне вікно програми (Controller).
-Зв'язує графічний інтерфейс (View) з сервісами та логікою. Обробляє навігацію та глобальні події.
-"""
-
 import os
-import sys
 import math
 import asyncio
 from PyQt6.QtWidgets import QMainWindow, QApplication, QDialog, QMessageBox, QFileDialog
@@ -191,9 +185,6 @@ class MainWindow(QMainWindow):
             self.ui.backToLoginButton.setVisible(True)
         else:
             self.ui.backToLoginButton.setVisible(False)
-            self.ui.backToLoginButton.setVisible(True)
-        else:
-            self.ui.backToLoginButton.setVisible(False)
 
         self.ui.screenRecordingLayout.addWidget(self.record_status_widget)
 
@@ -209,7 +200,6 @@ class MainWindow(QMainWindow):
         self.ui.menuButton.clicked.connect(self.test_draw_dot)
         self.ui.radarButton.clicked.connect(self.set_radar_mode)
         self.ui.mapButton.clicked.connect(self.set_map_mode)
-        self.ui.backToLoginButton.clicked.connect(self.restart_app)
         self.ui.backToLoginButton.clicked.connect(self.restart_app)
 
         self.ui.saveRadarSettingsBtn.clicked.connect(self.handle_radar_radius_change)
@@ -253,7 +243,6 @@ class MainWindow(QMainWindow):
 
         self.timer_wifi = QTimer(self)
         self.timer_wifi.timeout.connect(self.update_wifi_signal_info)
-        self.timer_wifi.start(30 * 1000)
         self.timer_wifi.start(30 * 1000)
 
     @asyncSlot()
@@ -300,7 +289,6 @@ class MainWindow(QMainWindow):
         QCoreApplication.removeTranslator(self.translator)
 
         # Завантажуємо та встановлюємо новий
-        path = f"app/i18n/qm/app_{lang_code}.qm"
         path = f"app/i18n/qm/app_{lang_code}.qm"
         if self.translator.load(path):
             QCoreApplication.installTranslator(self.translator)
@@ -459,8 +447,6 @@ class MainWindow(QMainWindow):
         except Exception as e:
             print(f"Критична помилка запуску VLC: {e}")
             url = QUrl.fromLocalFile(file_path)
-            print(f"Критична помилка запуску VLC: {e}")
-            url = QUrl.fromLocalFile(file_path)
             QDesktopServices.openUrl(url)
 
     def set_radar_mode(self):
@@ -476,18 +462,6 @@ class MainWindow(QMainWindow):
 
         self.isRadarMode = False
         self.scale_map()
-
-    def restart_app(self):
-        self.settings_service.remember_me = False
-        self.setEnabled(False)
-        print("Performing restart...")
-
-        QProcess.startDetached(sys.executable, sys.argv)
-
-        QTimer.singleShot(8000, self.close_app)
-
-    def close_app(self):
-        QCoreApplication.quit()
 
     def set_radio_range(self):
         start_value = self.ui.radioStartDoubleSpinBox.value()

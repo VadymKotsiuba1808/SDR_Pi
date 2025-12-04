@@ -4,13 +4,8 @@
 """
 
 import os
-import sys
 import math
 import asyncio
-import shutil
-import subprocess
-import keyboard
-import re
 from PyQt6.QtWidgets import QMainWindow, QApplication, QDialog, QMessageBox, QFileDialog
 from PyQt6.QtCore import (
     QTimer,
@@ -24,8 +19,6 @@ from PyQt6.QtCore import (
     pyqtSignal,
     QThread,
     QUrl,
-    QProcess,
-    QProcessEnvironment,
 )
 from PyQt6.QtGui import (
     QPixmap,
@@ -48,7 +41,7 @@ from app.services.api_server import ApiServer
 from app.services.map_service import MapService, MapTypes
 from app.utils.test_data_provider import TestDataProvider
 from app.services.settings_service import SettingsService
-from app.services.system_service import SystemService
+from app.protocols import OSService
 from app.services.keyboard_service import KeyboardService
 from app.widgets.set_map_dialog import SetMapDialog
 from app.widgets.autosize_window import make_scalable
@@ -59,12 +52,7 @@ from app.services.map_service import MapService, MapTypes
 from app.services.keyboard_service import KeyboardService
 from app.services.recording_service import RecordingService
 from app.services.media_player_service import MediaPlayerService
-from app.services.pi_network_service import PiNetworkService
-from app.core.detection_manager import DetectionManager
-from app.models.detection_event import DetectionEvent
-from app.protocols import OSService
 from app.utils.ui_utils import update_element_styles
-from app.utils.test_data_provider import TestDataProvider
 from app.utils.system_utils import (
     get_wifi_signal_strength,
     restart_process,
@@ -79,7 +67,7 @@ class MainWindow(QMainWindow):
         self,
         settings: SettingsService,
         keyboard: KeyboardService,
-        system: SystemService,
+        system: OSService,
         parent=None,
     ):
         super().__init__(parent)
@@ -161,6 +149,11 @@ class MainWindow(QMainWindow):
         self.translator = QTranslator()
 
         self.record_status_widget = RecordingStatusWidget(self.settings_service, self)
+
+        self.media_service = MediaPlayerService(self.system_service)
+        self.media_service.playback_finished.connect(
+            lambda: self.ui.filesViewButton.setChecked(False)
+        )
 
         self.media_process = None
 
@@ -589,10 +582,9 @@ class MainWindow(QMainWindow):
 
         btn = self.sender()
 
-        if btn.isChecked() == False:
-            if hasattr(self, "media_process") and self.media_process:
-                self.media_process.close()
-                self.media_process = None
+        if not btn.isChecked():
+            if hasattr(self, "media_service") and self.media_service:
+                self.media_service.stop()
                 print("Переглядач успішно закритий")
             return
 
@@ -611,99 +603,12 @@ class MainWindow(QMainWindow):
             self.ui.filesViewButton.setChecked(False)
             return
 
-        program_path = self.get_vlc_executable()
-        if not program_path:
-            program_path = "/usr/bin/vlc"
-
-        print(f"Запускаємо: {program_path} для файлу {file_path}")
-
-        arguments = [
-            "--fullscreen",
-            "--play-and-pause",
-            "--image-duration=-1",
-            "--no-qt-privacy-ask",
-            "--no-qt-error-dialogs",
-            "--global-key-quit=q",
-            "--loop",
-        ]
-
-        ext = os.path.splitext(file_path)[1].lower()
-        image_extensions = [".png", ".jpg", ".jpeg", ".bmp", ".gif", ".webp", ".tiff"]
-
-        if ext in image_extensions:
-            pass
-        arguments.append("--vout=xcb_x11")
-
-        arguments.append(file_path)
-
         try:
-            self.media_process = QProcess(self)
-
-            env = QProcessEnvironment.systemEnvironment()
-
-            keys_to_clean = [
-                "QT_PLUGIN_PATH",
-                "QT_QPA_PLATFORM_PLUGIN_PATH",
-                "LD_LIBRARY_PATH",
-                "PYTHONPATH",
-                "PYTHONHOME",
-            ]
-
-            for key in keys_to_clean:
-                env.remove(key)
-
-            all_keys = env.keys()
-            for key in all_keys:
-                if key.startswith("QT_"):
-                    env.remove(key)
-
-            self.media_process.setProcessEnvironment(env)
-
-            self.media_process.finished.connect(
-                lambda *_: self.ui.filesViewButton.setChecked(False)
-            )
-
-            self.media_process.readyReadStandardError.connect(
-                lambda: print(
-                    "VLC Log:",
-                    self.media_process.readAllStandardError().data().decode().strip(),
-                )
-            )
-
-            self.media_process.start(program_path, arguments)
-
+            self.media_service.play(file_path)
         except Exception as e:
             print(f"Критична помилка запуску VLC: {e}")
             url = QUrl.fromLocalFile(file_path)
             QDesktopServices.openUrl(url)
-
-    def get_vlc_executable(self):
-        """
-        Знаходить шлях до виконуваного файлу VLC в залежності від ОС.
-        """
-
-        if self.system_service.is_windows:
-            # Шукаємо у стандартних папках Windows
-            possible_paths = [
-                r"C:\Program Files\VideoLAN\VLC\vlc.exe",
-                r"C:\Program Files (x86)\VideoLAN\VLC\vlc.exe",
-            ]
-            for path in possible_paths:
-                if os.path.exists(path):
-                    return path
-
-            # Якщо не знайшли, шукаємо в системному PATH
-            path_in_env = shutil.which("vlc")
-            if path_in_env:
-                return path_in_env
-
-        elif self.system_service.is_linux:
-            path_in_env = shutil.which("vlc")
-            if path_in_env:
-                return path_in_env
-
-        # Якщо нічого не знайшли
-        return None
 
     def set_radar_mode(self):
         if self.isRadarMode:
@@ -718,18 +623,6 @@ class MainWindow(QMainWindow):
 
         self.isRadarMode = False
         self.scale_map()
-
-    def restart_app(self):
-        self.settings_service.remember_me = False
-        self.setEnabled(False)
-        print("Performing restart...")
-
-        QProcess.startDetached(sys.executable, sys.argv)
-
-        QTimer.singleShot(8000, self.close_app)
-
-    def close_app(self):
-        QCoreApplication.quit()
 
     def set_radio_range(self):
         start_value = self.ui.radioStartDoubleSpinBox.value()
@@ -858,6 +751,36 @@ class MainWindow(QMainWindow):
 
     def flush_radar_dots(self):
         self.ui.Radar.setPixmap(QPixmap(":/images/radar.png"))
+
+    def create_radar_dot(self, angle, distance):
+        pixmap = self.ui.Radar.pixmap()
+        self.radar_background = self.ui.Radar.pixmap()
+        if not pixmap or pixmap.isNull():
+            return
+
+        painter = QPainter(pixmap)
+        pen = QPen(QColor("red"), 20)
+        painter.setPen(pen)
+
+        center_x = pixmap.width() / 2
+        center_y = pixmap.height() / 2
+        rad_angle = math.radians(angle - 90)
+
+        x = center_x + distance * math.cos(rad_angle)
+        y = center_y + distance * math.sin(rad_angle)
+
+        painter.drawPoint(int(x), int(y))
+        painter.end()
+        self.ui.Radar.setPixmap(pixmap)
+
+    def clear_radar_dots(self):
+        """Видаляє намальовані точки з радара, відновлюючи фон."""
+        if not hasattr(self, "radar_background"):
+            # Зберігання фону
+            return
+
+        clean_pixmap = self.radar_background.copy()
+        self.ui.Radar.setPixmap(clean_pixmap)
 
     @asyncSlot()
     async def refresh_map(self):
@@ -999,50 +922,12 @@ class MainWindow(QMainWindow):
         self.ui.WiFi_level.setProperty("level", wifi_level)
         update_element_styles(self.ui.WiFi_level)
 
-    def get_wifi_signal_strength(self):
-        """
-        Повертає рівень сигналу Wi-Fi у %, або None якщо не вдалося визначити.
-        Підтримує Windows та Linux.
-        """
+    def restart_app(self):
+        self.settings_service.remember_me = False
+        self.setEnabled(False)
+        print("Performing restart...")
 
-        try:
-            if self.system_service.is_windows:
-                # --- Windows ---
-                output = subprocess.check_output(
-                    ["netsh", "wlan", "show", "interfaces"], encoding="utf-8"
-                )
-                match = re.search(r"Signal\s*:\s*(\d+)%", output)
-                if match:
-                    return int(match.group(1))
-
-            elif self.system_service.is_linux:
-                # --- Linux ---
-                # Спроба через nmcli (нові системи)
-                try:
-                    output = subprocess.check_output(
-                        ["nmcli", "-t", "-f", "active,ssid,signal", "dev", "wifi"],
-                        encoding="utf-8",
-                    )
-                    for line in output.splitlines():
-                        if line.startswith("yes:"):
-                            parts = line.split(":")
-                            if len(parts) >= 3:
-                                return int(parts[2])
-                except FileNotFoundError:
-                    # Якщо nmcli недоступний, fallback на iwconfig
-                    output = subprocess.check_output(["iwconfig"], encoding="utf-8")
-                    match = re.search(r"Signal level=(-?\d+) dBm", output)
-                    if match:
-                        dbm = int(match.group(1))
-                        quality = 2 * (dbm + 100)
-                        return max(0, min(100, quality))
-
-        except subprocess.CalledProcessError:
-            pass
-        except Exception as e:
-            print(f"⚠️ Error reading Wi-Fi signal: {e}")
-
-        return None
+        QTimer.singleShot(8000, restart_process)
 
     def closeEvent(self, event):
         print("Закриття програми...")

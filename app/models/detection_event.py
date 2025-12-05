@@ -1,47 +1,50 @@
-from dataclasses import dataclass, field
-from typing import Dict, Optional
+"""
+Модель події детекції.
+type: Джерело детекції -> ТІЛЬКИ "RF" або "Audio".
+object_class: Клас об'єкта -> "drone", "bird", "mavic_3" тощо.
+"""
+
+from dataclasses import dataclass
 import uuid
 from datetime import datetime
 
 
 @dataclass
 class DetectionEvent:
-    """
-    Модель події детекції, отриманої від віддаленого пристрою (Raspberry Pi №1).
-    """
 
-    id: str  # Унікальний ID події
+    id: str
     type: str  # "RF" або "Audio"
-    object_class: str  # Наприклад: "drone"
-    confidence: float  # 0.0 до 1.0
-    timestamp: str  # Часова мітка ISO
+    object_class: str
+    confidence: float
+    timestamp: str
     distance: int
     angle: float
-
-    @property
-    def is_critical(self) -> bool:
-        """Логіка визначення важливості (наприклад, поріг впевненості > 0.8)"""
-        return self.confidence > 0.8
 
     @staticmethod
     def from_dict(data: dict) -> "DetectionEvent":
         """Парсинг вхідного словника JSON у об'єкт."""
+
+        raw_type = data.get("type", "RF").upper()
+        if raw_type not in ["RF", "AUDIO"]:
+            raw_type = "RF"
+
+        obj_class = data.get("object_class", data.get("class", "unknown"))
+
         return DetectionEvent(
-            id=data.get("id", str(uuid.uuid4())),  # Якщо ID не прийшов, генеруємо
-            type=data.get("type", "Unknown"),
-            object_class=data.get("class", "unknown"),
+            id=data.get("id", str(uuid.uuid4())),
+            type=raw_type,
+            object_class=obj_class,
             confidence=float(data.get("confidence", 0.0)),
             timestamp=data.get("timestamp", datetime.now().isoformat()),
-            distance=data.get("distance", 0),
-            angle=data.get("angle", 0),
+            distance=int(data.get("distance", 0)),
+            angle=float(data.get("angle", 0)),
         )
 
     def to_dict(self) -> dict:
-        """Серіалізація для відправки (якщо потрібно переслати далі)."""
         return {
             "id": self.id,
             "type": self.type,
-            "class": self.object_class,
+            "object_class": self.object_class,
             "confidence": self.confidence,
             "timestamp": self.timestamp,
             "distance": self.distance,

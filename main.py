@@ -27,7 +27,7 @@ async def main():
 
     settings_service = SettingsService()
     system_service = SystemService()
-    keyboard_service = KeyboardService()
+    keyboard_service = KeyboardService(system_service)
 
     future = asyncio.Future()
     # Коректне закриття при виході з програми

@@ -4,16 +4,19 @@
 
 from PyQt6.QtCore import QObject, pyqtSignal, QTimer
 from app.models.detection_event import DetectionEvent
-from datetime import datetime
+from datetime import datetime, timedelta  #
 
 
 class DetectionManager(QObject):
-    detections_changed = pyqtSignal()  # Сигнал про зміну детекцій
+    detections_changed = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self.current_detections = {}
         self.detection_indices = {}
+
+        self.ignored_detections = {}
+
         self.next_index = 1
         self.update_requested = False
         self.ttl_timer = QTimer(self)
@@ -23,8 +26,16 @@ class DetectionManager(QObject):
 
     def add_detection(self, event: DetectionEvent):
         event_id = event.id
-        if event_id in self.current_detections:
 
+        if event_id in self.ignored_detections:
+            expiry_time = self.ignored_detections[event_id]
+            if datetime.now() < expiry_time:
+                return
+            else:
+                del self.ignored_detections[event_id]
+        # ---------------------------
+
+        if event_id in self.current_detections:
             self.current_detections[event_id] = event
             self._trigger_update()
             return
@@ -38,6 +49,9 @@ class DetectionManager(QObject):
         if event_id not in self.current_detections:
             return
 
+        # Додаємо ID в список ігнорування на 3 секунди вперед
+        self.ignored_detections[event_id] = datetime.now() + timedelta(seconds=3)
+
         del self.current_detections[event_id]
         del self.detection_indices[event_id]
 
@@ -48,6 +62,7 @@ class DetectionManager(QObject):
 
     def _check_ttl(self):
         now = datetime.now()
+
         to_remove = [
             eid
             for eid, event in self.current_detections.items()
@@ -55,9 +70,25 @@ class DetectionManager(QObject):
             > self.ttl_seconds
         ]
         for eid in to_remove:
-            self.remove_detection(eid)
+            del self.current_detections[eid]
+            del self.detection_indices[eid]
+
+        if to_remove:
+            if not self.current_detections:
+                self.next_index = 1
+            self._trigger_update()
+
+        ignored_to_remove = [
+            eid for eid, expiry in self.ignored_detections.items() if now > expiry
+        ]
+        for eid in ignored_to_remove:
+            del self.ignored_detections[eid]
 
     def clear_detections(self):
+        expiry = datetime.now() + timedelta(seconds=3)
+        for eid in self.current_detections:
+            self.ignored_detections[eid] = expiry
+
         self.current_detections.clear()
         self.detection_indices.clear()
         self.next_index = 1

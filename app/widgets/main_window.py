@@ -6,11 +6,16 @@
 import os
 import math
 import asyncio
-import shutil
-import subprocess
-import keyboard
-import re
-from PyQt6.QtWidgets import QMainWindow, QApplication, QDialog, QMessageBox, QFileDialog
+import datetime
+from PyQt6.QtWidgets import (
+    QMainWindow,
+    QApplication,
+    QDialog,
+    QMessageBox,
+    QFileDialog,
+    QTextEdit,
+    QLineEdit,
+)
 from PyQt6.QtCore import (
     QTimer,
     QDateTime,
@@ -31,6 +36,8 @@ from PyQt6.QtGui import (
     QColor,
     QPen,
     QDesktopServices,
+    QFont,
+    QTextCursor,
 )
 
 from PyQt6 import uic
@@ -39,19 +46,20 @@ from qasync import asyncSlot
 from app.ui.ui_main_window import Ui_MainWindow
 from app.assets import resources_rc
 
-from app.services.api_server import ApiServer
-from app.services.map_service import MapService, MapTypes
-from app.utils.test_data_provider import TestDataProvider
-from app.services.settings_service import SettingsService
-from app.protocols import OSService
-from app.services.keyboard_service import KeyboardService
 from app.widgets.set_map_dialog import SetMapDialog
 from app.widgets.autosize_window import make_scalable
-from app.services.pi_network_service import PiNetworkService
 from app.widgets.record_status_widget import RecordingStatusWidget
+from app.services.settings_service import SettingsService
+from app.services.map_service import MapService, MapTypes
+from app.services.keyboard_service import KeyboardService
 from app.services.recording_service import RecordingService
 from app.services.media_player_service import MediaPlayerService
+from app.services.pi_network_service import PiNetworkService
+from app.core.detection_manager import DetectionManager
+from app.models.detection_event import DetectionEvent
+from app.protocols import OSService
 from app.utils.ui_utils import update_element_styles
+from app.utils.test_data_provider import TestDataProvider
 from app.utils.system_utils import (
     get_wifi_signal_strength,
     restart_process,
@@ -100,20 +108,23 @@ class MainWindow(QMainWindow):
         """
         super().showEvent(event)
         self.ui.map_background_label.setScaledContents(False)
-        # Робимо розрахунок при першому показі
+
         self._update_map_geometry()
         self.refresh_map()
 
+        self.radar_clean_pixmap = QPixmap(":/images/radar.png").scaled(
+            self.ui.Radar.size(),
+            Qt.AspectRatioMode.KeepAspectRatio,
+            Qt.TransformationMode.FastTransformation,
+        )
+
     def changeEvent(self, event):
-        # Ловимо подію, яку надіслав installTranslator
         if event.type() == QEvent.Type.LanguageChange:
             if self.settings_service.compiled_ui_using_enabled:
                 print("Зміна мови, оновлюю UI...")
-                # Викликаємо авто-згенеровану функцію
                 self.ui.retranslateUi(self)
         else:
-            # Передаємо всі інші події (натискання клавіш, зміна розміру тощо)
-            # на стандартну обробку
+
             super().changeEvent(event)
 
     def _load_ui(self):
@@ -130,12 +141,17 @@ class MainWindow(QMainWindow):
 
         self.map_service = MapService(settings=self.settings_service)
 
-        # self.api_server = ApiServer(settings=self.settings_service)
+        self.searched_index = None
+
+        self.detection_manager = DetectionManager(self)
+        self.detection_manager.detections_changed.connect(self._update_detection_ui)
+
         self.pi_network = PiNetworkService(self.settings_service, self)
         self.pi_network.data_received.connect(self.handle_pi_data)
-
-        # self.api_server.on_rf_data = self.handle_rf_data
-        # self.api_server.on_audio_alert = self.handle_audio_alert
+        self.pi_network.gps_received.connect(self.handle_gps)
+        self.pi_network.detection_received.connect(self.detection_manager.add_detection)
+        self.pi_network.rf_data_received.connect(self.handle_rf_data)
+        self.pi_network.sound_data_received.connect(self.handle_sound_data)
 
         self.current_map_type_index = 0
         self.map_types = [e for e in MapTypes]
@@ -198,18 +214,19 @@ class MainWindow(QMainWindow):
     def _connect_handlers(self):
         self.ui.mapLayoutButton.clicked.connect(self.change_map_type)
         self.ui.screenSaveButton.clicked.connect(self.take_screenshot)
-        self.ui.homeButton.clicked.connect(self.update_status_bar_with_test_data)
+        self.ui.homeButton.clicked.connect(self.update_gps_and_map)
         self.ui.addMapButton.clicked.connect(self.handle_add_map)
         self.ui.screenRecordButton.clicked.connect(self.handle_toggle_recording)
         self.ui.filesViewButton.clicked.connect(self.handle_open_file)
 
-        self.ui.falseAlarmButton.clicked.connect(self.stop_alert)
-        self.ui.menuButton.clicked.connect(self.test_draw_dot)
+        self.ui.falseAlarmButton.clicked.connect(self.handle_false_alarm)
+        # self.ui.menuButton.clicked.connect(self.test_draw_dot)
         self.ui.radarButton.clicked.connect(self.set_radar_mode)
         self.ui.mapButton.clicked.connect(self.set_map_mode)
         self.ui.backToLoginButton.clicked.connect(self.restart_app)
 
         self.ui.saveRadarSettingsBtn.clicked.connect(self.handle_radar_radius_change)
+        self.ui.index_search_edit.returnPressed.connect(self.perform_search)
 
         self.ui.saveRadioRangePushButton.clicked.connect(self.set_radio_range)
         self.ui.saveSoundRangePushButton.clicked.connect(self.set_sound_range)
@@ -244,9 +261,9 @@ class MainWindow(QMainWindow):
         self.timer_radar.timeout.connect(self.rotate_radar_animation)
         self.timer_radar.start(60)
 
-        self.test_update_timer = QTimer(self)
-        self.test_update_timer.timeout.connect(self.update_status_bar_with_test_data)
-        self.test_update_timer.start(10 * 60 * 1000)
+        # self.test_update_timer = QTimer(self)
+        # self.test_update_timer.timeout.connect(self.update_status_bar_with_test_data)
+        # self.test_update_timer.start(10 * 60 * 1000)
 
         self.timer_wifi = QTimer(self)
         self.timer_wifi.timeout.connect(self.update_wifi_signal_info)
@@ -259,8 +276,6 @@ class MainWindow(QMainWindow):
         Цей метод має викликатися з 'main' ПІСЛЯ створення вікна.
         """
         print("Запуск фонових асинхронних задач (сервер та слухач)...")
-        # self.api_server.run_server()
-        self.listen_for_pi_data()
         self.pi_network.start()
 
     def _update_map_geometry(self):
@@ -270,25 +285,21 @@ class MainWindow(QMainWindow):
         (з розширеним логуванням)
         """
 
-        # Перевірка, чи віджети вже завантажені
         if not self.ui.Radar.width() or not self.ui.Radar.height():
             return
 
-        # --- 1. Збір вхідних даних ---
         radar_width = self.ui.RadarFrame.width()
         radar_height = self.ui.RadarFrame.height()
 
         map_bg_width = self.ui.map_background_label.width()
         map_bg_height = self.ui.map_background_label.height()
 
-        # --- 2. Розрахунок коефіцієнтів ---
         self.add_sizes_map_k = [
             map_bg_width / radar_width,
             map_bg_height / radar_height,
         ]
 
     def load_language(self):
-        # Видаляємо старий перекладач
         lang_code = self.settings_service.lang_code
 
         if lang_code == None:
@@ -296,7 +307,6 @@ class MainWindow(QMainWindow):
 
         QCoreApplication.removeTranslator(self.translator)
 
-        # Завантажуємо та встановлюємо новий
         path = f"app/i18n/qm/app_{lang_code}.qm"
         if self.translator.load(path):
             QCoreApplication.installTranslator(self.translator)
@@ -317,37 +327,172 @@ class MainWindow(QMainWindow):
         if self.settings_service.compiled_ui_using_enabled:
             self.load_language()
 
-    @asyncSlot()
-    async def listen_for_pi_data(self):
-        """Асинхронно слухає та обробляє дані з Raspberry Pi."""
-        # Тут буде ваша логіка для постійного отримання даних
-        # Наприклад, через веб-сокет або HTTP-запити
-        print("Запущено асинхронний слухач даних...")
-        while True:
-            # `await asyncio.sleep(1)` імітує асинхронне очікування.
-            await asyncio.sleep(1)
-            # self.handle_rf_data(data) # Викликаємо обробник, коли дані прийшли
+    def handle_rf_data(self, data):
+        """Заглушка для обробки потокових RF-даних."""
+        pass  # Логіка буде додана пізніше
 
-    def handle_rf_data(self, analyzed_results):
-        print(f"Слот отримав проаналізовані RF дані: {analyzed_results}")
-        self.flush_radar_dots()
-        if analyzed_results:
-            if "0" in analyzed_results:
-                self.create_radar_dot(180, 350)
-            if "1" in analyzed_results:
-                self.create_radar_dot(240, 150)
+    def handle_sound_data(self, data):
+        """Заглушка для обробки потокових звукових даних."""
+        pass  # Логіка буде додана пізніше
 
-    def handle_audio_alert(self, status):
-        print(f"Слот отримав звукову тривогу: {status}")
-        self.ui.Sound_alert.setProperty("alert", status)
+    @pyqtSlot()
+    def _update_detection_ui(self):
+        """Оновлює UI на основі поточних детекцій."""
+        self.update_radar()
+        self.update_detection_info()
+        self.update_alert_status()
+
+    def update_radar(self):
+        """Перемальовує радар. Точки поза радіусом 'липнуть' до краю."""
+        detections, indices = self.detection_manager.get_detections()
+
+        pixmap = self.radar_clean_pixmap.copy()
+        painter = QPainter(pixmap)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+
+        font = QFont("Arial", 14, QFont.Weight.Bold)
+        painter.setFont(font)
+
+        center_x = pixmap.width() / 2
+        center_y = pixmap.height() / 2
+
+        max_px_radius = min(center_x, center_y)
+
+        max_meters_setting = self.settings_service.radar_radius
+        if max_meters_setting <= 0:
+            max_meters_setting = 1000
+
+        scale = max_px_radius / max_meters_setting
+
+        for event_id, event in detections.items():
+            index = indices.get(event_id, "?")
+
+            pixel_dist = event.distance * scale
+
+            is_out_of_bounds = pixel_dist >= max_px_radius
+
+            if is_out_of_bounds:
+                pixel_dist = max_px_radius - 15
+
+                painter.setPen(QPen(QColor("orange"), 18))
+            else:
+                color = QColor("red") if event.type == "RF" else QColor("yellow")
+                painter.setPen(QPen(color, 20))
+
+            rad_angle = math.radians(event.angle - 90)
+
+            x = center_x + pixel_dist * math.cos(rad_angle)
+            y = center_y + pixel_dist * math.sin(rad_angle)
+
+            painter.drawPoint(int(x), int(y))
+
+            painter.setPen(QPen(QColor("black"), 1))
+            painter.drawText(int(x), int(y) - 15, str(index))
+
+        painter.end()
+        self.ui.Radar.setPixmap(pixmap)
+
+    def update_detection_info(self):
+        """
+        Відображає детальну інформацію ТІЛЬКИ для self.searched_index.
+        Якщо нічого не шукаємо -> пусто.
+        Якщо ціль з таким індексом зникла -> "Target Lost".
+        """
+        if self.searched_index is None:
+            self.ui.detection_info_text.clear()
+            return
+
+        target_event = self.find_event_by_searched_index()
+
+        if target_event:
+            info = (
+                f"INDEX: {self.searched_index}\n"
+                f"----------------------\n"
+                f"TYPE:    {target_event.type}\n"
+                f"CLASS:   {target_event.object_class.upper()}\n"
+                f"DIST:    {target_event.distance} m\n"
+                f"ANGLE:   {target_event.angle:.1f}°\n"
+                f"CONF:    {target_event.confidence * 100:.1f}%\n"
+                f"TIME:    {target_event.timestamp.split('T')[-1][:8]}\n"
+            )
+            self.ui.detection_info_text.setPlainText(info)
+        else:
+            self.ui.detection_info_text.setPlainText(
+                f"INDEX {self.searched_index}: \n\n[OFFLINE] / [NOT FOUND]\n\n"
+                "Ціль зникла з радару або ще не виявлена."
+            )
+
+    def find_event_by_searched_index(self):
+        detections, indices = self.detection_manager.get_detections()
+
+        target_event = None
+        for eid, idx in indices.items():
+            if idx == self.searched_index:
+                target_event = detections.get(eid)
+                break
+
+        return target_event
+
+    def update_alert_status(self):
+        """Оновлює статус тривог на основі детекцій."""
+        detections, _ = self.detection_manager.get_detections()
+
+        has_rf = any(e.type == "RF" for e in detections.values())
+        has_sound = any(e.type == "Sound" for e in detections.values())
+
+        self.ui.RF_alert.setProperty("alert", has_rf)
+        self.ui.Sound_alert.setProperty("alert", has_sound)
+        update_element_styles(self.ui.RF_alert)
+        update_element_styles(self.ui.Sound_alert)
+
+        self.ui.falseAlarmButton.setEnabled(self.detection_manager.has_detections())
+
+    def handle_false_alarm(self):
+        """Повідомляє про хибну тривогу для поточної детекцій і очищує."""
+        target_event = self.find_event_by_searched_index()
+        if target_event:
+            self.pi_network.report_false_alarm(target_event.id)
+            self.detection_manager.remove_detection(target_event.id)
+
+    def request_gps(self):
+        """Запитує GPS з callback для обробки відповіді."""
+        self.pi_network.request_remote_gps()
+
+    def update_gps_ui(self, data):
+        strength = data.get("gps_strength")
+        lat = data.get("gps_lat")
+        lon = data.get("gps_lon")
+
+        if self.current_coords[0] != lat or self.current_coords[1] != lon:
+            self.current_coords = [lat, lon]
+            self.refresh_map()
+
+        print("gps_signal_strength:", strength)
+
+        gps_level = 0
+
+        if strength:
+            gps_level = math.ceil(strength / 25)
+
+        self.ui.GPS_level.setProperty("level", gps_level)
+        update_element_styles(self.ui.GPS_level)
+
+    @pyqtSlot(dict)
+    def handle_gps(self, data):
+        """Обробка GPS-відповіді з викликом."""
+        self.update_gps_ui(data)
+
+        print(
+            f"[MainWindow] Отримано GPS: {data.get('gps_lat')}, {data.get('gps_lon')}"
+        )
 
     def handle_radar_radius_change(self):
         new_radar_radius = self.ui.radarRadiusSpinbox.value()
         self.settings_service.radar_radius = new_radar_radius
+
         self.scale_map()
 
-        config_data = {"msg_type": "config", "radar_radius": new_radar_radius}
-        self.pi_network.send_data(config_data)
+        self.update_radar()
 
     def handle_add_map(self):
         btn = self.sender()
@@ -360,7 +505,6 @@ class MainWindow(QMainWindow):
 
     def open_set_map_dialog(self):
 
-        # 1. Створюємо екземпляр діалогу
         self.dialog = SetMapDialog(
             settings=self.settings_service, add_sizes_map_k=self.add_sizes_map_k
         )
@@ -368,13 +512,10 @@ class MainWindow(QMainWindow):
         ScalableDialog = make_scalable(QDialog)
         self.scalable_dialog = ScalableDialog(widget_to_scale=self.dialog)
 
-        # 3. Використовуємо .exec() для блокуючого виклику
         result = self.scalable_dialog.exec()
 
-        # 4. Перевіряємо результат
         if result == QDialog.DialogCode.Accepted:
 
-            # 5. Отримуємо дані
             settings_data = self.scalable_dialog.get_settings()
 
             if self.current_map:
@@ -402,7 +543,6 @@ class MainWindow(QMainWindow):
             filename = f"./screen_records/record_{QDateTime.currentDateTime().toString('yyyy-MM-dd_hh-mm-ss')}.mp4"
             os.makedirs(os.path.dirname(filename), exist_ok=True)
 
-            # Напряму викликаємо метод-слот
             self.recorder.start_recording(filename)
         else:
             self.recorder.stop_recording()
@@ -579,14 +719,14 @@ class MainWindow(QMainWindow):
         size = min(base_pixmap.width(), base_pixmap.height())
         center = QPointF(base_pixmap.width() / 2, base_pixmap.height() / 2)
 
-        # Малюємо градієнтний промінь
         gradient = QConicalGradient(center, -angle)
 
-        if self.is_alert:
-            gradient.setColorAt(0.0, QColor(215, 40, 30, 100))
+        if self.detection_manager.has_detections():
+            gradient.setColorAt(
+                0.0, QColor(215, 40, 30, 100)
+            )  # яскраво-червоний на початку
             gradient.setColorAt(0.25, QColor(180, 30, 30, 70))
             gradient.setColorAt(1.0, QColor(100, 30, 30, 20))
-
         else:
             gradient.setColorAt(0.0, QColor(40, 215, 30, 90))
             gradient.setColorAt(0.25, QColor(30, 180, 30, 50))
@@ -601,36 +741,6 @@ class MainWindow(QMainWindow):
 
     def flush_radar_dots(self):
         self.ui.Radar.setPixmap(QPixmap(":/images/radar.png"))
-
-    def create_radar_dot(self, angle, distance):
-        pixmap = self.ui.Radar.pixmap()
-        self.radar_background = self.ui.Radar.pixmap()
-        if not pixmap or pixmap.isNull():
-            return
-
-        painter = QPainter(pixmap)
-        pen = QPen(QColor("red"), 20)
-        painter.setPen(pen)
-
-        center_x = pixmap.width() / 2
-        center_y = pixmap.height() / 2
-        rad_angle = math.radians(angle - 90)
-
-        x = center_x + distance * math.cos(rad_angle)
-        y = center_y + distance * math.sin(rad_angle)
-
-        painter.drawPoint(int(x), int(y))
-        painter.end()
-        self.ui.Radar.setPixmap(pixmap)
-
-    def clear_radar_dots(self):
-        """Видаляє намальовані точки з радара, відновлюючи фон."""
-        if not hasattr(self, "radar_background"):
-            # Зберігання фону
-            return
-
-        clean_pixmap = self.radar_background.copy()
-        self.ui.Radar.setPixmap(clean_pixmap)
 
     @asyncSlot()
     async def refresh_map(self):
@@ -665,9 +775,9 @@ class MainWindow(QMainWindow):
         pixmap = self.current_map
         current_radius_px = self.current_map_radius
         if pixmap:
-            radar_radius_m = self.settings_service.radar_radius  # у метрах
-            radar_max_radius_m = self.settings_service.radar_max_radius  # у метрах
-            radius_px = self.ui.RadarFrame.width() / 2  # піксельний розмір радара
+            radar_radius_m = self.settings_service.radar_radius
+            radar_max_radius_m = self.settings_service.radar_max_radius
+            radius_px = self.ui.RadarFrame.width() / 2
 
             scale_factor = (radius_px / current_radius_px) * (
                 radar_max_radius_m / radar_radius_m
@@ -681,21 +791,16 @@ class MainWindow(QMainWindow):
                 Qt.TransformationMode.SmoothTransformation,
             )
 
-            # === Центрування карти ===
             self.ui.map_background_label.setPixmap(scaled_pixmap)
             self.ui.map_background_label.resize(scaled_pixmap.size())
 
-            # Отримуємо центр радара
             radar_center = self.ui.RadarFrame.geometry().center()
 
-            # Отримуємо центр зображення
             pixmap_center = self.ui.map_background_label.rect().center()
 
-            # Розраховуємо нову позицію для QLabel, щоб центри співпали
             new_x = radar_center.x() - pixmap_center.x()
             new_y = radar_center.y() - pixmap_center.y()
 
-            # Переміщуємо фон карти
             self.ui.map_background_label.move(new_x, new_y)
         else:
             print("При зміні радіусу карта не буда знайдена.")
@@ -716,46 +821,42 @@ class MainWindow(QMainWindow):
         print(f"Знімок екрану збережено як {filename}")
 
     @asyncSlot()
-    async def update_status_bar_with_test_data(self):
-
-        data = self.test_data_provider.get_next_test_data()
-        # self.ghz24_1.setProperty("band_active", data["ghz24_1"])
-        # self.ghz58_1.setProperty("band_active", data["ghz58_1"])
-        self.ui.RF_alert.setProperty("alert", data["rf_alert"])
-        self.ui.Sound_alert.setProperty("alert", data["sound_alert"])
-        self.current_coords = data["coord"]
-        print(f"Оновлено тестові дані. Координати: {self.current_coords}")
+    async def update_gps_and_map(self):
+        self.request_gps()
 
         await self.refresh_map()
 
-    def test_draw_dot(self):
-        if self.is_alert == True:
-            self.stop_alert()
+    @pyqtSlot()
+    def perform_search(self):
+        """
+        Встановлює активний індекс для відображення інформації.
+        Викликається при натисканні Enter у полі пошуку.
+        """
+        text = self.ui.index_search_edit.text().strip()
+
+        if not text:
+            self.searched_index = None
+            self.update_detection_info()
+            self.ui.index_search_edit.setProperty("is_valid", True)
+            update_element_styles(self.ui.index_search_edit)
             return
 
-        self.start_alert()
+        if not text.isdigit():
+            self.ui.index_search_edit.setProperty("is_valid", False)
+            update_element_styles(self.ui.index_search_edit)
+            return
 
-    def start_alert(self):
-        self.create_radar_dot(45, 200)
-        self.is_alert = True
-        self.ui.falseAlarmButton.setEnabled(True)
+        target_idx = int(text)
+        self.searched_index = target_idx
+        self.ui.index_search_edit.setProperty("is_valid", True)
+        update_element_styles(self.ui.index_search_edit)
 
-    def stop_alert(self):
-        self.clear_radar_dots()
-        self.is_alert = False
-        self.ui.falseAlarmButton.setEnabled(False)
+        self.update_detection_info()
 
     @pyqtSlot(dict)
     def handle_pi_data(self, data):
-        """Обробка даних, отриманих від іншої Raspberry Pi."""
-        # print(f"Отримано дані від Pi: {data}")
-
-        # Приклад: якщо прийшли координати або статус тривоги
-        if "rf_alert" in data:
-            if data["rf_alert"]:
-                self.start_alert()
-            else:
-                self.stop_alert()
+        """Обробка загальних даних від іншої Raspberry Pi."""
+        print(f"Отримано загальні дані від Pi: {data}")
 
     def update_wifi_signal_info(self):
         wifi_strength = get_wifi_signal_strength(self.system_service.is_windows)
@@ -781,11 +882,10 @@ class MainWindow(QMainWindow):
 
         if self.recorder.isRunning():
             print("[MainWindow] Закриття. Зупиняю потік запису...")
-            self.recorder.stop_recording()  # Кажемо потоку зупинитися
+            self.recorder.stop_recording()
 
-            # Чекаємо до 3 секунд, поки він зупиниться
             if not self.recorder.wait(3000):
                 print("[MainWindow] Потік не відповів. Примусова зупинка.")
-                self.recorder.terminate()  # Аварійний варіант
+                self.recorder.terminate()
 
         event.accept()

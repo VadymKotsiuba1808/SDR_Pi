@@ -1,6 +1,6 @@
 """
 Модель події детекції.
-type: Джерело детекції -> ТІЛЬКИ "RF" або "Audio".
+type: Джерело детекції -> ТІЛЬКИ "RF" або "Sound".
 object_class: Клас об'єкта -> "drone", "bird", "mavic_3" тощо.
 """
 
@@ -13,7 +13,7 @@ from datetime import datetime
 class DetectionEvent:
 
     id: str
-    type: str  # "RF" або "Audio"
+    type: str  # "RF" або "Sound"
     object_class: str
     confidence: float
     timestamp: str
@@ -24,8 +24,8 @@ class DetectionEvent:
     def from_dict(data: dict) -> "DetectionEvent":
         """Парсинг вхідного словника JSON у об'єкт."""
 
-        raw_type = data.get("type", "RF").upper()
-        if raw_type not in ["RF", "AUDIO"]:
+        raw_type = data.get("type", "RF")
+        if raw_type not in ["RF", "Sound"]:
             raw_type = "RF"
 
         obj_class = data.get("object_class", data.get("class", "unknown"))

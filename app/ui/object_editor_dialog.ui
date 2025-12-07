@@ -1,0 +1,431 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ObjectEditorDialog</class>
+ <widget class="QDialog" name="ObjectEditorDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>550</width>
+    <height>750</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>ObjectEditor</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QDialog {
+	background-color: #002f00;
+	color: #ffffff;
+	font-family: 'Roboto';
+}
+
+QLabel {
+	color: #ffffff;
+	font-size: 16px;
+	font-weight: 500;
+}
+
+QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox {
+	background-color: rgba(0, 10, 0, 0.8);
+	border: 2px solid #328844;
+	color: #ffffff;
+	padding: 5px;
+	font-size: 16px;
+	border-radius: 4px;
+}
+
+QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus, QComboBox:focus {
+	border: 2px solid #4CAF50;
+}
+
+QCheckBox {
+	color: #ffffff;
+	font-size: 16px;
+}
+QCheckBox::indicator {
+	width: 20px;
+	height: 20px;
+	border: 2px solid #328844;
+	background: none;
+}
+QCheckBox::indicator:checked {
+	background-color: #328844;
+}
+
+/* Секції */
+QFrame#frameGeneral, QFrame#frameRF, QFrame#frameAudio {
+	border: 1px solid #328844;
+	background-color: rgba(0, 20, 0, 0.3);
+	border-radius: 6px;
+}
+
+QLabel#lblSectionTitle, QLabel#lblSectionTitle_2, QLabel#lblSectionTitle_3 {
+	color: #4CAF50;
+	font-size: 18px;
+	font-weight: bold;
+}
+
+/* Кнопки */
+QPushButton {
+	border: none;
+	background-color: rgba(0, 10, 0, 0.8);
+	border: 2px solid #328844;
+	color: #ffffff;
+	font-size: 18px;
+	padding: 8px;
+	border-radius: 6px;
+}
+QPushButton:pressed {
+	background-color: #328844;
+	color: #002509;
+}
+
+QPushButton#btnDelete {
+	border-color: #aa3333;
+	color: #ffcccc;
+}
+QPushButton#btnDelete:pressed {
+	background-color: #aa3333;
+	color: #ffffff;
+}
+
+QPushButton#btnLogout {
+	border-color: #777777;
+	color: #cccccc;
+	font-size: 14px;
+	padding: 4px;
+}</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_Header">
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QScrollArea" name="scrollArea">
+     <property name="frameShape">
+      <enum>QFrame::Shape::NoFrame</enum>
+     </property>
+     <property name="widgetResizable">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="scrollAreaWidgetContents">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>532</width>
+        <height>652</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_Scroll">
+       <property name="spacing">
+        <number>15</number>
+       </property>
+       <item>
+        <widget class="QFrame" name="frameGeneral">
+         <property name="frameShape">
+          <enum>QFrame::Shape::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Shadow::Raised</enum>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <item>
+           <widget class="QLabel" name="lblSectionTitle">
+            <property name="text">
+             <string>Основна інформація</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QFormLayout" name="formLayout">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label">
+              <property name="text">
+               <string>Назва:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QLineEdit" name="inpName">
+              <property name="placeholderText">
+               <string>DJI Mavic 3</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_2">
+              <property name="text">
+               <string>Клас:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QComboBox" name="inpClass">
+              <item>
+               <property name="text">
+                <string>drone</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>bird</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>airplane</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>ufo</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>interference</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>other</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QCheckBox" name="chkDangerous">
+              <property name="text">
+               <string>Небезпечний об'єкт</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QFrame" name="frameRF">
+         <property name="frameShape">
+          <enum>QFrame::Shape::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Shadow::Raised</enum>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_2">
+            <item>
+             <widget class="QLabel" name="lblSectionTitle_2">
+              <property name="text">
+               <string>Радіо (RF)</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="chkRFEnable">
+              <property name="layoutDirection">
+               <enum>Qt::LayoutDirection::RightToLeft</enum>
+              </property>
+              <property name="text">
+               <string>Активувати</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QFormLayout" name="formLayout_2">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_3">
+              <property name="text">
+               <string>Частота (MHz):</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QDoubleSpinBox" name="inpRFFreq">
+              <property name="decimals">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <double>6000.000000000000000</double>
+              </property>
+              <property name="value">
+               <double>2400.000000000000000</double>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_4">
+              <property name="text">
+               <string>Смуга (MHz):</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QDoubleSpinBox" name="inpRFBw">
+              <property name="decimals">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <double>100.000000000000000</double>
+              </property>
+              <property name="value">
+               <double>20.000000000000000</double>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QFrame" name="frameAudio">
+         <property name="frameShape">
+          <enum>QFrame::Shape::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Shadow::Raised</enum>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_4">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_3">
+            <item>
+             <widget class="QLabel" name="lblSectionTitle_3">
+              <property name="text">
+               <string>Звук (Audio)</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="chkAudioEnable">
+              <property name="layoutDirection">
+               <enum>Qt::LayoutDirection::RightToLeft</enum>
+              </property>
+              <property name="text">
+               <string>Активувати</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QFormLayout" name="formLayout_3">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_6">
+              <property name="text">
+               <string>Мін. частота (Hz):</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QSpinBox" name="inpAudioMin">
+              <property name="maximum">
+               <number>20000</number>
+              </property>
+              <property name="value">
+               <number>100</number>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_7">
+              <property name="text">
+               <string>Макс. частота (Hz):</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QSpinBox" name="inpAudioMax">
+              <property name="maximum">
+               <number>20000</number>
+              </property>
+              <property name="value">
+               <number>5000</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_Footer">
+     <item>
+      <widget class="QPushButton" name="btnDelete">
+       <property name="text">
+        <string>Видалити</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnCancel">
+       <property name="text">
+        <string>Скасувати</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnSave">
+       <property name="text">
+        <string>Зберегти</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

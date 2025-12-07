@@ -1,3 +1,9 @@
+"""
+Діалогове вікно керування об'єктами (Object Manager).
+Надає інтерфейс для перегляду, видалення, відкриття віджета для додавання, редагування
+об'єктів
+"""
+
 import os
 from PyQt6 import uic
 from PyQt6.QtWidgets import QDialog, QTableWidgetItem, QMessageBox, QHeaderView

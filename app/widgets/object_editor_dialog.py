@@ -8,10 +8,8 @@ from PyQt6.QtWidgets import QDialog, QMessageBox
 from PyQt6.QtCore import Qt, QEvent
 from PyQt6 import uic
 
-# Імпорт UI (якщо згенерований)
 from app.ui.ui_object_editor_dialog import Ui_ObjectEditorDialog
 
-# Імпорт Моделі
 from app.models.detection_object import DetectionObject
 
 
@@ -26,7 +24,7 @@ class ObjectEditorDialog(QDialog):
 
         self.db_service = db_service
         self.settings_service = settings_service
-        self.object_data = object_data  # Це словник (dict) з БД
+        self.object_data = object_data
         self.is_edit_mode = object_data is not None
 
         self._load_ui()
@@ -66,7 +64,6 @@ class ObjectEditorDialog(QDialog):
             self.setWindowTitle("Додавання нового об'єкта")
             self.ui.btnDelete.setVisible(False)
 
-        # Синхронізація стану полів
         self._toggle_rf_fields(self.ui.chkRFEnable.isChecked())
         self._toggle_audio_fields(self.ui.chkAudioEnable.isChecked())
 
@@ -105,9 +102,7 @@ class ObjectEditorDialog(QDialog):
 
         self.ui.inpName.setText(d.get("name", ""))
 
-        idx = self.ui.inpClass.findText(d.get("object_class", "unknown"))
-        if idx >= 0:
-            self.ui.inpClass.setCurrentIndex(idx)
+        self.ui.inpClass.setText(d.get("object_class", "unknown"))
 
         self.ui.chkDangerous.setChecked(d.get("is_dangerous", False))
 
@@ -137,7 +132,13 @@ class ObjectEditorDialog(QDialog):
             self.ui.inpName.setFocus()
             return
 
-        # 1. Підготовка під-структур
+        object_class = self.ui.inpClass.text().strip()
+
+        if not object_class:
+            QMessageBox.warning(self, "Помилка", "Будь ласка, введіть клас об'єкта.")
+            self.ui.inpClass.setFocus()
+            return
+
         rf_data = None
         if self.ui.chkRFEnable.isChecked():
             rf_data = {
@@ -152,15 +153,13 @@ class ObjectEditorDialog(QDialog):
                 "max_freq": self.ui.inpAudioMax.value(),
             }
 
-        # 2. Визначення ID (None для створення, існуючий для редагування)
         target_id = self.object_data["id"] if self.is_edit_mode else None
 
-        # 3. Створення об'єкта моделі
         try:
             target_obj = DetectionObject(
                 id=target_id,
                 name=name,
-                object_class=self.ui.inpClass.currentText(),
+                object_class=object_class,
                 is_dangerous=self.ui.chkDangerous.isChecked(),
                 rf_params=rf_data,
                 audio_params=audio_data,
@@ -169,7 +168,6 @@ class ObjectEditorDialog(QDialog):
             QMessageBox.critical(self, "Помилка даних", f"Некоректні дані: {e}")
             return
 
-        # 4. Відправка (серіалізація в dict)
         if self.is_edit_mode:
             print(f"[ObjectEditor] Оновлення: {target_obj.name} (ID: {target_obj.id})")
             self.db_service.update_object(target_obj.to_dict())

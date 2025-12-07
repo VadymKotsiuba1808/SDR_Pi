@@ -21,7 +21,7 @@ class Ui_ObjectEditorDialog(object):
 "\n"
 "QLabel {\n"
 "    color: #ffffff;\n"
-"    font-size: 16px;\n"
+"    font-size: 20px;\n"
 "    font-weight: 500;\n"
 "}\n"
 "\n"
@@ -30,7 +30,7 @@ class Ui_ObjectEditorDialog(object):
 "    border: 2px solid #328844;\n"
 "    color: #ffffff;\n"
 "    padding: 5px;\n"
-"    font-size: 16px;\n"
+"    font-size: 20px;\n"
 "    border-radius: 4px;\n"
 "}\n"
 "\n"
@@ -38,13 +38,19 @@ class Ui_ObjectEditorDialog(object):
 "    border: 2px solid #4CAF50;\n"
 "}\n"
 "\n"
+"QDoubleSpinBox::up-button, QDoubleSpinBox::down-button, QSpinBox::up-button, QSpinBox::down-button {\n"
+"    width: 20px;\n"
+"    height: 16px;\n"
+"    padding:2px;\n"
+"}\n"
+"\n"
 "QCheckBox {\n"
 "    color: #ffffff;\n"
-"    font-size: 16px;\n"
+"    font-size: 20px;\n"
 "}\n"
 "QCheckBox::indicator {\n"
-"    width: 20px;\n"
-"    height: 20px;\n"
+"    width: 24px;\n"
+"    height: 24px;\n"
 "    border: 2px solid #328844;\n"
 "    background: none;\n"
 "}\n"
@@ -61,7 +67,7 @@ class Ui_ObjectEditorDialog(object):
 "\n"
 "QLabel#lblSectionTitle, QLabel#lblSectionTitle_2, QLabel#lblSectionTitle_3 {\n"
 "    color: #4CAF50;\n"
-"    font-size: 18px;\n"
+"    font-size: 24px;\n"
 "    font-weight: bold;\n"
 "}\n"
 "\n"
@@ -71,7 +77,7 @@ class Ui_ObjectEditorDialog(object):
 "    background-color: rgba(0, 10, 0, 0.8);\n"
 "    border: 2px solid #328844;\n"
 "    color: #ffffff;\n"
-"    font-size: 18px;\n"
+"    font-size: 22px;\n"
 "    padding: 8px;\n"
 "    border-radius: 6px;\n"
 "}\n"
@@ -89,12 +95,7 @@ class Ui_ObjectEditorDialog(object):
 "    color: #ffffff;\n"
 "}\n"
 "\n"
-"QPushButton#btnLogout {\n"
-"    border-color: #777777;\n"
-"    color: #cccccc;\n"
-"    font-size: 14px;\n"
-"    padding: 4px;\n"
-"}")
+"")
         self.verticalLayout = QtWidgets.QVBoxLayout(ObjectEditorDialog)
         self.verticalLayout.setObjectName("verticalLayout")
         self.horizontalLayout_Header = QtWidgets.QHBoxLayout()
@@ -107,7 +108,7 @@ class Ui_ObjectEditorDialog(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 532, 652))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 532, 646))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.verticalLayout_Scroll = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayout_Scroll.setSpacing(15)
@@ -122,28 +123,24 @@ class Ui_ObjectEditorDialog(object):
         self.lblSectionTitle.setObjectName("lblSectionTitle")
         self.verticalLayout_2.addWidget(self.lblSectionTitle)
         self.formLayout = QtWidgets.QFormLayout()
+        self.formLayout.setVerticalSpacing(12)
         self.formLayout.setObjectName("formLayout")
         self.label = QtWidgets.QLabel(parent=self.frameGeneral)
         self.label.setObjectName("label")
         self.formLayout.setWidget(0, QtWidgets.QFormLayout.ItemRole.LabelRole, self.label)
         self.inpName = QtWidgets.QLineEdit(parent=self.frameGeneral)
+        self.inpName.setPlaceholderText("")
         self.inpName.setObjectName("inpName")
         self.formLayout.setWidget(0, QtWidgets.QFormLayout.ItemRole.FieldRole, self.inpName)
-        self.label_2 = QtWidgets.QLabel(parent=self.frameGeneral)
-        self.label_2.setObjectName("label_2")
-        self.formLayout.setWidget(1, QtWidgets.QFormLayout.ItemRole.LabelRole, self.label_2)
-        self.inpClass = QtWidgets.QComboBox(parent=self.frameGeneral)
-        self.inpClass.setObjectName("inpClass")
-        self.inpClass.addItem("")
-        self.inpClass.addItem("")
-        self.inpClass.addItem("")
-        self.inpClass.addItem("")
-        self.inpClass.addItem("")
-        self.inpClass.addItem("")
-        self.formLayout.setWidget(1, QtWidgets.QFormLayout.ItemRole.FieldRole, self.inpClass)
         self.chkDangerous = QtWidgets.QCheckBox(parent=self.frameGeneral)
         self.chkDangerous.setObjectName("chkDangerous")
         self.formLayout.setWidget(2, QtWidgets.QFormLayout.ItemRole.FieldRole, self.chkDangerous)
+        self.inpClass = QtWidgets.QLineEdit(parent=self.frameGeneral)
+        self.inpClass.setObjectName("inpClass")
+        self.formLayout.setWidget(1, QtWidgets.QFormLayout.ItemRole.FieldRole, self.inpClass)
+        self.Label = QtWidgets.QLabel(parent=self.frameGeneral)
+        self.Label.setObjectName("Label")
+        self.formLayout.setWidget(1, QtWidgets.QFormLayout.ItemRole.LabelRole, self.Label)
         self.verticalLayout_2.addLayout(self.formLayout)
         self.verticalLayout_Scroll.addWidget(self.frameGeneral)
         self.frameRF = QtWidgets.QFrame(parent=self.scrollAreaWidgetContents)
@@ -163,23 +160,26 @@ class Ui_ObjectEditorDialog(object):
         self.horizontalLayout_2.addWidget(self.chkRFEnable)
         self.verticalLayout_3.addLayout(self.horizontalLayout_2)
         self.formLayout_2 = QtWidgets.QFormLayout()
+        self.formLayout_2.setVerticalSpacing(12)
         self.formLayout_2.setObjectName("formLayout_2")
         self.label_3 = QtWidgets.QLabel(parent=self.frameRF)
         self.label_3.setObjectName("label_3")
         self.formLayout_2.setWidget(0, QtWidgets.QFormLayout.ItemRole.LabelRole, self.label_3)
         self.inpRFFreq = QtWidgets.QDoubleSpinBox(parent=self.frameRF)
+        self.inpRFFreq.setButtonSymbols(QtWidgets.QAbstractSpinBox.ButtonSymbols.PlusMinus)
         self.inpRFFreq.setDecimals(1)
         self.inpRFFreq.setMaximum(6000.0)
-        self.inpRFFreq.setProperty("value", 2400.0)
+        self.inpRFFreq.setProperty("value", 0.0)
         self.inpRFFreq.setObjectName("inpRFFreq")
         self.formLayout_2.setWidget(0, QtWidgets.QFormLayout.ItemRole.FieldRole, self.inpRFFreq)
         self.label_4 = QtWidgets.QLabel(parent=self.frameRF)
         self.label_4.setObjectName("label_4")
         self.formLayout_2.setWidget(1, QtWidgets.QFormLayout.ItemRole.LabelRole, self.label_4)
         self.inpRFBw = QtWidgets.QDoubleSpinBox(parent=self.frameRF)
+        self.inpRFBw.setButtonSymbols(QtWidgets.QAbstractSpinBox.ButtonSymbols.PlusMinus)
         self.inpRFBw.setDecimals(1)
         self.inpRFBw.setMaximum(100.0)
-        self.inpRFBw.setProperty("value", 20.0)
+        self.inpRFBw.setProperty("value", 0.0)
         self.inpRFBw.setObjectName("inpRFBw")
         self.formLayout_2.setWidget(1, QtWidgets.QFormLayout.ItemRole.FieldRole, self.inpRFBw)
         self.verticalLayout_3.addLayout(self.formLayout_2)
@@ -201,21 +201,24 @@ class Ui_ObjectEditorDialog(object):
         self.horizontalLayout_3.addWidget(self.chkAudioEnable)
         self.verticalLayout_4.addLayout(self.horizontalLayout_3)
         self.formLayout_3 = QtWidgets.QFormLayout()
+        self.formLayout_3.setVerticalSpacing(12)
         self.formLayout_3.setObjectName("formLayout_3")
         self.label_6 = QtWidgets.QLabel(parent=self.frameAudio)
         self.label_6.setObjectName("label_6")
         self.formLayout_3.setWidget(0, QtWidgets.QFormLayout.ItemRole.LabelRole, self.label_6)
         self.inpAudioMin = QtWidgets.QSpinBox(parent=self.frameAudio)
+        self.inpAudioMin.setButtonSymbols(QtWidgets.QAbstractSpinBox.ButtonSymbols.PlusMinus)
         self.inpAudioMin.setMaximum(20000)
-        self.inpAudioMin.setProperty("value", 100)
+        self.inpAudioMin.setProperty("value", 0)
         self.inpAudioMin.setObjectName("inpAudioMin")
         self.formLayout_3.setWidget(0, QtWidgets.QFormLayout.ItemRole.FieldRole, self.inpAudioMin)
         self.label_7 = QtWidgets.QLabel(parent=self.frameAudio)
         self.label_7.setObjectName("label_7")
         self.formLayout_3.setWidget(1, QtWidgets.QFormLayout.ItemRole.LabelRole, self.label_7)
         self.inpAudioMax = QtWidgets.QSpinBox(parent=self.frameAudio)
+        self.inpAudioMax.setButtonSymbols(QtWidgets.QAbstractSpinBox.ButtonSymbols.PlusMinus)
         self.inpAudioMax.setMaximum(20000)
-        self.inpAudioMax.setProperty("value", 5000)
+        self.inpAudioMax.setProperty("value", 0)
         self.inpAudioMax.setObjectName("inpAudioMax")
         self.formLayout_3.setWidget(1, QtWidgets.QFormLayout.ItemRole.FieldRole, self.inpAudioMax)
         self.verticalLayout_4.addLayout(self.formLayout_3)
@@ -244,18 +247,11 @@ class Ui_ObjectEditorDialog(object):
 
     def retranslateUi(self, ObjectEditorDialog):
         _translate = QtCore.QCoreApplication.translate
-        ObjectEditorDialog.setWindowTitle(_translate("ObjectEditorDialog", "ObjectEditor"))
+        ObjectEditorDialog.setWindowTitle(_translate("ObjectEditorDialog", "Редактор об\'єкта"))
         self.lblSectionTitle.setText(_translate("ObjectEditorDialog", "Основна інформація"))
         self.label.setText(_translate("ObjectEditorDialog", "Назва:"))
-        self.inpName.setPlaceholderText(_translate("ObjectEditorDialog", "DJI Mavic 3"))
-        self.label_2.setText(_translate("ObjectEditorDialog", "Клас:"))
-        self.inpClass.setItemText(0, _translate("ObjectEditorDialog", "drone"))
-        self.inpClass.setItemText(1, _translate("ObjectEditorDialog", "bird"))
-        self.inpClass.setItemText(2, _translate("ObjectEditorDialog", "airplane"))
-        self.inpClass.setItemText(3, _translate("ObjectEditorDialog", "ufo"))
-        self.inpClass.setItemText(4, _translate("ObjectEditorDialog", "interference"))
-        self.inpClass.setItemText(5, _translate("ObjectEditorDialog", "other"))
         self.chkDangerous.setText(_translate("ObjectEditorDialog", "Небезпечний об\'єкт"))
+        self.Label.setText(_translate("ObjectEditorDialog", "Клас:"))
         self.lblSectionTitle_2.setText(_translate("ObjectEditorDialog", "Радіо (RF)"))
         self.chkRFEnable.setText(_translate("ObjectEditorDialog", "Активувати"))
         self.label_3.setText(_translate("ObjectEditorDialog", "Частота (MHz):"))

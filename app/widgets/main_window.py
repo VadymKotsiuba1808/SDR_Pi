@@ -6,10 +6,6 @@
 import os
 import math
 import asyncio
-import shutil
-import subprocess
-import keyboard
-import re
 from PyQt6.QtWidgets import QMainWindow, QApplication, QDialog, QMessageBox, QFileDialog
 from PyQt6.QtCore import (
     QTimer,

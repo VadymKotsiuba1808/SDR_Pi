@@ -7,9 +7,10 @@ from PyQt6.QtCore import QThread, pyqtSignal, pyqtSlot, QElapsedTimer
 from vidgear.gears import WriteGear
 import numpy as np
 import mss
-import platform
 import time
 import cv2
+
+from app.protocols import OSService
 
 
 class RecordingService(QThread):
@@ -19,9 +20,10 @@ class RecordingService(QThread):
     recording_paused = pyqtSignal(bool)
     duration_updated = pyqtSignal(str)
 
-    def __init__(self, parent=None):
+    def __init__(self, system: OSService, parent=None):
         super().__init__(parent)
-        self.is_windows = platform.system() == "Windows"
+        self.system_service = system
+
         self._setup_state_variables()
 
     def _setup_state_variables(self):
@@ -29,12 +31,11 @@ class RecordingService(QThread):
         self.is_paused = False
         self.filename = ""
 
-        if self.is_windows:
+        if self.system_service.is_windows:
             self.fps = 30
             self.monitor_index = 1
             self.scale_factor = 1.0
         else:
-
             self.fps = 10
             self.monitor_index = 0
 
@@ -57,7 +58,7 @@ class RecordingService(QThread):
             "-r": str(self.fps),
         }
 
-        if self.is_windows:
+        if self.system_service.is_windows:
             params.update(
                 {
                     "-vcodec": "libx264",
@@ -93,7 +94,7 @@ class RecordingService(QThread):
         return params
 
     def run(self):
-        print(f"[Recorder] Thread started on: {platform.system()}")
+        print(f"[Recorder] Thread started")
         self.is_running = True
 
         try:
@@ -124,7 +125,7 @@ class RecordingService(QThread):
 
         self.writer = None
 
-        if not self.is_windows:
+        if not self.system_service.is_windows:
             try:
                 print("[Recorder] Attempting Hardware Encoding...")
                 params = self._get_ffmpeg_params(

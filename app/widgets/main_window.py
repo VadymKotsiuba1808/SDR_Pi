@@ -47,7 +47,7 @@ from app.widgets.set_map_dialog import SetMapDialog
 from app.widgets.autosize_window import make_scalable
 from app.services.pi_network_service import PiNetworkService
 from app.widgets.record_status_widget import RecordingStatusWidget
-from app.widgets.object_manager_widget import ObjectManagerWidget
+from app.widgets.object_manager_dialog import ObjectManagerDialog
 from app.services.recording_service import RecordingService
 from app.services.media_player_service import MediaPlayerService
 from app.services.database_service import DatabaseService
@@ -613,9 +613,8 @@ class MainWindow(QMainWindow):
             QDesktopServices.openUrl(url)
 
     def open_database_manager(self):
-        # Створюємо вікно як незалежне (або діалогове)
-        self.db_window = ObjectManagerWidget(self.db_service, self.settings_service)
-        self.db_window.show()
+        self.db_window = ObjectManagerDialog(self.db_service, self.settings_service)
+        self.db_window.exec()
 
     def set_radar_mode(self):
         if self.isRadarMode:

@@ -409,6 +409,7 @@ class MainWindow(QMainWindow):
                 f"INDEX: {self.searched_index}\n"
                 f"----------------------\n"
                 f"TYPE:    {target_event.type}\n"
+                f"NAME:    {target_event.name.upper()}\n"
                 f"CLASS:   {target_event.object_class.upper()}\n"
                 f"DIST:    {target_event.distance} m\n"
                 f"ANGLE:   {target_event.angle:.1f}°\n"

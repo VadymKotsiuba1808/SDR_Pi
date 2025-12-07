@@ -620,7 +620,7 @@ border-image: url(:/images/sound_alert_off.png) stretch stretch;
       <number>-1</number>
      </property>
      <property name="alert" stdset="0">
-      <bool>true</bool>
+      <bool>false</bool>
      </property>
     </widget>
     <widget class="QFrame" name="GPS">
@@ -1963,24 +1963,23 @@ QPushButton#filesViewButton:disabled{
      </property>
      <property name="styleSheet">
       <string notr="true">QPushButton#viewObjectButton{
-	border-image: url(:/images/addMapBtn_off.png) stretch stretch;
+	border-image: url(:/images/viewObjectsBtn_off.png) stretch stretch;
 	background-color:rgba(0,0,0,0.8)
 }
 
-QPushButton#viewObjectButton:pressed,
-QPushButton#viewObjectButton:checked{
-	border-image: url(:/images/addMapBtn_on.png) stretch stretch;
+QPushButton#viewObjectButton:pressed{
+	border-image: url(:/images/viewObjectsBtn_on.png) stretch stretch;
 }
 
 QPushButton#viewObjectButton[enabled=&quot;false&quot;]{
-	border-image: url(:/images/addMapBtn_disabled.png) stretch stretch;
+	border-image: url(:/images/viewObjectsBtn_disabled.png) stretch stretch;
 }</string>
      </property>
      <property name="text">
       <string/>
      </property>
      <property name="checkable">
-      <bool>true</bool>
+      <bool>false</bool>
      </property>
     </widget>
     <zorder>map_background_label</zorder>

@@ -14,6 +14,7 @@ class DetectionEvent:
 
     id: str
     type: str  # "RF" або "Sound"
+    name: str
     object_class: str
     confidence: float
     timestamp: str
@@ -33,6 +34,7 @@ class DetectionEvent:
         return DetectionEvent(
             id=data.get("id", str(uuid.uuid4())),
             type=raw_type,
+            name=data.get("name", "unknown"),
             object_class=obj_class,
             confidence=float(data.get("confidence", 0.0)),
             timestamp=data.get("timestamp", datetime.now().isoformat()),
@@ -44,6 +46,7 @@ class DetectionEvent:
         return {
             "id": self.id,
             "type": self.type,
+            "name": self.name,
             "object_class": self.object_class,
             "confidence": self.confidence,
             "timestamp": self.timestamp,

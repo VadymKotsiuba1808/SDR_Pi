@@ -12,7 +12,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 class Ui_ObjectManager(object):
     def setupUi(self, ObjectManager):
         ObjectManager.setObjectName("ObjectManager")
-        ObjectManager.resize(800, 600)
+        ObjectManager.resize(1080, 700)
         ObjectManager.setStyleSheet("QWidget {\n"
 "    background-color: #002f00;\n"
 "    color: #ffffff;\n"
@@ -24,7 +24,7 @@ class Ui_ObjectManager(object):
 "    background-color: rgba(0, 10, 0, 0.6);\n"
 "    gridline-color: #328844;\n"
 "    border: 1px solid #328844;\n"
-"    font-size: 16px;\n"
+"    font-size: 20px;\n"
 "}\n"
 "QTableWidget::item {\n"
 "    padding: 5px;\n"
@@ -39,6 +39,11 @@ class Ui_ObjectManager(object):
 "    padding: 5px;\n"
 "    border: 1px solid #328844;\n"
 "    font-weight: bold;\n"
+"    font-size:16px;\n"
+"}\n"
+"\n"
+"QLabel{\n"
+"    font-size: 20px;\n"
 "}\n"
 "\n"
 "/* Кнопки */\n"
@@ -46,7 +51,7 @@ class Ui_ObjectManager(object):
 "    background-color: rgba(0, 20, 0, 0.8);\n"
 "    border: 2px solid #328844;\n"
 "    color: #ffffff;\n"
-"    font-size: 16px;\n"
+"    font-size: 20px;\n"
 "    padding: 8px 15px;\n"
 "    border-radius: 4px;\n"
 "}\n"
@@ -75,7 +80,8 @@ class Ui_ObjectManager(object):
         self.horizontalLayout_Top.setObjectName("horizontalLayout_Top")
         self.label = QtWidgets.QLabel(parent=ObjectManager)
         font = QtGui.QFont()
-        font.setPointSize(14)
+        font.setFamily("Roboto")
+        font.setPointSize(-1)
         font.setBold(True)
         self.label.setFont(font)
         self.label.setObjectName("label")
@@ -87,8 +93,8 @@ class Ui_ObjectManager(object):
         self.horizontalLayout_Top.addWidget(self.btnRefresh)
         self.verticalLayout.addLayout(self.horizontalLayout_Top)
         self.tableWidget = QtWidgets.QTableWidget(parent=ObjectManager)
-        self.tableWidget.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
         self.tableWidget.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
+        self.tableWidget.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
         self.tableWidget.setObjectName("tableWidget")
         self.tableWidget.setColumnCount(5)
         self.tableWidget.setRowCount(0)
@@ -102,16 +108,17 @@ class Ui_ObjectManager(object):
         self.tableWidget.setHorizontalHeaderItem(3, item)
         item = QtWidgets.QTableWidgetItem()
         self.tableWidget.setHorizontalHeaderItem(4, item)
+        self.tableWidget.horizontalHeader().setDefaultSectionSize(190)
+        self.tableWidget.horizontalHeader().setMinimumSectionSize(190)
         self.verticalLayout.addWidget(self.tableWidget)
         self.framePagination = QtWidgets.QFrame(parent=ObjectManager)
         self.framePagination.setObjectName("framePagination")
         self.horizontalLayout_Page = QtWidgets.QHBoxLayout(self.framePagination)
         self.horizontalLayout_Page.setContentsMargins(0, -1, 0, -1)
         self.horizontalLayout_Page.setObjectName("horizontalLayout_Page")
-        spacerItem1 = QtWidgets.QSpacerItem(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
+        spacerItem1 = QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
         self.horizontalLayout_Page.addItem(spacerItem1)
         self.btnPrevPage = QtWidgets.QPushButton(parent=self.framePagination)
-        self.btnPrevPage.setMaximumWidth(100)
         self.btnPrevPage.setObjectName("btnPrevPage")
         self.horizontalLayout_Page.addWidget(self.btnPrevPage)
         self.lblPageInfo = QtWidgets.QLabel(parent=self.framePagination)
@@ -119,10 +126,9 @@ class Ui_ObjectManager(object):
         self.lblPageInfo.setObjectName("lblPageInfo")
         self.horizontalLayout_Page.addWidget(self.lblPageInfo)
         self.btnNextPage = QtWidgets.QPushButton(parent=self.framePagination)
-        self.btnNextPage.setMaximumWidth(100)
         self.btnNextPage.setObjectName("btnNextPage")
         self.horizontalLayout_Page.addWidget(self.btnNextPage)
-        spacerItem2 = QtWidgets.QSpacerItem(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
+        spacerItem2 = QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
         self.horizontalLayout_Page.addItem(spacerItem2)
         self.verticalLayout.addWidget(self.framePagination)
         self.horizontalLayout_Bottom = QtWidgets.QHBoxLayout()
@@ -160,9 +166,9 @@ class Ui_ObjectManager(object):
         item = self.tableWidget.horizontalHeaderItem(4)
         item.setText(_translate("ObjectManager", "Audio (Hz)"))
         self.btnPrevPage.setText(_translate("ObjectManager", "< Назад"))
-        self.lblPageInfo.setText(_translate("ObjectManager", "Сторінка 1 з 1"))
         self.lblPageInfo.setStyleSheet(_translate("ObjectManager", "font-weight: bold; margin: 0 15px;"))
+        self.lblPageInfo.setText(_translate("ObjectManager", "Сторінка 1 з 1"))
         self.btnNextPage.setText(_translate("ObjectManager", "Вперед >"))
         self.btnAdd.setText(_translate("ObjectManager", "Додати новий"))
-        self.btnEdit.setText(_translate("ObjectManager", "Редагувати вибраний"))
+        self.btnEdit.setText(_translate("ObjectManager", "Редагувати обраний"))
         self.btnDelete.setText(_translate("ObjectManager", "Видалити"))

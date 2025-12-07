@@ -1,16 +1,15 @@
 import os
 from PyQt6 import uic
-from PyQt6.QtWidgets import QWidget, QTableWidgetItem, QMessageBox, QHeaderView
+from PyQt6.QtWidgets import QDialog, QTableWidgetItem, QMessageBox, QHeaderView
 from PyQt6.QtCore import Qt, QEvent
 
 from app.widgets.object_editor_dialog import ObjectEditorDialog
 
-# Імпорт UI (якщо є)
-from app.ui.ui_object_manager_widget import Ui_ObjectManager
+from app.ui.ui_object_manager_dialog import Ui_ObjectManager
 
 
-class ObjectManagerWidget(QWidget):
-    PAGE_SIZE = 10  # Кількість записів на сторінку
+class ObjectManagerDialog(QDialog):
+    PAGE_SIZE = 15
 
     def __init__(self, db_service, settings_service, parent=None):
         super().__init__(parent)
@@ -18,7 +17,6 @@ class ObjectManagerWidget(QWidget):
         self.settings_service = settings_service
         self.cached_objects = []
 
-        # Стан пагінації
         self.current_page = 1
         self.total_pages = 1
 
@@ -28,7 +26,6 @@ class ObjectManagerWidget(QWidget):
 
         self.refresh_data()
 
-    # ... (changeEvent, _load_ui, _init_table - без змін) ...
     def changeEvent(self, event):
         if event.type() == QEvent.Type.LanguageChange:
             if self.settings_service.compiled_ui_using_enabled:
@@ -42,7 +39,7 @@ class ObjectManagerWidget(QWidget):
             self.ui.setupUi(self)
         else:
             ui_path = os.path.join(
-                os.path.dirname(__file__), "../ui/object_manager_widget.ui"
+                os.path.dirname(__file__), "../ui/object_manager_dialog.ui"
             )
             uic.loadUi(ui_path, self)
             self.ui = self
@@ -62,12 +59,9 @@ class ObjectManagerWidget(QWidget):
         self.ui.btnDelete.clicked.connect(self._handle_delete)
         self.ui.tableWidget.doubleClicked.connect(self._open_edit_dialog)
 
-        # Пагінація
         self.ui.btnPrevPage.clicked.connect(self._prev_page)
         self.ui.btnNextPage.clicked.connect(self._next_page)
 
-        # Сигнали БД
-        # Зверни увагу: змінено назву сигналу
         self.db_service.objects_page_loaded.connect(self._populate_table)
         self.db_service.operation_status.connect(self._handle_db_status)
 
@@ -87,7 +81,6 @@ class ObjectManagerWidget(QWidget):
 
     def _handle_db_status(self, op_type, success, msg):
         if success:
-            # Якщо додали/видалили, краще оновити поточну сторінку
             self.refresh_data()
 
     def _populate_table(self, objects_list, current_page, total_pages):
@@ -96,12 +89,10 @@ class ObjectManagerWidget(QWidget):
         self.current_page = current_page
         self.total_pages = total_pages
 
-        # 1. Оновлення контролів пагінації
         self.ui.lblPageInfo.setText(f"Сторінка {current_page} з {total_pages}")
         self.ui.btnPrevPage.setEnabled(current_page > 1)
         self.ui.btnNextPage.setEnabled(current_page < total_pages)
 
-        # 2. Заповнення таблиці
         self.ui.tableWidget.setRowCount(0)
         for obj in objects_list:
             row_idx = self.ui.tableWidget.rowCount()
@@ -129,13 +120,12 @@ class ObjectManagerWidget(QWidget):
             aud_str = f"{aud['min_freq']}-{aud['max_freq']} Hz" if aud else "-"
             self.ui.tableWidget.setItem(row_idx, 4, QTableWidgetItem(aud_str))
 
-    # ... (методи _get_selected_id, _open_add_dialog і т.д. залишаються ті самі) ...
     def _get_selected_id(self):
         """Повертає ID вибраного рядка або None."""
         selected_items = self.ui.tableWidget.selectedItems()
         if not selected_items:
             return None
-        # ID збережено в UserRole першого стовпчика (item з індексом 0 у рядку)
+
         row = selected_items[0].row()
         item = self.ui.tableWidget.item(row, 0)
         return item.data(Qt.ItemDataRole.UserRole)
@@ -143,7 +133,6 @@ class ObjectManagerWidget(QWidget):
     def _open_add_dialog(self):
         dialog = ObjectEditorDialog(self.db_service, self.settings_service, self)
         dialog.exec()
-        # Оновлення відбудеться автоматично через сигнал operation_status
 
     def _open_edit_dialog(self):
         obj_id = self._get_selected_id()
@@ -151,7 +140,6 @@ class ObjectManagerWidget(QWidget):
             QMessageBox.warning(self, "Увага", "Виберіть об'єкт для редагування.")
             return
 
-        # Знаходимо повні дані об'єкта в кеші
         target_obj = next((o for o in self.cached_objects if o["id"] == obj_id), None)
 
         if target_obj:

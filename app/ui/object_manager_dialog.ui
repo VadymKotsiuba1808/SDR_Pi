@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>ObjectManager</class>
- <widget class="QWidget" name="ObjectManager">
+ <widget class="QDialog" name="ObjectManager">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>1080</width>
+    <height>700</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,7 +25,7 @@ QTableWidget {
 	background-color: rgba(0, 10, 0, 0.6);
 	gridline-color: #328844;
 	border: 1px solid #328844;
-	font-size: 16px;
+	font-size: 20px;
 }
 QTableWidget::item {
 	padding: 5px;
@@ -40,6 +40,11 @@ QHeaderView::section {
 	padding: 5px;
 	border: 1px solid #328844;
 	font-weight: bold;
+	font-size:16px;
+}
+
+QLabel{
+	font-size: 20px;
 }
 
 /* Кнопки */
@@ -47,7 +52,7 @@ QPushButton {
 	background-color: rgba(0, 20, 0, 0.8);
 	border: 2px solid #328844;
 	color: #ffffff;
-	font-size: 16px;
+	font-size: 20px;
 	padding: 8px 15px;
 	border-radius: 4px;
 }
@@ -79,7 +84,7 @@ QPushButton#btnDelete:hover {
        <property name="font">
         <font>
          <family>Roboto</family>
-         <pointsize>14</pointsize>
+         <pointsize>-1</pointsize>
          <bold>true</bold>
         </font>
        </property>
@@ -121,8 +126,11 @@ QPushButton#btnDelete:hover {
      <property name="sortingEnabled">
       <bool>false</bool>
      </property>
+     <attribute name="horizontalHeaderMinimumSectionSize">
+      <number>190</number>
+     </attribute>
      <attribute name="horizontalHeaderDefaultSectionSize">
-      <number>150</number>
+      <number>190</number>
      </attribute>
      <column>
       <property name="text">

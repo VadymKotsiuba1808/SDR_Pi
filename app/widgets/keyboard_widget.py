@@ -6,7 +6,6 @@
 from PyQt6.QtWidgets import QWidget
 from PyQt6 import uic
 from PyQt6.QtCore import QEvent, QCoreApplication, QTranslator
-import os
 
 from app.ui.ui_keyboard_widget import Ui_KeyboardWidget
 from app.services.keyboard_service import KeyboardService

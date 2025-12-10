@@ -3,8 +3,6 @@
 Дозволяє користувачу вибрати та налаштувати власне зображення мапи.
 """
 
-import sys
-
 from PyQt6.QtWidgets import (
     QDialog,
     QFileDialog,

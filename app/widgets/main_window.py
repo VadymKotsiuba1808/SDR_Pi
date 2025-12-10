@@ -6,15 +6,12 @@
 import os
 import math
 import asyncio
-import datetime
 from PyQt6.QtWidgets import (
     QMainWindow,
     QApplication,
     QDialog,
     QMessageBox,
     QFileDialog,
-    QTextEdit,
-    QLineEdit,
 )
 from PyQt6.QtCore import (
     QTimer,
@@ -48,7 +45,6 @@ from app.assets import resources_rc
 
 from app.widgets.set_map_dialog import SetMapDialog
 from app.widgets.autosize_window import make_scalable
-from app.services.pi_network_service import PiNetworkService
 from app.widgets.record_status_widget import RecordingStatusWidget
 from app.services.settings_service import SettingsService
 from app.services.map_service import MapService, MapTypes
@@ -77,15 +73,9 @@ class MainWindow(QMainWindow):
         keyboard: KeyboardService,
         system: OSService,
         parent=None,
-        self,
-        settings: SettingsService,
-        keyboard: KeyboardService,
-        system: OSService,
-        parent=None,
     ):
         super().__init__(parent)
         self.settings_service = settings
-        self.system_service = system
         self.system_service = system
         self.keyboard_service = keyboard
 
@@ -174,15 +164,9 @@ class MainWindow(QMainWindow):
             lambda: self.ui.filesViewButton.setChecked(False)
         )
 
-        self.media_service = MediaPlayerService(self.system_service)
-        self.media_service.playback_finished.connect(
-            lambda: self.ui.filesViewButton.setChecked(False)
-        )
-
         self.media_process = None
 
     def _init_recording_service(self):
-        self.recorder = RecordingService(self.system_service, self)
         self.recorder = RecordingService(self.system_service, self)
 
         self.recorder.recording_started.connect(self.on_recording_started)
@@ -599,9 +583,6 @@ class MainWindow(QMainWindow):
         if not btn.isChecked():
             if hasattr(self, "media_service") and self.media_service:
                 self.media_service.stop()
-        if not btn.isChecked():
-            if hasattr(self, "media_service") and self.media_service:
-                self.media_service.stop()
                 print("Переглядач успішно закритий")
             return
 
@@ -620,8 +601,6 @@ class MainWindow(QMainWindow):
             self.ui.filesViewButton.setChecked(False)
             return
 
-        try:
-            self.media_service.play(file_path)
         try:
             self.media_service.play(file_path)
         except Exception as e:
@@ -889,7 +868,6 @@ class MainWindow(QMainWindow):
 
     def update_wifi_signal_info(self):
         wifi_strength = get_wifi_signal_strength(self.system_service.is_windows)
-        wifi_strength = get_wifi_signal_strength(self.system_service.is_windows)
         print("wifi_signal_strength:", wifi_strength)
 
         wifi_level = 0
@@ -900,12 +878,6 @@ class MainWindow(QMainWindow):
         self.ui.WiFi_level.setProperty("level", wifi_level)
         update_element_styles(self.ui.WiFi_level)
 
-    def restart_app(self):
-        self.settings_service.remember_me = False
-        self.setEnabled(False)
-        print("Performing restart...")
-
-        QTimer.singleShot(8000, restart_process)
     def restart_app(self):
         self.settings_service.remember_me = False
         self.setEnabled(False)

@@ -346,6 +346,8 @@ class MainWindow(QMainWindow):
         """Перемальовує радар. Точки поза радіусом 'липнуть' до краю."""
         detections, indices = self.detection_manager.get_detections()
 
+        POINT_SIZE = 20
+
         pixmap = self.radar_clean_pixmap.copy()
         painter = QPainter(pixmap)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -355,6 +357,9 @@ class MainWindow(QMainWindow):
 
         center_x = pixmap.width() / 2
         center_y = pixmap.height() / 2
+
+        offset_x = 0
+        offset_y = -15
 
         max_px_radius = min(center_x, center_y)
 
@@ -369,15 +374,20 @@ class MainWindow(QMainWindow):
 
             pixel_dist = event.distance * scale
 
-            is_out_of_bounds = pixel_dist >= max_px_radius
+            is_out_of_bounds = pixel_dist > max_px_radius
+            is_on_border = pixel_dist >= max_px_radius - POINT_SIZE / 2
+
+            if is_out_of_bounds or is_on_border:
+                pixel_dist = max_px_radius - 15
+                if event.angle > 320 or event.angle < 40:
+                    offset_y = 0
+                    offset_x = 15
 
             if is_out_of_bounds:
-                pixel_dist = max_px_radius - 15
-
-                painter.setPen(QPen(QColor("orange"), 18))
+                painter.setPen(QPen(QColor("orange"), POINT_SIZE - 2))
             else:
-                color = QColor("red") if event.type == "RF" else QColor("yellow")
-                painter.setPen(QPen(color, 20))
+                color = QColor("red")
+                painter.setPen(QPen(color, POINT_SIZE))
 
             rad_angle = math.radians(event.angle - 90)
 
@@ -387,7 +397,7 @@ class MainWindow(QMainWindow):
             painter.drawPoint(int(x), int(y))
 
             painter.setPen(QPen(QColor("black"), 1))
-            painter.drawText(int(x), int(y) - 15, str(index))
+            painter.drawText(int(x) + offset_x, int(y) + offset_y, str(index))
 
         painter.end()
         self.ui.Radar.setPixmap(pixmap)

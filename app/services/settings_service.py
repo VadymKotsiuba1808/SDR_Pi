@@ -18,9 +18,6 @@ class SettingsService(QObject):
 
     settings_changed = pyqtSignal()
 
-    # # Network
-    # host: str
-    # port: int
     # Pinetwork
     pi_target_ip: str
     pi_target_port: int
@@ -43,14 +40,15 @@ class SettingsService(QObject):
     # Signal
     radio_range_GHz: list
     sound_range_GHz: list
+    # Timers
+    gps_interval_min: float
+    # Relays
+    main_relay: str
     # UI
     lang_code: str
 
     # Єдиний словник конфігурації: ключ → (секція, тип, значення за замовчуванням)
     _config_schema = {
-        # # Network
-        # "host": ("network", str, "0.0.0.0"),
-        # "port": ("network", int, 5000),
         # Pinetwork
         "pi_target_ip": ("pinetwork", str, "0.0.0.0"),
         "pi_target_port": ("pinetwork", int, 6000),
@@ -73,6 +71,10 @@ class SettingsService(QObject):
         # Signal
         "radio_range_GHz": ("signal", list, [0.0, 9.9]),
         "sound_range_GHz": ("signal", list, [0.0, 9.9]),
+        # Timers
+        "gps_interval_min": ("timers", int, 2),
+        # Relays
+        "main_relay": ("relays", str, "K1"),
         # UI
         "lang_code": ("ui", str, "uk"),
     }

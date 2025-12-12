@@ -51,7 +51,7 @@ from app.widgets.object_manager_dialog import ObjectManagerDialog
 from app.services.recording_service import RecordingService
 from app.services.media_player_service import MediaPlayerService
 from app.services.database_service import DatabaseService
-from app.utils.ui_utils import update_element_styles
+from app.utils.ui_utils import update_element_styles, move_dialog_down
 from app.utils.system_utils import (
     get_wifi_signal_strength,
     restart_process,
@@ -614,6 +614,7 @@ class MainWindow(QMainWindow):
 
     def open_database_manager(self):
         self.db_window = ObjectManagerDialog(self.db_service, self.settings_service)
+        move_dialog_down(self.db_window, self.geometry())
         self.db_window.exec()
 
     def set_radar_mode(self):

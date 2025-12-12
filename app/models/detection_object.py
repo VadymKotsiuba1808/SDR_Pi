@@ -1,12 +1,12 @@
 from dataclasses import dataclass, field
-from typing import Optional, Dict, Any
+from typing import Optional, List, Dict, Any
 
 
 @dataclass
 class DetectionObject:
     """
     Модель об'єкта для бази даних.
-    При створенні нового об'єкта id = None.
+    Оновлено для підтримки списків частот та перейменовано audio -> sound.
     """
 
     name: str
@@ -14,18 +14,19 @@ class DetectionObject:
     id: Optional[str] = None
     is_dangerous: bool = False
 
-    rf_params: Optional[Dict[str, Any]] = None
-    audio_params: Optional[Dict[str, Any]] = None
+    rf_params: List[Dict[str, Any]] = field(default_factory=list)
+    sound_params: List[int] = field(default_factory=list)
 
     @staticmethod
     def from_dict(data: dict) -> "DetectionObject":
         return DetectionObject(
-            id=data.get("id"),  # Може бути None
+            id=data.get("id"),
             name=data.get("name", "Unnamed"),
             object_class=data.get("object_class", "unknown"),
             is_dangerous=bool(data.get("is_dangerous", False)),
-            rf_params=data.get("rf_params"),
-            audio_params=data.get("audio_params"),
+            # Отримуємо списки, якщо їх немає - повертаємо пустий список
+            rf_params=data.get("rf_params", []),
+            sound_params=data.get("sound_params", []),
         )
 
     def to_dict(self) -> dict:
@@ -37,9 +38,8 @@ class DetectionObject:
             "object_class": self.object_class,
             "is_dangerous": self.is_dangerous,
             "rf_params": self.rf_params,
-            "audio_params": self.audio_params,
+            "sound_params": self.sound_params,
         }
-        # Додаємо ID тільки якщо він є (для редагування)
         if self.id:
             data["id"] = self.id
         return data

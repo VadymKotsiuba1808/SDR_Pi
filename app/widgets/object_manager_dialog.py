@@ -2,12 +2,12 @@
 Діалогове вікно керування об'єктами (Object Manager).
 """
 
-import os
 from PyQt6 import uic
 from PyQt6.QtWidgets import QDialog, QTableWidgetItem, QMessageBox, QHeaderView
-from PyQt6.QtCore import Qt, QEvent
+from PyQt6.QtCore import Qt, QEvent, QCoreApplication
 
 from app.widgets.object_editor_dialog import ObjectEditorDialog
+from app.services.database_service import DatabaseService
 from app.ui.ui_object_manager_dialog import Ui_ObjectManager
 from app.utils.ui_utils import move_dialog_down
 
@@ -15,7 +15,7 @@ from app.utils.ui_utils import move_dialog_down
 class ObjectManagerDialog(QDialog):
     PAGE_SIZE = 15
 
-    def __init__(self, db_service, settings_service, parent=None):
+    def __init__(self, db_service: DatabaseService, settings_service, parent=None):
         super().__init__(parent)
 
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
@@ -29,9 +29,11 @@ class ObjectManagerDialog(QDialog):
 
         self._load_ui()
         self._init_table()
-        self._connect_signals()
+        self._connect_handlers()
 
         self.refresh_data()
+
+        self._load_language()
 
     def changeEvent(self, event):
         if event.type() == QEvent.Type.LanguageChange:
@@ -45,9 +47,8 @@ class ObjectManagerDialog(QDialog):
             self.ui = Ui_ObjectManager()
             self.ui.setupUi(self)
         else:
-            ui_path = os.path.join(
-                os.path.dirname(__file__), "../ui/object_manager_dialog.ui"
-            )
+            ui_path = "app/ui/object_manager_dialog.ui"
+
             uic.loadUi(ui_path, self)
             self.ui = self
 
@@ -59,7 +60,7 @@ class ObjectManagerDialog(QDialog):
         self.ui.tableWidget.setColumnWidth(3, 150)
         self.ui.tableWidget.setColumnWidth(4, 150)
 
-    def _connect_signals(self):
+    def _connect_handlers(self):
         self.ui.btnRefresh.clicked.connect(self.refresh_data)
         self.ui.btnAdd.clicked.connect(self._open_add_dialog)
         self.ui.btnEdit.clicked.connect(self._open_edit_dialog)
@@ -75,6 +76,14 @@ class ObjectManagerDialog(QDialog):
 
     def refresh_data(self):
         self.db_service.request_objects_page(self.current_page, self.PAGE_SIZE)
+
+    def _load_language(self):
+        lang_code = self.settings_service.lang_code
+
+        if lang_code == None:
+            return
+
+        QCoreApplication.removeTranslator(self.translator)
 
     def _prev_page(self):
         if self.current_page > 1:

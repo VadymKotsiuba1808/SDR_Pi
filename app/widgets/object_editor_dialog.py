@@ -1,6 +1,5 @@
-import os
 from PyQt6.QtWidgets import QDialog, QMessageBox, QListWidgetItem
-from PyQt6.QtCore import Qt, QEvent
+from PyQt6.QtCore import Qt, QEvent, QCoreApplication
 from PyQt6 import uic
 
 from app.ui.ui_object_editor_dialog import Ui_ObjectEditorDialog
@@ -28,6 +27,8 @@ class ObjectEditorDialog(QDialog):
         self._adjust_fields()
         self._connect_handlers()
 
+        self._load_language()
+
     def changeEvent(self, event):
         if event.type() == QEvent.Type.LanguageChange:
             if self.settings_service.compiled_ui_using_enabled:
@@ -40,9 +41,8 @@ class ObjectEditorDialog(QDialog):
             self.ui = Ui_ObjectEditorDialog()
             self.ui.setupUi(self)
         else:
-            ui_path = os.path.join(
-                os.path.dirname(__file__), "../ui/object_editor_dialog.ui"
-            )
+            ui_path = "app/ui/object_editor_dialog.ui"
+
             uic.loadUi(ui_path, self)
             self.ui = self
 
@@ -69,6 +69,14 @@ class ObjectEditorDialog(QDialog):
         self.ui.btnDelRF.clicked.connect(self._del_rf_range)
         self.ui.btnAddSound.clicked.connect(self._add_sound_freq)
         self.ui.btnDelSound.clicked.connect(self._del_sound_freq)
+
+    def _load_language(self):
+        lang_code = self.settings_service.lang_code
+
+        if lang_code == None:
+            return
+
+        QCoreApplication.removeTranslator(self.translator)
 
     def _toggle_rf_fields(self, enabled):
         # Активуємо/деактивуємо поля RF

@@ -50,6 +50,16 @@ class KeyboardWidgetSettings(Protocol):
     lang_code: str
 
 
+class ObjectEditorDialogSettings(Protocol):
+    compiled_ui_using_enabled: bool
+    lang_code: str
+
+
+class ObjectManagerDialogSettings(Protocol):
+    compiled_ui_using_enabled: bool
+    lang_code: str
+
+
 class OSService(Protocol):
     is_windows: bool
     is_linux: bool

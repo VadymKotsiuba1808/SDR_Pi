@@ -6,8 +6,10 @@ from PyQt6 import uic
 from PyQt6.QtWidgets import QDialog, QTableWidgetItem, QMessageBox, QHeaderView
 from PyQt6.QtCore import Qt, QEvent, QCoreApplication
 
+from app.protocols import ObjectManagerDialogSettings
 from app.widgets.object_editor_dialog import ObjectEditorDialog
 from app.services.database_service import DatabaseService
+from app.models.detection_object import DetectionObject
 from app.ui.ui_object_manager_dialog import Ui_ObjectManager
 from app.utils.ui_utils import move_dialog_down
 
@@ -15,14 +17,19 @@ from app.utils.ui_utils import move_dialog_down
 class ObjectManagerDialog(QDialog):
     PAGE_SIZE = 15
 
-    def __init__(self, db_service: DatabaseService, settings_service, parent=None):
+    def __init__(
+        self,
+        db_service: DatabaseService,
+        settings_service: ObjectManagerDialogSettings,
+        parent=None,
+    ):
         super().__init__(parent)
 
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
 
         self.db_service = db_service
         self.settings_service = settings_service
-        self.cached_objects = []
+        self.cached_objects: list[DetectionObject] = []
 
         self.current_page = 1
         self.total_pages = 1

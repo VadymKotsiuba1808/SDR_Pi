@@ -2,6 +2,7 @@ from PyQt6.QtWidgets import QDialog, QMessageBox, QListWidgetItem
 from PyQt6.QtCore import Qt, QEvent, QCoreApplication
 from PyQt6 import uic
 
+from app.protocols import ObjectEditorDialogSettings
 from app.ui.ui_object_editor_dialog import Ui_ObjectEditorDialog
 from app.models.detection_object import DetectionObject
 
@@ -13,7 +14,13 @@ class ObjectEditorDialog(QDialog):
     Sound: Підтримка списку частот.
     """
 
-    def __init__(self, db_service, settings_service, parent=None, object_data=None):
+    def __init__(
+        self,
+        db_service,
+        settings_service: ObjectEditorDialogSettings,
+        parent=None,
+        object_data=None,
+    ):
         super().__init__(parent)
 
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)

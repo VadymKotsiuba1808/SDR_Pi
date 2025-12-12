@@ -65,6 +65,14 @@ class ClassManagerDialogSettings(Protocol):
     lang_code: str
 
 
+class SettingsDialogSettings(Protocol):
+    compiled_ui_using_enabled: bool
+    lang_code: str
+    radar_max_radius: float
+    gps_interval_min: float
+    main_relay: str
+
+
 class OSService(Protocol):
     is_windows: bool
     is_linux: bool

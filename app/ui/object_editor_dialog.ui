@@ -472,9 +472,9 @@ QPushButton#btnDelete:pressed {
       <number>10</number>
      </property>
      <item>
-      <widget class="QPushButton" name="btnDelete">
+      <widget class="QPushButton" name="btnSave">
        <property name="text">
-        <string>Видалити об'єкт</string>
+        <string>Зберегти</string>
        </property>
       </widget>
      </item>
@@ -482,6 +482,9 @@ QPushButton#btnDelete:pressed {
       <spacer name="horizontalSpacer_2">
        <property name="orientation">
         <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Policy::Maximum</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -495,13 +498,6 @@ QPushButton#btnDelete:pressed {
       <widget class="QPushButton" name="btnCancel">
        <property name="text">
         <string>Скасувати</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="btnSave">
-       <property name="text">
-        <string>Зберегти</string>
        </property>
       </widget>
      </item>

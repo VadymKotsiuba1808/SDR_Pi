@@ -1,4 +1,4 @@
-# Form implementation generated from reading ui file 'app/ui/object_manager_widget.ui'
+# Form implementation generated from reading ui file 'app/ui/object_manager_dialog.ui'
 #
 # Created by: PyQt6 UI code generator 6.10.0
 #
@@ -13,54 +13,59 @@ class Ui_ObjectManager(object):
     def setupUi(self, ObjectManager):
         ObjectManager.setObjectName("ObjectManager")
         ObjectManager.resize(1080, 700)
-        ObjectManager.setStyleSheet("QWidget {\n"
-"    background-color: #002f00;\n"
-"    color: #ffffff;\n"
-"    font-family: \'Roboto\';\n"
+        ObjectManager.setStyleSheet("QDialog{\n"
+"  border: 2px solid #4CAF50; \n"
+"    border-radius: 6px;\n"
+"}\n"
+"\n"
+"QWidget {\n"
+"  background-color: #002f00;\n"
+"  color: #ffffff;\n"
+"  font-family: \'Roboto\';\n"
 "}\n"
 "\n"
 "/* Таблиця */\n"
 "QTableWidget {\n"
-"    background-color: rgba(0, 10, 0, 0.6);\n"
-"    gridline-color: #328844;\n"
-"    border: 1px solid #328844;\n"
-"    font-size: 20px;\n"
+"  background-color: rgba(0, 10, 0, 0.6);\n"
+"  gridline-color: #328844;\n"
+"  border: 1px solid #328844;\n"
+"  font-size: 20px;\n"
 "}\n"
 "QTableWidget::item {\n"
-"    padding: 5px;\n"
+"  padding: 5px;\n"
 "}\n"
 "QTableWidget::item:selected {\n"
-"    background-color: #328844;\n"
-"    color: #ffffff;\n"
+"  background-color: #328844;\n"
+"  color: #ffffff;\n"
 "}\n"
 "QHeaderView::section {\n"
-"    background-color: #001a05;\n"
-"    color: #4CAF50;\n"
-"    padding: 5px;\n"
-"    border: 1px solid #328844;\n"
-"    font-weight: bold;\n"
-"    font-size:16px;\n"
+"  background-color: #001a05;\n"
+"  color: #4CAF50;\n"
+"  padding: 5px;\n"
+"  border: 1px solid #328844;\n"
+"  font-weight: bold;\n"
+"  font-size:16px;\n"
 "}\n"
 "\n"
 "QLabel{\n"
-"    font-size: 20px;\n"
+"  font-size: 20px;\n"
 "}\n"
 "\n"
 "/* Кнопки */\n"
 "QPushButton {\n"
-"    background-color: rgba(0, 20, 0, 0.8);\n"
-"    border: 2px solid #328844;\n"
-"    color: #ffffff;\n"
-"    font-size: 20px;\n"
-"    padding: 8px 15px;\n"
-"    border-radius: 4px;\n"
+"  background-color: rgba(0, 20, 0, 0.8);\n"
+"  border: 2px solid #328844;\n"
+"  color: #ffffff;\n"
+"  font-size: 20px;\n"
+"  padding: 8px 15px;\n"
+"  border-radius: 4px;\n"
 "}\n"
 "QPushButton:hover {\n"
-"    background-color: #328844;\n"
-"    color: #000;\n"
+"  background-color: #328844;\n"
+"  color: #000;\n"
 "}\n"
 "QPushButton:pressed {\n"
-"    background-color: #4CAF50;\n"
+"  background-color: #4CAF50;\n"
 "}\n"
 "QPushButton:disabled {\n"
 "    background-color: rgba(50, 50, 50, 0.5);\n"
@@ -69,11 +74,17 @@ class Ui_ObjectManager(object):
 "}\n"
 "\n"
 "QPushButton#btnDelete {\n"
-"    border-color: #aa3333;\n"
+"  border-color: #aa3333;\n"
 "}\n"
 "QPushButton#btnDelete:hover {\n"
-"    background-color: #aa3333;\n"
-"}")
+"  background-color: #aa3333;\n"
+"}\n"
+"\n"
+"/* Кнопка закрити - трохи відрізняється (опціонально, тут стандартний стиль) */\n"
+"QPushButton#btnClose {\n"
+"    /* Можна додати специфічний стиль якщо треба, наразі як інші */\n"
+"}\n"
+"")
         self.verticalLayout = QtWidgets.QVBoxLayout(ObjectManager)
         self.verticalLayout.setObjectName("verticalLayout")
         self.horizontalLayout_Top = QtWidgets.QHBoxLayout()
@@ -144,6 +155,9 @@ class Ui_ObjectManager(object):
         self.btnDelete = QtWidgets.QPushButton(parent=ObjectManager)
         self.btnDelete.setObjectName("btnDelete")
         self.horizontalLayout_Bottom.addWidget(self.btnDelete)
+        self.btnClose = QtWidgets.QPushButton(parent=ObjectManager)
+        self.btnClose.setObjectName("btnClose")
+        self.horizontalLayout_Bottom.addWidget(self.btnClose)
         self.verticalLayout.addLayout(self.horizontalLayout_Bottom)
 
         self.retranslateUi(ObjectManager)
@@ -164,7 +178,7 @@ class Ui_ObjectManager(object):
         item = self.tableWidget.horizontalHeaderItem(3)
         item.setText(_translate("ObjectManager", "RF (MHz)"))
         item = self.tableWidget.horizontalHeaderItem(4)
-        item.setText(_translate("ObjectManager", "Audio (Hz)"))
+        item.setText(_translate("ObjectManager", "Sound (Hz)"))
         self.btnPrevPage.setText(_translate("ObjectManager", "< Назад"))
         self.lblPageInfo.setStyleSheet(_translate("ObjectManager", "font-weight: bold; margin: 0 15px;"))
         self.lblPageInfo.setText(_translate("ObjectManager", "Сторінка 1 з 1"))
@@ -172,3 +186,4 @@ class Ui_ObjectManager(object):
         self.btnAdd.setText(_translate("ObjectManager", "Додати новий"))
         self.btnEdit.setText(_translate("ObjectManager", "Редагувати обраний"))
         self.btnDelete.setText(_translate("ObjectManager", "Видалити"))
+        self.btnClose.setText(_translate("ObjectManager", "Закрити"))

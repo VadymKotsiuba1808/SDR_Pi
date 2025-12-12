@@ -1,26 +1,23 @@
-"""
-Діалог редагування об'єктів.
-Логіка вікна: додавання, редагування та видалення об'єктів детекції.
-"""
-
 import os
-from PyQt6.QtWidgets import QDialog, QMessageBox
+from PyQt6.QtWidgets import QDialog, QMessageBox, QListWidgetItem
 from PyQt6.QtCore import Qt, QEvent
 from PyQt6 import uic
 
 from app.ui.ui_object_editor_dialog import Ui_ObjectEditorDialog
-
 from app.models.detection_object import DetectionObject
 
 
 class ObjectEditorDialog(QDialog):
     """
-    Логіка діалогового вікна редагування об'єктів.
+    Логіка редагування.
+    RF: Підтримка декількох діапазонів (Від-До).
+    Sound: Підтримка списку частот.
     """
 
     def __init__(self, db_service, settings_service, parent=None, object_data=None):
         super().__init__(parent)
-        print("[ObjectEditorDialog] Ініціалізація діалогу редагування...")
+
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
 
         self.db_service = db_service
         self.settings_service = settings_service
@@ -28,11 +25,8 @@ class ObjectEditorDialog(QDialog):
         self.is_edit_mode = object_data is not None
 
         self._load_ui()
-        self._setup_state_variables()
         self._adjust_fields()
         self._connect_handlers()
-
-        print("[ObjectEditorDialog] Діалог готовий.")
 
     def changeEvent(self, event):
         if event.type() == QEvent.Type.LanguageChange:
@@ -52,11 +46,7 @@ class ObjectEditorDialog(QDialog):
             uic.loadUi(ui_path, self)
             self.ui = self
 
-    def _setup_state_variables(self):
-        pass
-
     def _adjust_fields(self):
-        """Налаштування полів."""
         if self.is_edit_mode:
             self.setWindowTitle("Редагування об'єкта")
             self._load_data_into_fields()
@@ -65,7 +55,7 @@ class ObjectEditorDialog(QDialog):
             self.ui.btnDelete.setVisible(False)
 
         self._toggle_rf_fields(self.ui.chkRFEnable.isChecked())
-        self._toggle_audio_fields(self.ui.chkAudioEnable.isChecked())
+        self._toggle_sound_fields(self.ui.chkSoundEnable.isChecked())
 
     def _connect_handlers(self):
         self.ui.btnSave.clicked.connect(self._handle_save)
@@ -73,106 +63,169 @@ class ObjectEditorDialog(QDialog):
         self.ui.btnDelete.clicked.connect(self._handle_delete)
 
         self.ui.chkRFEnable.toggled.connect(self._toggle_rf_fields)
-        self.ui.chkAudioEnable.toggled.connect(self._toggle_audio_fields)
+        self.ui.chkSoundEnable.toggled.connect(self._toggle_sound_fields)
+
+        self.ui.btnAddRF.clicked.connect(self._add_rf_range)
+        self.ui.btnDelRF.clicked.connect(self._del_rf_range)
+        self.ui.btnAddSound.clicked.connect(self._add_sound_freq)
+        self.ui.btnDelSound.clicked.connect(self._del_sound_freq)
 
     def _toggle_rf_fields(self, enabled):
-        self.ui.inpRFFreq.setEnabled(enabled)
-        self.ui.inpRFBw.setEnabled(enabled)
-        self._apply_disabled_style([self.ui.inpRFFreq, self.ui.inpRFBw], enabled)
+        # Активуємо/деактивуємо поля RF
+        for w in [
+            self.ui.inpRFMin,
+            self.ui.inpRFMax,
+            self.ui.lstRFFreqs,
+            self.ui.btnAddRF,
+            self.ui.btnDelRF,
+        ]:
+            w.setEnabled(enabled)
 
-    def _toggle_audio_fields(self, enabled):
-        self.ui.inpAudioMin.setEnabled(enabled)
-        self.ui.inpAudioMax.setEnabled(enabled)
-        self._apply_disabled_style([self.ui.inpAudioMin, self.ui.inpAudioMax], enabled)
-
-    def _apply_disabled_style(self, widgets, enabled):
-        style = ""
-        if not enabled:
-            style = "background-color: rgba(50, 50, 50, 0.5); border: 2px solid #555;"
-
-        for w in widgets:
+        style = (
+            ""
+            if enabled
+            else "background-color: rgba(50, 50, 50, 0.5); border: 1px solid #555;"
+        )
+        for w in [self.ui.inpRFMin, self.ui.inpRFMax, self.ui.lstRFFreqs]:
             w.setStyleSheet(style)
 
+    def _toggle_sound_fields(self, enabled):
+        for w in [
+            self.ui.inpSoundFreq,
+            self.ui.lstSoundFreqs,
+            self.ui.btnAddSound,
+            self.ui.btnDelSound,
+        ]:
+            w.setEnabled(enabled)
+
+        style = (
+            ""
+            if enabled
+            else "background-color: rgba(50, 50, 50, 0.5); border: 2px solid #555;"
+        )
+        for w in [self.ui.inpSoundFreq, self.ui.lstSoundFreqs]:
+            w.setStyleSheet(style)
+
+    def _add_rf_range(self):
+        f_min = self.ui.inpRFMin.value()
+        f_max = self.ui.inpRFMax.value()
+
+        if f_min <= 0 or f_max <= 0:
+            return
+
+        if f_min > f_max:
+            f_min, f_max = f_max, f_min
+            self.ui.inpRFMin.setValue(f_min)
+            self.ui.inpRFMax.setValue(f_max)
+
+        if f_min == f_max:
+            text = f"{f_min} МГц"
+        else:
+            text = f"{f_min} - {f_max} МГц"
+
+        item = QListWidgetItem(text)
+
+        item.setData(Qt.ItemDataRole.UserRole, {"min_mhz": f_min, "max_mhz": f_max})
+        self.ui.lstRFFreqs.addItem(item)
+
+    def _del_rf_range(self):
+        row = self.ui.lstRFFreqs.currentRow()
+        if row >= 0:
+            self.ui.lstRFFreqs.takeItem(row)
+
+    def _add_sound_freq(self):
+        freq = self.ui.inpSoundFreq.value()
+        if freq <= 0:
+            return
+
+        text = f"{freq} Гц"
+
+        existing = [
+            self.ui.lstSoundFreqs.item(i).text()
+            for i in range(self.ui.lstSoundFreqs.count())
+        ]
+        if text in existing:
+            return
+
+        item = QListWidgetItem(text)
+        item.setData(Qt.ItemDataRole.UserRole, freq)
+        self.ui.lstSoundFreqs.addItem(item)
+
+    def _del_sound_freq(self):
+        row = self.ui.lstSoundFreqs.currentRow()
+        if row >= 0:
+            self.ui.lstSoundFreqs.takeItem(row)
+
     def _load_data_into_fields(self):
-        """
-        Заповнює форму даними.
-        Тут ми працюємо з dict, бо він прийшов з JSON.
-        """
         d = self.object_data
-
         self.ui.inpName.setText(d.get("name", ""))
-
         self.ui.inpClass.setText(d.get("object_class", "unknown"))
-
         self.ui.chkDangerous.setChecked(d.get("is_dangerous", False))
 
-        rf = d.get("rf_params")
-        if rf:
+        rf_list = d.get("rf_params", [])
+        if rf_list:
             self.ui.chkRFEnable.setChecked(True)
-            self.ui.inpRFFreq.setValue(rf.get("freq_mhz", 2400.0))
-            self.ui.inpRFBw.setValue(rf.get("bandwidth", 20.0))
+            for rf in rf_list:
+
+                if "min_mhz" in rf:
+                    f_min = rf["min_mhz"]
+                    f_max = rf["max_mhz"]
+                else:
+
+                    center = rf.get("freq_mhz", 0)
+                    bw = rf.get("bandwidth", 0)
+                    f_min = center - (bw / 2) if bw > 0 else center
+                    f_max = center + (bw / 2) if bw > 0 else center
+
+                text = f"{f_min} МГц" if f_min == f_max else f"{f_min} - {f_max} МГц"
+                item = QListWidgetItem(text)
+                item.setData(
+                    Qt.ItemDataRole.UserRole, {"min_mhz": f_min, "max_mhz": f_max}
+                )
+                self.ui.lstRFFreqs.addItem(item)
         else:
             self.ui.chkRFEnable.setChecked(False)
 
-        aud = d.get("audio_params")
-        if aud:
-            self.ui.chkAudioEnable.setChecked(True)
-            self.ui.inpAudioMin.setValue(aud.get("min_freq", 100))
-            self.ui.inpAudioMax.setValue(aud.get("max_freq", 5000))
+        snd_list = d.get("sound_params", [])
+        if snd_list:
+            self.ui.chkSoundEnable.setChecked(True)
+            for freq in snd_list:
+                item = QListWidgetItem(f"{freq} Гц")
+                item.setData(Qt.ItemDataRole.UserRole, freq)
+                self.ui.lstSoundFreqs.addItem(item)
         else:
-            self.ui.chkAudioEnable.setChecked(False)
+            self.ui.chkSoundEnable.setChecked(False)
 
     def _handle_save(self):
-        """Збір даних через модель DetectionObject."""
-        print("[ObjectEditorDialog] Збереження даних...")
         name = self.ui.inpName.text().strip()
-
         if not name:
-            QMessageBox.warning(self, "Помилка", "Будь ласка, введіть назву об'єкта.")
-            self.ui.inpName.setFocus()
+            QMessageBox.warning(self, "Помилка", "Введіть назву об'єкта.")
             return
 
-        object_class = self.ui.inpClass.text().strip()
-
-        if not object_class:
-            QMessageBox.warning(self, "Помилка", "Будь ласка, введіть клас об'єкта.")
-            self.ui.inpClass.setFocus()
-            return
-
-        rf_data = None
+        rf_data = []
         if self.ui.chkRFEnable.isChecked():
-            rf_data = {
-                "freq_mhz": self.ui.inpRFFreq.value(),
-                "bandwidth": self.ui.inpRFBw.value(),
-            }
+            for i in range(self.ui.lstRFFreqs.count()):
+                item = self.ui.lstRFFreqs.item(i)
+                rf_data.append(item.data(Qt.ItemDataRole.UserRole))
 
-        audio_data = None
-        if self.ui.chkAudioEnable.isChecked():
-            audio_data = {
-                "min_freq": self.ui.inpAudioMin.value(),
-                "max_freq": self.ui.inpAudioMax.value(),
-            }
+        sound_data = []
+        if self.ui.chkSoundEnable.isChecked():
+            for i in range(self.ui.lstSoundFreqs.count()):
+                item = self.ui.lstSoundFreqs.item(i)
+                sound_data.append(item.data(Qt.ItemDataRole.UserRole))
 
-        target_id = self.object_data["id"] if self.is_edit_mode else None
-
-        try:
-            target_obj = DetectionObject(
-                id=target_id,
-                name=name,
-                object_class=object_class,
-                is_dangerous=self.ui.chkDangerous.isChecked(),
-                rf_params=rf_data,
-                audio_params=audio_data,
-            )
-        except Exception as e:
-            QMessageBox.critical(self, "Помилка даних", f"Некоректні дані: {e}")
-            return
+        target_obj = DetectionObject(
+            id=self.object_data["id"] if self.is_edit_mode else None,
+            name=name,
+            object_class=self.ui.inpClass.text().strip(),
+            is_dangerous=self.ui.chkDangerous.isChecked(),
+            rf_params=rf_data,
+            sound_params=sound_data,
+        )
 
         if self.is_edit_mode:
-            print(f"[ObjectEditor] Оновлення: {target_obj.name} (ID: {target_obj.id})")
             self.db_service.update_object(target_obj.to_dict())
         else:
-            print(f"[ObjectEditor] Створення нового: {target_obj.name}")
             self.db_service.add_object(target_obj.to_dict())
 
         self.accept()
@@ -180,27 +233,11 @@ class ObjectEditorDialog(QDialog):
     def _handle_delete(self):
         confirm = QMessageBox.question(
             self,
-            "Підтвердження видалення",
-            f"Ви впевнені, що хочете видалити об'єкт '{self.ui.inpName.text()}'?",
+            "Видалення",
+            f"Видалити '{self.ui.inpName.text()}'?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
-
         if confirm == QMessageBox.StandardButton.Yes:
-            if self.is_edit_mode and "id" in self.object_data:
-                print(f"[ObjectEditor] Видалення ID: {self.object_data['id']}")
+            if self.is_edit_mode:
                 self.db_service.delete_object(self.object_data["id"])
             self.accept()
-
-    def _handle_logout(self):
-        confirm = QMessageBox.question(
-            self,
-            "Вихід",
-            "Вийти з акаунту та перезапустити програму?",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-        )
-
-        if confirm == QMessageBox.StandardButton.Yes:
-            print("[ObjectEditorDialog] Вихід з акаунту...")
-            if self.parent() and hasattr(self.parent(), "restart_app"):
-                self.parent().restart_app()
-            self.close()

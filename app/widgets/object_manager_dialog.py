@@ -1,7 +1,5 @@
 """
 Діалогове вікно керування об'єктами (Object Manager).
-Надає інтерфейс для перегляду, видалення, відкриття віджета для додавання, редагування
-об'єктів
 """
 
 import os
@@ -10,8 +8,8 @@ from PyQt6.QtWidgets import QDialog, QTableWidgetItem, QMessageBox, QHeaderView
 from PyQt6.QtCore import Qt, QEvent
 
 from app.widgets.object_editor_dialog import ObjectEditorDialog
-
 from app.ui.ui_object_manager_dialog import Ui_ObjectManager
+from app.utils.ui_utils import move_dialog_down
 
 
 class ObjectManagerDialog(QDialog):
@@ -19,6 +17,9 @@ class ObjectManagerDialog(QDialog):
 
     def __init__(self, db_service, settings_service, parent=None):
         super().__init__(parent)
+
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
+
         self.db_service = db_service
         self.settings_service = settings_service
         self.cached_objects = []
@@ -63,6 +64,7 @@ class ObjectManagerDialog(QDialog):
         self.ui.btnAdd.clicked.connect(self._open_add_dialog)
         self.ui.btnEdit.clicked.connect(self._open_edit_dialog)
         self.ui.btnDelete.clicked.connect(self._handle_delete)
+        self.ui.btnClose.clicked.connect(self.reject)
         self.ui.tableWidget.doubleClicked.connect(self._open_edit_dialog)
 
         self.ui.btnPrevPage.clicked.connect(self._prev_page)
@@ -72,7 +74,6 @@ class ObjectManagerDialog(QDialog):
         self.db_service.operation_status.connect(self._handle_db_status)
 
     def refresh_data(self):
-        """Запитує поточну сторінку."""
         self.db_service.request_objects_page(self.current_page, self.PAGE_SIZE)
 
     def _prev_page(self):
@@ -90,7 +91,7 @@ class ObjectManagerDialog(QDialog):
             self.refresh_data()
 
     def _populate_table(self, objects_list, current_page, total_pages):
-        """Оновлює таблицю та стан кнопок."""
+        """Оновлює таблицю даними з новою структурою RF (min/max)."""
         self.cached_objects = objects_list
         self.current_page = current_page
         self.total_pages = total_pages
@@ -100,44 +101,66 @@ class ObjectManagerDialog(QDialog):
         self.ui.btnNextPage.setEnabled(current_page < total_pages)
 
         self.ui.tableWidget.setRowCount(0)
+
         for obj in objects_list:
             row_idx = self.ui.tableWidget.rowCount()
             self.ui.tableWidget.insertRow(row_idx)
 
+            # Назва
             name_item = QTableWidgetItem(obj.get("name", "Unnamed"))
             name_item.setData(Qt.ItemDataRole.UserRole, obj.get("id"))
             self.ui.tableWidget.setItem(row_idx, 0, name_item)
 
+            # Клас
             self.ui.tableWidget.setItem(
                 row_idx, 1, QTableWidgetItem(obj.get("object_class", ""))
             )
 
+            # Небезпека
             is_dang = obj.get("is_dangerous", False)
             dang_item = QTableWidgetItem("ТАК" if is_dang else "Ні")
             if is_dang:
                 dang_item.setForeground(Qt.GlobalColor.red)
             self.ui.tableWidget.setItem(row_idx, 2, dang_item)
 
-            rf = obj.get("rf_params")
-            rf_str = f"{rf['freq_mhz']} MHz" if rf else "-"
+            # --- RF (Радіо) ---
+            rf_list = obj.get("rf_params", [])
+            rf_str = "-"
+            if rf_list and isinstance(rf_list, list):
+                if len(rf_list) == 1:
+                    val = rf_list[0]
+                    f_min = val.get("min_mhz", 0)
+                    f_max = val.get("max_mhz", 0)
+                    if f_min == f_max:
+                        rf_str = f"{f_min} MHz"
+                    else:
+                        rf_str = f"{f_min}-{f_max} MHz"
+                else:
+                    rf_str = f"{len(rf_list)} freq(s)"
+
             self.ui.tableWidget.setItem(row_idx, 3, QTableWidgetItem(rf_str))
 
-            aud = obj.get("audio_params")
-            aud_str = f"{aud['min_freq']}-{aud['max_freq']} Hz" if aud else "-"
-            self.ui.tableWidget.setItem(row_idx, 4, QTableWidgetItem(aud_str))
+            snd_list = obj.get("sound_params", [])
+            snd_str = "-"
+            if snd_list and isinstance(snd_list, list):
+                if len(snd_list) > 3:
+                    snd_str = f"{len(snd_list)} items"
+                else:
+                    snd_str = ", ".join(map(str, snd_list)) + " Hz"
+
+            self.ui.tableWidget.setItem(row_idx, 4, QTableWidgetItem(snd_str))
 
     def _get_selected_id(self):
-        """Повертає ID вибраного рядка або None."""
         selected_items = self.ui.tableWidget.selectedItems()
         if not selected_items:
             return None
-
         row = selected_items[0].row()
         item = self.ui.tableWidget.item(row, 0)
         return item.data(Qt.ItemDataRole.UserRole)
 
     def _open_add_dialog(self):
         dialog = ObjectEditorDialog(self.db_service, self.settings_service, self)
+        move_dialog_down(dialog, self.geometry())
         dialog.exec()
 
     def _open_edit_dialog(self):
@@ -152,6 +175,7 @@ class ObjectManagerDialog(QDialog):
             dialog = ObjectEditorDialog(
                 self.db_service, self.settings_service, self, object_data=target_obj
             )
+            move_dialog_down(dialog, self.geometry(), -50)
             dialog.exec()
 
     def _handle_delete(self):

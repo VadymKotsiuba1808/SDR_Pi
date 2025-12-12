@@ -16,7 +16,6 @@ class ObjectEditorDialog(QDialog):
 
     def __init__(
         self,
-        db_service,
         settings_service: ObjectEditorDialogSettings,
         parent=None,
         object_data=None,
@@ -25,7 +24,6 @@ class ObjectEditorDialog(QDialog):
 
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
 
-        self.db_service = db_service
         self.settings_service = settings_service
         self.object_data = object_data
         self.is_edit_mode = object_data is not None
@@ -59,7 +57,6 @@ class ObjectEditorDialog(QDialog):
             self._load_data_into_fields()
         else:
             self.setWindowTitle("Додавання нового об'єкта")
-            self.ui.btnDelete.setVisible(False)
 
         self._toggle_rf_fields(self.ui.chkRFEnable.isChecked())
         self._toggle_sound_fields(self.ui.chkSoundEnable.isChecked())
@@ -67,7 +64,6 @@ class ObjectEditorDialog(QDialog):
     def _connect_handlers(self):
         self.ui.btnSave.clicked.connect(self._handle_save)
         self.ui.btnCancel.clicked.connect(self.reject)
-        self.ui.btnDelete.clicked.connect(self._handle_delete)
 
         self.ui.chkRFEnable.toggled.connect(self._toggle_rf_fields)
         self.ui.chkSoundEnable.toggled.connect(self._toggle_sound_fields)
@@ -238,21 +234,9 @@ class ObjectEditorDialog(QDialog):
             sound_params=sound_data,
         )
 
-        if self.is_edit_mode:
-            self.db_service.update_object(target_obj.to_dict())
-        else:
-            self.db_service.add_object(target_obj.to_dict())
+        self.new_object = target_obj
 
         self.accept()
 
-    def _handle_delete(self):
-        confirm = QMessageBox.question(
-            self,
-            "Видалення",
-            f"Видалити '{self.ui.inpName.text()}'?",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-        )
-        if confirm == QMessageBox.StandardButton.Yes:
-            if self.is_edit_mode:
-                self.db_service.delete_object(self.object_data["id"])
-            self.accept()
+    def get_new_object(self) -> DetectionObject:
+        return self.new_object

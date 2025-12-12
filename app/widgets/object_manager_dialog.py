@@ -175,9 +175,12 @@ class ObjectManagerDialog(QDialog):
         return item.data(Qt.ItemDataRole.UserRole)
 
     def _open_add_dialog(self):
-        dialog = ObjectEditorDialog(self.db_service, self.settings_service, self)
+        dialog = ObjectEditorDialog(self.settings_service, self)
         move_dialog_down(dialog, self.geometry())
-        dialog.exec()
+
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            new_object = dialog.get_new_object()
+            self.db_service.add_object(new_object.to_dict())
 
     def _open_edit_dialog(self):
         obj_id = self._get_selected_id()
@@ -187,12 +190,15 @@ class ObjectManagerDialog(QDialog):
 
         target_obj = next((o for o in self.cached_objects if o["id"] == obj_id), None)
 
-        if target_obj:
-            dialog = ObjectEditorDialog(
-                self.db_service, self.settings_service, self, object_data=target_obj
-            )
-            move_dialog_down(dialog, self.geometry(), -50)
-            dialog.exec()
+        if not target_obj:
+            return
+
+        dialog = ObjectEditorDialog(self.settings_service, self, object_data=target_obj)
+        move_dialog_down(dialog, self.geometry(), -50)
+
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            new_object = dialog.get_new_object()
+            self.db_service.update_object(new_object.to_dict())
 
     def _handle_delete(self):
         obj_id = self._get_selected_id()

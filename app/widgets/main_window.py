@@ -642,15 +642,15 @@ class MainWindow(QMainWindow):
         if self.settings_dialog.exec() == QDialog.DialogCode.Accepted:
             new_settings = self.settings_dialog.get_settings()
 
-            new_radius = new_settings.max_radius_km
-            new_interval = new_settings.gps_interval_min
+            new_radius = new_settings.radar_max_radius
+            new_interval = new_settings.gps_interval_s
             new_main_relay = new_settings.main_relay
 
             if self.settings_service.radar_max_radius != new_radius:
                 self.settings_service.radar_max_radius = new_radius
 
-            if self.settings_service.gps_interval_min != new_interval:
-                self.settings_service.gps_interval_min = new_interval
+            if self.settings_service.gps_interval_s != new_interval:
+                self.settings_service.gps_interval_s = new_interval
 
             if self.settings_service.main_relay != new_main_relay:
                 self.settings_service.main_relay = new_main_relay

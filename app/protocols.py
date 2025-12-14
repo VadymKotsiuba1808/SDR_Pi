@@ -69,7 +69,7 @@ class SettingsDialogSettings(Protocol):
     compiled_ui_using_enabled: bool
     lang_code: str
     radar_max_radius: float
-    gps_interval_min: float
+    gps_interval_s: float
     main_relay: str
 
 

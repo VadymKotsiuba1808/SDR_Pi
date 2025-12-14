@@ -11,8 +11,8 @@ from app.ui.ui_settings_dialog import Ui_SettingsDialog
 class SettingsData:
     """Клас для зберігання налаштувань діалогу"""
 
-    max_radius_km: float = 1.0
-    gps_interval_min: int = 5
+    radar_max_radius: float = 1000.0
+    gps_interval_s: int = 300
     main_relay: str = "K1"
 
 
@@ -52,8 +52,8 @@ class SettingsDialog(QDialog):
     def _adjust_fields(self):
         s = self.settings_service
 
-        self.ui.inpMaxRadius.setValue(s.radar_max_radius)
-        self.ui.inpGpsInterval.setValue(s.gps_interval_min)
+        self.ui.inpMaxRadius.setValue(s.radar_max_radius / 1000)
+        self.ui.inpGpsInterval.setValue(s.gps_interval_s / 60)
 
         relay_val = s.main_relay
         index = self.ui.cmbRelay.findText(relay_val)
@@ -66,8 +66,8 @@ class SettingsDialog(QDialog):
 
     def _handle_save(self):
         self.new_settings = SettingsData(
-            max_radius_km=self.ui.inpMaxRadius.value(),
-            gps_interval_min=self.ui.inpGpsInterval.value(),
+            radat_max_radius=int(self.ui.inpMaxRadius.value() * 1000),
+            gps_interval_s=int(self.ui.inpGpsInterval.value() * 60),
             main_relay=self.ui.cmbRelay.currentText(),
         )
 

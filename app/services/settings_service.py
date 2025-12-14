@@ -41,7 +41,7 @@ class SettingsService(QObject):
     radio_range_GHz: list
     sound_range_GHz: list
     # Timers
-    gps_interval_min: float
+    gps_interval_s: float
     # Relays
     main_relay: str
     # UI
@@ -72,7 +72,7 @@ class SettingsService(QObject):
         "radio_range_GHz": ("signal", list, [0.0, 9.9]),
         "sound_range_GHz": ("signal", list, [0.0, 9.9]),
         # Timers
-        "gps_interval_min": ("timers", int, 2),
+        "gps_interval_s": ("timers", int, 2),
         # Relays
         "main_relay": ("relays", str, "K1"),
         # UI

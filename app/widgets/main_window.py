@@ -45,6 +45,8 @@ from app.assets import resources_rc
 
 from app.widgets.set_map_dialog import SetMapDialog
 from app.widgets.autosize_window import make_scalable
+from app.widgets.log_dialog import LogDialog
+from app.services.pi_network_service import PiNetworkService
 from app.widgets.record_status_widget import RecordingStatusWidget
 from app.widgets.object_manager_dialog import ObjectManagerDialog
 from app.services.settings_service import SettingsService
@@ -221,6 +223,7 @@ class MainWindow(QMainWindow):
         self.ui.screenRecordButton.clicked.connect(self.handle_toggle_recording)
         self.ui.filesViewButton.clicked.connect(self.handle_open_file)
         self.ui.viewObjectButton.clicked.connect(self.open_database_manager)
+        self.ui.viewLogsButton.clicked.connect(self.open_logs_dialog)
 
         self.ui.falseAlarmButton.clicked.connect(self.handle_false_alarm)
         self.ui.menuButton.clicked.connect(self.open_settings_dialog)
@@ -555,6 +558,11 @@ class MainWindow(QMainWindow):
         )
         move_dialog_down(self.db_window, self.geometry())
         self.db_window.exec()
+
+    def open_logs_dialog(self):
+        logs_dialog = LogDialog(self.settings_service)
+        move_dialog_down(logs_dialog, self.geometry())
+        logs_dialog.exec()
 
     @pyqtSlot(bool)
     def handle_toggle_recording(self):

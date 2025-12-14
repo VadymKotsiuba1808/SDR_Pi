@@ -1,0 +1,771 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>LogDialog</class>
+ <widget class="QDialog" name="LogDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1400</width>
+    <height>762</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Аналіз історії подій</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QDialog {
+  background-color: #002f00;
+  color: #ffffff;
+  font-family: 'Roboto';
+  border: 2px solid #4CAF50;
+  border-radius: 6px;
+}
+
+QLabel {
+  color: #ffffff;
+  font-size: 18px; 
+  font-weight: 500;
+}
+
+QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox, QDateTimeEdit {
+  background-color: rgba(0, 10, 0, 0.8);
+  border: 1px solid #328844;
+  color: #ffffff;
+  padding: 4px;
+  font-size: 18px;
+  border-radius: 3px;
+}
+
+QComboBox::down-arrow { width: 16px; height: 16px; padding:2px }
+QComboBox QAbstractItemView {
+    background-color: #002f00;
+    color: #ffffff;
+    selection-background-color: #328844;
+}
+
+/* Кнопки календаря */
+QDoubleSpinBox::up-button, QDoubleSpinBox::down-button,
+QSpinBox::up-button, QSpinBox::down-button, QDateTimeEdit::up-button, QDateTimeEdit::down-button {
+ width: 14px; 
+ height: 14px; 
+ padding:2px 
+}
+
+/* Календар */
+QCalendarWidget QWidget {
+    background-color: #002f00;
+    color: white;
+}
+
+/* Таблиця */
+QTableWidget {
+  background-color: rgba(0, 10, 0, 0.3);
+  gridline-color: #328844;
+  border: 1px solid #328844;
+  font-size: 16px;
+  color: #fff;
+}
+QHeaderView::section {
+  background-color: #001a05;
+  color: #4CAF50;
+  padding: 4px;
+  border: 1px solid #328844;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+QTableView{
+ font-size: 16px;
+}
+
+QTableWidget::item{
+ font-size: 30px;
+}
+
+/* Кнопки */
+QPushButton {
+  border: 1px solid #328844;
+  background-color: rgba(0, 30, 0, 0.8);
+  color: #ffffff;
+  font-size: 18px;
+  padding: 6px 15px;
+  border-radius: 4px;
+}
+QPushButton:pressed {
+  background-color: #4CAF50;
+  color: #002509;
+}
+
+QPushButton#btnApplyFilters {
+  background-color: #004400;
+  font-weight: bold;
+}
+
+/* Фрейм фільтрів */
+QFrame#frameFilters {
+    background-color: rgba(0, 20, 0, 0.5);
+    border-right: 2px solid #328844;
+}
+
+/* Групи */
+QGroupBox {
+    border: 1px solid #328844;
+    border-radius: 5px;
+    margin-top: 20px;
+    font-weight: bold;
+    color: #4CAF50;
+    font-size:18px;
+}
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 10px;
+    padding: 0 3px;
+    font-size:18px;
+}
+
+QTabWidget::pane { border: 1px solid #328844; }
+QTabBar::tab {
+    background: #001a05;
+    color: #888;
+    padding: 8px 20px;
+    border: 1px solid #328844;
+    border-bottom: none;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    margin-right: 2px;
+    font-size:18px;
+}
+QTabBar::tab:selected {
+    background: #328844;
+    color: #fff;
+    font-weight: bold;
+}
+
+QPushButton#btnClose {
+  background-color: #442222;
+  border-color: #aa3333;
+}
+QPushButton#btnClose:pressed {
+  background-color: #aa3333;
+}
+</string>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout_Main">
+   <property name="spacing">
+    <number>0</number>
+   </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QFrame" name="frameFilters">
+     <property name="minimumSize">
+      <size>
+       <width>300</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>300</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Shape::NoFrame</enum>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <property name="spacing">
+       <number>10</number>
+      </property>
+      <property name="topMargin">
+       <number>40</number>
+      </property>
+      <property name="bottomMargin">
+       <number>40</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="lblSessionTitle">
+        <property name="styleSheet">
+         <string>color: #4CAF50; font-weight: bold; font-size: 18px;</string>
+        </property>
+        <property name="text">
+         <string>Вибір сесії:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="cmbSessions"/>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="grpFilters">
+        <property name="title">
+         <string>Фільтри пошуку</string>
+        </property>
+        <layout class="QFormLayout" name="formLayout">
+         <property name="verticalSpacing">
+          <number>8</number>
+         </property>
+         <item row="0" column="0">
+          <widget class="QLabel" name="lblTime">
+           <property name="text">
+            <string>Час:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="lblFilterName">
+           <property name="minimumSize">
+            <size>
+             <width>100</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Ім'я / ID:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0" colspan="2">
+          <widget class="QLineEdit" name="inpFilterName">
+           <property name="maximumSize">
+            <size>
+             <width>250</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="placeholderText">
+            <string>Введіть назву...</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QLabel" name="lblFilterType">
+           <property name="text">
+            <string>Тип події:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="0">
+          <widget class="QLabel" name="lblDist">
+           <property name="text">
+            <string>Дистанція (м):</string>
+           </property>
+          </widget>
+         </item>
+         <item row="8" column="0">
+          <layout class="QHBoxLayout" name="layoutDist">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QSpinBox" name="inpDistMin">
+             <property name="minimumSize">
+              <size>
+               <width>115</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="buttonSymbols">
+              <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
+             </property>
+             <property name="maximum">
+              <number>50000</number>
+             </property>
+             <property name="value">
+              <number>0</number>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="lblDash">
+             <property name="minimumSize">
+              <size>
+               <width>20</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>-</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignmentFlag::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSpinBox" name="inpDistMax">
+             <property name="minimumSize">
+              <size>
+               <width>115</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="buttonSymbols">
+              <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
+             </property>
+             <property name="maximum">
+              <number>50000</number>
+             </property>
+             <property name="value">
+              <number>5000</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item row="9" column="0">
+          <widget class="QLabel" name="lblAngle">
+           <property name="text">
+            <string>Кут (°):</string>
+           </property>
+          </widget>
+         </item>
+         <item row="10" column="0">
+          <layout class="QHBoxLayout" name="layoutAngle">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QSpinBox" name="inpAngleMin">
+             <property name="minimumSize">
+              <size>
+               <width>115</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="buttonSymbols">
+              <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
+             </property>
+             <property name="maximum">
+              <number>360</number>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="lblDash2">
+             <property name="minimumSize">
+              <size>
+               <width>20</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>-</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignmentFlag::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSpinBox" name="inpAngleMax">
+             <property name="minimumSize">
+              <size>
+               <width>115</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="buttonSymbols">
+              <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
+             </property>
+             <property name="maximum">
+              <number>360</number>
+             </property>
+             <property name="value">
+              <number>360</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item row="1" column="0" colspan="2">
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <item>
+            <widget class="QDateTimeEdit" name="inpTimeStart">
+             <property name="displayFormat">
+              <string>HH:mm:ss</string>
+             </property>
+             <property name="calendarPopup">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDateTimeEdit" name="inpTimeEnd">
+             <property name="displayFormat">
+              <string>HH:mm:ss</string>
+             </property>
+             <property name="calendarPopup">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item row="5" column="0" colspan="2">
+          <widget class="QComboBox" name="cmbFilterType">
+           <property name="maximumSize">
+            <size>
+             <width>250</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <item>
+            <property name="text">
+             <string>Всі</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Детекція (Detection)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Хибна тривога (False)</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnApplyFilters">
+        <property name="text">
+         <string>Застосувати фільтри</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnResetFilters">
+        <property name="text">
+         <string>Скинути</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="verticalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Orientation::Vertical</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Policy::Maximum</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnClose">
+        <property name="text">
+         <string>Закрити вікно</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QFrame" name="frameContent">
+     <layout class="QVBoxLayout" name="verticalLayout_Content">
+      <property name="leftMargin">
+       <number>10</number>
+      </property>
+      <property name="topMargin">
+       <number>10</number>
+      </property>
+      <property name="rightMargin">
+       <number>10</number>
+      </property>
+      <property name="bottomMargin">
+       <number>10</number>
+      </property>
+      <item>
+       <widget class="QTabWidget" name="tabWidget">
+        <property name="currentIndex">
+         <number>1</number>
+        </property>
+        <widget class="QWidget" name="tabGeneral">
+         <attribute name="title">
+          <string>Загальний огляд</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="verticalLayout_Gen">
+          <item>
+           <widget class="QTableWidget" name="tableLogs">
+            <property name="sortingEnabled">
+             <bool>true</bool>
+            </property>
+            <column>
+             <property name="text">
+              <string>Час</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Тип</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Назва (ID)</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Клас</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Частота, MHz</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Дист / Кут</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Дійсність</string>
+             </property>
+            </column>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="tabGeneralAnalyze">
+         <attribute name="title">
+          <string>Загальний аналіз</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="verticalLayout_Obj">
+          <item>
+           <layout class="QHBoxLayout" name="layoutChartControls">
+            <item>
+             <widget class="QLabel" name="lblChartTypeGen">
+              <property name="text">
+               <string>Тип графіка:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="cmbChartTypeGeneral">
+              <property name="minimumSize">
+               <size>
+                <width>300</width>
+                <height>0</height>
+               </size>
+              </property>
+              <item>
+               <property name="text">
+                <string>Хронологія подій (Timeline)</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Статистика класів (Bar)</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_Gen">
+              <property name="orientation">
+               <enum>Qt::Orientation::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QFrame" name="chartContainerGeneral">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>300</height>
+             </size>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::Shape::StyledPanel</enum>
+            </property>
+            <layout class="QVBoxLayout" name="layoutChartGen"/>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="tabObject">
+         <attribute name="title">
+          <string>Аналіз об'єкта</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="verticalLayout_Obj">
+          <item>
+           <layout class="QHBoxLayout" name="layoutObjSel">
+            <item>
+             <widget class="QLabel" name="lblSelObj">
+              <property name="text">
+               <string>Обрати об'єкт:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="cmbTargetObject">
+              <property name="minimumSize">
+               <size>
+                <width>300</width>
+                <height>0</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_Obj">
+              <property name="orientation">
+               <enum>Qt::Orientation::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="layoutObjCharts">
+            <item>
+             <widget class="QFrame" name="chartContainerPath">
+              <property name="frameShape">
+               <enum>QFrame::Shape::StyledPanel</enum>
+              </property>
+              <layout class="QVBoxLayout" name="layoutChartPath">
+               <item>
+                <widget class="QLabel" name="lblPathTitle">
+                 <property name="maximumSize">
+                  <size>
+                   <width>16777215</width>
+                   <height>40</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>Траєкторія руху (Polar Path)</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignmentFlag::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QFrame" name="chartContainerSignal">
+              <property name="frameShape">
+               <enum>QFrame::Shape::StyledPanel</enum>
+              </property>
+              <layout class="QVBoxLayout" name="layoutChartSignal">
+               <item>
+                <widget class="QLabel" name="lblSignalTitle">
+                 <property name="maximumSize">
+                  <size>
+                   <width>16777215</width>
+                   <height>40</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>Рівень сигналу / Впевненість</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignmentFlag::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="tabSituation">
+         <attribute name="title">
+          <string>Ситуація на радарі</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="verticalLayout_Sit">
+          <item>
+           <layout class="QHBoxLayout" name="layoutSitControl">
+            <item>
+             <widget class="QLabel" name="lblSitTime">
+              <property name="text">
+               <string>Час відображення:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="cmbSituationTime">
+              <property name="minimumSize">
+               <size>
+                <width>300</width>
+                <height>0</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_Sit">
+              <property name="orientation">
+               <enum>Qt::Orientation::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QFrame" name="chartContainerRadarSit">
+            <property name="frameShape">
+             <enum>QFrame::Shape::StyledPanel</enum>
+            </property>
+            <layout class="QVBoxLayout" name="layoutChartRadarSit"/>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

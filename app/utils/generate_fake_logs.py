@@ -48,7 +48,7 @@ def generate_data():
                 "name": f"Target-{random.randint(100, 999)}",
                 "object_class": obj_class,
                 "type": det_type,
-                "frequency": round(freq, 2),
+                "frequency": round(freq * 1000000, 2),
                 "distance": random.randint(50, 5000),
                 "angle": round(random.uniform(0, 360), 1),
                 "confidence": round(random.uniform(0.6, 0.99), 2),

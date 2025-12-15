@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from PyQt6.QtWidgets import QDialog
-from PyQt6.QtCore import Qt, QEvent
+from PyQt6.QtCore import Qt, QEvent, QTranslator, QCoreApplication
 from PyQt6 import uic
 
 from app.protocols import SettingsDialogSettings
@@ -28,10 +28,12 @@ class SettingsDialog(QDialog):
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
 
         self.settings_service = settings_service
+        self.translator = QTranslator()
 
         self._load_ui()
         self._adjust_fields()
         self._connect_handlers()
+        self._load_language()
 
     def changeEvent(self, event):
         if event.type() == QEvent.Type.LanguageChange:
@@ -63,6 +65,20 @@ class SettingsDialog(QDialog):
     def _connect_handlers(self):
         self.ui.btnSave.clicked.connect(self._handle_save)
         self.ui.btnCancel.clicked.connect(self.reject)
+
+    def _load_language(self):
+        lang_code = self.settings_service.lang_code
+
+        if lang_code == None:
+            return
+
+        QCoreApplication.removeTranslator(self.translator)
+
+        path = f"app/i18n/qm/app_{lang_code}.qm"
+        if self.translator.load(path):
+            QCoreApplication.installTranslator(self.translator)
+        else:
+            print(f"Помилка: не вдалося завантажити {path}")
 
     def _handle_save(self):
         self.new_settings = SettingsData(

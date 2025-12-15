@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import (
     QHeaderView,
     QAbstractItemView,
 )
-from PyQt6.QtCore import Qt, QTime, QEvent, QCoreApplication
+from PyQt6.QtCore import Qt, QTime, QEvent, QCoreApplication, QTranslator
 from PyQt6 import uic
 from PyQt6.QtGui import QFont, QColor
 
@@ -60,6 +60,7 @@ class LogDialog(QDialog):
             self.ui = self
 
     def _setup_state_variables(self):
+        self.translator = QTranslator()
         self.service = LogService()
         self.all_entries: list[LogEntry] = []
         self.filtered_entries: list[LogEntry] = []
@@ -125,16 +126,16 @@ class LogDialog(QDialog):
     def _load_language(self):
         lang_code = self.settings_service.lang_code
 
-        # if lang_code == None:
-        #     return
+        if lang_code == None:
+            return
 
-        # QCoreApplication.removeTranslator(self.translator)
+        QCoreApplication.removeTranslator(self.translator)
 
-        # path = f"app/i18n/qm/app_{lang_code}.qm"
-        # if self.translator.load(path):
-        #     QCoreApplication.installTranslator(self.translator)
-        # else:
-        #     print(f"Помилка: не вдалося завантажити {path}")
+        path = f"app/i18n/qm/app_{lang_code}.qm"
+        if self.translator.load(path):
+            QCoreApplication.installTranslator(self.translator)
+        else:
+            print(f"Помилка: не вдалося завантажити {path}")
 
     def _on_session_changed(self):
         fname = self.ui.cmbSessions.currentData()
@@ -267,9 +268,7 @@ class LogDialog(QDialog):
                 t.setItem(
                     row_idx,
                     4,
-                    QTableWidgetItem(
-                        f"{data.type}(MHz): {(data.frequency/1000000):.1f}"
-                    ),
+                    QTableWidgetItem(f"{(data.frequency/1000000):.1f}"),
                 )
                 t.setItem(
                     row_idx,

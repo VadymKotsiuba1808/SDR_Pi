@@ -9,7 +9,7 @@ from PyQt6.QtGui import (
     QMouseEvent,
     QPaintEvent,
 )
-from PyQt6.QtCore import Qt, QPointF, QEvent, QCoreApplication
+from PyQt6.QtCore import Qt, QPointF, QEvent, QCoreApplication, QTranslator
 from datetime import datetime
 import math
 
@@ -29,9 +29,11 @@ class LogChartWidget(QWidget):
 
         self.setMouseTracking(True)
         self._setup_state_variables()
-        # self._load_language()
+        self._load_language()
 
     def _setup_state_variables(self):
+        self.translator = QTranslator()
+
         self.chart_type = "timeline"
         self.data = []
         self.highlight_ids = set()
@@ -46,19 +48,19 @@ class LogChartWidget(QWidget):
         self.color_path = QColor(0, 255, 255)
         self.color_text = QColor(200, 200, 200)
 
-    # def _load_language(self):
-    #     lang_code = self.settings_service.lang_code
+    def _load_language(self):
+        lang_code = self.settings_service.lang_code
 
-    #     if lang_code == None:
-    #         return
+        if lang_code == None:
+            return
 
-    #     QCoreApplication.removeTranslator(self.translator)
+        QCoreApplication.removeTranslator(self.translator)
 
-    #     path = f"app/i18n/qm/app_{lang_code}.qm"
-    #     if self.translator.load(path):
-    #         QCoreApplication.installTranslator(self.translator)
-    #     else:
-    #         print(f"Помилка: не вдалося завантажити {path}")
+        path = f"app/i18n/qm/app_{lang_code}.qm"
+        if self.translator.load(path):
+            QCoreApplication.installTranslator(self.translator)
+        else:
+            print(f"Помилка: не вдалося завантажити {path}")
 
     def set_data(self, data, highlight_ids: set = None):
         self.data = data

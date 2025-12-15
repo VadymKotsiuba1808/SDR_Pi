@@ -395,7 +395,7 @@ class Ui_LogDialog(object):
         self.horizontalLayout_Main.addWidget(self.frameContent)
 
         self.retranslateUi(LogDialog)
-        self.tabWidget.setCurrentIndex(1)
+        self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(LogDialog)
 
     def retranslateUi(self, LogDialog):

@@ -4,7 +4,7 @@
 
 from PyQt6 import uic
 from PyQt6.QtWidgets import QDialog, QTableWidgetItem, QMessageBox, QHeaderView
-from PyQt6.QtCore import Qt, QEvent, QCoreApplication
+from PyQt6.QtCore import Qt, QEvent, QCoreApplication, QTranslator
 
 from app.protocols import ObjectManagerDialogSettings
 from app.widgets.object_editor_dialog import ObjectEditorDialog
@@ -29,12 +29,9 @@ class ObjectManagerDialog(QDialog):
 
         self.db_service = db_service
         self.settings_service = settings_service
-        self.cached_objects: list[DetectionObject] = []
-
-        self.current_page = 1
-        self.total_pages = 1
 
         self._load_ui()
+        self._setup_state_variables()
         self._init_table()
         self._connect_handlers()
 
@@ -58,6 +55,13 @@ class ObjectManagerDialog(QDialog):
 
             uic.loadUi(ui_path, self)
             self.ui = self
+
+    def _setup_state_variables(self):
+        self.cached_objects: list[DetectionObject] = []
+
+        self.current_page = 1
+        self.total_pages = 1
+        self.translator = QTranslator()
 
     def _init_table(self):
         header = self.ui.tableWidget.horizontalHeader()
@@ -87,10 +91,10 @@ class ObjectManagerDialog(QDialog):
     def _load_language(self):
         lang_code = self.settings_service.lang_code
 
-        # if lang_code == None:
-        #     return
+        if lang_code == None:
+            return
 
-        # QCoreApplication.removeTranslator(self.translator)
+        QCoreApplication.removeTranslator(self.translator)
 
     def _prev_page(self):
         if self.current_page > 1:
@@ -176,7 +180,7 @@ class ObjectManagerDialog(QDialog):
 
     def _open_add_dialog(self):
         dialog = ObjectEditorDialog(self.settings_service, self)
-        move_dialog_down(dialog, self.geometry())
+        move_dialog_down(dialog, self.geometry(), -50)
 
         if dialog.exec() == QDialog.DialogCode.Accepted:
             new_object = dialog.get_new_object()

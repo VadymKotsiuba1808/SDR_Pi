@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QDialog, QMessageBox, QListWidgetItem
-from PyQt6.QtCore import Qt, QEvent, QCoreApplication
+from PyQt6.QtCore import Qt, QEvent, QCoreApplication, QTranslator
 from PyQt6 import uic
 
 from app.protocols import ObjectEditorDialogSettings
@@ -27,6 +27,8 @@ class ObjectEditorDialog(QDialog):
         self.settings_service = settings_service
         self.object_data = object_data
         self.is_edit_mode = object_data is not None
+
+        self.translator = QTranslator()
 
         self._load_ui()
         self._adjust_fields()
@@ -76,10 +78,10 @@ class ObjectEditorDialog(QDialog):
     def _load_language(self):
         lang_code = self.settings_service.lang_code
 
-        # if lang_code == None:
-        #     return
+        if lang_code == None:
+            return
 
-        # QCoreApplication.removeTranslator(self.translator)
+        QCoreApplication.removeTranslator(self.translator)
 
     def _toggle_rf_fields(self, enabled):
         # Активуємо/деактивуємо поля RF

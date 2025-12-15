@@ -77,7 +77,7 @@ class LogDialog(QDialog):
         t.setColumnWidth(1, 120)
         header.setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
         t.setColumnWidth(3, 140)
-        t.setColumnWidth(4, 140)
+        t.setColumnWidth(4, 180)
         t.setColumnWidth(5, 150)
         t.setColumnWidth(6, 100)
 
@@ -125,16 +125,16 @@ class LogDialog(QDialog):
     def _load_language(self):
         lang_code = self.settings_service.lang_code
 
-        if lang_code == None:
-            return
+        # if lang_code == None:
+        #     return
 
-        QCoreApplication.removeTranslator(self.translator)
+        # QCoreApplication.removeTranslator(self.translator)
 
-        path = f"app/i18n/qm/app_{lang_code}.qm"
-        if self.translator.load(path):
-            QCoreApplication.installTranslator(self.translator)
-        else:
-            print(f"Помилка: не вдалося завантажити {path}")
+        # path = f"app/i18n/qm/app_{lang_code}.qm"
+        # if self.translator.load(path):
+        #     QCoreApplication.installTranslator(self.translator)
+        # else:
+        #     print(f"Помилка: не вдалося завантажити {path}")
 
     def _on_session_changed(self):
         fname = self.ui.cmbSessions.currentData()
@@ -264,7 +264,13 @@ class LogDialog(QDialog):
                 t.setItem(row_idx, 2, name_item)
 
                 t.setItem(row_idx, 3, QTableWidgetItem(data.object_class))
-                t.setItem(row_idx, 4, QTableWidgetItem(f"{data.frequency:.1f}"))
+                t.setItem(
+                    row_idx,
+                    4,
+                    QTableWidgetItem(
+                        f"{data.type}(MHz): {(data.frequency/1000000):.1f}"
+                    ),
+                )
                 t.setItem(
                     row_idx,
                     5,

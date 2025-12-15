@@ -1,0 +1,2112 @@
+[
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:20:29.012733",
+    "payload": {
+      "id": "95a4bdd3-a4f9-4ff4-8d52-eb1cd092cb6b",
+      "name": "Target-117",
+      "object_class": "Autel Evo",
+      "type": "RF",
+      "frequency": 2403797313.38,
+      "distance": 3366,
+      "angle": 210.1,
+      "confidence": 0.85,
+      "timestamp": "2025-12-15T15:20:29.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:20:42.012733",
+    "payload": {
+      "id": "2f31c5b6-f303-4553-9d93-daf561c91998",
+      "name": "Target-441",
+      "object_class": "Shahed-136",
+      "type": "RF",
+      "frequency": 870556361.74,
+      "distance": 4706,
+      "angle": 111.0,
+      "confidence": 0.91,
+      "timestamp": "2025-12-15T15:20:42.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:21:05.012733",
+    "payload": {
+      "id": "bccfec08-eef0-4814-8d14-9d9c6755d774",
+      "name": "Target-319",
+      "object_class": "Shahed-136",
+      "type": "Sound",
+      "frequency": 800000000,
+      "distance": 3642,
+      "angle": 251.1,
+      "confidence": 0.87,
+      "timestamp": "2025-12-15T15:21:05.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:22:32.012733",
+    "payload": {
+      "id": "da136d72-b59f-4218-9da3-3a25e7a491fd",
+      "name": "Target-884",
+      "object_class": "Orlan-10",
+      "type": "RF",
+      "frequency": 2400739668.56,
+      "distance": 2955,
+      "angle": 177.2,
+      "confidence": 0.85,
+      "timestamp": "2025-12-15T15:22:32.012733"
+    }
+  },
+  {
+    "type": "false_alarm",
+    "timestamp": "2025-12-15T15:21:21.012733",
+    "payload": {
+      "detection_id": "2f31c5b6-f303-4553-9d93-daf561c91998",
+      "name": "Target-441"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:22:14.012733",
+    "payload": {
+      "id": "d539acd4-2010-4f57-a386-e59f7fb78acb",
+      "name": "Target-437",
+      "object_class": "Autel Evo",
+      "type": "Sound",
+      "frequency": 1200000000,
+      "distance": 2519,
+      "angle": 7.2,
+      "confidence": 0.69,
+      "timestamp": "2025-12-15T15:22:14.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:22:29.012733",
+    "payload": {
+      "id": "5e0989d0-6705-4715-8d41-ca989f02dbbe",
+      "name": "Target-292",
+      "object_class": "Shahed-136",
+      "type": "Sound",
+      "frequency": 400000000,
+      "distance": 1149,
+      "angle": 174.0,
+      "confidence": 0.72,
+      "timestamp": "2025-12-15T15:22:29.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:24:48.012733",
+    "payload": {
+      "id": "380aaca2-6e25-4e90-b290-6df0026a2811",
+      "name": "Target-153",
+      "object_class": "Autel Evo",
+      "type": "Sound",
+      "frequency": 400000000,
+      "distance": 4800,
+      "angle": 190.4,
+      "confidence": 0.77,
+      "timestamp": "2025-12-15T15:24:48.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:22:37.012733",
+    "payload": {
+      "id": "370fff50-b097-448e-8d8b-a4ec0cf46791",
+      "name": "Target-257",
+      "object_class": "Mavic 3",
+      "type": "RF",
+      "frequency": 5800112225.48,
+      "distance": 872,
+      "angle": 207.7,
+      "confidence": 0.61,
+      "timestamp": "2025-12-15T15:22:37.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:22:26.012733",
+    "payload": {
+      "id": "51525637-69bc-43cc-95c2-474e5c44e3af",
+      "name": "Target-840",
+      "object_class": "Shahed-136",
+      "type": "RF",
+      "frequency": 872249799.02,
+      "distance": 1388,
+      "angle": 202.3,
+      "confidence": 0.92,
+      "timestamp": "2025-12-15T15:22:26.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:29:29.012733",
+    "payload": {
+      "id": "257528e1-e0d8-4dfa-a478-011bb704d744",
+      "name": "Target-530",
+      "object_class": "FPV Kamikaze",
+      "type": "Sound",
+      "frequency": 400000000,
+      "distance": 4755,
+      "angle": 322.1,
+      "confidence": 0.66,
+      "timestamp": "2025-12-15T15:29:29.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:24:09.012733",
+    "payload": {
+      "id": "7c38f1da-7d02-4fa6-ab86-60c3c866f907",
+      "name": "Target-419",
+      "object_class": "Orlan-10",
+      "type": "Sound",
+      "frequency": 400000000,
+      "distance": 1536,
+      "angle": 221.9,
+      "confidence": 0.86,
+      "timestamp": "2025-12-15T15:24:09.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:24:05.012733",
+    "payload": {
+      "id": "227181a0-d14e-41e6-a83b-adc86cdf3c9e",
+      "name": "Target-639",
+      "object_class": "Autel Evo",
+      "type": "Sound",
+      "frequency": 3000000000,
+      "distance": 888,
+      "angle": 250.7,
+      "confidence": 0.67,
+      "timestamp": "2025-12-15T15:24:05.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:27:38.012733",
+    "payload": {
+      "id": "c83b4030-e83a-408e-8f84-d52cae9bb275",
+      "name": "Target-691",
+      "object_class": "Mavic 3",
+      "type": "Sound",
+      "frequency": 1200000000,
+      "distance": 2870,
+      "angle": 289.7,
+      "confidence": 0.84,
+      "timestamp": "2025-12-15T15:27:38.012733"
+    }
+  },
+  {
+    "type": "false_alarm",
+    "timestamp": "2025-12-15T15:30:59.012733",
+    "payload": {
+      "detection_id": "380aaca2-6e25-4e90-b290-6df0026a2811",
+      "name": "Target-153"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:28:44.012733",
+    "payload": {
+      "id": "9f4ee066-00b0-4f49-8488-336b314afd3e",
+      "name": "Target-216",
+      "object_class": "Mavic 3",
+      "type": "RF",
+      "frequency": 5795547423.03,
+      "distance": 2471,
+      "angle": 99.6,
+      "confidence": 0.98,
+      "timestamp": "2025-12-15T15:28:44.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:32:29.012733",
+    "payload": {
+      "id": "c8e2fdae-de09-4b1d-b3e2-0c5141d57b8f",
+      "name": "Target-798",
+      "object_class": "Autel Evo",
+      "type": "RF",
+      "frequency": 5795033257.06,
+      "distance": 2270,
+      "angle": 75.3,
+      "confidence": 0.63,
+      "timestamp": "2025-12-15T15:32:29.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:37:29.012733",
+    "payload": {
+      "id": "4b6b5de6-f7ca-4f6c-95dc-0ff86581fee6",
+      "name": "Target-330",
+      "object_class": "Shahed-136",
+      "type": "Sound",
+      "frequency": 3000000000,
+      "distance": 771,
+      "angle": 6.4,
+      "confidence": 0.82,
+      "timestamp": "2025-12-15T15:37:29.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:31:53.012733",
+    "payload": {
+      "id": "8505c53e-f661-4150-87d0-8a0c8c6968f9",
+      "name": "Target-179",
+      "object_class": "Mavic 3",
+      "type": "Sound",
+      "frequency": 1200000000,
+      "distance": 1380,
+      "angle": 251.5,
+      "confidence": 0.66,
+      "timestamp": "2025-12-15T15:31:53.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:32:12.012733",
+    "payload": {
+      "id": "8c199948-c803-47b1-9eba-de33982f7e7e",
+      "name": "Target-405",
+      "object_class": "Autel Evo",
+      "type": "RF",
+      "frequency": 918783884.07,
+      "distance": 4563,
+      "angle": 124.6,
+      "confidence": 0.61,
+      "timestamp": "2025-12-15T15:32:12.012733"
+    }
+  },
+  {
+    "type": "false_alarm",
+    "timestamp": "2025-12-15T15:35:49.012733",
+    "payload": {
+      "detection_id": "8c199948-c803-47b1-9eba-de33982f7e7e",
+      "name": "Target-405"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:36:35.012733",
+    "payload": {
+      "id": "51f97c74-83ac-484e-a990-eb81ec7f266c",
+      "name": "Target-813",
+      "object_class": "Orlan-10",
+      "type": "Sound",
+      "frequency": 3000000000,
+      "distance": 3469,
+      "angle": 268.5,
+      "confidence": 0.94,
+      "timestamp": "2025-12-15T15:36:35.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:40:17.012733",
+    "payload": {
+      "id": "5f04275c-51d3-4e7a-a1ea-9f0ec9f5cd26",
+      "name": "Target-819",
+      "object_class": "Shahed-136",
+      "type": "RF",
+      "frequency": 2400615130.51,
+      "distance": 735,
+      "angle": 180.9,
+      "confidence": 0.62,
+      "timestamp": "2025-12-15T15:40:17.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:39:39.012733",
+    "payload": {
+      "id": "70b1440d-880f-44c2-a039-ca75114506d4",
+      "name": "Target-941",
+      "object_class": "Autel Evo",
+      "type": "Sound",
+      "frequency": 800000000,
+      "distance": 571,
+      "angle": 116.6,
+      "confidence": 0.86,
+      "timestamp": "2025-12-15T15:39:39.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:30:53.012733",
+    "payload": {
+      "id": "15bf585f-8556-40e3-9cec-2b8343d67adb",
+      "name": "Target-642",
+      "object_class": "Mavic 3",
+      "type": "Sound",
+      "frequency": 1200000000,
+      "distance": 1307,
+      "angle": 301.2,
+      "confidence": 0.65,
+      "timestamp": "2025-12-15T15:30:53.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:44:39.012733",
+    "payload": {
+      "id": "e6709b03-234e-435e-b308-8d14168cecf2",
+      "name": "Target-869",
+      "object_class": "Mavic 3",
+      "type": "Sound",
+      "frequency": 1200000000,
+      "distance": 1136,
+      "angle": 234.5,
+      "confidence": 0.96,
+      "timestamp": "2025-12-15T15:44:39.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:34:21.012733",
+    "payload": {
+      "id": "866da6b4-253a-4d29-b1f8-70fb1f7bb94e",
+      "name": "Target-824",
+      "object_class": "Autel Evo",
+      "type": "RF",
+      "frequency": 917829578.18,
+      "distance": 3315,
+      "angle": 73.6,
+      "confidence": 0.85,
+      "timestamp": "2025-12-15T15:34:21.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:46:08.012733",
+    "payload": {
+      "id": "99c2d4b9-4f1f-4b78-b997-60fa29afd6c3",
+      "name": "Target-439",
+      "object_class": "Shahed-136",
+      "type": "RF",
+      "frequency": 431150607.02,
+      "distance": 4051,
+      "angle": 296.1,
+      "confidence": 0.72,
+      "timestamp": "2025-12-15T15:46:08.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:29:49.012733",
+    "payload": {
+      "id": "a5ab8d21-d717-4fb4-83c8-71ac0825c6f8",
+      "name": "Target-285",
+      "object_class": "FPV Kamikaze",
+      "type": "RF",
+      "frequency": 871324388.46,
+      "distance": 2460,
+      "angle": 8.8,
+      "confidence": 0.74,
+      "timestamp": "2025-12-15T15:29:49.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:33:03.012733",
+    "payload": {
+      "id": "54c9ac1f-f239-45b1-83c4-a61604f1ad40",
+      "name": "Target-342",
+      "object_class": "Autel Evo",
+      "type": "RF",
+      "frequency": 5797074015.87,
+      "distance": 3804,
+      "angle": 346.1,
+      "confidence": 0.77,
+      "timestamp": "2025-12-15T15:33:03.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:44:29.012733",
+    "payload": {
+      "id": "70d51459-fe94-4f2e-9700-6c9237c2720e",
+      "name": "Target-629",
+      "object_class": "Orlan-10",
+      "type": "Sound",
+      "frequency": 1200000000,
+      "distance": 3422,
+      "angle": 159.4,
+      "confidence": 0.7,
+      "timestamp": "2025-12-15T15:44:29.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:37:32.012733",
+    "payload": {
+      "id": "134c03d4-e5b7-4fa4-b80e-a6028b54eb41",
+      "name": "Target-238",
+      "object_class": "Mavic 3",
+      "type": "Sound",
+      "frequency": 1200000000,
+      "distance": 3169,
+      "angle": 106.6,
+      "confidence": 0.87,
+      "timestamp": "2025-12-15T15:37:32.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:43:25.012733",
+    "payload": {
+      "id": "12a0cc96-a017-4a60-8000-01b68595ff0d",
+      "name": "Target-800",
+      "object_class": "FPV Kamikaze",
+      "type": "Sound",
+      "frequency": 800000000,
+      "distance": 1169,
+      "angle": 74.0,
+      "confidence": 0.62,
+      "timestamp": "2025-12-15T15:43:25.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:28:11.012733",
+    "payload": {
+      "id": "b564d233-0ddc-4473-9612-649f260d55c9",
+      "name": "Target-352",
+      "object_class": "Orlan-10",
+      "type": "Sound",
+      "frequency": 1200000000,
+      "distance": 3687,
+      "angle": 45.0,
+      "confidence": 0.82,
+      "timestamp": "2025-12-15T15:28:11.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:51:39.012733",
+    "payload": {
+      "id": "ffc21a37-6ae5-4d0e-8280-baff909114c4",
+      "name": "Target-717",
+      "object_class": "FPV Kamikaze",
+      "type": "RF",
+      "frequency": 916245266.63,
+      "distance": 2409,
+      "angle": 358.1,
+      "confidence": 0.68,
+      "timestamp": "2025-12-15T15:51:39.012733"
+    }
+  },
+  {
+    "type": "false_alarm",
+    "timestamp": "2025-12-15T15:28:39.012733",
+    "payload": {
+      "detection_id": "c8e2fdae-de09-4b1d-b3e2-0c5141d57b8f",
+      "name": "Target-798"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:30:05.012733",
+    "payload": {
+      "id": "98eadff9-0818-452e-84ca-8e6f3cd174b5",
+      "name": "Target-244",
+      "object_class": "Autel Evo",
+      "type": "RF",
+      "frequency": 438883652.38,
+      "distance": 1647,
+      "angle": 202.4,
+      "confidence": 0.97,
+      "timestamp": "2025-12-15T15:30:05.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:34:40.012733",
+    "payload": {
+      "id": "3dc3884b-83c7-468d-805d-4b036b065f4c",
+      "name": "Target-622",
+      "object_class": "Shahed-136",
+      "type": "Sound",
+      "frequency": 1200000000,
+      "distance": 3792,
+      "angle": 61.2,
+      "confidence": 0.75,
+      "timestamp": "2025-12-15T15:34:40.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:48:59.012733",
+    "payload": {
+      "id": "016c8798-f8c3-4f4a-9887-27a17dcf120f",
+      "name": "Target-928",
+      "object_class": "Autel Evo",
+      "type": "Sound",
+      "frequency": 1200000000,
+      "distance": 3749,
+      "angle": 8.7,
+      "confidence": 0.75,
+      "timestamp": "2025-12-15T15:48:59.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:46:29.012733",
+    "payload": {
+      "id": "7bac3661-e373-4563-a838-c44beb11e048",
+      "name": "Target-137",
+      "object_class": "Shahed-136",
+      "type": "Sound",
+      "frequency": 400000000,
+      "distance": 3148,
+      "angle": 193.5,
+      "confidence": 0.75,
+      "timestamp": "2025-12-15T15:46:29.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:56:29.012733",
+    "payload": {
+      "id": "185478f7-374a-49bd-b521-4baa701ab301",
+      "name": "Target-715",
+      "object_class": "Shahed-136",
+      "type": "RF",
+      "frequency": 435466474.46,
+      "distance": 3395,
+      "angle": 272.6,
+      "confidence": 0.77,
+      "timestamp": "2025-12-15T15:56:29.012733"
+    }
+  },
+  {
+    "type": "false_alarm",
+    "timestamp": "2025-12-15T16:00:48.012733",
+    "payload": {
+      "detection_id": "b564d233-0ddc-4473-9612-649f260d55c9",
+      "name": "Target-352"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:43:35.012733",
+    "payload": {
+      "id": "04a9659f-f560-472e-a1fa-0ad2b3f7a3dc",
+      "name": "Target-750",
+      "object_class": "Autel Evo",
+      "type": "Sound",
+      "frequency": 800000000,
+      "distance": 3142,
+      "angle": 253.0,
+      "confidence": 0.73,
+      "timestamp": "2025-12-15T15:43:35.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:59:54.012733",
+    "payload": {
+      "id": "34ca16e2-1415-4511-9a3e-760437797d81",
+      "name": "Target-241",
+      "object_class": "Mavic 3",
+      "type": "RF",
+      "frequency": 5797784432.17,
+      "distance": 112,
+      "angle": 197.6,
+      "confidence": 0.7,
+      "timestamp": "2025-12-15T15:59:54.012733"
+    }
+  },
+  {
+    "type": "false_alarm",
+    "timestamp": "2025-12-15T15:33:41.012733",
+    "payload": {
+      "detection_id": "34ca16e2-1415-4511-9a3e-760437797d81",
+      "name": "Target-241"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:43:44.012733",
+    "payload": {
+      "id": "e4170ce1-1fbd-442a-9e0f-f77a40b87f0f",
+      "name": "Target-481",
+      "object_class": "FPV Kamikaze",
+      "type": "RF",
+      "frequency": 5801730750.63,
+      "distance": 493,
+      "angle": 98.1,
+      "confidence": 0.96,
+      "timestamp": "2025-12-15T15:43:44.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:49:37.012733",
+    "payload": {
+      "id": "1dd40c12-d8c8-462c-930b-25afe293d565",
+      "name": "Target-160",
+      "object_class": "Shahed-136",
+      "type": "RF",
+      "frequency": 865809362.01,
+      "distance": 4994,
+      "angle": 298.6,
+      "confidence": 0.73,
+      "timestamp": "2025-12-15T15:49:37.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:28:19.012733",
+    "payload": {
+      "id": "6cb4625c-2f15-46a9-9e41-c9ee622dafb4",
+      "name": "Target-119",
+      "object_class": "Shahed-136",
+      "type": "RF",
+      "frequency": 910972204.54,
+      "distance": 4213,
+      "angle": 190.0,
+      "confidence": 0.67,
+      "timestamp": "2025-12-15T15:28:19.012733"
+    }
+  },
+  {
+    "type": "false_alarm",
+    "timestamp": "2025-12-15T15:30:53.012733",
+    "payload": {
+      "detection_id": "185478f7-374a-49bd-b521-4baa701ab301",
+      "name": "Target-715"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:36:49.012733",
+    "payload": {
+      "id": "011df1bd-b928-4be7-80cf-d9c66cc664ac",
+      "name": "Target-692",
+      "object_class": "Mavic 3",
+      "type": "Sound",
+      "frequency": 400000000,
+      "distance": 4444,
+      "angle": 169.0,
+      "confidence": 0.77,
+      "timestamp": "2025-12-15T15:36:49.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:42:09.012733",
+    "payload": {
+      "id": "3cc75bed-d24d-4f2b-bbcd-ac8527d4aaf3",
+      "name": "Target-583",
+      "object_class": "Autel Evo",
+      "type": "RF",
+      "frequency": 910364930.62,
+      "distance": 4710,
+      "angle": 284.6,
+      "confidence": 0.96,
+      "timestamp": "2025-12-15T15:42:09.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:57:02.012733",
+    "payload": {
+      "id": "aa614e45-51db-445e-bcbd-60446ce18ffa",
+      "name": "Target-631",
+      "object_class": "FPV Kamikaze",
+      "type": "Sound",
+      "frequency": 400000000,
+      "distance": 2716,
+      "angle": 81.6,
+      "confidence": 0.72,
+      "timestamp": "2025-12-15T15:57:02.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:41:17.012733",
+    "payload": {
+      "id": "03872371-817e-4438-881c-8180e2964825",
+      "name": "Target-988",
+      "object_class": "Autel Evo",
+      "type": "Sound",
+      "frequency": 400000000,
+      "distance": 2786,
+      "angle": 9.0,
+      "confidence": 0.89,
+      "timestamp": "2025-12-15T15:41:17.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:09:57.012733",
+    "payload": {
+      "id": "8fc3d154-9886-49ec-aaa7-a26654ca5746",
+      "name": "Target-787",
+      "object_class": "Autel Evo",
+      "type": "Sound",
+      "frequency": 3000000000,
+      "distance": 348,
+      "angle": 217.1,
+      "confidence": 0.82,
+      "timestamp": "2025-12-15T16:09:57.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:47:29.012733",
+    "payload": {
+      "id": "6952fb37-c9db-4adb-9636-8ad03d0c187a",
+      "name": "Target-540",
+      "object_class": "Mavic 3",
+      "type": "RF",
+      "frequency": 434810461.53,
+      "distance": 4647,
+      "angle": 280.8,
+      "confidence": 0.84,
+      "timestamp": "2025-12-15T15:47:29.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:06:19.012733",
+    "payload": {
+      "id": "6d88d7b9-e285-440c-839a-c766280dd399",
+      "name": "Target-262",
+      "object_class": "FPV Kamikaze",
+      "type": "Sound",
+      "frequency": 800000000,
+      "distance": 899,
+      "angle": 298.5,
+      "confidence": 0.66,
+      "timestamp": "2025-12-15T16:06:19.012733"
+    }
+  },
+  {
+    "type": "false_alarm",
+    "timestamp": "2025-12-15T15:48:29.012733",
+    "payload": {
+      "detection_id": "5f04275c-51d3-4e7a-a1ea-9f0ec9f5cd26",
+      "name": "Target-819"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:45:11.012733",
+    "payload": {
+      "id": "3542dbff-bb01-4139-bde1-a79f3aa8477e",
+      "name": "Target-184",
+      "object_class": "Autel Evo",
+      "type": "RF",
+      "frequency": 435345618.97,
+      "distance": 660,
+      "angle": 317.2,
+      "confidence": 0.94,
+      "timestamp": "2025-12-15T15:45:11.012733"
+    }
+  },
+  {
+    "type": "false_alarm",
+    "timestamp": "2025-12-15T15:43:41.012733",
+    "payload": {
+      "detection_id": "8fc3d154-9886-49ec-aaa7-a26654ca5746",
+      "name": "Target-787"
+    }
+  },
+  {
+    "type": "false_alarm",
+    "timestamp": "2025-12-15T15:43:06.012733",
+    "payload": {
+      "detection_id": "370fff50-b097-448e-8d8b-a4ec0cf46791",
+      "name": "Target-257"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:52:29.012733",
+    "payload": {
+      "id": "ca237168-3170-44bd-a001-dc16e80a5c13",
+      "name": "Target-528",
+      "object_class": "Mavic 3",
+      "type": "RF",
+      "frequency": 5803856520.08,
+      "distance": 133,
+      "angle": 266.7,
+      "confidence": 0.81,
+      "timestamp": "2025-12-15T15:52:29.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:37:46.012733",
+    "payload": {
+      "id": "0c9d5bf0-9bd7-4f07-9437-9176464b0c6d",
+      "name": "Target-116",
+      "object_class": "Shahed-136",
+      "type": "RF",
+      "frequency": 5803768163.7,
+      "distance": 3918,
+      "angle": 222.5,
+      "confidence": 0.7,
+      "timestamp": "2025-12-15T15:37:46.012733"
+    }
+  },
+  {
+    "type": "false_alarm",
+    "timestamp": "2025-12-15T15:56:39.012733",
+    "payload": {
+      "detection_id": "0c9d5bf0-9bd7-4f07-9437-9176464b0c6d",
+      "name": "Target-116"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:18:14.012733",
+    "payload": {
+      "id": "e402757b-4e46-4c45-bbae-c2f8406bac4b",
+      "name": "Target-234",
+      "object_class": "FPV Kamikaze",
+      "type": "RF",
+      "frequency": 2396893146.65,
+      "distance": 2669,
+      "angle": 252.3,
+      "confidence": 0.67,
+      "timestamp": "2025-12-15T16:18:14.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:21:17.012733",
+    "payload": {
+      "id": "be7fa973-342f-4824-b296-fb8a1858d094",
+      "name": "Target-455",
+      "object_class": "FPV Kamikaze",
+      "type": "RF",
+      "frequency": 2397552296.41,
+      "distance": 3755,
+      "angle": 254.9,
+      "confidence": 0.8,
+      "timestamp": "2025-12-15T16:21:17.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:54:04.012733",
+    "payload": {
+      "id": "9cdf4303-165b-42fd-aa2c-b72eae0e5029",
+      "name": "Target-593",
+      "object_class": "Shahed-136",
+      "type": "Sound",
+      "frequency": 400000000,
+      "distance": 4151,
+      "angle": 37.9,
+      "confidence": 0.88,
+      "timestamp": "2025-12-15T15:54:04.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:53:29.012733",
+    "payload": {
+      "id": "7f86d9a4-f4f1-4069-9157-3412d10fbd38",
+      "name": "Target-257",
+      "object_class": "Shahed-136",
+      "type": "RF",
+      "frequency": 871248821.81,
+      "distance": 144,
+      "angle": 283.4,
+      "confidence": 0.82,
+      "timestamp": "2025-12-15T15:53:29.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:36:07.012733",
+    "payload": {
+      "id": "fcfaf187-d24b-43cb-925f-cc0336ec809e",
+      "name": "Target-654",
+      "object_class": "Mavic 3",
+      "type": "Sound",
+      "frequency": 800000000,
+      "distance": 3628,
+      "angle": 346.8,
+      "confidence": 0.83,
+      "timestamp": "2025-12-15T15:36:07.012733"
+    }
+  },
+  {
+    "type": "false_alarm",
+    "timestamp": "2025-12-15T15:45:25.012733",
+    "payload": {
+      "detection_id": "9cdf4303-165b-42fd-aa2c-b72eae0e5029",
+      "name": "Target-593"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:20:17.012733",
+    "payload": {
+      "id": "5e9b162a-74a3-4dfa-89f7-9b0e4e1b2389",
+      "name": "Target-547",
+      "object_class": "Shahed-136",
+      "type": "RF",
+      "frequency": 864431771.5,
+      "distance": 2676,
+      "angle": 78.7,
+      "confidence": 0.75,
+      "timestamp": "2025-12-15T16:20:17.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:32:09.012733",
+    "payload": {
+      "id": "2eabc300-14eb-4027-bb07-29292f148307",
+      "name": "Target-850",
+      "object_class": "Autel Evo",
+      "type": "RF",
+      "frequency": 2404135452.8,
+      "distance": 956,
+      "angle": 133.4,
+      "confidence": 0.88,
+      "timestamp": "2025-12-15T15:32:09.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:50:04.012733",
+    "payload": {
+      "id": "9d59bfb6-819c-434b-b27b-d078d4b2d31a",
+      "name": "Target-301",
+      "object_class": "Shahed-136",
+      "type": "Sound",
+      "frequency": 800000000,
+      "distance": 353,
+      "angle": 8.4,
+      "confidence": 0.92,
+      "timestamp": "2025-12-15T15:50:04.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:45:41.012733",
+    "payload": {
+      "id": "094453ff-ef10-4a73-8dd6-fa27175fbad1",
+      "name": "Target-858",
+      "object_class": "Mavic 3",
+      "type": "RF",
+      "frequency": 5800084102.73,
+      "distance": 3456,
+      "angle": 318.9,
+      "confidence": 0.74,
+      "timestamp": "2025-12-15T15:45:41.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:52:07.012733",
+    "payload": {
+      "id": "683497e2-a8a0-41b3-8818-33b168a36300",
+      "name": "Target-318",
+      "object_class": "Shahed-136",
+      "type": "RF",
+      "frequency": 430514692.46,
+      "distance": 4524,
+      "angle": 314.3,
+      "confidence": 0.89,
+      "timestamp": "2025-12-15T15:52:07.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:51:19.012733",
+    "payload": {
+      "id": "250e7ace-5b58-4eb0-9d92-e2e0bea1dc70",
+      "name": "Target-782",
+      "object_class": "Autel Evo",
+      "type": "RF",
+      "frequency": 5796554856.68,
+      "distance": 3735,
+      "angle": 298.4,
+      "confidence": 0.81,
+      "timestamp": "2025-12-15T15:51:19.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:32:59.012733",
+    "payload": {
+      "id": "6ba559a5-fd62-4448-b379-0fc96580a0a2",
+      "name": "Target-361",
+      "object_class": "Autel Evo",
+      "type": "RF",
+      "frequency": 916291901.52,
+      "distance": 4328,
+      "angle": 146.1,
+      "confidence": 0.84,
+      "timestamp": "2025-12-15T15:32:59.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:42:01.012733",
+    "payload": {
+      "id": "95b781e6-4154-477e-8064-124a47b12349",
+      "name": "Target-162",
+      "object_class": "FPV Kamikaze",
+      "type": "RF",
+      "frequency": 433431243.54,
+      "distance": 3649,
+      "angle": 17.0,
+      "confidence": 0.79,
+      "timestamp": "2025-12-15T15:42:01.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:34:55.012733",
+    "payload": {
+      "id": "10dda35f-4e42-424c-b1c0-732eb2cc5e85",
+      "name": "Target-857",
+      "object_class": "FPV Kamikaze",
+      "type": "Sound",
+      "frequency": 800000000,
+      "distance": 2475,
+      "angle": 353.0,
+      "confidence": 0.81,
+      "timestamp": "2025-12-15T16:34:55.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:02:05.012733",
+    "payload": {
+      "id": "e6f27b9f-093d-41ab-9b6c-c69c166031ba",
+      "name": "Target-897",
+      "object_class": "Autel Evo",
+      "type": "RF",
+      "frequency": 431320626.51,
+      "distance": 990,
+      "angle": 62.5,
+      "confidence": 0.61,
+      "timestamp": "2025-12-15T16:02:05.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:34:13.012733",
+    "payload": {
+      "id": "b1173ea3-c2b4-4f80-b58f-df0c64a0d2f0",
+      "name": "Target-490",
+      "object_class": "Mavic 3",
+      "type": "Sound",
+      "frequency": 800000000,
+      "distance": 4364,
+      "angle": 254.1,
+      "confidence": 0.75,
+      "timestamp": "2025-12-15T16:34:13.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:56:29.012733",
+    "payload": {
+      "id": "0f9d629a-fb77-4d2a-8285-8636daab4bfb",
+      "name": "Target-528",
+      "object_class": "FPV Kamikaze",
+      "type": "Sound",
+      "frequency": 400000000,
+      "distance": 3271,
+      "angle": 46.3,
+      "confidence": 0.62,
+      "timestamp": "2025-12-15T15:56:29.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:25:17.012733",
+    "payload": {
+      "id": "f4c0155f-67c2-4e2f-804a-032d69d68c69",
+      "name": "Target-368",
+      "object_class": "Orlan-10",
+      "type": "RF",
+      "frequency": 867734313.39,
+      "distance": 4449,
+      "angle": 319.0,
+      "confidence": 0.69,
+      "timestamp": "2025-12-15T16:25:17.012733"
+    }
+  },
+  {
+    "type": "false_alarm",
+    "timestamp": "2025-12-15T15:56:01.012733",
+    "payload": {
+      "detection_id": "3542dbff-bb01-4139-bde1-a79f3aa8477e",
+      "name": "Target-184"
+    }
+  },
+  {
+    "type": "false_alarm",
+    "timestamp": "2025-12-15T15:41:14.012733",
+    "payload": {
+      "detection_id": "2eabc300-14eb-4027-bb07-29292f148307",
+      "name": "Target-850"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:43:05.012733",
+    "payload": {
+      "id": "fc9242b1-661a-4456-a8b5-862001f535b3",
+      "name": "Target-922",
+      "object_class": "Autel Evo",
+      "type": "RF",
+      "frequency": 866500348.11,
+      "distance": 2086,
+      "angle": 158.5,
+      "confidence": 0.89,
+      "timestamp": "2025-12-15T16:43:05.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:00:09.012733",
+    "payload": {
+      "id": "ac6b78f9-1267-4b5b-8443-96a196714546",
+      "name": "Target-267",
+      "object_class": "FPV Kamikaze",
+      "type": "RF",
+      "frequency": 5800688148.59,
+      "distance": 3889,
+      "angle": 32.1,
+      "confidence": 0.85,
+      "timestamp": "2025-12-15T16:00:09.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:53:27.012733",
+    "payload": {
+      "id": "0148880f-0b76-4030-a6f3-ba5e9515eb42",
+      "name": "Target-405",
+      "object_class": "Orlan-10",
+      "type": "RF",
+      "frequency": 2397828361.22,
+      "distance": 1857,
+      "angle": 68.3,
+      "confidence": 0.69,
+      "timestamp": "2025-12-15T15:53:27.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:05:26.012733",
+    "payload": {
+      "id": "92c3566e-d77b-4d9f-85ee-ab55aa795343",
+      "name": "Target-796",
+      "object_class": "Shahed-136",
+      "type": "Sound",
+      "frequency": 800000000,
+      "distance": 2867,
+      "angle": 134.7,
+      "confidence": 0.63,
+      "timestamp": "2025-12-15T16:05:26.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:04:29.012733",
+    "payload": {
+      "id": "b9520bce-f60a-4055-aa13-9ecd2e75cc2f",
+      "name": "Target-960",
+      "object_class": "Mavic 3",
+      "type": "RF",
+      "frequency": 5795981124.58,
+      "distance": 2053,
+      "angle": 351.1,
+      "confidence": 0.77,
+      "timestamp": "2025-12-15T16:04:29.012733"
+    }
+  },
+  {
+    "type": "false_alarm",
+    "timestamp": "2025-12-15T16:22:47.012733",
+    "payload": {
+      "detection_id": "51f97c74-83ac-484e-a990-eb81ec7f266c",
+      "name": "Target-813"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:12:59.012733",
+    "payload": {
+      "id": "3fe347dc-9349-4368-8f4b-5a234cc30787",
+      "name": "Target-904",
+      "object_class": "Orlan-10",
+      "type": "Sound",
+      "frequency": 800000000,
+      "distance": 3574,
+      "angle": 256.9,
+      "confidence": 0.85,
+      "timestamp": "2025-12-15T16:12:59.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:48:27.012733",
+    "payload": {
+      "id": "9c46ee47-2e1d-47a0-850d-f10198977b65",
+      "name": "Target-378",
+      "object_class": "Mavic 3",
+      "type": "RF",
+      "frequency": 916325938.52,
+      "distance": 4443,
+      "angle": 355.0,
+      "confidence": 0.97,
+      "timestamp": "2025-12-15T16:48:27.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:49:37.012733",
+    "payload": {
+      "id": "0c80860b-8c2b-4f12-8e67-7b35b6d8870b",
+      "name": "Target-677",
+      "object_class": "FPV Kamikaze",
+      "type": "Sound",
+      "frequency": 1200000000,
+      "distance": 3595,
+      "angle": 307.4,
+      "confidence": 0.66,
+      "timestamp": "2025-12-15T15:49:37.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:03:53.012733",
+    "payload": {
+      "id": "c28b5801-7ac4-4aac-a61d-eaad31ca04d0",
+      "name": "Target-920",
+      "object_class": "Orlan-10",
+      "type": "Sound",
+      "frequency": 3000000000,
+      "distance": 2604,
+      "angle": 284.0,
+      "confidence": 0.71,
+      "timestamp": "2025-12-15T16:03:53.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:24:43.012733",
+    "payload": {
+      "id": "2e34e119-4f71-4ac4-bf01-a9685b6fcbfb",
+      "name": "Target-425",
+      "object_class": "Orlan-10",
+      "type": "Sound",
+      "frequency": 400000000,
+      "distance": 358,
+      "angle": 156.7,
+      "confidence": 0.67,
+      "timestamp": "2025-12-15T16:24:43.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:20:39.012733",
+    "payload": {
+      "id": "edb02743-fe36-4a55-a40b-83ea907e326b",
+      "name": "Target-231",
+      "object_class": "FPV Kamikaze",
+      "type": "Sound",
+      "frequency": 1200000000,
+      "distance": 956,
+      "angle": 185.0,
+      "confidence": 0.65,
+      "timestamp": "2025-12-15T16:20:39.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:08:29.012733",
+    "payload": {
+      "id": "b1cee30f-7030-4a9f-acf9-528e5038fdab",
+      "name": "Target-263",
+      "object_class": "Orlan-10",
+      "type": "Sound",
+      "frequency": 3000000000,
+      "distance": 2702,
+      "angle": 201.7,
+      "confidence": 0.64,
+      "timestamp": "2025-12-15T16:08:29.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:55:52.012733",
+    "payload": {
+      "id": "31fb1119-0ba5-494f-afd2-0b82300fdbc5",
+      "name": "Target-656",
+      "object_class": "Autel Evo",
+      "type": "RF",
+      "frequency": 871730289.33,
+      "distance": 4114,
+      "angle": 52.3,
+      "confidence": 0.73,
+      "timestamp": "2025-12-15T16:55:52.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:38:53.012733",
+    "payload": {
+      "id": "f71118ec-1b3a-4616-a09d-05a6526e283d",
+      "name": "Target-615",
+      "object_class": "FPV Kamikaze",
+      "type": "RF",
+      "frequency": 2396527246.32,
+      "distance": 4290,
+      "angle": 126.8,
+      "confidence": 0.9,
+      "timestamp": "2025-12-15T16:38:53.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:47:56.012733",
+    "payload": {
+      "id": "6b419131-c724-4347-99c0-e6dd76573188",
+      "name": "Target-815",
+      "object_class": "Orlan-10",
+      "type": "RF",
+      "frequency": 434296041.72,
+      "distance": 1529,
+      "angle": 43.6,
+      "confidence": 0.94,
+      "timestamp": "2025-12-15T16:47:56.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:02:09.012733",
+    "payload": {
+      "id": "5a7934bc-e00b-4a38-b4c4-15f04c14d5b5",
+      "name": "Target-156",
+      "object_class": "Autel Evo",
+      "type": "RF",
+      "frequency": 5799767131.1,
+      "distance": 865,
+      "angle": 74.3,
+      "confidence": 0.76,
+      "timestamp": "2025-12-15T16:02:09.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:10:59.012733",
+    "payload": {
+      "id": "b446400c-f078-4e6e-bd38-93af16b3da98",
+      "name": "Target-507",
+      "object_class": "Mavic 3",
+      "type": "Sound",
+      "frequency": 400000000,
+      "distance": 3893,
+      "angle": 310.2,
+      "confidence": 0.92,
+      "timestamp": "2025-12-15T16:10:59.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:06:23.012733",
+    "payload": {
+      "id": "b9d737b5-c623-4031-89a8-1d87915641e1",
+      "name": "Target-858",
+      "object_class": "Orlan-10",
+      "type": "Sound",
+      "frequency": 3000000000,
+      "distance": 900,
+      "angle": 82.4,
+      "confidence": 0.95,
+      "timestamp": "2025-12-15T16:06:23.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:54:54.012733",
+    "payload": {
+      "id": "4e5f2b50-a737-4887-b11d-9cbb4a28728b",
+      "name": "Target-852",
+      "object_class": "Autel Evo",
+      "type": "RF",
+      "frequency": 914537345.43,
+      "distance": 464,
+      "angle": 320.0,
+      "confidence": 0.74,
+      "timestamp": "2025-12-15T16:54:54.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:40:13.012733",
+    "payload": {
+      "id": "573206f1-d788-411f-b715-acd99a7114a6",
+      "name": "Target-263",
+      "object_class": "Orlan-10",
+      "type": "Sound",
+      "frequency": 400000000,
+      "distance": 3559,
+      "angle": 24.4,
+      "confidence": 0.95,
+      "timestamp": "2025-12-15T16:40:13.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:54:59.012733",
+    "payload": {
+      "id": "e6bb3250-a96b-4ac9-80a2-039e01f80c17",
+      "name": "Target-999",
+      "object_class": "Mavic 3",
+      "type": "RF",
+      "frequency": 911824925.55,
+      "distance": 837,
+      "angle": 95.3,
+      "confidence": 0.72,
+      "timestamp": "2025-12-15T16:54:59.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T17:01:11.012733",
+    "payload": {
+      "id": "43729631-f8b7-4d8b-adc4-b2a5ac47378f",
+      "name": "Target-510",
+      "object_class": "Autel Evo",
+      "type": "RF",
+      "frequency": 436154512.8,
+      "distance": 3593,
+      "angle": 274.0,
+      "confidence": 0.9,
+      "timestamp": "2025-12-15T17:01:11.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:49:39.012733",
+    "payload": {
+      "id": "1b9a1991-b70b-4cb9-8374-dc075eff001c",
+      "name": "Target-110",
+      "object_class": "Autel Evo",
+      "type": "RF",
+      "frequency": 2402774609.47,
+      "distance": 2784,
+      "angle": 17.5,
+      "confidence": 0.62,
+      "timestamp": "2025-12-15T16:49:39.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:43:17.012733",
+    "payload": {
+      "id": "66a30788-90a8-4dcb-90d4-f2fe30b11b32",
+      "name": "Target-273",
+      "object_class": "Shahed-136",
+      "type": "Sound",
+      "frequency": 400000000,
+      "distance": 4605,
+      "angle": 142.1,
+      "confidence": 0.64,
+      "timestamp": "2025-12-15T16:43:17.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:54:57.012733",
+    "payload": {
+      "id": "4c16b2ca-ee93-4fe6-82e3-b2af127679ba",
+      "name": "Target-522",
+      "object_class": "Shahed-136",
+      "type": "Sound",
+      "frequency": 400000000,
+      "distance": 4154,
+      "angle": 229.4,
+      "confidence": 0.95,
+      "timestamp": "2025-12-15T16:54:57.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:53:59.012733",
+    "payload": {
+      "id": "75a24fe4-0323-4ae4-a892-c1dd3c08f64a",
+      "name": "Target-628",
+      "object_class": "Shahed-136",
+      "type": "RF",
+      "frequency": 438569365.52,
+      "distance": 4392,
+      "angle": 0.3,
+      "confidence": 0.92,
+      "timestamp": "2025-12-15T16:53:59.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:43:44.012733",
+    "payload": {
+      "id": "762d99b6-01b6-4e02-9bda-0da68e8ecd19",
+      "name": "Target-812",
+      "object_class": "FPV Kamikaze",
+      "type": "Sound",
+      "frequency": 3000000000,
+      "distance": 3632,
+      "angle": 125.6,
+      "confidence": 0.82,
+      "timestamp": "2025-12-15T16:43:44.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:50:05.012733",
+    "payload": {
+      "id": "03081c25-1e2b-4060-bbb2-aa3da04d0fc6",
+      "name": "Target-304",
+      "object_class": "Shahed-136",
+      "type": "Sound",
+      "frequency": 400000000,
+      "distance": 2265,
+      "angle": 104.2,
+      "confidence": 0.95,
+      "timestamp": "2025-12-15T16:50:05.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:30:10.012733",
+    "payload": {
+      "id": "9305ae5b-a5d6-4ef3-bdbd-34f8d8314fe2",
+      "name": "Target-398",
+      "object_class": "Shahed-136",
+      "type": "RF",
+      "frequency": 865672526.37,
+      "distance": 1816,
+      "angle": 6.2,
+      "confidence": 0.86,
+      "timestamp": "2025-12-15T16:30:10.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:54:41.012733",
+    "payload": {
+      "id": "0bc15ede-bf51-45a2-a1f1-9ea3c7ba1adc",
+      "name": "Target-591",
+      "object_class": "Shahed-136",
+      "type": "RF",
+      "frequency": 2395099521.98,
+      "distance": 680,
+      "angle": 354.8,
+      "confidence": 0.86,
+      "timestamp": "2025-12-15T15:54:41.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:48:39.012733",
+    "payload": {
+      "id": "426dcf17-9ba5-4647-b52a-50835ffd6146",
+      "name": "Target-567",
+      "object_class": "Orlan-10",
+      "type": "Sound",
+      "frequency": 3000000000,
+      "distance": 2896,
+      "angle": 351.2,
+      "confidence": 0.71,
+      "timestamp": "2025-12-15T16:48:39.012733"
+    }
+  },
+  {
+    "type": "false_alarm",
+    "timestamp": "2025-12-15T17:04:53.012733",
+    "payload": {
+      "detection_id": "31fb1119-0ba5-494f-afd2-0b82300fdbc5",
+      "name": "Target-656"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:11:11.012733",
+    "payload": {
+      "id": "94f0ed15-bcf3-4c4f-9d23-3c7d2f505fd7",
+      "name": "Target-168",
+      "object_class": "FPV Kamikaze",
+      "type": "Sound",
+      "frequency": 3000000000,
+      "distance": 4265,
+      "angle": 8.9,
+      "confidence": 0.79,
+      "timestamp": "2025-12-15T16:11:11.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:27:21.012733",
+    "payload": {
+      "id": "1a1c0b7e-6c86-4920-af7e-3fa4d6401212",
+      "name": "Target-197",
+      "object_class": "Orlan-10",
+      "type": "Sound",
+      "frequency": 3000000000,
+      "distance": 3234,
+      "angle": 288.0,
+      "confidence": 0.88,
+      "timestamp": "2025-12-15T16:27:21.012733"
+    }
+  },
+  {
+    "type": "false_alarm",
+    "timestamp": "2025-12-15T16:31:53.012733",
+    "payload": {
+      "detection_id": "0bc15ede-bf51-45a2-a1f1-9ea3c7ba1adc",
+      "name": "Target-591"
+    }
+  },
+  {
+    "type": "false_alarm",
+    "timestamp": "2025-12-15T17:04:29.012733",
+    "payload": {
+      "detection_id": "9cdf4303-165b-42fd-aa2c-b72eae0e5029",
+      "name": "Target-593"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:35:06.012733",
+    "payload": {
+      "id": "4feac9c1-e287-4c9e-b425-ff50dfd1c944",
+      "name": "Target-311",
+      "object_class": "Mavic 3",
+      "type": "Sound",
+      "frequency": 800000000,
+      "distance": 2713,
+      "angle": 324.8,
+      "confidence": 0.76,
+      "timestamp": "2025-12-15T16:35:06.012733"
+    }
+  },
+  {
+    "type": "false_alarm",
+    "timestamp": "2025-12-15T17:18:25.012733",
+    "payload": {
+      "detection_id": "94f0ed15-bcf3-4c4f-9d23-3c7d2f505fd7",
+      "name": "Target-168"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:30:11.012733",
+    "payload": {
+      "id": "7bcd7550-c782-4b84-bf6c-e619f6cbfb45",
+      "name": "Target-735",
+      "object_class": "Orlan-10",
+      "type": "Sound",
+      "frequency": 800000000,
+      "distance": 1010,
+      "angle": 29.8,
+      "confidence": 0.96,
+      "timestamp": "2025-12-15T16:30:11.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:34:53.012733",
+    "payload": {
+      "id": "f6c270ef-ded2-4ad8-9bce-4f624e98dbef",
+      "name": "Target-417",
+      "object_class": "Mavic 3",
+      "type": "RF",
+      "frequency": 872330890.93,
+      "distance": 4159,
+      "angle": 215.3,
+      "confidence": 0.73,
+      "timestamp": "2025-12-15T16:34:53.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:04:14.012733",
+    "payload": {
+      "id": "1fcbf6d6-51db-4096-a02e-259c321c7b7e",
+      "name": "Target-779",
+      "object_class": "Shahed-136",
+      "type": "RF",
+      "frequency": 2398758062.87,
+      "distance": 663,
+      "angle": 168.9,
+      "confidence": 0.78,
+      "timestamp": "2025-12-15T16:04:14.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T17:07:35.012733",
+    "payload": {
+      "id": "fa93ef63-3298-4a58-bb6d-9210abbc883e",
+      "name": "Target-261",
+      "object_class": "Shahed-136",
+      "type": "RF",
+      "frequency": 431462127.25,
+      "distance": 4181,
+      "angle": 269.2,
+      "confidence": 0.62,
+      "timestamp": "2025-12-15T17:07:35.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T17:21:08.012733",
+    "payload": {
+      "id": "8589764c-8ea0-4480-a3f9-a4b62cba7059",
+      "name": "Target-954",
+      "object_class": "FPV Kamikaze",
+      "type": "RF",
+      "frequency": 5803362670.23,
+      "distance": 4998,
+      "angle": 83.0,
+      "confidence": 0.77,
+      "timestamp": "2025-12-15T17:21:08.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T17:24:13.012733",
+    "payload": {
+      "id": "0353ed2c-9aca-4619-ab37-8944b9721085",
+      "name": "Target-412",
+      "object_class": "Autel Evo",
+      "type": "RF",
+      "frequency": 868897514.64,
+      "distance": 2397,
+      "angle": 31.5,
+      "confidence": 0.95,
+      "timestamp": "2025-12-15T17:24:13.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:20:41.012733",
+    "payload": {
+      "id": "515c2b12-cf90-4952-a8dd-29166510389e",
+      "name": "Target-596",
+      "object_class": "Mavic 3",
+      "type": "Sound",
+      "frequency": 3000000000,
+      "distance": 1188,
+      "angle": 266.9,
+      "confidence": 0.81,
+      "timestamp": "2025-12-15T16:20:41.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T17:15:19.012733",
+    "payload": {
+      "id": "c5336a53-99f3-49ff-9c5e-c9b2aa777716",
+      "name": "Target-104",
+      "object_class": "Mavic 3",
+      "type": "Sound",
+      "frequency": 1200000000,
+      "distance": 2627,
+      "angle": 197.6,
+      "confidence": 0.79,
+      "timestamp": "2025-12-15T17:15:19.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:25:59.012733",
+    "payload": {
+      "id": "0589d6f3-80a3-4df5-8fda-42ae3d3091f7",
+      "name": "Target-968",
+      "object_class": "Mavic 3",
+      "type": "RF",
+      "frequency": 911350095.67,
+      "distance": 411,
+      "angle": 271.4,
+      "confidence": 0.8,
+      "timestamp": "2025-12-15T16:25:59.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:04:29.012733",
+    "payload": {
+      "id": "bfc8a80b-d838-49a6-bea2-9a5be1240d09",
+      "name": "Target-615",
+      "object_class": "Mavic 3",
+      "type": "RF",
+      "frequency": 430651942.18,
+      "distance": 4594,
+      "angle": 11.4,
+      "confidence": 0.77,
+      "timestamp": "2025-12-15T16:04:29.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:33:38.012733",
+    "payload": {
+      "id": "aa43550c-8d80-4fa0-bae4-e2b56d89796f",
+      "name": "Target-319",
+      "object_class": "FPV Kamikaze",
+      "type": "RF",
+      "frequency": 434407337.57,
+      "distance": 4553,
+      "angle": 300.3,
+      "confidence": 0.84,
+      "timestamp": "2025-12-15T16:33:38.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:40:53.012733",
+    "payload": {
+      "id": "2ef1700b-a3cc-491a-b8eb-4846aadbd187",
+      "name": "Target-139",
+      "object_class": "Mavic 3",
+      "type": "Sound",
+      "frequency": 400000000,
+      "distance": 1405,
+      "angle": 223.0,
+      "confidence": 0.89,
+      "timestamp": "2025-12-15T16:40:53.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:27:59.012733",
+    "payload": {
+      "id": "5bba4953-2346-40d0-9ea3-397ae86db714",
+      "name": "Target-321",
+      "object_class": "Orlan-10",
+      "type": "RF",
+      "frequency": 429258514.5,
+      "distance": 944,
+      "angle": 345.5,
+      "confidence": 0.98,
+      "timestamp": "2025-12-15T16:27:59.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:51:09.012733",
+    "payload": {
+      "id": "5b7b883a-4cbd-4462-aee0-4f4682286713",
+      "name": "Target-645",
+      "object_class": "Orlan-10",
+      "type": "RF",
+      "frequency": 866351470.73,
+      "distance": 4480,
+      "angle": 193.5,
+      "confidence": 0.79,
+      "timestamp": "2025-12-15T16:51:09.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T15:57:01.012733",
+    "payload": {
+      "id": "52754309-644f-4bdc-a8d4-6cbc1ff17dc8",
+      "name": "Target-460",
+      "object_class": "Shahed-136",
+      "type": "Sound",
+      "frequency": 800000000,
+      "distance": 3263,
+      "angle": 130.5,
+      "confidence": 0.74,
+      "timestamp": "2025-12-15T15:57:01.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T17:33:53.012733",
+    "payload": {
+      "id": "8cc0acb7-389c-49e1-8c33-486f59511c02",
+      "name": "Target-290",
+      "object_class": "Orlan-10",
+      "type": "RF",
+      "frequency": 437770435.89,
+      "distance": 3165,
+      "angle": 254.0,
+      "confidence": 0.62,
+      "timestamp": "2025-12-15T17:33:53.012733"
+    }
+  },
+  {
+    "type": "false_alarm",
+    "timestamp": "2025-12-15T15:59:52.012733",
+    "payload": {
+      "detection_id": "98eadff9-0818-452e-84ca-8e6f3cd174b5",
+      "name": "Target-244"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T17:40:29.012733",
+    "payload": {
+      "id": "5ed47a52-f3f7-4eae-96f3-3972f3669268",
+      "name": "Target-154",
+      "object_class": "Autel Evo",
+      "type": "Sound",
+      "frequency": 400000000,
+      "distance": 2916,
+      "angle": 111.0,
+      "confidence": 0.76,
+      "timestamp": "2025-12-15T17:40:29.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T17:15:38.012733",
+    "payload": {
+      "id": "5a279217-1f68-4c43-901f-ea283043aa1e",
+      "name": "Target-815",
+      "object_class": "Shahed-136",
+      "type": "Sound",
+      "frequency": 3000000000,
+      "distance": 2407,
+      "angle": 205.9,
+      "confidence": 0.99,
+      "timestamp": "2025-12-15T17:15:38.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:45:41.012733",
+    "payload": {
+      "id": "77e7d837-c63e-44dc-909a-63905ca746f7",
+      "name": "Target-931",
+      "object_class": "Mavic 3",
+      "type": "RF",
+      "frequency": 436034319.75,
+      "distance": 997,
+      "angle": 24.2,
+      "confidence": 0.9,
+      "timestamp": "2025-12-15T16:45:41.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:12:55.012733",
+    "payload": {
+      "id": "8c41fce3-6e53-4048-8bbb-2c1182d79ec2",
+      "name": "Target-600",
+      "object_class": "Orlan-10",
+      "type": "RF",
+      "frequency": 433546977.29,
+      "distance": 4351,
+      "angle": 306.9,
+      "confidence": 0.68,
+      "timestamp": "2025-12-15T16:12:55.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:13:17.012733",
+    "payload": {
+      "id": "f846f75e-af96-419c-adcf-51c973653b21",
+      "name": "Target-544",
+      "object_class": "Shahed-136",
+      "type": "RF",
+      "frequency": 914954863.4,
+      "distance": 3493,
+      "angle": 228.3,
+      "confidence": 0.94,
+      "timestamp": "2025-12-15T16:13:17.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T17:45:29.012733",
+    "payload": {
+      "id": "630ea096-8068-4e52-b476-084a65ba6e16",
+      "name": "Target-412",
+      "object_class": "Shahed-136",
+      "type": "Sound",
+      "frequency": 1200000000,
+      "distance": 3264,
+      "angle": 262.2,
+      "confidence": 0.84,
+      "timestamp": "2025-12-15T17:45:29.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T17:39:11.012733",
+    "payload": {
+      "id": "0de2af65-6bc4-49d1-990f-3de8ac8c5b40",
+      "name": "Target-466",
+      "object_class": "Autel Evo",
+      "type": "Sound",
+      "frequency": 3000000000,
+      "distance": 163,
+      "angle": 188.6,
+      "confidence": 0.95,
+      "timestamp": "2025-12-15T17:39:11.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:53:35.012733",
+    "payload": {
+      "id": "66c19ea5-1566-4aa8-912e-93fc0492f6e3",
+      "name": "Target-281",
+      "object_class": "Orlan-10",
+      "type": "RF",
+      "frequency": 2402695336.76,
+      "distance": 4309,
+      "angle": 294.9,
+      "confidence": 0.64,
+      "timestamp": "2025-12-15T16:53:35.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:36:57.012733",
+    "payload": {
+      "id": "d9159c66-84e9-42bd-82b8-c3c58a1ecbd6",
+      "name": "Target-663",
+      "object_class": "Mavic 3",
+      "type": "RF",
+      "frequency": 5798511628.08,
+      "distance": 4798,
+      "angle": 269.0,
+      "confidence": 0.68,
+      "timestamp": "2025-12-15T16:36:57.012733"
+    }
+  },
+  {
+    "type": "detection",
+    "timestamp": "2025-12-15T16:22:34.012733",
+    "payload": {
+      "id": "98929dc5-3430-471d-b735-07f8d2046771",
+      "name": "Target-883",
+      "object_class": "FPV Kamikaze",
+      "type": "RF",
+      "frequency": 431818821.49,
+      "distance": 420,
+      "angle": 55.8,
+      "confidence": 0.86,
+      "timestamp": "2025-12-15T16:22:34.012733"
+    }
+  }
+]

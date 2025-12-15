@@ -87,10 +87,10 @@ class ObjectManagerDialog(QDialog):
     def _load_language(self):
         lang_code = self.settings_service.lang_code
 
-        if lang_code == None:
-            return
+        # if lang_code == None:
+        #     return
 
-        QCoreApplication.removeTranslator(self.translator)
+        # QCoreApplication.removeTranslator(self.translator)
 
     def _prev_page(self):
         if self.current_page > 1:

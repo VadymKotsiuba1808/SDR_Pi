@@ -71,6 +71,7 @@ class SettingsDialogSettings(Protocol):
     radar_max_radius: float
     gps_interval_s: float
     main_relay: str
+    remember_me: bool
 
 
 class OSService(Protocol):

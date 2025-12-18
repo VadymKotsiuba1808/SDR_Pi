@@ -66,170 +66,187 @@ QPushButton:pressed {
   background-color: #328844;
   color: #002509;
 }
+
+QPushButton#btnLogout {
+  border: none;
+  background-color: rgba(40, 0, 0, 0.85);
+  border: 1px solid #C0392B;
+  color: #FFFFFF;
+  font-size: 18px;
+  padding: 6px;
+  border-radius: 4px;
+}
+
+QPushButton#btnLogout:hover {
+  background-color: rgba(80, 0, 0, 0.9);
+}
+
+QPushButton#btnLogout:pressed {
+  background-color: #C0392B;
+  color: #2B0000;
+}
+
 </string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
-   <property name="spacing">
-    <number>15</number>
+  <widget class="QLabel" name="lblTitle">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>20</y>
+     <width>461</width>
+     <height>39</height>
+    </rect>
    </property>
-   <property name="leftMargin">
-    <number>20</number>
+   <property name="font">
+    <font>
+     <family>Roboto</family>
+     <pointsize>-1</pointsize>
+     <bold>true</bold>
+    </font>
    </property>
-   <property name="topMargin">
-    <number>20</number>
+   <property name="styleSheet">
+    <string>font-size: 24px; font-weight: bold; margin-bottom: 10px;</string>
    </property>
-   <property name="rightMargin">
-    <number>20</number>
+   <property name="text">
+    <string>Налаштування</string>
    </property>
-   <property name="bottomMargin">
-    <number>20</number>
+   <property name="alignment">
+    <set>Qt::AlignmentFlag::AlignCenter</set>
    </property>
-   <item>
-    <widget class="QLabel" name="lblTitle">
-     <property name="font">
-      <font>
-       <family>Roboto</family>
-       <pointsize>-1</pointsize>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="styleSheet">
-      <string>font-size: 24px; font-weight: bold; margin-bottom: 10px;</string>
-     </property>
-     <property name="text">
-      <string>Налаштування</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignmentFlag::AlignCenter</set>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QFrame" name="frameContent">
-     <property name="frameShape">
-      <enum>QFrame::Shape::StyledPanel</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Shadow::Raised</enum>
-     </property>
-     <layout class="QFormLayout" name="formLayout">
-      <property name="verticalSpacing">
-       <number>20</number>
+  </widget>
+  <widget class="QFrame" name="frameContent">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>74</y>
+     <width>461</width>
+     <height>166</height>
+    </rect>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::Shape::StyledPanel</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Shadow::Raised</enum>
+   </property>
+   <layout class="QFormLayout" name="formLayout">
+    <property name="verticalSpacing">
+     <number>20</number>
+    </property>
+    <item row="0" column="0">
+     <widget class="QLabel" name="labelRadius">
+      <property name="text">
+       <string>Макс. радіус радару (км):</string>
       </property>
-      <item row="0" column="0">
-       <widget class="QLabel" name="labelRadius">
-        <property name="text">
-         <string>Макс. радіус радару (км):</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QDoubleSpinBox" name="inpMaxRadius">
-        <property name="buttonSymbols">
-         <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
-        </property>
-        <property name="maximum">
-         <double>1000.000000000000000</double>
-        </property>
-        <property name="value">
-         <double>50.000000000000000</double>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="labelGps">
-        <property name="text">
-         <string>Інтервал GPS (хв):</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="labelRelay">
-        <property name="text">
-         <string>Основне реле:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QComboBox" name="cmbRelay">
-        <item>
-         <property name="text">
-          <string>K1</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>K2</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>K3</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QDoubleSpinBox" name="inpGpsInterval">
-        <property name="buttonSymbols">
-         <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
-        </property>
-        <property name="minimum">
-         <double>0.500000000000000</double>
-        </property>
-        <property name="value">
-         <double>5.000000000000000</double>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Orientation::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_Footer">
-     <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Orientation::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QPushButton" name="btnCancel">
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QDoubleSpinBox" name="inpMaxRadius">
+      <property name="buttonSymbols">
+       <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
+      </property>
+      <property name="maximum">
+       <double>1000.000000000000000</double>
+      </property>
+      <property name="value">
+       <double>50.000000000000000</double>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QLabel" name="labelGps">
+      <property name="text">
+       <string>Інтервал GPS (хв):</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QLabel" name="labelRelay">
+      <property name="text">
+       <string>Основне реле:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1">
+     <widget class="QComboBox" name="cmbRelay">
+      <item>
        <property name="text">
-        <string>Скасувати</string>
+        <string>K1</string>
        </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="btnSave">
+      </item>
+      <item>
        <property name="text">
-        <string>Зберегти</string>
+        <string>K2</string>
        </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-  </layout>
+      </item>
+      <item>
+       <property name="text">
+        <string>K3</string>
+       </property>
+      </item>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QDoubleSpinBox" name="inpGpsInterval">
+      <property name="buttonSymbols">
+       <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
+      </property>
+      <property name="minimum">
+       <double>0.500000000000000</double>
+      </property>
+      <property name="value">
+       <double>5.000000000000000</double>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="">
+   <property name="geometry">
+    <rect>
+     <x>21</x>
+     <y>290</y>
+     <width>461</width>
+     <height>40</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="QPushButton" name="btnLogout">
+      <property name="text">
+       <string>Вийти з акаунту</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <spacer name="horizontalSpacer">
+      <property name="orientation">
+       <enum>Qt::Orientation::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>40</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item>
+     <widget class="QPushButton" name="btnCancel">
+      <property name="text">
+       <string>Скасувати</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="btnSave">
+      <property name="text">
+       <string>Зберегти</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
  </widget>
  <resources/>
  <connections/>

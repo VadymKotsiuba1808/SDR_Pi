@@ -1,10 +1,11 @@
 from dataclasses import dataclass
 from PyQt6.QtWidgets import QDialog
-from PyQt6.QtCore import Qt, QEvent, QTranslator, QCoreApplication
+from PyQt6.QtCore import Qt, QEvent, QTranslator, QCoreApplication, QTimer
 from PyQt6 import uic
 
 from app.protocols import SettingsDialogSettings
 from app.ui.ui_settings_dialog import Ui_SettingsDialog
+from app.utils.system_utils import restart_process
 
 
 @dataclass
@@ -65,6 +66,7 @@ class SettingsDialog(QDialog):
     def _connect_handlers(self):
         self.ui.btnSave.clicked.connect(self._handle_save)
         self.ui.btnCancel.clicked.connect(self.reject)
+        self.ui.btnLogout.clicked.connect(self.restart_app)
 
     def _load_language(self):
         lang_code = self.settings_service.lang_code
@@ -80,9 +82,16 @@ class SettingsDialog(QDialog):
         else:
             print(f"Помилка: не вдалося завантажити {path}")
 
+    def restart_app(self):
+        self.settings_service.remember_me = False
+        self.setEnabled(False)
+        print("Performing restart...")
+
+        QTimer.singleShot(8000, restart_process)
+
     def _handle_save(self):
         self.new_settings = SettingsData(
-            radat_max_radius=int(self.ui.inpMaxRadius.value() * 1000),
+            radar_max_radius=int(self.ui.inpMaxRadius.value() * 1000),
             gps_interval_s=int(self.ui.inpGpsInterval.value() * 60),
             main_relay=self.ui.cmbRelay.currentText(),
         )

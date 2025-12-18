@@ -65,12 +65,29 @@ class Ui_SettingsDialog(object):
 "  background-color: #328844;\n"
 "  color: #002509;\n"
 "}\n"
+"\n"
+"QPushButton#btnLogout {\n"
+"  border: none;\n"
+"  background-color: rgba(40, 0, 0, 0.85);\n"
+"  border: 1px solid #C0392B;\n"
+"  color: #FFFFFF;\n"
+"  font-size: 18px;\n"
+"  padding: 6px;\n"
+"  border-radius: 4px;\n"
+"}\n"
+"\n"
+"QPushButton#btnLogout:hover {\n"
+"  background-color: rgba(80, 0, 0, 0.9);\n"
+"}\n"
+"\n"
+"QPushButton#btnLogout:pressed {\n"
+"  background-color: #C0392B;\n"
+"  color: #2B0000;\n"
+"}\n"
+"\n"
 "")
-        self.verticalLayout = QtWidgets.QVBoxLayout(SettingsDialog)
-        self.verticalLayout.setContentsMargins(20, 20, 20, 20)
-        self.verticalLayout.setSpacing(15)
-        self.verticalLayout.setObjectName("verticalLayout")
         self.lblTitle = QtWidgets.QLabel(parent=SettingsDialog)
+        self.lblTitle.setGeometry(QtCore.QRect(20, 20, 461, 39))
         font = QtGui.QFont()
         font.setFamily("Roboto")
         font.setPointSize(-1)
@@ -78,8 +95,8 @@ class Ui_SettingsDialog(object):
         self.lblTitle.setFont(font)
         self.lblTitle.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.lblTitle.setObjectName("lblTitle")
-        self.verticalLayout.addWidget(self.lblTitle)
         self.frameContent = QtWidgets.QFrame(parent=SettingsDialog)
+        self.frameContent.setGeometry(QtCore.QRect(20, 74, 461, 166))
         self.frameContent.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
         self.frameContent.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
         self.frameContent.setObjectName("frameContent")
@@ -113,20 +130,23 @@ class Ui_SettingsDialog(object):
         self.inpGpsInterval.setProperty("value", 5.0)
         self.inpGpsInterval.setObjectName("inpGpsInterval")
         self.formLayout.setWidget(1, QtWidgets.QFormLayout.ItemRole.FieldRole, self.inpGpsInterval)
-        self.verticalLayout.addWidget(self.frameContent)
-        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
-        self.verticalLayout.addItem(spacerItem)
-        self.horizontalLayout_Footer = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_Footer.setObjectName("horizontalLayout_Footer")
-        spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
-        self.horizontalLayout_Footer.addItem(spacerItem1)
-        self.btnCancel = QtWidgets.QPushButton(parent=SettingsDialog)
+        self.widget = QtWidgets.QWidget(parent=SettingsDialog)
+        self.widget.setGeometry(QtCore.QRect(21, 290, 461, 40))
+        self.widget.setObjectName("widget")
+        self.horizontalLayout = QtWidgets.QHBoxLayout(self.widget)
+        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.btnLogout = QtWidgets.QPushButton(parent=self.widget)
+        self.btnLogout.setObjectName("btnLogout")
+        self.horizontalLayout.addWidget(self.btnLogout)
+        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
+        self.horizontalLayout.addItem(spacerItem)
+        self.btnCancel = QtWidgets.QPushButton(parent=self.widget)
         self.btnCancel.setObjectName("btnCancel")
-        self.horizontalLayout_Footer.addWidget(self.btnCancel)
-        self.btnSave = QtWidgets.QPushButton(parent=SettingsDialog)
+        self.horizontalLayout.addWidget(self.btnCancel)
+        self.btnSave = QtWidgets.QPushButton(parent=self.widget)
         self.btnSave.setObjectName("btnSave")
-        self.horizontalLayout_Footer.addWidget(self.btnSave)
-        self.verticalLayout.addLayout(self.horizontalLayout_Footer)
+        self.horizontalLayout.addWidget(self.btnSave)
 
         self.retranslateUi(SettingsDialog)
         QtCore.QMetaObject.connectSlotsByName(SettingsDialog)
@@ -142,5 +162,6 @@ class Ui_SettingsDialog(object):
         self.cmbRelay.setItemText(0, _translate("SettingsDialog", "K1"))
         self.cmbRelay.setItemText(1, _translate("SettingsDialog", "K2"))
         self.cmbRelay.setItemText(2, _translate("SettingsDialog", "K3"))
+        self.btnLogout.setText(_translate("SettingsDialog", "Вийти з акаунту"))
         self.btnCancel.setText(_translate("SettingsDialog", "Скасувати"))
         self.btnSave.setText(_translate("SettingsDialog", "Зберегти"))

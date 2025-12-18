@@ -52,4 +52,4 @@ def get_wifi_signal_strength(is_windows: bool):
 
 def restart_process():
     QProcess.startDetached(sys.executable, sys.argv)
-    QCoreApplication.quit()
+    QTimer.singleShot(8000, QCoreApplication.quit)

@@ -916,7 +916,7 @@ class MainWindow(QMainWindow):
         self.setEnabled(False)
         print("Performing restart...")
 
-        QTimer.singleShot(8000, restart_process)
+        restart_process()
 
     def closeEvent(self, event):
         print("Закриття програми...")

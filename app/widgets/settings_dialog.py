@@ -87,7 +87,7 @@ class SettingsDialog(QDialog):
         self.setEnabled(False)
         print("Performing restart...")
 
-        QTimer.singleShot(8000, restart_process)
+        restart_process()
 
     def _handle_save(self):
         self.new_settings = SettingsData(

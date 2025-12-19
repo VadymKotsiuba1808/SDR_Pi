@@ -295,7 +295,7 @@ class LogDialog(QDialog):
                 t.setItem(row_idx, 3, QTableWidgetItem("-"))
                 t.setItem(row_idx, 4, QTableWidgetItem("-"))
                 t.setItem(row_idx, 5, QTableWidgetItem("-"))
-                t.setItem(row_idx, 6, QTableWidgetItem("Marked by user"))
+                t.setItem(row_idx, 6, QTableWidgetItem("-"))
 
         t.resizeRowsToContents()
 

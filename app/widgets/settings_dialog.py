@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from PyQt6.QtWidgets import QDialog
 from PyQt6.QtCore import Qt, QEvent, QTranslator, QCoreApplication, QTimer
 from PyQt6 import uic
@@ -13,8 +13,8 @@ class SettingsData:
     """Клас для зберігання налаштувань діалогу"""
 
     radar_max_radius: float = 1000.0
-    gps_interval_s: int = 300
-    main_relay: str = "K1"
+    gps_interval_s: int = 120
+    main_relay: list[str] = field(default_factory=lambda: ["K1"])
 
 
 class SettingsDialog(QDialog):
@@ -56,9 +56,9 @@ class SettingsDialog(QDialog):
         s = self.settings_service
 
         self.ui.inpMaxRadius.setValue(s.radar_max_radius / 1000)
-        self.ui.inpGpsInterval.setValue(s.gps_interval_s / 60)
+        self.ui.inpGpsInterval.setValue(s.gps_interval_s)
 
-        relay_val = s.main_relay
+        relay_val = ",".join(s.main_relay)
         index = self.ui.cmbRelay.findText(relay_val)
         if index >= 0:
             self.ui.cmbRelay.setCurrentIndex(index)
@@ -92,8 +92,8 @@ class SettingsDialog(QDialog):
     def _handle_save(self):
         self.new_settings = SettingsData(
             radar_max_radius=int(self.ui.inpMaxRadius.value() * 1000),
-            gps_interval_s=int(self.ui.inpGpsInterval.value() * 60),
-            main_relay=self.ui.cmbRelay.currentText(),
+            gps_interval_s=int(self.ui.inpGpsInterval.value()),
+            main_relay=self.ui.cmbRelay.currentText().split(","),
         )
 
         print(f"[SettingsDialog] Збережено: {self.new_settings}")

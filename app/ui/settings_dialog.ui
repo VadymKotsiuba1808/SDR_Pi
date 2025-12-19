@@ -156,7 +156,7 @@ QPushButton#btnLogout:pressed {
     <item row="1" column="0">
      <widget class="QLabel" name="labelGps">
       <property name="text">
-       <string>Інтервал GPS (хв):</string>
+       <string>Інтервал GPS (с):</string>
       </property>
      </widget>
     </item>
@@ -176,12 +176,12 @@ QPushButton#btnLogout:pressed {
       </item>
       <item>
        <property name="text">
-        <string>K2</string>
+        <string>K1,K2</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>K3</string>
+        <string>K1,K2,K3</string>
        </property>
       </item>
      </widget>
@@ -191,17 +191,23 @@ QPushButton#btnLogout:pressed {
       <property name="buttonSymbols">
        <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
       </property>
+      <property name="decimals">
+       <number>0</number>
+      </property>
       <property name="minimum">
-       <double>0.500000000000000</double>
+       <double>10.000000000000000</double>
+      </property>
+      <property name="maximum">
+       <double>1001.000000000000000</double>
       </property>
       <property name="value">
-       <double>5.000000000000000</double>
+       <double>60.000000000000000</double>
       </property>
      </widget>
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>21</x>

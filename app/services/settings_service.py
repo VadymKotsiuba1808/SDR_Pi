@@ -43,7 +43,7 @@ class SettingsService(QObject):
     # Timers
     gps_interval_s: float
     # Relays
-    main_relay: str
+    main_relay: list
     # UI
     lang_code: str
 
@@ -74,7 +74,7 @@ class SettingsService(QObject):
         # Timers
         "gps_interval_s": ("timers", int, 2),
         # Relays
-        "main_relay": ("relays", str, "K1"),
+        "main_relay": ("relays", list, ["K1"]),
         # UI
         "lang_code": ("ui", str, "uk"),
     }

@@ -33,8 +33,9 @@ class ObjectEditorDialog(QDialog):
         self._load_ui()
         self._adjust_fields()
         self._connect_handlers()
-
         self._load_language()
+
+        self._handle_toggle_rf_fields(True)
 
     def changeEvent(self, event):
         if event.type() == QEvent.Type.LanguageChange:
@@ -67,8 +68,8 @@ class ObjectEditorDialog(QDialog):
         self.ui.btnSave.clicked.connect(self._handle_save)
         self.ui.btnCancel.clicked.connect(self.reject)
 
-        self.ui.chkRFEnable.toggled.connect(self._toggle_rf_fields)
-        self.ui.chkSoundEnable.toggled.connect(self._toggle_sound_fields)
+        self.ui.chkRFEnable.toggled.connect(self._handle_toggle_rf_fields)
+        self.ui.chkSoundEnable.toggled.connect(self._handle_toggle_sound_fields)
 
         self.ui.btnAddRF.clicked.connect(self._add_rf_range)
         self.ui.btnDelRF.clicked.connect(self._del_rf_range)
@@ -83,8 +84,12 @@ class ObjectEditorDialog(QDialog):
 
         QCoreApplication.removeTranslator(self.translator)
 
-    def _toggle_rf_fields(self, enabled):
-        # Активуємо/деактивуємо поля RF
+    def _handle_toggle_rf_fields(self, enabled: bool):
+        self.ui.chkSoundEnable.setChecked(not enabled)
+        self._toggle_rf_fields(enabled)
+
+    def _toggle_rf_fields(self, enabled: bool):
+
         for w in [
             self.ui.inpRFMin,
             self.ui.inpRFMax,
@@ -101,6 +106,10 @@ class ObjectEditorDialog(QDialog):
         )
         for w in [self.ui.inpRFMin, self.ui.inpRFMax, self.ui.lstRFFreqs]:
             w.setStyleSheet(style)
+
+    def _handle_toggle_sound_fields(self, enabled: bool):
+        self.ui.chkRFEnable.setChecked(not enabled)
+        self._toggle_sound_fields(enabled)
 
     def _toggle_sound_fields(self, enabled):
         for w in [

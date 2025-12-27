@@ -9,6 +9,7 @@ from PyQt6.QtCore import Qt, QEvent, QCoreApplication, QTranslator
 from app.protocols import ObjectManagerDialogSettings
 from app.widgets.object_editor_dialog import ObjectEditorDialog
 from app.services.database_service import DatabaseService
+from app.services.keyboard_service import KeyboardService
 from app.models.detection_object import DetectionObject
 from app.ui.ui_object_manager_dialog import Ui_ObjectManager
 from app.utils.ui_utils import move_dialog_down
@@ -21,6 +22,7 @@ class ObjectManagerDialog(QDialog):
         self,
         db_service: DatabaseService,
         settings_service: ObjectManagerDialogSettings,
+        keyboard: KeyboardService,
         parent=None,
     ):
         super().__init__(parent)
@@ -29,6 +31,7 @@ class ObjectManagerDialog(QDialog):
 
         self.db_service = db_service
         self.settings_service = settings_service
+        self.keyboard_service = keyboard
 
         self._load_ui()
         self._setup_state_variables()
@@ -179,8 +182,8 @@ class ObjectManagerDialog(QDialog):
         return item.data(Qt.ItemDataRole.UserRole)
 
     def _open_add_dialog(self):
-        dialog = ObjectEditorDialog(self.settings_service, self)
-        move_dialog_down(dialog, self.geometry(), -50)
+        dialog = ObjectEditorDialog(self.settings_service, self.keyboard_service, self)
+        move_dialog_down(dialog, self.geometry(), -90)
 
         if dialog.exec() == QDialog.DialogCode.Accepted:
             new_object = dialog.get_new_object()
@@ -197,8 +200,10 @@ class ObjectManagerDialog(QDialog):
         if not target_obj:
             return
 
-        dialog = ObjectEditorDialog(self.settings_service, self, object_data=target_obj)
-        move_dialog_down(dialog, self.geometry(), -50)
+        dialog = ObjectEditorDialog(
+            self.settings_service, self.keyboard_service, self, object_data=target_obj
+        )
+        move_dialog_down(dialog, self.geometry(), -90)
 
         if dialog.exec() == QDialog.DialogCode.Accepted:
             new_object = dialog.get_new_object()

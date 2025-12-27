@@ -4,6 +4,8 @@ from PyQt6 import uic
 
 from app.protocols import ObjectEditorDialogSettings
 from app.ui.ui_object_editor_dialog import Ui_ObjectEditorDialog
+from app.widgets.keyboard_widget import KeyboardWidget
+from app.services.keyboard_service import KeyboardService
 from app.models.detection_object import DetectionObject
 
 
@@ -17,6 +19,7 @@ class ObjectEditorDialog(QDialog):
     def __init__(
         self,
         settings_service: ObjectEditorDialogSettings,
+        keyboard: KeyboardService,
         parent=None,
         object_data=None,
     ):
@@ -25,12 +28,12 @@ class ObjectEditorDialog(QDialog):
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
 
         self.settings_service = settings_service
+        self.keyboard_service = keyboard
         self.object_data = object_data
         self.is_edit_mode = object_data is not None
 
-        self.translator = QTranslator()
-
         self._load_ui()
+        self._setup_state_variables()
         self._adjust_fields()
         self._connect_handlers()
         self._load_language()
@@ -54,7 +57,19 @@ class ObjectEditorDialog(QDialog):
             uic.loadUi(ui_path, self)
             self.ui = self
 
+    def _setup_state_variables(self):
+        print(
+            "KeyboardWidget keyboard_service:",
+            type(self.keyboard_service),
+            self.keyboard_service,
+        )
+        self.translator = QTranslator()
+        self.keyboard_widget = KeyboardWidget(
+            self.settings_service, self.keyboard_service, parent=self
+        )
+
     def _adjust_fields(self):
+        self.ui.keyboardLayout.addWidget(self.keyboard_widget)
         if self.is_edit_mode:
             self.setWindowTitle("Редагування об'єкта")
             self._load_data_into_fields()

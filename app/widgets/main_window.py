@@ -613,7 +613,9 @@ class MainWindow(QMainWindow):
             QDesktopServices.openUrl(url)
 
     def open_database_manager(self):
-        self.db_window = ObjectManagerDialog(self.db_service, self.settings_service)
+        self.db_window = ObjectManagerDialog(
+            self.db_service, self.settings_service, self.keyboard_service
+        )
         move_dialog_down(self.db_window, self.geometry())
         self.db_window.exec()
 

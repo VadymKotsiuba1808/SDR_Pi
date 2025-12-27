@@ -23,7 +23,6 @@ from app.utils.async_utils import make_safe_set_result
 
 async def main():
     app = QApplication.instance()
-    # Вимикаємо автоматичне завершення програми після закриття останнього вікна
 
     settings_service = SettingsService()
     system_service = SystemService()
@@ -37,6 +36,7 @@ async def main():
     result_code = None
 
     if remember_me == False:
+        # Вимикаємо автоматичне завершення програми після закриття останнього вікна
         app.setQuitOnLastWindowClosed(False)
         login_dialog = LoginDialog(settings=settings_service, keyboard=keyboard_service)
         make_window_stretched(login_dialog)

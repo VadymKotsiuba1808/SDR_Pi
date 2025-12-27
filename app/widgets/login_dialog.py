@@ -179,4 +179,5 @@ class LoginDialog(QDialog):
     def closeEvent(self, event):
         if self.auth_service:
             self.auth_service.stop_monitoring()
+        self.finished.emit(QDialog.DialogCode.Rejected)
         event.accept()

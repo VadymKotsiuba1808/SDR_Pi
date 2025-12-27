@@ -97,8 +97,11 @@ class LoginDialog(QDialog):
             print(f"Помилка: не вдалося завантажити {path}")
 
     def on_usb_reset_request(self):
-        self.change_pwd_dialog = ChangePwdDialog(self.settings_service)
-        self.change_pwd_dialog.exec()
+        self.change_pwd_dialog = ChangePwdDialog(
+            self.settings_service, self.keyboard_service
+        )
+        make_window_stretched(self.change_pwd_dialog)
+        self.change_pwd_dialog.showFullScreen()
 
     def toggle_password_field(self):
         """

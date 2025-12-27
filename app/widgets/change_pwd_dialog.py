@@ -4,23 +4,28 @@
 """
 
 from PyQt6.QtWidgets import QDialog, QLineEdit
-from PyQt6.QtCore import QCoreApplication, QEvent, QTranslator
+from PyQt6.QtCore import QCoreApplication, QEvent, QTranslator, Qt
 
 from PyQt6 import uic
 
-from app.ui.ui_change_pwd_dialog import Ui_ChangePwdDialog
-
 from app.protocols import ChangePwdDialogSettings
-from app.utils.password_utils import hash_password
+from app.ui.ui_change_pwd_dialog import Ui_ChangePwdDialog
+from app.widgets.keyboard_widget import KeyboardWidget
+from app.services.keyboard_service import KeyboardService
 from app.validators.password_validator import PasswordValidator
+from app.utils.password_utils import hash_password
 from app.utils.ui_utils import update_element_styles
 
 
 class ChangePwdDialog(QDialog):
-    def __init__(self, settings: ChangePwdDialogSettings, parent=None):
+    def __init__(
+        self, settings: ChangePwdDialogSettings, keyboard: KeyboardService, parent=None
+    ):
         super().__init__(parent)
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
 
         self.settings_service = settings
+        self.keyboard_service = keyboard
 
         self._load_ui()
         print("[ChangePwdDialog] Інтерфейс завантажено.")
@@ -30,18 +35,16 @@ class ChangePwdDialog(QDialog):
         self._connect_handlers()
         print("[ChangePwdDialog] Сигнали підключено.")
 
+        self._adjust_fields()
+
         self._load_language()
 
     def changeEvent(self, event):
-        # Ловимо подію, яку надіслав installTranslator
         if event.type() == QEvent.Type.LanguageChange:
             if self.settings_service.compiled_ui_using_enabled:
                 print("Зміна мови, оновлюю UI...")
-                # Викликаємо авто-згенеровану функцію
                 self.ui.retranslateUi(self)
         else:
-            # Передаємо всі інші події (натискання клавіш, зміна розміру тощо)
-            # на стандартну обробку
             super().changeEvent(event)
 
     def _load_ui(self):
@@ -54,6 +57,9 @@ class ChangePwdDialog(QDialog):
 
     def _setup_state_variables(self):
         self.translator = QTranslator()
+        self.keyboard_widget = KeyboardWidget(
+            self.settings_service, self.keyboard_service, parent=self
+        )
 
     def _connect_handlers(self):
         self.ui.passwordLineEdit.textChanged.connect(self.change_password_status)
@@ -63,9 +69,12 @@ class ChangePwdDialog(QDialog):
         self.ui.confirmPasswordHideBtn.clicked.connect(self.hide_unhide_password)
 
         self.ui.saveButton.clicked.connect(self.handle_save_pwd)
+        self.ui.btnLogout.clicked.connect(self.reject)
+
+    def _adjust_fields(self):
+        self.ui.keyboardLayout.addWidget(self.keyboard_widget)
 
     def _load_language(self):
-        # Видаляємо старий перекладач
         lang_code = self.settings_service.lang_code
 
         if lang_code == None:
@@ -73,16 +82,13 @@ class ChangePwdDialog(QDialog):
 
         QCoreApplication.removeTranslator(self.translator)
 
-        # Завантажуємо та встановлюємо новий
-        path = f"app/i18n/qm/app_{lang_code}.qm"  # Перевірте правильність шляху
+        path = f"app/i18n/qm/app_{lang_code}.qm"
         if self.translator.load(path):
             QCoreApplication.installTranslator(self.translator)
         else:
             print(f"Помилка: не вдалося завантажити {path}")
 
     def change_password_status(self):
-        # Приховую Label зі статусом
-
         if self.sender() == self.ui.passwordLineEdit:
             self.ui.errorWidget_1.setVisible(False)
             self.ui.passwordIncorrectLabel.setText("")

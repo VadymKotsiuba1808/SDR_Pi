@@ -14,7 +14,10 @@ from app.protocols import LoginDialogSettings
 from app.utils.password_utils import verify_password
 from app.utils.ui_utils import update_element_styles
 from app.widgets.keyboard_widget import KeyboardWidget
+from app.widgets.change_pwd_dialog import ChangePwdDialog
+from app.widgets.autosize_window import make_window_stretched
 from app.services.keyboard_service import KeyboardService
+from app.services.usb_auth_service import UsbAuthService
 
 
 class LoginDialog(QDialog):
@@ -62,6 +65,10 @@ class LoginDialog(QDialog):
             self.settings_service, self.keyboard_service, parent=self
         )
 
+        self.auth_service = UsbAuthService()
+        self.auth_service.auth_success_signal.connect(self.on_usb_reset_request)
+        self.auth_service.start_monitoring()
+
     def _adjust_fields(self):
         role = self.settings_service.role
         self.ui.roleComboBox.setCurrentIndex(0 if role == "operator" else 1)
@@ -88,6 +95,10 @@ class LoginDialog(QDialog):
             QCoreApplication.installTranslator(self.translator)
         else:
             print(f"Помилка: не вдалося завантажити {path}")
+
+    def on_usb_reset_request(self):
+        self.change_pwd_dialog = ChangePwdDialog(self.settings_service)
+        self.change_pwd_dialog.exec()
 
     def toggle_password_field(self):
         """
@@ -161,3 +172,8 @@ class LoginDialog(QDialog):
     def accept_window(self):
         print("[accept_window] Закриття діалогу з кодом Accepted.")
         self.finished.emit(QDialog.DialogCode.Accepted)
+
+    def closeEvent(self, event):
+        if self.auth_service:
+            self.auth_service.stop_monitoring()
+        event.accept()

@@ -12,6 +12,7 @@ from PyQt6.QtGui import (
 from PyQt6.QtCore import Qt, QPointF, QEvent, QCoreApplication, QTranslator
 from datetime import datetime
 import math
+import numpy as np
 
 from app.protocols import ChartWidgetSettings
 from app.models.detection_event import DetectionEvent
@@ -41,7 +42,7 @@ class LogChartWidget(QWidget):
         self._interactive_points = []
 
         self.color_bg = QColor(0, 20, 0, 100)
-        self.color_grid = QColor(50, 136, 68, 80)
+        self.color_grid = QColor(50, 136, 68, 100)
         self.color_rf = QColor(255, 100, 100)
         self.color_sound = QColor(100, 100, 255)
         self.color_highlight = QColor(255, 255, 0)
@@ -259,35 +260,45 @@ class LogChartWidget(QWidget):
         radius = min(w, h) / 2 - 30
 
         # Сортуємо по часу
-        sorted_data = sorted(self.data, key=lambda x: x.timestamp)
+        sorted_data: list[DetectionEvent] = sorted(self.data, key=lambda x: x.timestamp)
         max_dist = max([d.distance for d in sorted_data]) if sorted_data else 1000
         if max_dist < 100:
             max_dist = 100
 
+        max_dist = math.ceil(max_dist / 500) * 500
+
+        for i in np.arange(0.2, 1.2, 0.2):
+            p.setPen(QPen(self.color_grid, 1))
+            p.drawEllipse(center, radius * i, radius * i)
+            p.setPen(self.color_text)
+            p.setFont(QFont("Arial", 8))
+            p.drawText(
+                int(center.x() + 5),
+                int(center.y() - radius * i + 10),
+                f"{int(max_dist*i)}m",
+            )
+            # p.drawEllipse(center, radius * 0.5, radius * 0.5)
+
         p.setPen(QPen(self.color_grid, 1))
-
-        p.drawEllipse(center, radius, radius)
-        p.drawEllipse(center, radius * 0.5, radius * 0.5)
-
         p.drawLine(
-            QPointF(center.x(), center.y() - radius),
-            QPointF(center.x(), center.y() + radius),
+            QPointF(center.x(), center.y() - radius * 1.1),
+            QPointF(center.x(), center.y() + radius * 1.1),
         )
         p.drawLine(
-            QPointF(center.x() - radius, center.y()),
-            QPointF(center.x() + radius, center.y()),
+            QPointF(center.x() - radius * 1.1, center.y()),
+            QPointF(center.x() + radius * 1.1, center.y()),
         )
 
-        # Підписи дистанції
-        p.setPen(self.color_text)
-        p.setFont(QFont("Arial", 8))
-        p.drawText(int(center.x() + 5), int(center.y() - radius + 10), f"{max_dist}m")
-        p.drawText(
-            int(center.x() + 5),
-            int(center.y() - radius * 0.5 + 10),
-            f"{int(max_dist/2)}m",
-        )
-        # ---------------------
+        # # Підписи дистанції
+        # p.setPen(self.color_text)
+        # p.setFont(QFont("Arial", 8))
+        # p.drawText(int(center.x() + 5), int(center.y() - radius + 10), f"{max_dist}m")
+        # p.drawText(
+        #     int(center.x() + 5),
+        #     int(center.y() - radius * 0.5 + 10),
+        #     f"{int(max_dist/2)}m",
+        # )
+        # # ---------------------
 
         path_points = []
         for d in sorted_data:
@@ -318,7 +329,7 @@ class LogChartWidget(QWidget):
                 p.setBrush(QBrush(color))
                 p.drawEllipse(pt, 4, 4)
                 p.setPen(QColor(200, 200, 200))
-                p.drawText(int(pt.x() + 5), int(pt.y()), time_str)
+                p.drawText(int(pt.x() - 20), int(pt.y() - 10), time_str)
             else:
                 # Маленькі проміжні точки
                 p.setPen(Qt.PenStyle.NoPen)
@@ -380,14 +391,33 @@ class LogChartWidget(QWidget):
         center = QPointF(w / 2, h / 2)
         radius = min(w, h) / 2 - 30
 
-        p.setPen(QPen(self.color_grid, 1))
-        p.drawEllipse(center, radius, radius)
-        p.drawEllipse(center, radius * 0.5, radius * 0.5)
-
         max_dist = max([d.distance for d in self.data]) if self.data else 5000
+        max_dist = math.ceil(max_dist / 500) * 500
 
-        p.setPen(self.color_text)
-        p.drawText(int(center.x()), int(center.y() - radius - 5), f"{max_dist}m")
+        for i in np.arange(0.2, 1.2, 0.2):
+            p.setPen(QPen(self.color_grid, 1))
+            p.drawEllipse(center, radius * i, radius * i)
+            p.setPen(self.color_text)
+            p.setFont(QFont("Arial", 8))
+            p.drawText(
+                int(center.x() + 5),
+                int(center.y() - radius * i + 10),
+                f"{int(max_dist*i)}m",
+            )
+            # p.drawEllipse(center, radius * 0.5, radius * 0.5)
+
+        p.setPen(QPen(self.color_grid, 1))
+        p.drawLine(
+            QPointF(center.x(), center.y() - radius * 1.1),
+            QPointF(center.x(), center.y() + radius * 1.1),
+        )
+        p.drawLine(
+            QPointF(center.x() - radius * 1.1, center.y()),
+            QPointF(center.x() + radius * 1.1, center.y()),
+        )
+
+        # p.setPen(self.color_text)
+        # p.drawText(int(center.x()), int(center.y() - radius - 5), f"{max_dist}m")
 
         for d in self.data:
             rad = math.radians(d.angle - 90)
@@ -402,7 +432,7 @@ class LogChartWidget(QWidget):
 
             p.setBrush(QBrush(col))
             p.setPen(Qt.PenStyle.NoPen)
-            size = 5 + d.confidence * 10
+            size = 3 + d.confidence * 4
             p.drawEllipse(pt, size, size)
 
             p.setPen(QColor(255, 255, 255))

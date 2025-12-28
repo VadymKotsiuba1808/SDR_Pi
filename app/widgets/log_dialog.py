@@ -1,4 +1,6 @@
 from datetime import datetime
+from typing import List, Set, Optional
+
 from PyQt6.QtWidgets import (
     QDialog,
     QTableWidgetItem,
@@ -29,12 +31,9 @@ class LogDialog(QDialog):
         self.settings_service = settings_service
 
         self._load_ui()
-
         self._setup_state_variables()
-
         self._setup_table_style()
         self._init_charts()
-
         self._load_sessions_list()
         self._connect_handlers()
 
@@ -62,8 +61,8 @@ class LogDialog(QDialog):
     def _setup_state_variables(self):
         self.translator = QTranslator()
         self.service = LogService()
-        self.all_entries: list[LogEntry] = []
-        self.filtered_entries: list[LogEntry] = []
+        self.all_entries: List[LogEntry] = []
+        self.filtered_entries: List[LogEntry] = []
 
     def _setup_table_style(self):
         """Налаштування вигляду таблиці."""
@@ -74,21 +73,20 @@ class LogDialog(QDialog):
         header = t.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
 
-        t.setColumnWidth(0, 120)
-        t.setColumnWidth(1, 120)
-        header.setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
-        t.setColumnWidth(3, 140)
-        t.setColumnWidth(4, 180)
-        t.setColumnWidth(5, 150)
-        t.setColumnWidth(6, 100)
+        t.setColumnWidth(0, 120)  # Time
+        t.setColumnWidth(1, 120)  # Type
+        header.setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)  # Name/ID
+        t.setColumnWidth(3, 140)  # Class
+        t.setColumnWidth(4, 180)  # Freq
+        t.setColumnWidth(5, 150)  # Dist/Angle
+        t.setColumnWidth(6, 100)  # Status
 
     def _init_charts(self):
         """Ініціалізація віджетів графіків для кожної вкладки."""
-        # 1. Загальний графік (Timeline/Bar)
         self.chart_gen = LogChartWidget(self.settings_service)
+
         self.ui.layoutChartGen.addWidget(self.chart_gen)
 
-        # 2. Графіки по об'єкту (Path + Signal)
         self.chart_path = LogChartWidget(self.settings_service)
         self.chart_path.set_chart_type("path")
         self.ui.layoutChartPath.addWidget(self.chart_path)
@@ -97,7 +95,6 @@ class LogDialog(QDialog):
         self.chart_signal.set_chart_type("signal")
         self.ui.layoutChartSignal.addWidget(self.chart_signal)
 
-        # 3. Радар ситуації
         self.chart_sit = LogChartWidget(self.settings_service)
         self.chart_sit.set_chart_type("radar_snapshot")
         self.ui.layoutChartRadarSit.addWidget(self.chart_sit)
@@ -120,17 +117,16 @@ class LogDialog(QDialog):
         self.ui.cmbChartTypeGeneral.currentIndexChanged.connect(
             self._update_general_tab
         )
+
         self.ui.cmbTargetObject.currentIndexChanged.connect(self._update_object_tab)
         self.ui.cmbSituationTime.currentIndexChanged.connect(self._update_situation_tab)
 
     def _load_language(self):
         lang_code = self.settings_service.lang_code
-
-        if lang_code == None:
+        if lang_code is None:
             return
 
         QCoreApplication.removeTranslator(self.translator)
-
         path = f"app/i18n/qm/app_{lang_code}.qm"
         if self.translator.load(path):
             QCoreApplication.installTranslator(self.translator)
@@ -160,7 +156,7 @@ class LogDialog(QDialog):
     def _apply_filters(self):
         """Логіка фільтрації записів."""
         name_filter = self.ui.inpFilterName.text().lower()
-        type_idx = self.ui.cmbFilterType.currentIndex()  # 0=All, 1=Det, 2=False
+        type_idx = self.ui.cmbFilterType.currentIndex()
 
         dist_min = self.ui.inpDistMin.value()
         dist_max = self.ui.inpDistMax.value()
@@ -221,26 +217,24 @@ class LogDialog(QDialog):
 
     def _populate_ui_with_data(self):
         """Оновлення всіх елементів UI на основі filtered_entries."""
-        # 1. Таблиця
         self._fill_table(self.filtered_entries)
 
-        # 2. Комбобокси
         self._fill_objects_combo()
         self._fill_times_combo()
 
-        # 3. Активна вкладка графіків
         self._on_tab_changed()
 
-    def _fill_table(self, entries: list[LogEntry]):
+    def _get_false_ids(self) -> Set[int]:
+        """Допоміжний метод для отримання ID помилкових тривог."""
+        return {e.payload.detection_id for e in self.all_entries if e.is_false_alarm}
+
+    def _fill_table(self, entries: List[LogEntry]):
         """Заповнення таблиці даними."""
         t = self.ui.tableLogs
         t.setRowCount(0)
 
         sorted_entries = sorted(entries, key=lambda x: x.timestamp, reverse=True)
-
-        false_ids = {
-            e.payload.detection_id for e in self.all_entries if e.is_false_alarm
-        }
+        false_ids = self._get_false_ids()
 
         for entry in sorted_entries:
             row_idx = t.rowCount()
@@ -258,7 +252,6 @@ class LogDialog(QDialog):
                 data = entry.payload
                 t.setItem(row_idx, 1, QTableWidgetItem(data.type))
 
-                # Назва + ID
                 short_id = data.id[:16]
                 name_item = QTableWidgetItem(f"{data.name}\nID: {short_id}...")
                 name_item.setToolTip(f"Full ID: {data.id}")
@@ -268,7 +261,7 @@ class LogDialog(QDialog):
                 t.setItem(
                     row_idx,
                     4,
-                    QTableWidgetItem(f"{(data.frequency/1000000):.1f}"),
+                    QTableWidgetItem(f"{(data.frequency / 1000000):.1f}"),
                 )
                 t.setItem(
                     row_idx,
@@ -356,9 +349,7 @@ class LogDialog(QDialog):
         self.chart_gen.set_chart_type(t)
 
         detections = [e.payload for e in self.filtered_entries if e.is_detection]
-        false_ids = {
-            e.payload.detection_id for e in self.all_entries if e.is_false_alarm
-        }
+        false_ids = self._get_false_ids()
 
         self.chart_gen.set_data(detections, false_ids)
 
@@ -375,8 +366,10 @@ class LogDialog(QDialog):
             if e.is_detection and e.payload.id == target_id
         ]
 
-        self.chart_path.set_data(obj_data)
-        self.chart_signal.set_data(obj_data)
+        false_ids = self._get_false_ids()
+
+        self.chart_path.set_data(obj_data, false_ids)
+        self.chart_signal.set_data(obj_data, false_ids)
 
     def _update_situation_tab(self):
         time_str = self.ui.cmbSituationTime.currentText()
@@ -394,6 +387,7 @@ class LogDialog(QDialog):
             if e.is_detection:
                 try:
                     dt = datetime.fromisoformat(e.timestamp)
+                    # Перевіряємо співпадіння до хвилини
                     if (
                         dt.year == sel_dt.year
                         and dt.month == sel_dt.month
@@ -405,7 +399,5 @@ class LogDialog(QDialog):
                 except ValueError:
                     pass
 
-        false_ids = {
-            e.payload.detection_id for e in self.all_entries if e.is_false_alarm
-        }
+        false_ids = self._get_false_ids()
         self.chart_sit.set_data(active_objects, false_ids)

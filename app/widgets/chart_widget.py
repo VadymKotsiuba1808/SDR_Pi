@@ -452,8 +452,6 @@ class LogChartWidget(QWidget):
             x = margin + i * spacing
             y = h - margin - bar_h
 
-            print("Index", i)
-
             p.drawRect(int(x), int(y), int(bar_width), int(bar_h))
 
             p.drawText(int(x), int(y - 5), str(val))

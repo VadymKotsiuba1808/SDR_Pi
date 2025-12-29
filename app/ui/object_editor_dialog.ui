@@ -260,16 +260,6 @@ QPushButton#btnDelete:pressed {
                  </property>
                 </widget>
                </item>
-               <item row="1" column="1">
-                <widget class="QLineEdit" name="inpClass">
-                 <property name="minimumSize">
-                  <size>
-                   <width>0</width>
-                   <height>40</height>
-                  </size>
-                 </property>
-                </widget>
-               </item>
                <item row="2" column="1">
                 <widget class="QCheckBox" name="chkDangerous">
                  <property name="text">
@@ -277,6 +267,16 @@ QPushButton#btnDelete:pressed {
                  </property>
                  <property name="checked">
                   <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QComboBox" name="comboClass">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>40</height>
+                  </size>
                  </property>
                 </widget>
                </item>

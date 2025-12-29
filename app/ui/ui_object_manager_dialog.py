@@ -80,9 +80,17 @@ class Ui_ObjectManager(object):
 "  background-color: #aa3333;\n"
 "}\n"
 "\n"
-"/* Кнопка закрити - трохи відрізняється (опціонально, тут стандартний стиль) */\n"
+"/* Кнопка Класи - трохи інший відтінок */\n"
+"QPushButton#btnManageClasses {\n"
+"    background-color: rgba(0, 60, 60, 0.8);\n"
+"    border-color: #328888;\n"
+"}\n"
+"QPushButton#btnManageClasses:hover {\n"
+"    background-color: #328888;\n"
+"}\n"
+"\n"
 "QPushButton#btnClose {\n"
-"    /* Можна додати специфічний стиль якщо треба, наразі як інші */\n"
+"    /* Стандартний стиль */\n"
 "}\n"
 "")
         self.verticalLayout = QtWidgets.QVBoxLayout(ObjectManager)
@@ -144,6 +152,9 @@ class Ui_ObjectManager(object):
         self.verticalLayout.addWidget(self.framePagination)
         self.horizontalLayout_Bottom = QtWidgets.QHBoxLayout()
         self.horizontalLayout_Bottom.setObjectName("horizontalLayout_Bottom")
+        self.btnManageClasses = QtWidgets.QPushButton(parent=ObjectManager)
+        self.btnManageClasses.setObjectName("btnManageClasses")
+        self.horizontalLayout_Bottom.addWidget(self.btnManageClasses)
         self.btnAdd = QtWidgets.QPushButton(parent=ObjectManager)
         self.btnAdd.setObjectName("btnAdd")
         self.horizontalLayout_Bottom.addWidget(self.btnAdd)
@@ -183,6 +194,7 @@ class Ui_ObjectManager(object):
         self.lblPageInfo.setStyleSheet(_translate("ObjectManager", "font-weight: bold; margin: 0 15px;"))
         self.lblPageInfo.setText(_translate("ObjectManager", "Сторінка 1 з 1"))
         self.btnNextPage.setText(_translate("ObjectManager", "Вперед >"))
+        self.btnManageClasses.setText(_translate("ObjectManager", "Класи"))
         self.btnAdd.setText(_translate("ObjectManager", "Додати новий"))
         self.btnEdit.setText(_translate("ObjectManager", "Редагувати обраний"))
         self.btnDelete.setText(_translate("ObjectManager", "Видалити"))

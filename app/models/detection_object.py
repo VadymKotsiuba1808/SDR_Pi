@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Optional, List, Dict, Any
+from typing import List, Optional
 
 
 @dataclass
@@ -9,37 +9,38 @@ class DetectionObject:
     Оновлено для підтримки списків частот та перейменовано audio -> sound.
     """
 
+    id: Optional[int]  # Може бути None, якщо об'єкт новий
     name: str
-    object_class: str
-    id: Optional[str] = None
-    is_dangerous: bool = False
 
-    rf_params: List[Dict[str, Any]] = field(default_factory=list)
-    sound_params: List[int] = field(default_factory=list)
+    class_id: int
+    object_class: str  # Популюється назвою класу
+
+    is_dangerous: bool = False
+    rf_params: List[str] = field(default_factory=list)  # Список рядків "min-max"
+    sound_params: List[int] = field(default_factory=list)  # Список чисел
 
     @staticmethod
     def from_dict(data: dict) -> "DetectionObject":
+        raw_id = data.get("id")
+        obj_id = int(raw_id) if raw_id is not None else None
+
         return DetectionObject(
-            id=data.get("id"),
+            id=obj_id,
             name=data.get("name", "Unnamed"),
-            object_class=data.get("object_class", "unknown"),
+            class_id=int(data.get("class_id", 0)),
+            object_class=data.get("object_class", "Unknown"),
             is_dangerous=bool(data.get("is_dangerous", False)),
-            # Отримуємо списки, якщо їх немає - повертаємо пустий список
             rf_params=data.get("rf_params", []),
             sound_params=data.get("sound_params", []),
         )
 
     def to_dict(self) -> dict:
-        """
-        Серіалізація.
-        """
-        data = {
+        return {
+            "id": self.id,
             "name": self.name,
+            "class_id": self.class_id,
             "object_class": self.object_class,
             "is_dangerous": self.is_dangerous,
             "rf_params": self.rf_params,
             "sound_params": self.sound_params,
         }
-        if self.id:
-            data["id"] = self.id
-        return data

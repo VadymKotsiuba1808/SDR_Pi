@@ -13,14 +13,14 @@ from app.ui.ui_class_manager_dialog import Ui_ClassManagerDialog
 from app.widgets.keyboard_widget import KeyboardWidget
 from app.services.keyboard_service import KeyboardService
 from app.services.database_service import DatabaseService
-from app.protocols import ObjectManagerDialogSettings
+from app.protocols import ClassManagerDialogSettings
 
 
 class ClassManagerDialog(QDialog):
     def __init__(
         self,
         db_service: DatabaseService,
-        settings_service: ObjectManagerDialogSettings,
+        settings_service: ClassManagerDialogSettings,
         keyboard_service: KeyboardService,
         parent: Optional[QWidget] = None,
     ) -> None:

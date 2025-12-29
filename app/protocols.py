@@ -60,6 +60,11 @@ class ObjectManagerDialogSettings(Protocol):
     lang_code: str
 
 
+class ClassManagerDialogSettings(Protocol):
+    compiled_ui_using_enabled: bool
+    lang_code: str
+
+
 class OSService(Protocol):
     is_windows: bool
     is_linux: bool

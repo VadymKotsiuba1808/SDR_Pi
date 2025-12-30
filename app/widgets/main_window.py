@@ -46,16 +46,18 @@ from app.assets import resources_rc
 from app.widgets.set_map_dialog import SetMapDialog
 from app.widgets.autosize_window import make_scalable
 from app.widgets.record_status_widget import RecordingStatusWidget
+from app.widgets.object_manager_dialog import ObjectManagerDialog
 from app.services.settings_service import SettingsService
 from app.services.map_service import MapService, MapTypes
 from app.services.keyboard_service import KeyboardService
 from app.services.recording_service import RecordingService
 from app.services.media_player_service import MediaPlayerService
 from app.services.pi_network_service import PiNetworkService
+from app.services.database_service import DatabaseService
 from app.core.detection_manager import DetectionManager
 from app.models.detection_event import DetectionEvent
 from app.protocols import OSService
-from app.utils.ui_utils import update_element_styles
+from app.utils.ui_utils import update_element_styles, move_dialog_down
 from app.utils.test_data_provider import TestDataProvider
 from app.utils.system_utils import (
     get_wifi_signal_strength,
@@ -150,6 +152,8 @@ class MainWindow(QMainWindow):
         self.pi_network.rf_data_received.connect(self.handle_rf_data)
         self.pi_network.sound_data_received.connect(self.handle_sound_data)
 
+        self.db_service = DatabaseService(self.pi_network)
+
         self.current_map_type_index = 0
         self.map_types = [e for e in MapTypes]
         self.current_coords = [49.43440, 27.00543]
@@ -215,6 +219,7 @@ class MainWindow(QMainWindow):
         self.ui.addMapButton.clicked.connect(self.handle_add_map)
         self.ui.screenRecordButton.clicked.connect(self.handle_toggle_recording)
         self.ui.filesViewButton.clicked.connect(self.handle_open_file)
+        self.ui.viewObjectButton.clicked.connect(self.open_database_manager)
 
         self.ui.falseAlarmButton.clicked.connect(self.handle_false_alarm)
         # self.ui.menuButton.clicked.connect(self.test_draw_dot)
@@ -542,6 +547,13 @@ class MainWindow(QMainWindow):
             print("ГОЛОВНЕ ВІКНО: Налаштування скасовано.")
 
         self.scalable_dialog = None
+
+    def open_database_manager(self):
+        self.db_window = ObjectManagerDialog(
+            self.db_service, self.settings_service, self.keyboard_service
+        )
+        move_dialog_down(self.db_window, self.geometry())
+        self.db_window.exec()
 
     @pyqtSlot(bool)
     def handle_toggle_recording(self):

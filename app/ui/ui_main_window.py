@@ -298,7 +298,7 @@ class Ui_MainWindow(object):
 "}")
         self.Sound_alert.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeading|QtCore.Qt.AlignmentFlag.AlignLeft|QtCore.Qt.AlignmentFlag.AlignVCenter)
         self.Sound_alert.setIndent(-1)
-        self.Sound_alert.setProperty("alert", True)
+        self.Sound_alert.setProperty("alert", False)
         self.Sound_alert.setObjectName("Sound_alert")
         self.GPS = QtWidgets.QFrame(parent=self.Header)
         self.GPS.setGeometry(QtCore.QRect(200, 17, 198, 60))
@@ -965,6 +965,24 @@ class Ui_MainWindow(object):
         self.filesViewButton.setCheckable(True)
         self.filesViewButton.setChecked(False)
         self.filesViewButton.setObjectName("filesViewButton")
+        self.viewObjectButton = QtWidgets.QPushButton(parent=self.Body)
+        self.viewObjectButton.setEnabled(True)
+        self.viewObjectButton.setGeometry(QtCore.QRect(166, 573, 110, 110))
+        self.viewObjectButton.setStyleSheet("QPushButton#viewObjectButton{\n"
+"    border-image: url(:/images/viewObjectsBtn_off.png) stretch stretch;\n"
+"    background-color:rgba(0,0,0,0.8)\n"
+"}\n"
+"\n"
+"QPushButton#viewObjectButton:pressed{\n"
+"    border-image: url(:/images/viewObjectsBtn_on.png) stretch stretch;\n"
+"}\n"
+"\n"
+"QPushButton#viewObjectButton[enabled=\"false\"]{\n"
+"    border-image: url(:/images/viewObjectsBtn_disabled.png) stretch stretch;\n"
+"}")
+        self.viewObjectButton.setText("")
+        self.viewObjectButton.setCheckable(False)
+        self.viewObjectButton.setObjectName("viewObjectButton")
         self.detection_info_box = QtWidgets.QFrame(parent=self.Body)
         self.detection_info_box.setGeometry(QtCore.QRect(1230, 140, 291, 471))
         self.detection_info_box.setStyleSheet("background: rgba(0, 10, 0, 0.8);\n"
@@ -1033,6 +1051,7 @@ class Ui_MainWindow(object):
         self.MainButtons_Container.raise_()
         self.RecordStatusContainer.raise_()
         self.filesViewButton.raise_()
+        self.viewObjectButton.raise_()
         self.detection_info_box.raise_()
         MainWindow.setCentralWidget(self.centralwidget)
 

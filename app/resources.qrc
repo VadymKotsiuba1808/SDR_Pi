@@ -49,6 +49,9 @@
     <file alias="images/filesViewBtn_on.png">assets/images/filesViewBtn_on.png</file>
     <file alias="images/filesViewBtn_off.png">assets/images/filesViewBtn_off.png</file>
     <file alias="images/filesViewBtn_disabled.png">assets/images/filesViewBtn_disabled.png</file>
+    <file alias="images/viewObjectsBtn_on.png">assets/images/viewObjectsBtn_on.png</file>
+    <file alias="images/viewObjectsBtn_off.png">assets/images/viewObjectsBtn_off.png</file>
+    <file alias="images/viewObjectsBtn_disabled.png">assets/images/viewObjectsBtn_disabled.png</file>
 </qresource>
 </RCC>
 

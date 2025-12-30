@@ -620,7 +620,7 @@ border-image: url(:/images/sound_alert_off.png) stretch stretch;
       <number>-1</number>
      </property>
      <property name="alert" stdset="0">
-      <bool>true</bool>
+      <bool>false</bool>
      </property>
     </widget>
     <widget class="QFrame" name="GPS">
@@ -1949,6 +1949,39 @@ QPushButton#filesViewButton:disabled{
       <bool>false</bool>
      </property>
     </widget>
+    <widget class="QPushButton" name="viewObjectButton">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>166</x>
+       <y>573</y>
+       <width>110</width>
+       <height>110</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton#viewObjectButton{
+	border-image: url(:/images/viewObjectsBtn_off.png) stretch stretch;
+	background-color:rgba(0,0,0,0.8)
+}
+
+QPushButton#viewObjectButton:pressed{
+	border-image: url(:/images/viewObjectsBtn_on.png) stretch stretch;
+}
+
+QPushButton#viewObjectButton[enabled=&quot;false&quot;]{
+	border-image: url(:/images/viewObjectsBtn_disabled.png) stretch stretch;
+}</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="checkable">
+      <bool>false</bool>
+     </property>
+    </widget>
     <widget class="QFrame" name="detection_info_box">
      <property name="geometry">
       <rect>
@@ -2078,6 +2111,7 @@ color:#fff;
     <zorder>MainButtons_Container</zorder>
     <zorder>RecordStatusContainer</zorder>
     <zorder>filesViewButton</zorder>
+    <zorder>viewObjectButton</zorder>
     <zorder>detection_info_box</zorder>
    </widget>
   </widget>

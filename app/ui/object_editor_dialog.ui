@@ -1,0 +1,610 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ObjectEditorDialog</class>
+ <widget class="QDialog" name="ObjectEditorDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>583</width>
+    <height>830</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Редактор об'єкта</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QDialog {
+  background-color: #002f00;
+  color: #ffffff;
+  font-family: 'Roboto';
+}
+
+QLabel {
+  color: #ffffff;
+  font-size: 20px; 
+  font-weight: 500;
+}
+
+QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox {
+  background-color: rgba(0, 10, 0, 0.8);
+  border: 1px solid #328844;
+  color: #ffffff;
+  padding: 3px;
+  font-size: 18px;
+  border-radius: 3px;
+}
+
+QDoubleSpinBox::up-button, QDoubleSpinBox::down-button, QSpinBox::up-button, QSpinBox::down-button {
+    width: 16px;
+    height: 16px;   
+padding:2px;
+}
+
+QCheckBox {
+  color: #ffffff;
+  font-size: 19px;
+  spacing: 8px;
+}
+QCheckBox::indicator {
+  width: 24px;  
+  height: 24px;
+  border: 2px solid #328844;
+  background-color: rgba(0, 20, 0, 0.5);
+  border-radius: 3px;
+}
+QCheckBox::indicator:checked {
+  background-color: #4CAF50;
+  border: 2px solid #4CAF50;
+}
+
+/* --- СПИСКИ (Зменшений шрифт) --- */
+QListWidget {
+  background-color: rgba(0, 10, 0, 0.6);
+  border: 1px solid #328844;
+  color: #ffffff;
+  font-size: 16px;
+  border-radius: 4px;
+}
+QListWidget::item {
+  padding: 3px;
+}
+QListWidget::item:selected {
+  background-color: #328844;
+  color: #ffffff;
+}
+
+/* --- КНОПКИ --- */
+QPushButton {
+  border: none;
+  background-color: rgba(0, 10, 0, 0.8);
+  border: 1px solid #328844;
+  color: #ffffff;
+  font-size: 18px;
+  padding: 6px;
+  border-radius: 4px;
+}
+QPushButton:pressed {
+  background-color: #328844;
+  color: #002509;
+}
+
+/* Кнопка додавання (+) */
+QPushButton#btnAddRF, QPushButton#btnAddSound {
+  background-color: #004400;
+  font-size: 20px;
+  font-weight: bold;
+  padding: 0px;
+  max-width: 30px; /* Компактні кнопки */
+  max-height: 30px;
+  min-width: 30px;
+  min-height: 30px;
+}
+
+/* Кнопки видалення */
+QPushButton#btnDelRF, QPushButton#btnDelSound {
+  background-color: #442222;
+  border: 1px solid #aa3333;
+  font-size: 17px;
+  padding: 3px;
+}
+
+QPushButton#btnDelete {
+  border-color: #aa3333;
+  color: #ffcccc;
+}
+QPushButton#btnDelete:pressed {
+  background-color: #aa3333;
+  color: #ffffff;
+}
+      </string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="leftMargin">
+    <number>5</number>
+   </property>
+   <property name="topMargin">
+    <number>5</number>
+   </property>
+   <property name="rightMargin">
+    <number>5</number>
+   </property>
+   <property name="bottomMargin">
+    <number>5</number>
+   </property>
+   <item>
+    <widget class="QScrollArea" name="scrollArea">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>765</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>760</height>
+      </size>
+     </property>
+     <property name="widgetResizable">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="scrollAreaWidgetContents">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>571</width>
+        <height>763</height>
+       </rect>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>770</height>
+       </size>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_Scroll">
+       <property name="spacing">
+        <number>10</number>
+       </property>
+       <property name="leftMargin">
+        <number>5</number>
+       </property>
+       <property name="topMargin">
+        <number>5</number>
+       </property>
+       <property name="rightMargin">
+        <number>5</number>
+       </property>
+       <property name="bottomMargin">
+        <number>5</number>
+       </property>
+       <item>
+        <widget class="QFrame" name="topFrame">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>171</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>200</height>
+          </size>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <property name="leftMargin">
+           <number>1</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <layout class="QVBoxLayout" name="generalLayout">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>15</number>
+            </property>
+            <item>
+             <widget class="QFrame" name="frameGeneral">
+              <property name="minimumSize">
+               <size>
+                <width>350</width>
+                <height>140</height>
+               </size>
+              </property>
+              <property name="frameShape">
+               <enum>QFrame::Shape::StyledPanel</enum>
+              </property>
+              <layout class="QFormLayout" name="formLayout">
+               <property name="verticalSpacing">
+                <number>8</number>
+               </property>
+               <property name="leftMargin">
+                <number>5</number>
+               </property>
+               <property name="topMargin">
+                <number>5</number>
+               </property>
+               <property name="rightMargin">
+                <number>5</number>
+               </property>
+               <property name="bottomMargin">
+                <number>5</number>
+               </property>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label">
+                 <property name="text">
+                  <string>Назва:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLineEdit" name="inpName">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>40</height>
+                  </size>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="Label">
+                 <property name="text">
+                  <string>Клас:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="QCheckBox" name="chkDangerous">
+                 <property name="text">
+                  <string>Небезпечний об'єкт</string>
+                 </property>
+                 <property name="checked">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QComboBox" name="comboClass">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>40</height>
+                  </size>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Policy::Expanding</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>30</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item alignment="Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTop">
+           <widget class="QWidget" name="keyboardLayoutContainer" native="true">
+            <property name="minimumSize">
+             <size>
+              <width>165</width>
+              <height>135</height>
+             </size>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_2">
+             <item>
+              <layout class="QVBoxLayout" name="keyboardLayout">
+               <property name="spacing">
+                <number>0</number>
+               </property>
+               <property name="leftMargin">
+                <number>6</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+              </layout>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QFrame" name="frameRF">
+         <property name="frameShape">
+          <enum>QFrame::Shape::StyledPanel</enum>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <property name="spacing">
+           <number>8</number>
+          </property>
+          <property name="leftMargin">
+           <number>5</number>
+          </property>
+          <property name="topMargin">
+           <number>5</number>
+          </property>
+          <property name="rightMargin">
+           <number>5</number>
+          </property>
+          <property name="bottomMargin">
+           <number>5</number>
+          </property>
+          <item>
+           <layout class="QHBoxLayout" name="topLayout">
+            <item>
+             <widget class="QLabel" name="lblSectionTitle_2">
+              <property name="styleSheet">
+               <string>color: #4CAF50; font-weight: bold;</string>
+              </property>
+              <property name="text">
+               <string>Радіо (RF)</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="chkRFEnable">
+              <property name="layoutDirection">
+               <enum>Qt::LayoutDirection::RightToLeft</enum>
+              </property>
+              <property name="text">
+               <string>Активувати</string>
+              </property>
+              <property name="checked">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="layoutRFInput">
+            <property name="spacing">
+             <number>5</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="lblFreqMin">
+              <property name="text">
+               <string>Від (МГц):</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QDoubleSpinBox" name="inpRFMin">
+              <property name="buttonSymbols">
+               <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
+              </property>
+              <property name="keyboardTracking">
+               <bool>true</bool>
+              </property>
+              <property name="maximum">
+               <double>6000.000000000000000</double>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="lblFreqMax">
+              <property name="text">
+               <string>До (МГц):</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QDoubleSpinBox" name="inpRFMax">
+              <property name="buttonSymbols">
+               <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
+              </property>
+              <property name="maximum">
+               <double>6000.000000000000000</double>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btnAddRF">
+              <property name="text">
+               <string>+</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QListWidget" name="lstRFFreqs">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>140</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>140</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnDelRF">
+            <property name="text">
+             <string>Видалити обраний діапазон</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QFrame" name="frameSound">
+         <property name="frameShape">
+          <enum>QFrame::Shape::StyledPanel</enum>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_4">
+          <property name="spacing">
+           <number>8</number>
+          </property>
+          <property name="leftMargin">
+           <number>5</number>
+          </property>
+          <property name="topMargin">
+           <number>5</number>
+          </property>
+          <property name="rightMargin">
+           <number>5</number>
+          </property>
+          <property name="bottomMargin">
+           <number>5</number>
+          </property>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_3">
+            <item>
+             <widget class="QLabel" name="lblSectionTitle_3">
+              <property name="styleSheet">
+               <string>color: #4CAF50; font-weight: bold;</string>
+              </property>
+              <property name="text">
+               <string>Звук (Sound)</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="chkSoundEnable">
+              <property name="layoutDirection">
+               <enum>Qt::LayoutDirection::RightToLeft</enum>
+              </property>
+              <property name="text">
+               <string>Активувати</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="layoutSoundInput">
+            <property name="spacing">
+             <number>5</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="lblAud">
+              <property name="text">
+               <string>Частота (Гц):</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="inpSoundFreq">
+              <property name="buttonSymbols">
+               <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
+              </property>
+              <property name="maximum">
+               <number>20000</number>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btnAddSound">
+              <property name="text">
+               <string>+</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QListWidget" name="lstSoundFreqs">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>140</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>140</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnDelSound">
+            <property name="text">
+             <string>Видалити обрану частоту</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_Footer">
+     <property name="leftMargin">
+      <number>10</number>
+     </property>
+     <property name="rightMargin">
+      <number>10</number>
+     </property>
+     <property name="bottomMargin">
+      <number>10</number>
+     </property>
+     <item>
+      <widget class="QPushButton" name="btnSave">
+       <property name="text">
+        <string>Зберегти</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Policy::Maximum</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnCancel">
+       <property name="text">
+        <string>Скасувати</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

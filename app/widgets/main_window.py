@@ -50,6 +50,7 @@ from app.widgets.object_manager_dialog import ObjectManagerDialog
 from app.services.settings_service import SettingsService
 from app.services.map_service import MapService, MapTypes
 from app.services.keyboard_service import KeyboardService
+from app.widgets.settings_dialog import SettingsDialog
 from app.services.recording_service import RecordingService
 from app.services.media_player_service import MediaPlayerService
 from app.services.pi_network_service import PiNetworkService
@@ -222,7 +223,7 @@ class MainWindow(QMainWindow):
         self.ui.viewObjectButton.clicked.connect(self.open_database_manager)
 
         self.ui.falseAlarmButton.clicked.connect(self.handle_false_alarm)
-        # self.ui.menuButton.clicked.connect(self.test_draw_dot)
+        self.ui.menuButton.clicked.connect(self.open_settings_dialog)
         self.ui.radarButton.clicked.connect(self.set_radar_mode)
         self.ui.mapButton.clicked.connect(self.set_map_mode)
         self.ui.backToLoginButton.clicked.connect(self.restart_app)
@@ -634,6 +635,26 @@ class MainWindow(QMainWindow):
         self.isRadarMode = False
         self.scale_map()
 
+    def open_settings_dialog(self):
+        self.settings_dialog = SettingsDialog(self.settings_service)
+        move_dialog_down(self.settings_dialog, self.geometry())
+
+        if self.settings_dialog.exec() == QDialog.DialogCode.Accepted:
+            new_settings = self.settings_dialog.get_settings()
+
+            new_radius = new_settings.radar_max_radius
+            new_interval = new_settings.gps_interval_s
+            new_main_relay = new_settings.main_relay
+
+            if self.settings_service.radar_max_radius != new_radius:
+                self.settings_service.radar_max_radius = new_radius
+
+            if self.settings_service.gps_interval_s != new_interval:
+                self.settings_service.gps_interval_s = new_interval
+
+            if len(self.settings_service.main_relay) != len(new_main_relay):
+                self.settings_service.main_relay = new_main_relay
+
     def set_radio_range(self):
         start_value = self.ui.radioStartDoubleSpinBox.value()
         end_value = self.ui.radioEndDoubleSpinBox.value()
@@ -895,7 +916,7 @@ class MainWindow(QMainWindow):
         self.setEnabled(False)
         print("Performing restart...")
 
-        QTimer.singleShot(8000, restart_process)
+        restart_process()
 
     def closeEvent(self, event):
         print("Закриття програми...")

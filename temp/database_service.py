@@ -1,118 +1,129 @@
-import sqlite3
-import json
 import math
+from typing import List, Any, Optional, TypedDict
 from PyQt6.QtCore import QObject, pyqtSignal, QRunnable, QThreadPool, pyqtSlot
 
-# Налаштування шляху до БД
-DB_PATH = "./sdr_pi.db"
+from sqlalchemy import (
+    create_engine,
+    Column,
+    Integer,
+    String,
+    Boolean,
+    JSON,
+    ForeignKey,
+    func,
+)
+from sqlalchemy.orm import (
+    sessionmaker,
+    declarative_base,
+    relationship,
+    joinedload,
+    Session,
+)
+
+DB_CONNECTION_STRING = "sqlite:///./sdr_pi.db"
+
+Base = declarative_base()
+
+
+class DetectionObject(TypedDict):
+    """
+    Type definition for the signature data dictionary.
+    """
+
+    id: Optional[int]
+    name: str
+    object_class: str
+    is_dangerous: bool
+    rf_params: List[str]
+    sound_params: List[str]
+
+
+class ObjectClass(Base):
+    __tablename__ = "object_classes"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String, unique=True, nullable=False)
+
+    signatures = relationship("Signature", back_populates="object_class_rel")
+
+
+class Signature(Base):
+    __tablename__ = "signatures"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String, nullable=False)
+    class_id = Column(Integer, ForeignKey("object_classes.id"), nullable=False)
+    is_dangerous = Column(Boolean, default=False)
+
+    rf_params = Column(JSON, default=list)
+    sound_params = Column(JSON, default=list)
+
+    object_class_rel = relationship("ObjectClass", back_populates="signatures")
 
 
 class DBWorker(QRunnable):
-    """
-    Окремий потік для виконання SQL запитів,
-    щоб не заморожувати інтерфейс.
-    """
-
-    def __init__(self, func, *args, **kwargs):
+    def __init__(self, func: callable, *args: Any, **kwargs: Any) -> None:
         super().__init__()
         self.func = func
         self.args = args
         self.kwargs = kwargs
 
     @pyqtSlot()
-    def run(self):
+    def run(self) -> None:
         try:
             self.func(*self.args, **self.kwargs)
         except Exception as e:
-            print(f"[DB Error] {e}")
+            print(f"[DB Worker Error] {e}")
 
 
 class DatabaseService(QObject):
-    # Сигнали (ідентичні до твого старого сервісу + сигнал для класів)
-    objects_page_loaded = pyqtSignal(list, int, int)  # data, current_page, total_pages
-    classes_loaded = pyqtSignal(list)  # список назв класів для ComboBox
-    operation_status = pyqtSignal(str, bool, str)  # operation_type, success, message
+    objects_page_loaded = pyqtSignal(list, int, int)
+    classes_loaded = pyqtSignal(list)
+    operation_status = pyqtSignal(str, bool, str)
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[QObject] = None) -> None:
         super().__init__(parent)
         self.threadpool = QThreadPool()
+        self.engine = create_engine(DB_CONNECTION_STRING)
+        Base.metadata.create_all(self.engine)
+        self.Session = sessionmaker(bind=self.engine)
+        print(f"[DB] Service started. Using SQLAlchemy with: {DB_CONNECTION_STRING}")
 
-        conn = sqlite3.connect(DB_PATH)
-        conn.execute("PRAGMA journal_mode=WAL;")
-        conn.execute(
-            "PRAGMA synchronous=NORMAL;"
-        )  # Трохи менше безпеки, але швидше для SD-карти
-        conn.close()
-
-        # Перевірка підключення при старті
-        print(f"[DB] Service started. Using database: {DB_PATH}")
-
-    # --- ДОПОМІЖНІ МЕТОДИ (SQL) ---
-
-    def _connect(self):
-        """Створює з'єднання з БД."""
-        conn = sqlite3.connect(DB_PATH)
-        conn.row_factory = sqlite3.Row  # Дозволяє звертатися до колонок по імені
-        return conn
-
-    def _get_class_id(self, cursor, class_name):
-        """Знаходить ID класу по назві."""
-        cursor.execute(
-            "SELECT id FROM object_classes WHERE class_name = ?", (class_name,)
-        )
-        res = cursor.fetchone()
-        if res:
-            return res["id"]
-        raise ValueError(f"Клас '{class_name}' не знайдено в БД")
-
-    # --- ПУБЛІЧНІ МЕТОДИ (API) ---
-
-    def request_classes(self):
-        """Запитує список всіх доступних класів для випадаючого списку."""
+    def request_classes(self) -> None:
         worker = DBWorker(self._fetch_classes_task)
         self.threadpool.start(worker)
 
-    def request_objects_page(self, page=1, page_size=10):
-        """Запитує сторінку об'єктів."""
+    def request_objects_page(self, page: int = 1, page_size: int = 10) -> None:
         worker = DBWorker(self._fetch_page_task, page, page_size)
         self.threadpool.start(worker)
 
-    def add_object(self, obj_data):
-        """Додає новий об'єкт."""
+    def add_object(self, obj_data: DetectionObject) -> None:
         worker = DBWorker(self._add_object_task, obj_data)
         self.threadpool.start(worker)
 
-    def update_object(self, obj_data):
-        """Оновлює існуючий об'єкт."""
+    def update_object(self, obj_data: DetectionObject) -> None:
         worker = DBWorker(self._update_object_task, obj_data)
         self.threadpool.start(worker)
 
-    def delete_object(self, object_id):
-        """Видаляє об'єкт за ID."""
+    def delete_object(self, object_id: int) -> None:
         worker = DBWorker(self._delete_object_task, object_id)
         self.threadpool.start(worker)
 
-    # --- ВНУТРІШНЯ ЛОГІКА (ЗАДАЧІ ДЛЯ ПОТОКІВ) ---
-
-    def _fetch_classes_task(self):
-        conn = self._connect()
+    def _fetch_classes_task(self) -> None:
+        session: Session = self.Session()
         try:
-            cursor = conn.cursor()
-            cursor.execute("SELECT class_name FROM object_classes")
-            rows = cursor.fetchall()
-            classes = [row["class_name"] for row in rows]
+            results = session.query(ObjectClass.name).all()
+            classes = [row[0] for row in results]
             self.classes_loaded.emit(classes)
+        except Exception as e:
+            print(f"[DB Error Fetch Classes] {e}")
         finally:
-            conn.close()
+            session.close()
 
-    def _fetch_page_task(self, page, page_size):
-        conn = self._connect()
+    def _fetch_page_task(self, page: int, page_size: int) -> None:
+        session: Session = self.Session()
         try:
-            cursor = conn.cursor()
-
-            # 1. Отримуємо загальну кількість для пагінації
-            cursor.execute("SELECT COUNT(*) as count FROM signatures")
-            total_items = cursor.fetchone()["count"]
+            total_items = session.query(func.count(Signature.id)).scalar()
             total_pages = math.ceil(total_items / page_size)
 
             if page < 1:
@@ -122,114 +133,118 @@ class DatabaseService(QObject):
 
             offset = (page - 1) * page_size
 
-            # 2. Отримуємо дані з JOIN (щоб отримати назву класу, а не його ID)
-            query = """
-                SELECT s.id, s.name, c.class_name as object_class, 
-                       s.is_dangerous, s.rf_params, s.sound_params
-                FROM signatures s
-                JOIN object_classes c ON s.class_id = c.id
-                ORDER BY s.id DESC
-                LIMIT ? OFFSET ?
-            """
-            cursor.execute(query, (page_size, offset))
-            rows = cursor.fetchall()
+            signatures = (
+                session.query(Signature)
+                .options(joinedload(Signature.object_class_rel))
+                .order_by(Signature.id.desc())
+                .limit(page_size)
+                .offset(offset)
+                .all()
+            )
 
-            # 3. Конвертація в Python-об'єкти
-            data = []
-            for row in rows:
-                obj = dict(row)
-                obj["is_dangerous"] = bool(obj["is_dangerous"])
-                # Десеріалізація JSON (рядок -> список)
-                obj["rf_params"] = (
-                    json.loads(obj["rf_params"]) if obj["rf_params"] else []
-                )
-                obj["sound_params"] = (
-                    json.loads(obj["sound_params"]) if obj["sound_params"] else []
-                )
-                data.append(obj)
+            data: List[DetectionObject] = []
+            for s in signatures:
+                obj_dto: DetectionObject = {
+                    "id": s.id,
+                    "name": s.name,
+                    "object_class": (
+                        s.object_class_rel.name if s.object_class_rel else "Unknown"
+                    ),
+                    "is_dangerous": s.is_dangerous,
+                    "rf_params": s.rf_params,
+                    "sound_params": s.sound_params,
+                }
+                data.append(obj_dto)
 
-            self.objects_page_loaded.emit(data, page, total_pages)
+            self.objects_page_loaded.emit(data, page, total_items)
 
         except Exception as e:
-            print(f"[DB Error Fetch] {e}")
-            self.objects_page_loaded.emit(
-                [], 1, 1
-            )  # Повертаємо пустий список, щоб не крашити UI
+            print(f"[DB Error Fetch Page] {e}")
+            self.objects_page_loaded.emit([], 1, 0)
         finally:
-            conn.close()
+            session.close()
 
-    def _add_object_task(self, obj_data):
-        conn = self._connect()
+    def _add_object_task(self, obj_data: DetectionObject) -> None:
+        session: Session = self.Session()
         try:
-            cursor = conn.cursor()
-
-            # Отримуємо ID класу
-            class_id = self._get_class_id(cursor, obj_data["object_class"])
-
-            # Підготовка даних (JSON серіалізація)
-            rf_json = json.dumps(obj_data.get("rf_params", []))
-            sound_json = json.dumps(obj_data.get("sound_params", []))
-            is_dang = 1 if obj_data.get("is_dangerous") else 0
-
-            query = """
-                INSERT INTO signatures (name, class_id, is_dangerous, rf_params, sound_params)
-                VALUES (?, ?, ?, ?, ?)
-            """
-            cursor.execute(
-                query, (obj_data["name"], class_id, is_dang, rf_json, sound_json)
+            obj_class = (
+                session.query(ObjectClass)
+                .filter_by(name=obj_data["object_class"])
+                .first()
             )
-            conn.commit()
 
-            self.operation_status.emit("add", True, "Об'єкт успішно додано")
-            # Автоматично оновлюємо список
+            if not obj_class:
+                raise ValueError(f"Class '{obj_data['object_class']}' not found in DB")
+
+            new_sig = Signature(
+                name=obj_data["name"],
+                class_id=obj_class.id,
+                is_dangerous=obj_data.get("is_dangerous", False),
+                rf_params=obj_data.get("rf_params", []),
+                sound_params=obj_data.get("sound_params", []),
+            )
+
+            session.add(new_sig)
+            session.commit()
+
+            self.operation_status.emit("add", True, "Object successfully added")
             self.request_objects_page(1)
 
         except Exception as e:
+            session.rollback()
             self.operation_status.emit("add", False, str(e))
         finally:
-            conn.close()
+            session.close()
 
-    def _update_object_task(self, obj_data):
-        conn = self._connect()
+    def _update_object_task(self, obj_data: DetectionObject) -> None:
+        session: Session = self.Session()
         try:
-            cursor = conn.cursor()
-            class_id = self._get_class_id(cursor, obj_data["object_class"])
+            sig = session.query(Signature).get(obj_data["id"])
+            if not sig:
+                raise ValueError("Object not found")
 
-            rf_json = json.dumps(obj_data.get("rf_params", []))
-            sound_json = json.dumps(obj_data.get("sound_params", []))
-            is_dang = 1 if obj_data.get("is_dangerous") else 0
-            obj_id = obj_data["id"]
-
-            query = """
-                UPDATE signatures 
-                SET name=?, class_id=?, is_dangerous=?, rf_params=?, sound_params=?
-                WHERE id=?
-            """
-            cursor.execute(
-                query,
-                (obj_data["name"], class_id, is_dang, rf_json, sound_json, obj_id),
+            obj_class = (
+                session.query(ObjectClass)
+                .filter_by(name=obj_data["object_class"])
+                .first()
             )
-            conn.commit()
+            if not obj_class:
+                raise ValueError(f"Class '{obj_data['object_class']}' not found")
 
-            self.operation_status.emit("update", True, "Об'єкт оновлено")
-            self.request_objects_page(1)  # Або перезавантажити поточну сторінку
+            sig.name = obj_data["name"]
+            sig.class_id = obj_class.id
+            sig.is_dangerous = obj_data.get("is_dangerous", False)
+            sig.rf_params = obj_data.get("rf_params", [])
+            sig.sound_params = obj_data.get("sound_params", [])
 
-        except Exception as e:
-            self.operation_status.emit("update", False, str(e))
-        finally:
-            conn.close()
+            session.commit()
 
-    def _delete_object_task(self, object_id):
-        conn = self._connect()
-        try:
-            cursor = conn.cursor()
-            cursor.execute("DELETE FROM signatures WHERE id = ?", (object_id,))
-            conn.commit()
-
-            self.operation_status.emit("delete", True, "Об'єкт видалено")
+            self.operation_status.emit("update", True, "Object successfully updated")
             self.request_objects_page(1)
 
         except Exception as e:
+            session.rollback()
+            self.operation_status.emit("update", False, str(e))
+        finally:
+            session.close()
+
+    def _delete_object_task(self, object_id: int) -> None:
+        session: Session = self.Session()
+        try:
+            rows_deleted = (
+                session.query(Signature).filter(Signature.id == object_id).delete()
+            )
+
+            if rows_deleted == 0:
+                raise ValueError("Object not found or already deleted")
+
+            session.commit()
+
+            self.operation_status.emit("delete", True, "Object successfully deleted")
+            self.request_objects_page(1)
+
+        except Exception as e:
+            session.rollback()
             self.operation_status.emit("delete", False, str(e))
         finally:
-            conn.close()
+            session.close()

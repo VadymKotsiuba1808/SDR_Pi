@@ -1,70 +1,93 @@
 import os
 import json
 from datetime import datetime
+from dataclasses import dataclass
+from typing import List, Optional
 
 from app.models.log_entries import LogEntry
 
 
+@dataclass
+class LogSession:
+    """Модель для відображення доступної сесії в списку."""
+
+    filename: str
+    label: str
+
+
 class LogService:
-    def __init__(self, logs_dir="logs"):
+    """Сервіс для роботи з json файлами сесій, у яких містяться логи"""
+
+    def __init__(self, logs_dir: str = "logs") -> None:
         self.logs_dir = logs_dir
 
-    def get_available_sessions(self):
-        """
-        Сканує папку logs_dir і повертає список реальних .json файлів.
-        """
-        sessions = []
+        if not os.path.exists(self.logs_dir):
+            print(
+                f"[LogService] Warning: Logs directory '{self.logs_dir}' does not exist."
+            )
+
+    def get_available_sessions(self) -> List[LogSession]:
+        sessions: List[LogSession] = []
+
         if not os.path.exists(self.logs_dir):
             return sessions
 
-        files = [f for f in os.listdir(self.logs_dir) if f.endswith(".json")]
-        files.sort(
-            key=lambda x: os.path.getmtime(os.path.join(self.logs_dir, x)), reverse=True
-        )
+        try:
+            files = [f for f in os.listdir(self.logs_dir) if f.endswith(".json")]
 
-        for f in files:
+            files.sort(
+                key=lambda x: os.path.getmtime(os.path.join(self.logs_dir, x)),
+                reverse=True,
+            )
 
-            label = f
-            try:
+            for f in files:
+                label = f
                 if f.startswith("session_"):
-                    timestr = f.replace("session_", "").replace(".json", "")
-                    dt = datetime.strptime(timestr, "%Y-%m-%d_%H-%M-%S")
-                    label = dt.strftime("%d.%m.%Y %H:%M")
-            except:
-                pass
+                    try:
+                        timestr = f.replace("session_", "").replace(".json", "")
+                        dt = datetime.strptime(timestr, "%Y-%m-%d_%H-%M-%S")
+                        label = dt.strftime("%d.%m.%Y %H:%M")
+                    except ValueError:
+                        pass
 
-            sessions.append({"filename": f, "label": label})
+                sessions.append(LogSession(filename=f, label=label))
 
-        return sessions
+            print(f"[LogService] Found {len(sessions)} sessions in '{self.logs_dir}'.")
+            return sessions
 
-    def load_session_data(self, filename: str) -> list[LogEntry]:
-        """
-        Читає реальний JSON файл і перетворює його у список об'єктів LogEntry.
-        """
+        except Exception as e:
+            print(f"[LogService] Error scanning logs directory: {e}")
+            return []
+
+    def load_session_data(self, filename: str) -> List[LogEntry]:
         full_path = os.path.join(self.logs_dir, filename)
 
         if not os.path.exists(full_path):
-            print(f"[LogService] File not found: {full_path}")
+            print(f"[LogService] Error: File not found at {full_path}")
             return []
 
         try:
+            print(f"[LogService] Loading session: {filename}...")
+
             with open(full_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
 
             if not isinstance(data, list):
-                print("[LogService] Invalid JSON format: expected a list.")
+                print(
+                    f"[LogService] Invalid format in {filename}: expected a JSON list."
+                )
                 return []
 
             entries = [LogEntry.from_dict(item) for item in data]
 
             entries.sort(key=lambda x: x.timestamp)
 
-            print(f"[LogService] Loaded {len(entries)} entries from {filename}")
+            print(f"[LogService] Successfully loaded {len(entries)} entries.")
             return entries
 
         except json.JSONDecodeError as e:
-            print(f"[LogService] JSON Error: {e}")
+            print(f"[LogService] JSON Decode Error in {filename}: {e}")
             return []
         except Exception as e:
-            print(f"[LogService] Error loading session: {e}")
+            print(f"[LogService] Unexpected error loading session: {e}")
             return []

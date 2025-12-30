@@ -652,8 +652,9 @@ class MainWindow(QMainWindow):
             if self.settings_service.gps_interval_s != new_interval:
                 self.settings_service.gps_interval_s = new_interval
 
-            if self.settings_service.main_relay != new_main_relay:
+            if len(self.settings_service.main_relay) != len(new_main_relay):
                 self.settings_service.main_relay = new_main_relay
+                print(new_main_relay)
 
     def set_radio_range(self):
         start_value = self.ui.radioStartDoubleSpinBox.value()

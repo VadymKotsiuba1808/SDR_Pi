@@ -1,11 +1,7 @@
-"""
-Діалог зміни пароля.
-Реалізує логіку інтерфейсу для оновлення облікових даних: валідація нового та збереження змін.
-"""
+from typing import Optional
 
-from PyQt6.QtWidgets import QDialog, QLineEdit
+from PyQt6.QtWidgets import QDialog, QLineEdit, QWidget, QPushButton
 from PyQt6.QtCore import QCoreApplication, QEvent, QTranslator, Qt
-
 from PyQt6 import uic
 
 from app.protocols import ChangePwdDialogSettings
@@ -18,36 +14,40 @@ from app.utils.ui_utils import update_element_styles
 
 
 class ChangePwdDialog(QDialog):
+    """
+    Діалог зміни пароля.
+    Реалізує логіку інтерфейсу для оновлення облікових даних: валідація нового та збереження змін.
+    """
+
     def __init__(
-        self, settings: ChangePwdDialogSettings, keyboard: KeyboardService, parent=None
-    ):
+        self,
+        settings: ChangePwdDialogSettings,
+        keyboard: KeyboardService,
+        parent: Optional[QWidget] = None,
+    ) -> None:
         super().__init__(parent)
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
 
         self.settings_service = settings
         self.keyboard_service = keyboard
+        self.translator = QTranslator()
 
         self._load_ui()
-        print("[ChangePwdDialog] Інтерфейс завантажено.")
-
-        self._setup_state_variables()
-
-        self._connect_handlers()
-        print("[ChangePwdDialog] Сигнали підключено.")
+        print("[ChangePwdDialog] Interface loaded.")
 
         self._adjust_fields()
-
+        self._connect_handlers()
         self._load_language()
 
-    def changeEvent(self, event):
+    def changeEvent(self, event: QEvent) -> None:
         if event.type() == QEvent.Type.LanguageChange:
             if self.settings_service.compiled_ui_using_enabled:
-                print("Зміна мови, оновлюю UI...")
+                print("[ChangePwdDialog] Language change detected, updating UI...")
                 self.ui.retranslateUi(self)
         else:
             super().changeEvent(event)
 
-    def _load_ui(self):
+    def _load_ui(self) -> None:
         if self.settings_service.compiled_ui_using_enabled:
             self.ui = Ui_ChangePwdDialog()
             self.ui.setupUi(self)
@@ -55,13 +55,13 @@ class ChangePwdDialog(QDialog):
             uic.loadUi("app/ui/change_pwd_dialog.ui", self)
             self.ui = self
 
-    def _setup_state_variables(self):
-        self.translator = QTranslator()
+    def _adjust_fields(self) -> None:
         self.keyboard_widget = KeyboardWidget(
             self.settings_service, self.keyboard_service, parent=self
         )
+        self.ui.keyboardLayout.addWidget(self.keyboard_widget)
 
-    def _connect_handlers(self):
+    def _connect_handlers(self) -> None:
         self.ui.passwordLineEdit.textChanged.connect(self.change_password_status)
         self.ui.confirmPasswordLineEdit.textChanged.connect(self.change_password_status)
 
@@ -71,13 +71,10 @@ class ChangePwdDialog(QDialog):
         self.ui.saveButton.clicked.connect(self.handle_save_pwd)
         self.ui.btnLogout.clicked.connect(self.reject)
 
-    def _adjust_fields(self):
-        self.ui.keyboardLayout.addWidget(self.keyboard_widget)
-
-    def _load_language(self):
+    def _load_language(self) -> None:
         lang_code = self.settings_service.lang_code
 
-        if lang_code == None:
+        if lang_code is None:
             return
 
         QCoreApplication.removeTranslator(self.translator)
@@ -86,21 +83,19 @@ class ChangePwdDialog(QDialog):
         if self.translator.load(path):
             QCoreApplication.installTranslator(self.translator)
         else:
-            print(f"Помилка: не вдалося завантажити {path}")
+            print(f"[ChangePwdDialog] Error: Failed to load translation file: {path}")
 
-    def change_password_status(self):
-        if self.sender() == self.ui.passwordLineEdit:
+    def change_password_status(self) -> None:
+        sender = self.sender()
+        if sender == self.ui.passwordLineEdit:
             self.ui.errorWidget_1.setVisible(False)
             self.ui.passwordIncorrectLabel.setText("")
 
-        print(
-            "[change_password_status] Зміна тексту в полі пароля — ховаємо мітку помилки."
-        )
         self.ui.errorWidget_2.setVisible(False)
 
-    def hide_unhide_password(self):
-        button = self.sender()
-        target_line_edit = None
+    def hide_unhide_password(self) -> None:
+        button: QPushButton = self.sender()
+        target_line_edit: Optional[QLineEdit] = None
 
         if button == self.ui.passwordHideBtn:
             target_line_edit = self.ui.passwordLineEdit
@@ -110,47 +105,37 @@ class ChangePwdDialog(QDialog):
             return
 
         status = button.property("status")
-        print(f"[hide_unhide_password] Поточний статус: {status}")
 
         if status == "hidden":
-            print("[hide_unhide_password] Відображаємо пароль.")
             button.setProperty("status", "unhidden")
             target_line_edit.setEchoMode(QLineEdit.EchoMode.Normal)
         else:
-            print("[hide_unhide_password] Приховуємо пароль.")
             button.setProperty("status", "hidden")
             target_line_edit.setEchoMode(QLineEdit.EchoMode.Password)
 
         update_element_styles(button)
-        print("[hide_unhide_password] Оновлення стилю завершено.")
 
-    def handle_save_pwd(self):
-
+    def handle_save_pwd(self) -> None:
         password = self.ui.passwordLineEdit.text()
+        confirmed_password = self.ui.confirmPasswordLineEdit.text()
 
         pwd_validator = PasswordValidator()
+        if not pwd_validator.validate(password):
+            errors = pwd_validator.get_errors().get("password", [])
+            error_message = "\n".join(errors)
 
-        if pwd_validator.validate(password) == False:
-            error_message = "\n".join(pwd_validator.get_errors()["password"])
             self.ui.passwordIncorrectLabel.setText(error_message)
             self.ui.errorWidget_1.setVisible(True)
-            print("[handle_change_pwd] Пароль не валідний.")
+            print(f"[ChangePwdDialog] Validation failed: {error_message}")
             return
 
-        confirmedPassword = self.ui.confirmPasswordLineEdit.text()
-
-        if password != confirmedPassword:
+        if password != confirmed_password:
             self.ui.errorWidget_2.setVisible(True)
-            print("[handle_change_pwd] Паролі не співпадають.")
+            print("[ChangePwdDialog] Passwords do not match.")
             return
 
         hashed_pwd = hash_password(password)
         self.settings_service.owner_password_hash = hashed_pwd
 
-        print("[handle_change_pwd] Успішна зміна паролю.")
-
-        self.accept_window()
-
-    def accept_window(self):
-        print("[accept_window] Закриття діалогу з кодом Accepted.")
+        print("[ChangePwdDialog] Password successfully changed.")
         self.accept()

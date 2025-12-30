@@ -45,11 +45,12 @@ QLineEdit, QComboBox {
 }
 
 QComboBox QAbstractItemView {
-    background-color: #002509; /* Темний фон для списку */
-    color: #FFFFFF;
-    selection-background-color: #328844; /* Зелений при виборі */
+    background-color: #002509; /* Темний фон для списку */
+    color: #FFFFFF;
+    selection-background-color: #328844; /* Зелений при виборі */
 	selection-color: #FFFFFF;
 }
+
 
 QCheckBox {
 	font-family: 'Roboto';
@@ -59,16 +60,34 @@ QCheckBox {
 }
 
 QCheckBox::indicator {
-    width: 20px;
-    height: 20px;
-    border: 1px solid #328844;
-    background-color: rgba(0, 20, 0, 0.8);
+    width: 20px;
+    height: 20px;
+    border: 1px solid #328844;
+    background-color: rgba(0, 20, 0, 0.8);
 	border-radius: 3px;
 }
 
 QCheckBox::indicator:checked {
-    background-color: #50E37F; /* Яскраво-зелена галочка */
-    image: url(:/images/checkbox_checked_icon.png); /* (Опціонально) якщо маєш свою іконку галочки */
+    background-color: #50E37F; /* Яскраво-зелена галочка */
+    image: url(:/images/checkbox_checked_icon.png); /* (Опціонально) якщо маєш свою іконку галочки */
+}
+
+QPushButton#btnLogout {
+  border: none;
+  background-color: rgba(40, 0, 0, 0.85);
+  border: 1px solid #C0392B;
+  color: #FFFFFF;
+  font-size: 20px;
+  padding: 6px;
+  border-radius: 4px;
+}
+
+QPushButton#btnLogout:hover {
+  background-color: rgba(80, 0, 0, 0.9);
+}
+QPushButton#btnLogout:pressed {
+  background-color: #C0392B;
+  color: #2B0000;
 }
 </string>
   </property>
@@ -76,6 +95,47 @@ QCheckBox::indicator:checked {
    <bool>true</bool>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QHBoxLayout" name="topLayout">
+     <property name="sizeConstraint">
+      <enum>QLayout::SizeConstraint::SetMinimumSize</enum>
+     </property>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QWidget" name="keyboardLayoutContainer" native="true">
+       <property name="minimumSize">
+        <size>
+         <width>180</width>
+         <height>140</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>120</height>
+        </size>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_5">
+        <item>
+         <layout class="QVBoxLayout" name="keyboardLayout"/>
+        </item>
+       </layout>
+      </widget>
+     </item>
+    </layout>
+   </item>
    <item alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
     <widget class="QFrame" name="loginFrame">
      <property name="minimumSize">
@@ -503,8 +563,40 @@ QPushButton[enabled=&quot;false&quot;]{
         </property>
        </widget>
       </item>
+      <item alignment="Qt::AlignmentFlag::AlignHCenter">
+       <widget class="QPushButton" name="btnLogout">
+        <property name="minimumSize">
+         <size>
+          <width>320</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>320</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Скасувати</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Orientation::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
    </item>
   </layout>
  </widget>

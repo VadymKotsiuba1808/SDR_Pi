@@ -39,11 +39,12 @@ class Ui_ChangePwdDialog(object):
 "}\n"
 "\n"
 "QComboBox QAbstractItemView {\n"
-"    background-color: #002509; /* Темний фон для списку */\n"
-"    color: #FFFFFF;\n"
-"    selection-background-color: #328844; /* Зелений при виборі */\n"
+"    background-color: #002509; /* Темний фон для списку */\n"
+"    color: #FFFFFF;\n"
+"    selection-background-color: #328844; /* Зелений при виборі */\n"
 "    selection-color: #FFFFFF;\n"
 "}\n"
+"\n"
 "\n"
 "QCheckBox {\n"
 "    font-family: \'Roboto\';\n"
@@ -53,21 +54,55 @@ class Ui_ChangePwdDialog(object):
 "}\n"
 "\n"
 "QCheckBox::indicator {\n"
-"    width: 20px;\n"
-"    height: 20px;\n"
-"    border: 1px solid #328844;\n"
-"    background-color: rgba(0, 20, 0, 0.8);\n"
+"    width: 20px;\n"
+"    height: 20px;\n"
+"    border: 1px solid #328844;\n"
+"    background-color: rgba(0, 20, 0, 0.8);\n"
 "    border-radius: 3px;\n"
 "}\n"
 "\n"
 "QCheckBox::indicator:checked {\n"
-"    background-color: #50E37F; /* Яскраво-зелена галочка */\n"
-"    image: url(:/images/checkbox_checked_icon.png); /* (Опціонально) якщо маєш свою іконку галочки */\n"
+"    background-color: #50E37F; /* Яскраво-зелена галочка */\n"
+"    image: url(:/images/checkbox_checked_icon.png); /* (Опціонально) якщо маєш свою іконку галочки */\n"
+"}\n"
+"\n"
+"QPushButton#btnLogout {\n"
+"  border: none;\n"
+"  background-color: rgba(40, 0, 0, 0.85);\n"
+"  border: 1px solid #C0392B;\n"
+"  color: #FFFFFF;\n"
+"  font-size: 20px;\n"
+"  padding: 6px;\n"
+"  border-radius: 4px;\n"
+"}\n"
+"\n"
+"QPushButton#btnLogout:hover {\n"
+"  background-color: rgba(80, 0, 0, 0.9);\n"
+"}\n"
+"QPushButton#btnLogout:pressed {\n"
+"  background-color: #C0392B;\n"
+"  color: #2B0000;\n"
 "}\n"
 "")
         ChangePwdDialog.setModal(True)
         self.verticalLayout = QtWidgets.QVBoxLayout(ChangePwdDialog)
         self.verticalLayout.setObjectName("verticalLayout")
+        self.topLayout = QtWidgets.QHBoxLayout()
+        self.topLayout.setSizeConstraint(QtWidgets.QLayout.SizeConstraint.SetMinimumSize)
+        self.topLayout.setObjectName("topLayout")
+        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
+        self.topLayout.addItem(spacerItem)
+        self.keyboardLayoutContainer = QtWidgets.QWidget(parent=ChangePwdDialog)
+        self.keyboardLayoutContainer.setMinimumSize(QtCore.QSize(180, 140))
+        self.keyboardLayoutContainer.setMaximumSize(QtCore.QSize(16777215, 120))
+        self.keyboardLayoutContainer.setObjectName("keyboardLayoutContainer")
+        self.verticalLayout_5 = QtWidgets.QVBoxLayout(self.keyboardLayoutContainer)
+        self.verticalLayout_5.setObjectName("verticalLayout_5")
+        self.keyboardLayout = QtWidgets.QVBoxLayout()
+        self.keyboardLayout.setObjectName("keyboardLayout")
+        self.verticalLayout_5.addLayout(self.keyboardLayout)
+        self.topLayout.addWidget(self.keyboardLayoutContainer)
+        self.verticalLayout.addLayout(self.topLayout)
         self.loginFrame = QtWidgets.QFrame(parent=ChangePwdDialog)
         self.loginFrame.setMinimumSize(QtCore.QSize(400, 0))
         self.loginFrame.setMaximumSize(QtCore.QSize(400, 16777215))
@@ -94,8 +129,8 @@ class Ui_ChangePwdDialog(object):
         self.titleLabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.titleLabel.setObjectName("titleLabel")
         self.frameLayout.addWidget(self.titleLabel)
-        spacerItem = QtWidgets.QSpacerItem(20, 10, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Fixed)
-        self.frameLayout.addItem(spacerItem)
+        spacerItem1 = QtWidgets.QSpacerItem(20, 10, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Fixed)
+        self.frameLayout.addItem(spacerItem1)
         self.passwordContainer = QtWidgets.QWidget(parent=self.loginFrame)
         self.passwordContainer.setEnabled(True)
         self.passwordContainer.setStyleSheet("background: none;")
@@ -253,7 +288,14 @@ class Ui_ChangePwdDialog(object):
 "}")
         self.saveButton.setObjectName("saveButton")
         self.frameLayout.addWidget(self.saveButton, 0, QtCore.Qt.AlignmentFlag.AlignHCenter)
+        self.btnLogout = QtWidgets.QPushButton(parent=self.loginFrame)
+        self.btnLogout.setMinimumSize(QtCore.QSize(320, 0))
+        self.btnLogout.setMaximumSize(QtCore.QSize(320, 16777215))
+        self.btnLogout.setObjectName("btnLogout")
+        self.frameLayout.addWidget(self.btnLogout, 0, QtCore.Qt.AlignmentFlag.AlignHCenter)
         self.verticalLayout.addWidget(self.loginFrame, 0, QtCore.Qt.AlignmentFlag.AlignHCenter|QtCore.Qt.AlignmentFlag.AlignVCenter)
+        spacerItem2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
+        self.verticalLayout.addItem(spacerItem2)
 
         self.retranslateUi(ChangePwdDialog)
         QtCore.QMetaObject.connectSlotsByName(ChangePwdDialog)
@@ -275,3 +317,4 @@ class Ui_ChangePwdDialog(object):
         self.confirmPasswordIncorrectLabel.setText(_translate("ChangePwdDialog", "Паролі не співпадають"))
         self.confirmPasswordIncorrectLabel.setProperty("status", _translate("ChangePwdDialog", "error"))
         self.saveButton.setText(_translate("ChangePwdDialog", "Зберегти"))
+        self.btnLogout.setText(_translate("ChangePwdDialog", "Скасувати"))

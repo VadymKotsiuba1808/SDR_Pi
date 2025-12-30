@@ -3,13 +3,13 @@
 Логіка вікна входу: обробка вводу пароля та перехід до головного вікна.
 """
 
-from PyQt6.QtWidgets import QDialog, QLineEdit
-from PyQt6.QtCore import QCoreApplication, QTranslator, QEvent
+from typing import Optional
 
+from PyQt6.QtWidgets import QDialog, QLineEdit, QWidget
+from PyQt6.QtCore import QCoreApplication, QTranslator, QEvent, Qt
 from PyQt6 import uic
 
 from app.ui.ui_login_dialog import Ui_LoginDialog
-
 from app.protocols import LoginDialogSettings
 from app.utils.password_utils import verify_password
 from app.utils.ui_utils import update_element_styles
@@ -22,36 +22,35 @@ from app.services.usb_auth_service import UsbAuthService
 
 class LoginDialog(QDialog):
     def __init__(
-        self, settings: LoginDialogSettings, keyboard: KeyboardService, parent=None
-    ):
+        self,
+        settings: LoginDialogSettings,
+        keyboard: KeyboardService,
+        parent: Optional[QWidget] = None,
+    ) -> None:
         super().__init__(parent)
-        print("[LoginDialog] Ініціалізація діалогу входу...")
+        print("[LoginDialog] Initializing login dialog...")
 
         self.settings_service = settings
         self.keyboard_service = keyboard
 
-        print("[LoginDialog] Завантаження UI...")
         self._load_ui()
-
         self._setup_state_variables()
-
         self._adjust_fields()
-
         self._connect_handlers()
-        print("[LoginDialog] Сигнали підключено.")
 
         self.toggle_password_field()
         self._load_language()
+        print("[LoginDialog] Initialization complete.")
 
-    def changeEvent(self, event):
+    def changeEvent(self, event: QEvent) -> None:
         if event.type() == QEvent.Type.LanguageChange:
             if self.settings_service.compiled_ui_using_enabled:
-                print("Зміна мови, оновлюю UI...")
+                print("[LoginDialog] Language change detected, updating UI...")
                 self.ui.retranslateUi(self)
         else:
             super().changeEvent(event)
 
-    def _load_ui(self):
+    def _load_ui(self) -> None:
         if self.settings_service.compiled_ui_using_enabled:
             self.ui = Ui_LoginDialog()
             self.ui.setupUi(self)
@@ -59,7 +58,7 @@ class LoginDialog(QDialog):
             uic.loadUi("app/ui/login_dialog.ui", self)
             self.ui = self
 
-    def _setup_state_variables(self):
+    def _setup_state_variables(self) -> None:
         self.translator = QTranslator()
         self.keyboard_widget = KeyboardWidget(
             self.settings_service, self.keyboard_service, parent=self
@@ -69,23 +68,22 @@ class LoginDialog(QDialog):
         self.auth_service.auth_success_signal.connect(self.on_usb_reset_request)
         self.auth_service.start_monitoring()
 
-    def _adjust_fields(self):
+    def _adjust_fields(self) -> None:
         role = self.settings_service.role
+
         self.ui.roleComboBox.setCurrentIndex(0 if role == "operator" else 1)
         self.ui.keyboardLayout.addWidget(self.keyboard_widget)
 
-    def _connect_handlers(self):
+    def _connect_handlers(self) -> None:
         self.ui.roleComboBox.currentIndexChanged.connect(self.toggle_password_field)
-
         self.ui.passwordLineEdit.textChanged.connect(self.change_password_status)
-
         self.ui.passwordHideBtn.clicked.connect(self.hide_unhide_password)
         self.ui.loginButton.clicked.connect(self.handle_login)
 
-    def _load_language(self):
+    def _load_language(self) -> None:
         lang_code = self.settings_service.lang_code
 
-        if lang_code == None:
+        if lang_code is None:
             return
 
         QCoreApplication.removeTranslator(self.translator)
@@ -94,90 +92,72 @@ class LoginDialog(QDialog):
         if self.translator.load(path):
             QCoreApplication.installTranslator(self.translator)
         else:
-            print(f"Помилка: не вдалося завантажити {path}")
+            print(f"[LoginDialog] Error: Failed to load translation file: {path}")
 
-    def on_usb_reset_request(self):
+    def on_usb_reset_request(self) -> None:
+
+        print("[LoginDialog] USB Key detected. Opening password change dialog.")
         self.change_pwd_dialog = ChangePwdDialog(
             self.settings_service, self.keyboard_service
         )
         make_window_stretched(self.change_pwd_dialog)
         self.change_pwd_dialog.showFullScreen()
 
-    def toggle_password_field(self):
-        """
-        Показує або ховає контейнер з паролем
-        залежно від обраної ролі.
-        """
+    def toggle_password_field(self) -> None:
         current_index = self.ui.roleComboBox.currentIndex()
 
         if current_index == 1:
-            print("[toggle_password_field] Показуємо поле пароля")
             self.ui.passwordContainer.setVisible(True)
         else:
-            print("[toggle_password_field] Ховаємо поле пароля")
             self.ui.passwordContainer.setVisible(False)
 
-    def change_password_status(self):
-        print(
-            "[change_password_status] Зміна тексту в полі пароля — ховаємо мітку помилки."
-        )
+    def change_password_status(self) -> None:
         self.ui.passwordIncorrectLabel.setVisible(False)
 
-    def hide_unhide_password(self):
+    def hide_unhide_password(self) -> None:
         status = self.ui.passwordHideBtn.property("status")
-        print(f"[hide_unhide_password] Поточний статус: {status}")
 
         if status == "hidden":
-            print("[hide_unhide_password] Відображаємо пароль.")
             self.ui.passwordHideBtn.setProperty("status", "unhidden")
             self.ui.passwordLineEdit.setEchoMode(QLineEdit.EchoMode.Normal)
         else:
-            print("[hide_unhide_password] Приховуємо пароль.")
             self.ui.passwordHideBtn.setProperty("status", "hidden")
             self.ui.passwordLineEdit.setEchoMode(QLineEdit.EchoMode.Password)
 
         update_element_styles(self.ui.passwordHideBtn)
-        print("[hide_unhide_password] Оновлення стилю завершено.")
 
-    def handle_login(self):
+    def handle_login(self) -> None:
         index = self.ui.roleComboBox.currentIndex()
 
         if index == 0:
-            print("[handle_login] Вхід як оператор. Пропускаємо перевірку пароля.")
+            print("[LoginDialog] Logging in as Operator (no password required).")
             self.settings_service.role = "operator"
             self.accept_window()
             return
 
         if index == 1:
-            print("[handle_login] Перевірка пароля для власника.")
             password = self.ui.passwordLineEdit.text()
-            real_password = self.settings_service.owner_password_hash
+            real_password_hash = self.settings_service.owner_password_hash
 
-            is_password_correct = verify_password(password, real_password)
-            print(f"[handle_login] Результат перевірки пароля: {is_password_correct}")
-
-            if is_password_correct:
+            if verify_password(password, real_password_hash):
                 remember = self.ui.rememberCheckBox.isChecked()
-                print(
-                    f"[handle_login] Пароль правильний. Запам'ятати користувача: {remember}"
-                )
+                print(f"[LoginDialog] Login successful. Remember me: {remember}")
+
                 if remember:
                     self.settings_service.remember_me = remember
 
                 self.settings_service.role = "owner"
                 self.accept_window()
             else:
-                print(
-                    "[handle_login] Неправильний пароль. Показуємо повідомлення про помилку."
-                )
+                print("[LoginDialog] Login failed: Incorrect password.")
                 self.ui.passwordIncorrectLabel.setVisible(True)
 
-    def accept_window(self):
-        print("[accept_window] Закриття діалогу з кодом Accepted.")
+    def accept_window(self) -> None:
         self.finished.emit(QDialog.DialogCode.Accepted)
 
-    def closeEvent(self, event):
-        if self.auth_service:
+    def closeEvent(self, event: QEvent) -> None:
+        if hasattr(self, "auth_service"):
             self.auth_service.stop_monitoring()
-        self.finished.emit(QDialog.DialogCode.Rejected)
+
+        self.done(QDialog.DialogCode.Rejected)
         event.accept()

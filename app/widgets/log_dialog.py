@@ -6,6 +6,7 @@ from PyQt6.QtWidgets import (
     QTableWidgetItem,
     QHeaderView,
     QAbstractItemView,
+    QWidget,
 )
 from PyQt6.QtCore import Qt, QTime, QEvent, QCoreApplication, QTranslator
 from PyQt6 import uic
@@ -13,8 +14,9 @@ from PyQt6.QtGui import QFont, QColor
 
 from app.protocols import LogDialogSettings
 from app.ui.ui_log_dialog import Ui_LogDialog
-from app.widgets.chart_widget import LogChartWidget
+from app.widgets.chart_widget import ChartWidget
 from app.models.log_entries import LogEntry
+from app.models.detection_event import DetectionEvent
 from app.services.log_service import LogService
 
 
@@ -24,7 +26,9 @@ class LogDialog(QDialog):
     Відображає історію, графіки та дозволяє фільтрувати події.
     """
 
-    def __init__(self, settings_service: LogDialogSettings, parent=None):
+    def __init__(
+        self, settings_service: LogDialogSettings, parent: Optional[QWidget] = None
+    ) -> None:
         super().__init__(parent)
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
 
@@ -41,16 +45,17 @@ class LogDialog(QDialog):
             self._on_session_changed()
 
         self._load_language()
+        print("[LogDialog] Initialized.")
 
-    def changeEvent(self, event: QEvent):
+    def changeEvent(self, event: QEvent) -> None:
         if event.type() == QEvent.Type.LanguageChange:
             if self.settings_service.compiled_ui_using_enabled:
-                print("Зміна мови, оновлюю UI...")
+                print("[LogDialog] Language change detected, updating UI...")
                 self.ui.retranslateUi(self)
         else:
             super().changeEvent(event)
 
-    def _load_ui(self):
+    def _load_ui(self) -> None:
         if self.settings_service.compiled_ui_using_enabled:
             self.ui = Ui_LogDialog()
             self.ui.setupUi(self)
@@ -58,13 +63,13 @@ class LogDialog(QDialog):
             uic.loadUi("app/ui/log_dialog.ui", self)
             self.ui = self
 
-    def _setup_state_variables(self):
+    def _setup_state_variables(self) -> None:
         self.translator = QTranslator()
         self.service = LogService()
         self.all_entries: List[LogEntry] = []
         self.filtered_entries: List[LogEntry] = []
 
-    def _setup_table_style(self):
+    def _setup_table_style(self) -> None:
         """Налаштування вигляду таблиці."""
         t = self.ui.tableLogs
         t.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
@@ -81,31 +86,32 @@ class LogDialog(QDialog):
         t.setColumnWidth(5, 150)  # Dist/Angle
         t.setColumnWidth(6, 100)  # Status
 
-    def _init_charts(self):
+    def _init_charts(self) -> None:
         """Ініціалізація віджетів графіків для кожної вкладки."""
-        self.chart_gen = LogChartWidget(self.settings_service)
-
+        self.chart_gen = ChartWidget(self.settings_service)
         self.ui.layoutChartGen.addWidget(self.chart_gen)
 
-        self.chart_path = LogChartWidget(self.settings_service)
+        self.chart_path = ChartWidget(self.settings_service)
         self.chart_path.set_chart_type("path")
         self.ui.layoutChartPath.addWidget(self.chart_path)
 
-        self.chart_signal = LogChartWidget(self.settings_service)
+        self.chart_signal = ChartWidget(self.settings_service)
         self.chart_signal.set_chart_type("signal")
         self.ui.layoutChartSignal.addWidget(self.chart_signal)
 
-        self.chart_sit = LogChartWidget(self.settings_service)
+        self.chart_sit = ChartWidget(self.settings_service)
         self.chart_sit.set_chart_type("radar_snapshot")
         self.ui.layoutChartRadarSit.addWidget(self.chart_sit)
 
-    def _load_sessions_list(self):
-        """Заповнення списку доступних файлів логів."""
+    def _load_sessions_list(self) -> None:
         sessions = self.service.get_available_sessions()
-        for s in sessions:
-            self.ui.cmbSessions.addItem(s["label"], s["filename"])
+        print(f"[LogDialog] Found {len(sessions)} available sessions.")
 
-    def _connect_handlers(self):
+        self.ui.cmbSessions.clear()
+        for s in sessions:
+            self.ui.cmbSessions.addItem(s.label, s.filename)
+
+    def _connect_handlers(self) -> None:
         self.ui.btnClose.clicked.connect(self.accept)
 
         self.ui.cmbSessions.currentIndexChanged.connect(self._on_session_changed)
@@ -121,7 +127,7 @@ class LogDialog(QDialog):
         self.ui.cmbTargetObject.currentIndexChanged.connect(self._update_object_tab)
         self.ui.cmbSituationTime.currentIndexChanged.connect(self._update_situation_tab)
 
-    def _load_language(self):
+    def _load_language(self) -> None:
         lang_code = self.settings_service.lang_code
         if lang_code is None:
             return
@@ -131,12 +137,12 @@ class LogDialog(QDialog):
         if self.translator.load(path):
             QCoreApplication.installTranslator(self.translator)
         else:
-            print(f"Помилка: не вдалося завантажити {path}")
+            print(f"[LogDialog] Error: Failed to load translation file: {path}")
 
-    def _on_session_changed(self):
+    def _on_session_changed(self) -> None:
         fname = self.ui.cmbSessions.currentData()
         if fname:
-            print(f"[Logs] Loading session: {fname}")
+            print(f"[LogDialog] Loading session data form file: {fname}")
             self.all_entries = self.service.load_session_data(fname)
 
             if self.all_entries:
@@ -144,17 +150,19 @@ class LogDialog(QDialog):
                     times = [
                         datetime.fromisoformat(e.timestamp) for e in self.all_entries
                     ]
-                    min_time = min(times).time()
-                    max_time = max(times).time()
-                    self.ui.inpTimeStart.setTime(min_time)
-                    self.ui.inpTimeEnd.setTime(max_time)
+                    if times:
+                        min_time = min(times).time()
+                        max_time = max(times).time()
+                        self.ui.inpTimeStart.setTime(min_time)
+                        self.ui.inpTimeEnd.setTime(max_time)
                 except ValueError:
                     pass
 
             self._apply_filters()
 
-    def _apply_filters(self):
-        """Логіка фільтрації записів."""
+    def _apply_filters(self) -> None:
+        print("[LogDialog] Applying filters...")
+
         name_filter = self.ui.inpFilterName.text().lower()
         type_idx = self.ui.cmbFilterType.currentIndex()
 
@@ -166,10 +174,12 @@ class LogDialog(QDialog):
         time_start = self.ui.inpTimeStart.time()
         time_end = self.ui.inpTimeEnd.time()
 
-        res = []
+        res: List[LogEntry] = []
+
         for e in self.all_entries:
             payload = e.payload
 
+            # 1. Time Filter
             try:
                 dt = datetime.fromisoformat(e.timestamp).time()
                 if not (time_start <= dt <= time_end):
@@ -177,19 +187,24 @@ class LogDialog(QDialog):
             except ValueError:
                 pass
 
+            # 2. Type Filter
             if type_idx == 1 and not e.is_detection:
                 continue
             if type_idx == 2 and not e.is_false_alarm:
                 continue
 
+            # 3. Text Search (Name, ID, Class)
             if name_filter:
                 det_id = getattr(payload, "id", getattr(payload, "detection_id", ""))
                 obj_class = getattr(payload, "object_class", "")
-                search_text = f"{payload.name} {det_id} {obj_class}".lower()
+                name = getattr(payload, "name", "")
+
+                search_text = f"{name} {det_id} {obj_class}".lower()
 
                 if name_filter not in search_text:
                     continue
 
+            # 4. Numeric Filters (Only for detections)
             if e.is_detection:
                 if not (dist_min <= payload.distance <= dist_max):
                     continue
@@ -199,10 +214,12 @@ class LogDialog(QDialog):
             res.append(e)
 
         self.filtered_entries = res
+        print(f"[LogDialog] Filter result: {len(res)} entries found.")
+
         self._populate_ui_with_data()
 
-    def _reset_filters(self):
-        """Скидання фільтрів до значень за замовчуванням."""
+    def _reset_filters(self) -> None:
+        print("[LogDialog] Resetting filters.")
         self.ui.inpFilterName.clear()
         self.ui.cmbFilterType.setCurrentIndex(0)
         self.ui.inpDistMin.setValue(0)
@@ -215,21 +232,22 @@ class LogDialog(QDialog):
 
         self._apply_filters()
 
-    def _populate_ui_with_data(self):
+    def _populate_ui_with_data(self) -> None:
         """Оновлення всіх елементів UI на основі filtered_entries."""
         self._fill_table(self.filtered_entries)
-
         self._fill_objects_combo()
         self._fill_times_combo()
 
         self._on_tab_changed()
 
-    def _get_false_ids(self) -> Set[int]:
-        """Допоміжний метод для отримання ID помилкових тривог."""
-        return {e.payload.detection_id for e in self.all_entries if e.is_false_alarm}
+    def _get_false_ids(self) -> Set[str]:
+        return {
+            e.payload.detection_id
+            for e in self.all_entries
+            if e.is_false_alarm and hasattr(e.payload, "detection_id")
+        }
 
-    def _fill_table(self, entries: List[LogEntry]):
-        """Заповнення таблиці даними."""
+    def _fill_table(self, entries: List[LogEntry]) -> None:
         t = self.ui.tableLogs
         t.setRowCount(0)
 
@@ -249,10 +267,10 @@ class LogDialog(QDialog):
             t.setItem(row_idx, 0, QTableWidgetItem(time_str))
 
             if entry.is_detection:
-                data = entry.payload
+                data: DetectionEvent = entry.payload
                 t.setItem(row_idx, 1, QTableWidgetItem(data.type))
 
-                short_id = data.id[:16]
+                short_id = data.id[:8]
                 name_item = QTableWidgetItem(f"{data.name}\nID: {short_id}...")
                 name_item.setToolTip(f"Full ID: {data.id}")
                 t.setItem(row_idx, 2, name_item)
@@ -261,7 +279,7 @@ class LogDialog(QDialog):
                 t.setItem(
                     row_idx,
                     4,
-                    QTableWidgetItem(f"{(data.frequency / 1000000):.1f}"),
+                    QTableWidgetItem(f"{(data.frequency / 1_000_000):.1f} MHz"),
                 )
                 t.setItem(
                     row_idx,
@@ -269,7 +287,7 @@ class LogDialog(QDialog):
                     QTableWidgetItem(f"{data.distance}m / {data.angle:.0f}°"),
                 )
 
-                status_text = "Ні" if data.id in false_ids else "Так"
+                status_text = "False" if data.id in false_ids else "Real"
                 item_status = QTableWidgetItem(status_text)
                 item_status.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
                 if data.id in false_ids:
@@ -292,7 +310,7 @@ class LogDialog(QDialog):
 
         t.resizeRowsToContents()
 
-    def _fill_objects_combo(self):
+    def _fill_objects_combo(self) -> None:
         """Оновлює список унікальних об'єктів у фільтрах."""
         current_id = self.ui.cmbTargetObject.currentData()
         self.ui.cmbTargetObject.clear()
@@ -303,14 +321,16 @@ class LogDialog(QDialog):
                 key = (e.payload.id, e.payload.name)
                 if key not in seen:
                     seen.add(key)
-                    self.ui.cmbTargetObject.addItem(f"{key[1]} ({key[0][:6]})", key[0])
+                    # key[0] is ID (str), key[1] is Name
+                    short_id = key[0][:6]
+                    self.ui.cmbTargetObject.addItem(f"{key[1]} ({short_id})", key[0])
 
         if current_id:
             idx = self.ui.cmbTargetObject.findData(current_id)
             if idx >= 0:
                 self.ui.cmbTargetObject.setCurrentIndex(idx)
 
-    def _fill_times_combo(self):
+    def _fill_times_combo(self) -> None:
         """Оновлює список часових точок для 'ситуації'."""
         self.ui.cmbSituationTime.clear()
         timestamps = set()
@@ -319,6 +339,7 @@ class LogDialog(QDialog):
             if e.is_detection:
                 try:
                     dt = datetime.fromisoformat(e.timestamp)
+
                     time_key = dt.strftime("%Y-%m-%d %H:%M")
                     timestamps.add(time_key)
                 except ValueError:
@@ -328,11 +349,11 @@ class LogDialog(QDialog):
         for t in sorted_times:
             self.ui.cmbSituationTime.addItem(t)
 
-    def _on_tab_changed(self):
-        """Викликається при зміні вкладки для оновлення відповідного графіка."""
+    def _on_tab_changed(self) -> None:
         idx = self.ui.tabWidget.currentIndex()
         if idx == 0:
-            self._update_general_tab()
+            pass
+            # self._update_general_tab()
         elif idx == 1:
             self._update_general_tab()
         elif idx == 2:
@@ -340,7 +361,7 @@ class LogDialog(QDialog):
         elif idx == 3:
             self._update_situation_tab()
 
-    def _update_general_tab(self):
+    def _update_general_tab(self) -> None:
         idx = self.ui.cmbChartTypeGeneral.currentIndex()
         t = "timeline"
         if idx == 1:
@@ -353,7 +374,7 @@ class LogDialog(QDialog):
 
         self.chart_gen.set_data(detections, false_ids)
 
-    def _update_object_tab(self):
+    def _update_object_tab(self) -> None:
         target_id = self.ui.cmbTargetObject.currentData()
         if not target_id:
             self.chart_path.set_data([])
@@ -371,7 +392,7 @@ class LogDialog(QDialog):
         self.chart_path.set_data(obj_data, false_ids)
         self.chart_signal.set_data(obj_data, false_ids)
 
-    def _update_situation_tab(self):
+    def _update_situation_tab(self) -> None:
         time_str = self.ui.cmbSituationTime.currentText()
         if not time_str:
             self.chart_sit.set_data([])
@@ -382,12 +403,12 @@ class LogDialog(QDialog):
         except ValueError:
             return
 
-        active_objects = []
+        active_objects: List[DetectionEvent] = []
+
         for e in self.all_entries:
             if e.is_detection:
                 try:
                     dt = datetime.fromisoformat(e.timestamp)
-                    # Перевіряємо співпадіння до хвилини
                     if (
                         dt.year == sel_dt.year
                         and dt.month == sel_dt.month

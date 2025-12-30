@@ -12,9 +12,9 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 class Ui_ClassManagerDialog(object):
     def setupUi(self, ClassManagerDialog):
         ClassManagerDialog.setObjectName("ClassManagerDialog")
-        ClassManagerDialog.resize(450, 550)
+        ClassManagerDialog.resize(534, 550)
         ClassManagerDialog.setStyleSheet("QDialog { background-color: #002f00; color: #fff; font-family: \'Roboto\'; }\n"
-"QListWidget { background-color: rgba(0, 10, 0, 0.6); border: 1px solid #328844; color: #fff; font-size: 18px; }\n"
+"QListWidget { background-color: rgba(0, 10, 0, 0.6); border: 1px solid #328844; color: #fff; font-size: 20px; }\n"
 "QListWidget::item { padding: 5px; }\n"
 "QListWidget::item:selected { background-color: #328844; color: #fff; }\n"
 "\n"
@@ -34,6 +34,11 @@ class Ui_ClassManagerDialog(object):
         self.horizontalLayout = QtWidgets.QHBoxLayout(ClassManagerDialog)
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.lstClasses = QtWidgets.QListWidget(parent=ClassManagerDialog)
+        self.lstClasses.setMinimumSize(QtCore.QSize(300, 0))
+        self.lstClasses.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        self.lstClasses.setAutoScroll(True)
+        self.lstClasses.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollMode.ScrollPerPixel)
+        self.lstClasses.setViewMode(QtWidgets.QListView.ViewMode.ListMode)
         self.lstClasses.setObjectName("lstClasses")
         self.horizontalLayout.addWidget(self.lstClasses)
         self.verticalLayout = QtWidgets.QVBoxLayout()
@@ -74,7 +79,7 @@ class Ui_ClassManagerDialog(object):
         ClassManagerDialog.setWindowTitle(_translate("ClassManagerDialog", "Керування класами"))
         self.inpClassName.setPlaceholderText(_translate("ClassManagerDialog", "Назва класу..."))
         self.btnAdd.setText(_translate("ClassManagerDialog", "Додати / Зберегти"))
-        self.btnClearSelection.setText(_translate("ClassManagerDialog", "Очистити вибір"))
         self.btnClearSelection.setToolTip(_translate("ClassManagerDialog", "Скинути вибір для створення нового класу"))
+        self.btnClearSelection.setText(_translate("ClassManagerDialog", "Очистити вибір"))
         self.btnDelete.setText(_translate("ClassManagerDialog", "Видалити"))
         self.btnClose.setText(_translate("ClassManagerDialog", "Закрити"))

@@ -1035,6 +1035,25 @@ class Ui_MainWindow(object):
 "color:#fff;\n"
 "}")
         self.langLabel_3.setObjectName("langLabel_3")
+        self.viewLogsButton = QtWidgets.QPushButton(parent=self.Body)
+        self.viewLogsButton.setEnabled(True)
+        self.viewLogsButton.setGeometry(QtCore.QRect(166, 437, 110, 110))
+        self.viewLogsButton.setStyleSheet("QPushButton#viewLogsButton{\n"
+"    background-color:rgba(0,0,0,0.8);\n"
+"    border-image: url(:/images/viewLogsBtn_off.png);\n"
+"}\n"
+"\n"
+"QPushButton#viewLogsButton:pressed{\n"
+"    border-image: url(:/images/viewLogsBtn_on.png);\n"
+"}\n"
+"\n"
+"QPushButton#viewLogsButton:disabled{\n"
+"    border-image: url(:/images/viewLogsBtn_disabled.png);\n"
+"}")
+        self.viewLogsButton.setText("")
+        self.viewLogsButton.setCheckable(False)
+        self.viewLogsButton.setChecked(False)
+        self.viewLogsButton.setObjectName("viewLogsButton")
         self.map_background_label.raise_()
         self.screenRecordButton.raise_()
         self.homeButton.raise_()
@@ -1053,6 +1072,7 @@ class Ui_MainWindow(object):
         self.filesViewButton.raise_()
         self.viewObjectButton.raise_()
         self.detection_info_box.raise_()
+        self.viewLogsButton.raise_()
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)

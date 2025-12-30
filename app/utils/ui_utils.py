@@ -13,7 +13,7 @@ def update_element_styles(element: QWidget) -> None:
     element.update()
 
 
-def move_dialog_down(dialog: QWidget, parent_geo: QRect, offset_y: int = 100) -> None:
+def move_dialog_down(dialog: QWidget, parent_geo: QRect, offset_y: int = 80) -> None:
     new_x = parent_geo.x() + (parent_geo.width() - dialog.width()) // 2
     new_y = parent_geo.y() + offset_y
 

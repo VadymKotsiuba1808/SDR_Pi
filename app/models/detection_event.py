@@ -20,6 +20,7 @@ class DetectionEvent:
     timestamp: str
     distance: int
     angle: float
+    frequency: float
 
     @staticmethod
     def from_dict(data: dict) -> "DetectionEvent":
@@ -40,6 +41,7 @@ class DetectionEvent:
             timestamp=data.get("timestamp", datetime.now().isoformat()),
             distance=int(data.get("distance", 0)),
             angle=float(data.get("angle", 0)),
+            frequency=float(data.get("frequency", 0)),
         )
 
     def to_dict(self) -> dict:
@@ -52,4 +54,5 @@ class DetectionEvent:
             "timestamp": self.timestamp,
             "distance": self.distance,
             "angle": self.angle,
+            "frequency": self.frequency,
         }

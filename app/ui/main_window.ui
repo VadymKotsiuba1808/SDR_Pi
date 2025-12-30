@@ -2095,6 +2095,42 @@ color:#fff;
       </property>
      </widget>
     </widget>
+    <widget class="QPushButton" name="viewLogsButton">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>166</x>
+       <y>437</y>
+       <width>110</width>
+       <height>110</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton#viewLogsButton{
+	background-color:rgba(0,0,0,0.8);
+	border-image: url(:/images/viewLogsBtn_off.png);
+}
+
+QPushButton#viewLogsButton:pressed{
+	border-image: url(:/images/viewLogsBtn_on.png);
+}
+
+QPushButton#viewLogsButton:disabled{
+	border-image: url(:/images/viewLogsBtn_disabled.png);
+}</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="checkable">
+      <bool>false</bool>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+    </widget>
     <zorder>map_background_label</zorder>
     <zorder>screenRecordButton</zorder>
     <zorder>homeButton</zorder>
@@ -2113,6 +2149,7 @@ color:#fff;
     <zorder>filesViewButton</zorder>
     <zorder>viewObjectButton</zorder>
     <zorder>detection_info_box</zorder>
+    <zorder>viewLogsButton</zorder>
    </widget>
   </widget>
  </widget>

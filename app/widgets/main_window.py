@@ -654,7 +654,6 @@ class MainWindow(QMainWindow):
 
             if len(self.settings_service.main_relay) != len(new_main_relay):
                 self.settings_service.main_relay = new_main_relay
-                print(new_main_relay)
 
     def set_radio_range(self):
         start_value = self.ui.radioStartDoubleSpinBox.value()

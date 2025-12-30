@@ -983,6 +983,58 @@ class Ui_MainWindow(object):
         self.viewObjectButton.setText("")
         self.viewObjectButton.setCheckable(False)
         self.viewObjectButton.setObjectName("viewObjectButton")
+        self.detection_info_box = QtWidgets.QFrame(parent=self.Body)
+        self.detection_info_box.setGeometry(QtCore.QRect(1230, 140, 291, 471))
+        self.detection_info_box.setStyleSheet("background: rgba(0, 10, 0, 0.8);\n"
+"border: 2px solid #328844;")
+        self.detection_info_box.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
+        self.detection_info_box.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
+        self.detection_info_box.setObjectName("detection_info_box")
+        self.index_search_edit = QtWidgets.QLineEdit(parent=self.detection_info_box)
+        self.index_search_edit.setGeometry(QtCore.QRect(110, 70, 161, 41))
+        self.index_search_edit.setStyleSheet("#index_search_edit{\n"
+"font-size:26px;\n"
+"padding:2px;\n"
+"color:#fff;\n"
+"}\n"
+"#index_search_edit[is_valid=\"true\"]{\n"
+"border: 2px solid #328844;\n"
+"}\n"
+"#index_search_edit[is_valid=\"false\"]{\n"
+"border: 2px solid red;\n"
+"}\n"
+"")
+        self.index_search_edit.setProperty("is_valid", True)
+        self.index_search_edit.setObjectName("index_search_edit")
+        self.detection_info_text = QtWidgets.QTextEdit(parent=self.detection_info_box)
+        self.detection_info_text.setGeometry(QtCore.QRect(10, 120, 271, 341))
+        self.detection_info_text.setStyleSheet("background: rgba(30, 30, 30, 0.8);\n"
+"border: 1px solid #328844;\n"
+"font-size:24px;\n"
+"padding:2px;\n"
+"color:#fff;\n"
+"")
+        self.detection_info_text.setReadOnly(True)
+        self.detection_info_text.setObjectName("detection_info_text")
+        self.detection_info_label = QtWidgets.QLabel(parent=self.detection_info_box)
+        self.detection_info_label.setGeometry(QtCore.QRect(10, 10, 271, 41))
+        self.detection_info_label.setStyleSheet("QLabel{\n"
+"font-size:30px;\n"
+"border:none;\n"
+"background-color:none;\n"
+"color:#fff;\n"
+"}")
+        self.detection_info_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.detection_info_label.setObjectName("detection_info_label")
+        self.langLabel_3 = QtWidgets.QLabel(parent=self.detection_info_box)
+        self.langLabel_3.setGeometry(QtCore.QRect(20, 70, 81, 41))
+        self.langLabel_3.setStyleSheet("QLabel{\n"
+"font-size:26px;\n"
+"border:none;\n"
+"background-color:none;\n"
+"color:#fff;\n"
+"}")
+        self.langLabel_3.setObjectName("langLabel_3")
         self.map_background_label.raise_()
         self.screenRecordButton.raise_()
         self.homeButton.raise_()
@@ -1000,6 +1052,7 @@ class Ui_MainWindow(object):
         self.RecordStatusContainer.raise_()
         self.filesViewButton.raise_()
         self.viewObjectButton.raise_()
+        self.detection_info_box.raise_()
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)

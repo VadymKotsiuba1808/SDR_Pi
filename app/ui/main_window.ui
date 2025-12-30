@@ -1982,6 +1982,119 @@ QPushButton#viewObjectButton[enabled=&quot;false&quot;]{
       <bool>false</bool>
      </property>
     </widget>
+    <widget class="QFrame" name="detection_info_box">
+     <property name="geometry">
+      <rect>
+       <x>1230</x>
+       <y>140</y>
+       <width>291</width>
+       <height>471</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background: rgba(0, 10, 0, 0.8);
+border: 2px solid #328844;</string>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Shape::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Shadow::Raised</enum>
+     </property>
+     <widget class="QLineEdit" name="index_search_edit">
+      <property name="geometry">
+       <rect>
+        <x>110</x>
+        <y>70</y>
+        <width>161</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">#index_search_edit{
+font-size:26px;
+padding:2px;
+color:#fff;
+}
+#index_search_edit[is_valid=&quot;true&quot;]{
+border: 2px solid #328844;
+}
+#index_search_edit[is_valid=&quot;false&quot;]{
+border: 2px solid red;
+}
+</string>
+      </property>
+      <property name="is_valid" stdset="0">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QTextEdit" name="detection_info_text">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>120</y>
+        <width>271</width>
+        <height>341</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background: rgba(30, 30, 30, 0.8);
+border: 1px solid #328844;
+font-size:24px;
+padding:2px;
+color:#fff;
+</string>
+      </property>
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QLabel" name="detection_info_label">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>271</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QLabel{
+font-size:30px;
+border:none;
+background-color:none;
+color:#fff;
+}</string>
+      </property>
+      <property name="text">
+       <string>Інформація:</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QLabel" name="langLabel_3">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>70</y>
+        <width>81</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QLabel{
+font-size:26px;
+border:none;
+background-color:none;
+color:#fff;
+}</string>
+      </property>
+      <property name="text">
+       <string>Індекс:</string>
+      </property>
+     </widget>
+    </widget>
     <zorder>map_background_label</zorder>
     <zorder>screenRecordButton</zorder>
     <zorder>homeButton</zorder>
@@ -1999,6 +2112,7 @@ QPushButton#viewObjectButton[enabled=&quot;false&quot;]{
     <zorder>RecordStatusContainer</zorder>
     <zorder>filesViewButton</zorder>
     <zorder>viewObjectButton</zorder>
+    <zorder>detection_info_box</zorder>
    </widget>
   </widget>
  </widget>

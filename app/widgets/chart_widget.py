@@ -1,3 +1,8 @@
+from datetime import datetime
+import math
+from typing import List, Set, Tuple, Optional, Dict, Union
+
+import numpy as np
 from PyQt6.QtWidgets import QWidget, QToolTip
 from PyQt6.QtGui import (
     QPainter,
@@ -10,22 +15,20 @@ from PyQt6.QtGui import (
     QPaintEvent,
 )
 from PyQt6.QtCore import Qt, QPointF, QCoreApplication, QTranslator
-from datetime import datetime
-import math
-import numpy as np
-from typing import List, Set, Tuple, Optional, Callable
 
 from app.protocols import ChartWidgetSettings
 from app.models.detection_event import DetectionEvent
 
 
-class LogChartWidget(QWidget):
+class ChartWidget(QWidget):
     """
     Універсальний віджет для малювання графіків.
     Всі лінійні графіки тепер мають уніфіковану сітку.
     """
 
-    def __init__(self, settings_service: ChartWidgetSettings, parent=None):
+    def __init__(
+        self, settings_service: ChartWidgetSettings, parent: Optional[QWidget] = None
+    ) -> None:
         super().__init__(parent)
 
         self.settings_service = settings_service
@@ -34,25 +37,25 @@ class LogChartWidget(QWidget):
         self._setup_state_variables()
         self._load_language()
 
-    def _setup_style(self):
-        """Ініціалізація кольорів та стилів."""
+    def _setup_style(self) -> None:
         self.color_bg = QColor(0, 20, 0, 100)
-        self.color_grid = QColor(50, 136, 68, 100)  # Основні осі
-        self.color_grid_faint = QColor(100, 150, 100, 50)  # Пунктирна сітка
+        self.color_grid = QColor(50, 136, 68, 100)
+        self.color_grid_faint = QColor(100, 150, 100, 50)
         self.color_rf = QColor(255, 100, 100)
         self.color_sound = QColor(100, 100, 255)
         self.color_highlight = QColor(255, 255, 0)
         self.color_path = QColor(0, 255, 255)
         self.color_text = QColor(200, 200, 200)
 
-    def _setup_state_variables(self):
+    def _setup_state_variables(self) -> None:
         self.translator = QTranslator()
         self.chart_type: str = "timeline"
         self.data: List[DetectionEvent] = []
-        self.highlight_ids: Set[int] = set()
+        self.highlight_ids: Set[str] = set()
+
         self._interactive_points: List[Tuple[QPointF, DetectionEvent]] = []
 
-    def _load_language(self):
+    def _load_language(self) -> None:
         lang_code = self.settings_service.lang_code
         if lang_code is None:
             return
@@ -62,25 +65,29 @@ class LogChartWidget(QWidget):
         if self.translator.load(path):
             QCoreApplication.installTranslator(self.translator)
         else:
-            print(f"Помилка: не вдалося завантажити {path}")
+            print(f"[ChartWidget] Error: Failed to load translation file: {path}")
 
     def set_data(
-        self, data: List[DetectionEvent], highlight_ids: Optional[Set[int]] = None
-    ):
+        self, data: List[DetectionEvent], highlight_ids: Optional[Set[str]] = None
+    ) -> None:
+        """Оновлює дані для відображення."""
         self.data = data
         self.highlight_ids = highlight_ids or set()
         self.update()
 
-    def set_chart_type(self, t: str):
+    def set_chart_type(self, t: str) -> None:
+        """Змінює тип графіка (timeline, polar, bar, etc)."""
         self.chart_type = t
         self.update()
 
-    def mouseMoveEvent(self, event: QMouseEvent):
+    def mouseMoveEvent(self, event: QMouseEvent) -> None:
+        """Обробка руху миші для показу підказок (tooltip)."""
         pos = event.pos()
         found = False
 
         for point, data in self._interactive_points:
             if abs(pos.x() - point.x()) < 10 and abs(pos.y() - point.y()) < 10:
+
                 dist = math.hypot(pos.x() - point.x(), pos.y() - point.y())
                 if dist < 8:
                     self._show_tooltip(event.globalPosition().toPoint(), data)
@@ -92,7 +99,7 @@ class LogChartWidget(QWidget):
 
         super().mouseMoveEvent(event)
 
-    def _show_tooltip(self, global_pos, data: DetectionEvent):
+    def _show_tooltip(self, global_pos, data: DetectionEvent) -> None:
         dt = datetime.fromisoformat(data.timestamp)
         time_str = dt.strftime("%H:%M:%S")
         is_highlighted = data.id in self.highlight_ids
@@ -107,7 +114,7 @@ class LogChartWidget(QWidget):
         )
         QToolTip.showText(global_pos, txt, self)
 
-    def paintEvent(self, event: QPaintEvent):
+    def paintEvent(self, event: QPaintEvent) -> None:
         p = QPainter(self)
         p.setRenderHint(QPainter.RenderHint.Antialiasing)
         p.fillRect(self.rect(), self.color_bg)
@@ -116,7 +123,7 @@ class LogChartWidget(QWidget):
 
         if not self.data:
             p.setPen(QColor(150, 150, 150))
-            p.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, "Немає даних")
+            p.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, "No Data")
             return
 
         if self.chart_type in ["path", "radar_snapshot"]:
@@ -126,17 +133,19 @@ class LogChartWidget(QWidget):
         elif self.chart_type == "bar":
             self._draw_bar(p)
 
-    def _draw_polar_chart(self, p: QPainter, mode: str):
+    def _draw_polar_chart(self, p: QPainter, mode: str) -> None:
         w, h = self.width(), self.height()
         center = QPointF(w / 2, h / 2)
         radius = min(w, h) / 2 - 30
 
         sorted_data = sorted(self.data, key=lambda x: x.timestamp)
+
         max_dist_val = max([d.distance for d in sorted_data]) if sorted_data else 1000
 
         scale_step = 500
         if max_dist_val < 100:
             scale_step = 100
+
         view_max_dist = math.ceil(max_dist_val / scale_step) * scale_step
         if view_max_dist == 0:
             view_max_dist = scale_step
@@ -152,7 +161,8 @@ class LogChartWidget(QWidget):
 
     def _draw_polar_grid(
         self, p: QPainter, center: QPointF, radius: float, max_dist: int
-    ):
+    ) -> None:
+        """Малює концентричні кола та осі."""
         for i in np.arange(0.2, 1.2, 0.2):
             p.setPen(QPen(self.color_grid, 1))
             r_current = radius * i
@@ -167,10 +177,12 @@ class LogChartWidget(QWidget):
             )
 
         p.setPen(QPen(self.color_grid, 1))
+        # Вертикальна лінія
         p.drawLine(
             QPointF(center.x(), center.y() - radius * 1.1),
             QPointF(center.x(), center.y() + radius * 1.1),
         )
+        # Горизонтальна лінія
         p.drawLine(
             QPointF(center.x() - radius * 1.1, center.y()),
             QPointF(center.x() + radius * 1.1, center.y()),
@@ -192,8 +204,8 @@ class LogChartWidget(QWidget):
         center: QPointF,
         radius: float,
         max_dist: int,
-    ):
-        path_points = []
+    ) -> None:
+        path_points: List[QPointF] = []
         for d in data:
             pt = self._get_polar_pos(center, radius, d.angle, d.distance, max_dist)
             path_points.append(pt)
@@ -205,6 +217,7 @@ class LogChartWidget(QWidget):
 
         p.setFont(QFont("Arial", 8))
         for i, pt in enumerate(path_points):
+
             is_key_point = i == 0 or i == len(path_points) - 1 or i % 5 == 0
             if is_key_point:
                 dt = datetime.fromisoformat(data[i].timestamp)
@@ -233,32 +246,36 @@ class LogChartWidget(QWidget):
         center: QPointF,
         radius: float,
         max_dist: int,
-    ):
+    ) -> None:
         for d in data:
             pt = self._get_polar_pos(center, radius, d.angle, d.distance, max_dist)
+
             col = self.color_sound if d.type == "Sound" else self.color_rf
             if d.id in self.highlight_ids:
                 col = self.color_highlight
 
             p.setBrush(QBrush(col))
             p.setPen(Qt.PenStyle.NoPen)
+
+            # Розмір точки залежить від confidence
             size = 3 + d.confidence * 4
             p.drawEllipse(pt, size, size)
 
             p.setPen(QColor(255, 255, 255))
             p.drawText(int(pt.x() + 5), int(pt.y()), d.name)
+
             self._interactive_points.append((pt, d))
 
-    def _draw_cartesian_chart(self, p: QPainter, mode: str, num_ticks: int = 20):
-        """
-        Єдина функція для Timeline та Signal.
-        """
+    def _draw_cartesian_chart(
+        self, p: QPainter, mode: str, num_ticks: int = 20
+    ) -> None:
         w, h = self.width(), self.height()
         margin_left = 60.0
         margin_right = 30.0
         margin_top = 30.0
         margin_bottom = 30.0
 
+        # Tuple (x, y, width, height)
         plot_rect = (
             margin_left,
             margin_top,
@@ -276,7 +293,7 @@ class LogChartWidget(QWidget):
         t_end = datetime.fromisoformat(sorted_data[-1].timestamp).timestamp()
         duration = t_end - t_start or 1
 
-        # Y Axis calculation (Unification logic)
+        # Y Axis calculation
         y_max = 1.0
         label_formatter = lambda v: f"{int(v*100)}%"
 
@@ -297,7 +314,7 @@ class LogChartWidget(QWidget):
         )
 
         # 2. Малювання даних
-        points_signal = []
+        points_signal: List[QPointF] = []
 
         for ev in sorted_data:
             t_curr = datetime.fromisoformat(ev.timestamp).timestamp()
@@ -307,7 +324,7 @@ class LogChartWidget(QWidget):
             val_y = ev.distance if mode == "timeline" else ev.confidence
             norm_y = val_y / y_max
 
-            # Clamp щоб не вилізло за графік
+            # Clamp
             norm_y = max(0, min(1, norm_y))
 
             y = (py + ph) - (norm_y * ph)
@@ -323,6 +340,7 @@ class LogChartWidget(QWidget):
                     p.drawEllipse(pt, 6, 6)
                     self._interactive_points.append((pt, ev))
             else:
+                # Для signal накопичуємо точки для полілінії
                 points_signal.append(pt)
                 self._interactive_points.append((pt, ev))
 
@@ -332,19 +350,14 @@ class LogChartWidget(QWidget):
     def _draw_cartesian_grid(
         self,
         p: QPainter,
-        rect,
-        y_max_val,
-        t_start,
-        t_end,
-        duration,
-        num_ticks,
-        label_formatter,
-    ):
-        """
-        Уніфікована сітка:
-        - Y: ділиться на num_ticks частин (пунктир).
-        - X: часові мітки (динамічний крок, як в timeline).
-        """
+        rect: Tuple[float, float, float, float],
+        y_max_val: float,
+        t_start: float,
+        t_end: float,
+        duration: float,
+        num_ticks: int,
+        label_formatter: callable,
+    ) -> None:
         (px, py, pw, ph) = rect
 
         p.setFont(QFont("Arial", 8))
@@ -361,17 +374,17 @@ class LogChartWidget(QWidget):
             p.drawLine(QPointF(px, y), QPointF(px + pw, y))
 
             if num_ticks > 10 and i % 2 != 0:
-                continue  # Підписуємо тільки парні
+                continue
 
             p.setPen(self.color_text)
             txt = label_formatter(val)
-            # Вирівнювання тексту
             fm = p.fontMetrics()
             tw = fm.horizontalAdvance(txt)
             p.drawText(int(px - tw - 5), int(y + 4), txt)
 
-        # Розраховуємо крок як десяту частину
         step_time = math.ceil((duration / 60) / 10) * 60
+        if step_time == 0:
+            step_time = 60
 
         first_tick_ts = math.ceil(t_start / step_time) * step_time
         current_t = first_tick_ts
@@ -391,19 +404,20 @@ class LogChartWidget(QWidget):
 
             current_t += step_time
 
-        # Рамка графіка (осі)
         p.setPen(QPen(self.color_grid, 2))
         p.setBrush(Qt.BrushStyle.NoBrush)
-
         p.drawRect(int(px), int(py), int(pw), int(ph))
 
-        # Підпис осі Y зверху
         p.setPen(self.color_text)
         title = "Distance ▲" if "m" in label_formatter(0) else "Confidence ▲"
         p.drawText(int(px), int(py - 10), title)
 
-    def _draw_signal_poly(self, p: QPainter, points: List[QPointF], rect):
-        """Специфічне малювання для Signal (лінія + заливка)."""
+    def _draw_signal_poly(
+        self,
+        p: QPainter,
+        points: List[QPointF],
+        rect: Tuple[float, float, float, float],
+    ) -> None:
         (px, py, pw, ph) = rect
 
         p.setPen(QPen(self.color_rf, 2))
@@ -416,19 +430,18 @@ class LogChartWidget(QWidget):
         )
         p.drawPolygon(QPolygonF(poly_points))
 
-        # Точки
         p.setBrush(QBrush(self.color_rf))
         for pt in points:
             p.drawEllipse(pt, 3, 3)
 
-    def _draw_bar(self, p: QPainter):
+    def _draw_bar(self, p: QPainter) -> None:
         from collections import Counter
 
         counts = Counter([d.object_class for d in self.data])
         if not counts:
             return
 
-        sorted_counts = Counter(dict(counts.most_common()))
+        sorted_counts = dict(counts.most_common())
 
         classes = list(sorted_counts.keys())
         values = list(sorted_counts.values())
@@ -447,7 +460,6 @@ class LogChartWidget(QWidget):
         p.setPen(self.color_text)
 
         for i, (cls, val) in enumerate(sorted_counts.items()):
-
             bar_h = (val / max_val) * avail_h
             x = margin + i * spacing
             y = h - margin - bar_h
@@ -455,4 +467,5 @@ class LogChartWidget(QWidget):
             p.drawRect(int(x), int(y), int(bar_width), int(bar_h))
 
             p.drawText(int(x), int(y - 5), str(val))
+
             p.drawText(int(x), int(h - margin + 20), cls)

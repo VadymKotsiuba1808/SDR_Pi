@@ -6,7 +6,13 @@
 import os
 import math
 import asyncio
-from PyQt6.QtWidgets import QMainWindow, QApplication, QDialog, QMessageBox, QFileDialog
+from PyQt6.QtWidgets import (
+    QMainWindow,
+    QApplication,
+    QDialog,
+    QMessageBox,
+    QFileDialog,
+)
 from PyQt6.QtCore import (
     QTimer,
     QDateTime,
@@ -37,21 +43,22 @@ from qasync import asyncSlot
 from app.ui.ui_main_window import Ui_MainWindow
 from app.assets import resources_rc
 
-from app.services.api_server import ApiServer
-from app.services.map_service import MapService, MapTypes
-from app.utils.test_data_provider import TestDataProvider
-from app.services.settings_service import SettingsService
-from app.protocols import OSService
-from app.services.keyboard_service import KeyboardService
 from app.widgets.set_map_dialog import SetMapDialog
 from app.widgets.autosize_window import make_scalable
-from app.services.pi_network_service import PiNetworkService
 from app.widgets.record_status_widget import RecordingStatusWidget
 from app.widgets.object_manager_dialog import ObjectManagerDialog
+from app.services.settings_service import SettingsService
+from app.services.map_service import MapService, MapTypes
+from app.services.keyboard_service import KeyboardService
 from app.services.recording_service import RecordingService
 from app.services.media_player_service import MediaPlayerService
+from app.services.pi_network_service import PiNetworkService
 from app.services.database_service import DatabaseService
+from app.core.detection_manager import DetectionManager
+from app.models.detection_event import DetectionEvent
+from app.protocols import OSService
 from app.utils.ui_utils import update_element_styles, move_dialog_down
+from app.utils.test_data_provider import TestDataProvider
 from app.utils.system_utils import (
     get_wifi_signal_strength,
     restart_process,
@@ -133,14 +140,19 @@ class MainWindow(QMainWindow):
 
         self.map_service = MapService(settings=self.settings_service)
 
-        # self.api_server = ApiServer(settings=self.settings_service)
+        self.searched_index = None
+
+        self.detection_manager = DetectionManager(self)
+        self.detection_manager.detections_changed.connect(self._update_detection_ui)
+
         self.pi_network = PiNetworkService(self.settings_service, self)
         self.pi_network.data_received.connect(self.handle_pi_data)
+        self.pi_network.gps_received.connect(self.handle_gps)
+        self.pi_network.detection_received.connect(self.detection_manager.add_detection)
+        self.pi_network.rf_data_received.connect(self.handle_rf_data)
+        self.pi_network.sound_data_received.connect(self.handle_sound_data)
 
         self.db_service = DatabaseService(self.pi_network)
-
-        # self.api_server.on_rf_data = self.handle_rf_data
-        # self.api_server.on_audio_alert = self.handle_audio_alert
 
         self.current_map_type_index = 0
         self.map_types = [e for e in MapTypes]
@@ -266,8 +278,6 @@ class MainWindow(QMainWindow):
         Цей метод має викликатися з 'main' ПІСЛЯ створення вікна.
         """
         print("Запуск фонових асинхронних задач (сервер та слухач)...")
-        # self.api_server.run_server()
-        self.listen_for_pi_data()
         self.pi_network.start()
 
     def _update_map_geometry(self):
@@ -299,7 +309,6 @@ class MainWindow(QMainWindow):
 
         QCoreApplication.removeTranslator(self.translator)
 
-        # Завантажуємо та встановлюємо новий
         path = f"app/i18n/qm/app_{lang_code}.qm"
         if self.translator.load(path):
             QCoreApplication.installTranslator(self.translator)
@@ -320,16 +329,9 @@ class MainWindow(QMainWindow):
         if self.settings_service.compiled_ui_using_enabled:
             self.load_language()
 
-    @asyncSlot()
-    async def listen_for_pi_data(self):
-        """Асинхронно слухає та обробляє дані з Raspberry Pi."""
-        # Тут буде ваша логіка для постійного отримання даних
-        # Наприклад, через веб-сокет або HTTP-запити
-        print("Запущено асинхронний слухач даних...")
-        while True:
-            # `await asyncio.sleep(1)` імітує асинхронне очікування.
-            await asyncio.sleep(1)
-            # self.handle_rf_data(data) # Викликаємо обробник, коли дані прийшли
+    def handle_rf_data(self, data):
+        """Заглушка для обробки потокових RF-даних."""
+        pass  # Логіка буде додана пізніше
 
     def handle_sound_data(self, data):
         """Заглушка для обробки потокових звукових даних."""
@@ -503,8 +505,7 @@ class MainWindow(QMainWindow):
 
         self.scale_map()
 
-        config_data = {"msg_type": "config", "radar_radius": new_radar_radius}
-        self.pi_network.send_data(config_data)
+        self.update_radar()
 
     def handle_add_map(self):
         btn = self.sender()
@@ -546,6 +547,13 @@ class MainWindow(QMainWindow):
             print("ГОЛОВНЕ ВІКНО: Налаштування скасовано.")
 
         self.scalable_dialog = None
+
+    def open_database_manager(self):
+        self.db_window = ObjectManagerDialog(
+            self.db_service, self.settings_service, self.keyboard_service
+        )
+        move_dialog_down(self.db_window, self.geometry())
+        self.db_window.exec()
 
     @pyqtSlot(bool)
     def handle_toggle_recording(self):
@@ -611,13 +619,6 @@ class MainWindow(QMainWindow):
             print(f"Критична помилка запуску VLC: {e}")
             url = QUrl.fromLocalFile(file_path)
             QDesktopServices.openUrl(url)
-
-    def open_database_manager(self):
-        self.db_window = ObjectManagerDialog(
-            self.db_service, self.settings_service, self.keyboard_service
-        )
-        move_dialog_down(self.db_window, self.geometry())
-        self.db_window.exec()
 
     def set_radar_mode(self):
         if self.isRadarMode:
@@ -761,36 +762,6 @@ class MainWindow(QMainWindow):
     def flush_radar_dots(self):
         self.ui.Radar.setPixmap(QPixmap(":/images/radar.png"))
 
-    def create_radar_dot(self, angle, distance):
-        pixmap = self.ui.Radar.pixmap()
-        self.radar_background = self.ui.Radar.pixmap()
-        if not pixmap or pixmap.isNull():
-            return
-
-        painter = QPainter(pixmap)
-        pen = QPen(QColor("red"), 20)
-        painter.setPen(pen)
-
-        center_x = pixmap.width() / 2
-        center_y = pixmap.height() / 2
-        rad_angle = math.radians(angle - 90)
-
-        x = center_x + distance * math.cos(rad_angle)
-        y = center_y + distance * math.sin(rad_angle)
-
-        painter.drawPoint(int(x), int(y))
-        painter.end()
-        self.ui.Radar.setPixmap(pixmap)
-
-    def clear_radar_dots(self):
-        """Видаляє намальовані точки з радара, відновлюючи фон."""
-        if not hasattr(self, "radar_background"):
-            # Зберігання фону
-            return
-
-        clean_pixmap = self.radar_background.copy()
-        self.ui.Radar.setPixmap(clean_pixmap)
-
     @asyncSlot()
     async def refresh_map(self):
         print("Запускаю асинхронне завантаження карти...")
@@ -906,18 +877,6 @@ class MainWindow(QMainWindow):
     def handle_pi_data(self, data):
         """Обробка загальних даних від іншої Raspberry Pi."""
         print(f"Отримано загальні дані від Pi: {data}")
-
-    @pyqtSlot(dict)
-    def handle_pi_data(self, data):
-        """Обробка даних, отриманих від іншої Raspberry Pi."""
-        # print(f"Отримано дані від Pi: {data}")
-
-        # Приклад: якщо прийшли координати або статус тривоги
-        if "rf_alert" in data:
-            if data["rf_alert"]:
-                self.start_alert()
-            else:
-                self.stop_alert()
 
     def update_wifi_signal_info(self):
         wifi_strength = get_wifi_signal_strength(self.system_service.is_windows)

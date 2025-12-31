@@ -27,11 +27,15 @@ class LogDialog(QDialog):
     """
 
     def __init__(
-        self, settings_service: LogDialogSettings, parent: Optional[QWidget] = None
+        self,
+        log_service: LogService,
+        settings_service: LogDialogSettings,
+        parent: Optional[QWidget] = None,
     ) -> None:
         super().__init__(parent)
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
 
+        self.service = log_service
         self.settings_service = settings_service
 
         self._load_ui()
@@ -65,7 +69,6 @@ class LogDialog(QDialog):
 
     def _setup_state_variables(self) -> None:
         self.translator = QTranslator()
-        self.service = LogService()
         self.all_entries: List[LogEntry] = []
         self.filtered_entries: List[LogEntry] = []
 

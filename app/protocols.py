@@ -16,11 +16,6 @@ class MapServiceSettings(Protocol):
     tile_divider_enabled: bool
 
 
-class ApiServerSettings(Protocol):
-    host: str
-    port: int
-
-
 class LoginDialogSettings(Protocol):
     role: str
     owner_password_hash: str
@@ -70,7 +65,7 @@ class SettingsDialogSettings(Protocol):
     lang_code: str
     radar_max_radius: float
     gps_interval_s: float
-    main_relay: str
+    main_relays: str
     remember_me: bool
 
 

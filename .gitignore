@@ -3,6 +3,7 @@
 /screenshots/*.png
 /screen_records/*.mp4
 /logs/*.json
+/logs/*.jsonl
 
 .vscode/
 # Byte-compiled / optimized / DLL files

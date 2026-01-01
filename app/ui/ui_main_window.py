@@ -560,6 +560,7 @@ class Ui_MainWindow(object):
 "}")
         self.radarRadiusSpinbox.setWrapping(False)
         self.radarRadiusSpinbox.setButtonSymbols(QtWidgets.QAbstractSpinBox.ButtonSymbols.PlusMinus)
+        self.radarRadiusSpinbox.setMinimum(0.01)
         self.radarRadiusSpinbox.setObjectName("radarRadiusSpinbox")
         self.verticalLayout.addWidget(self.radarRadiusSpinbox)
         self.saveRadarSettingsBtn = QtWidgets.QPushButton(parent=self.RadarSettings)

@@ -1148,6 +1148,9 @@ QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {
         <property name="buttonSymbols">
          <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
         </property>
+        <property name="minimum">
+         <double>0.010000000000000</double>
+        </property>
        </widget>
       </item>
       <item>

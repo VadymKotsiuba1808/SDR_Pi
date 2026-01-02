@@ -43,6 +43,7 @@ class SettingsService(QObject):
     gps_interval_s: float
     # Jammer
     main_relays: list[str]
+    is_jammer_auto_start_enabled: bool
     is_jammer_auto_stop_enabled: bool
     jammer_auto_stop_interval_s: int
     # UI
@@ -75,6 +76,7 @@ class SettingsService(QObject):
         "gps_interval_s": ("timers", int, 2),
         # Jammer
         "main_relays": ("jammer", list, ["K1"]),
+        "is_jammer_auto_start_enabled": ("jammer", bool, False),
         "is_jammer_auto_stop_enabled": ("jammer", bool, False),
         "jammer_auto_stop_interval_s": ("jammer", int, 900),
         # UI

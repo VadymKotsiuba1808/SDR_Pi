@@ -42,6 +42,7 @@ from qasync import asyncSlot
 
 
 from app.ui.ui_main_window import Ui_MainWindow
+from app.ui.components.radar_renderer import RadarRenderer
 from app.assets import resources_rc
 
 
@@ -64,11 +65,15 @@ from app.services.recording_service import RecordingService
 from app.services.media_player_service import MediaPlayerService
 from app.services.database_service import DatabaseService
 from app.services.log_service import LogService
+from app.services.jammer_service import JammerService
 
 
 from app.core.detection_manager import DetectionManager
+from app.core.map_view_logic import MapViewLogic
+
 from app.models.detection_event import DetectionEvent
 from app.models.log_entries import LogEntry, LogType, FalseAlarmPayload
+from app.models.gps_data import GPSData
 
 
 from app.utils.ui_utils import update_element_styles, move_dialog_down
@@ -76,6 +81,7 @@ from app.utils.system_utils import (
     get_wifi_signal_strength,
     restart_process,
 )
+from app.utils.geo_utils import calculate_distance
 
 
 MIN_DISTANCE_THRESHOLD = 2.0  # Мінімальна зміна позиції в метрах для оновлення мапи
@@ -94,9 +100,6 @@ class MainWindow(QMainWindow):
     Зв'язує графічний інтерфейс (View) з сервісами та логікою.
     Обробляє навігацію та глобальні події.
     """
-
-    _sig_start_recording = pyqtSignal(str)
-    _sig_stop_recording = pyqtSignal()
 
     def __init__(
         self,
@@ -126,6 +129,8 @@ class MainWindow(QMainWindow):
         self.update_gps_and_map()
         self._start_async_tasks()
 
+        # FIXME -
+        # TODO - Видалити рефреш
         self.refresh_map()
 
         print("[MainWindow] Initialization complete.")
@@ -169,6 +174,8 @@ class MainWindow(QMainWindow):
         # Індекс об'єкта, який зараз шукається/відображається
         self.searched_index: Optional[int] = None
 
+        self.radar_renderer = RadarRenderer()
+
         # Менеджер детекцій
         self.detection_manager = DetectionManager(self)
         self.detection_manager.detections_changed.connect(self._update_detection_ui)
@@ -178,8 +185,7 @@ class MainWindow(QMainWindow):
         self.pi_network.data_received.connect(self.handle_pi_data)
         self.pi_network.gps_received.connect(self.handle_gps)
         self.pi_network.detection_received.connect(self.handle_detection)
-        self.pi_network.rf_data_received.connect(self.handle_rf_data)
-        self.pi_network.sound_data_received.connect(self.handle_sound_data)
+        self.pi_network.set_rf_range(self.settings_service.radio_range_GHz)
 
         # Сервіс бази даних (через мережу)
         self.db_service = DatabaseService(self.pi_network)
@@ -197,17 +203,10 @@ class MainWindow(QMainWindow):
         # UI Стани
         self.is_radar_mode: bool = False
         self.is_alert: bool = False
-        self.radar_angle: int = 0
         self.force_gps_update: bool = False
-        self.is_jammer_active: bool = False
 
-        self.jammer_start_time: QDateTime = None
-        self.jammer_stop_timer: QTimer = None
-
-        if self.settings_service.is_jammer_auto_stop_enabled:
-            self.jammer_stop_timer = QTimer(self)
-            self.jammer_stop_timer.setSingleShot(True)
-            self.jammer_stop_timer.timeout.connect(self.stop_jammer)
+        self.jammer_service = JammerService(self.pi_network, self.settings_service)
+        self.jammer_service.state_changed.connect(self.on_jammer_state_changed)
 
         self.translator = QTranslator()
 
@@ -291,8 +290,8 @@ class MainWindow(QMainWindow):
             self.handle_toggle_recording_pause
         )
 
-        self.ui.jammerOnTimerButton.clicked.connect(self.start_jammer)
-        self.ui.jammerOffTimerButton.clicked.connect(self.stop_jammer)
+        self.ui.jammerOnTimerButton.clicked.connect(self.jammer_service.start)
+        self.ui.jammerOffTimerButton.clicked.connect(self.jammer_service.stop)
 
     def _setup_timers(self) -> None:
         self.timer_1sec = QTimer(self)
@@ -320,27 +319,14 @@ class MainWindow(QMainWindow):
         self.pi_network.start()
 
     def _update_map_geometry(self) -> None:
-        if not self.ui.RadarFrame.width() or not self.ui.RadarFrame.height():
-            return
-
         radar_rect = self.ui.RadarFrame.geometry()
-        bg_width = self.ui.map_background_label.parent().width()
-        bg_height = self.ui.map_background_label.parent().height()
+        parent_widget = self.ui.map_background_label.parent()
 
-        rx = radar_rect.center().x()
-        ry = radar_rect.center().y()
-
-        max_dist_x = max(rx, bg_width - rx)
-        max_dist_y = max(ry, bg_height - ry)
-
-        radar_radius_px = radar_rect.width() / 2.0
-        if radar_radius_px <= 0:
-            return
-
-        k_w = max_dist_x / radar_radius_px
-        k_h = max_dist_y / radar_radius_px
-
-        self.add_sizes_map_k = [k_w * 1.05, k_h * 1.05]
+        self.add_sizes_map_k = MapViewLogic.calculate_map_expansion_coefficients(
+            radar_rect=radar_rect,
+            background_width=parent_widget.width(),
+            background_height=parent_widget.height(),
+        )
 
     def load_language(self) -> None:
         lang_code = self.settings_service.lang_code
@@ -370,16 +356,14 @@ class MainWindow(QMainWindow):
 
     # region --- Data Handlers ---
 
-    def handle_rf_data(self, data: Dict[str, Any]) -> None:
-        """Заглушка для обробки потокових RF-даних."""
-        pass  # Логіка буде додана пізніше
-
-    def handle_sound_data(self, data: Dict[str, Any]) -> None:
-        """Заглушка для обробки потокових звукових даних."""
-        pass  # Логіка буде додана пізніше
-
     def handle_detection(self, detection: DetectionEvent):
         self.detection_manager.add_detection(detection)
+
+        if (
+            self.settings_service.is_jammer_auto_start_enabled
+            and not self.jammer_service.is_active
+        ):
+            self.jammer_service.start()
 
         log = LogEntry(LogType.DETECTION, detection)
         self.log_service.add_log(log)
@@ -391,78 +375,20 @@ class MainWindow(QMainWindow):
         self.update_alert_status()
 
     def update_radar(self) -> None:
-        RADAR_POINT_SIZE = 20
-        RADAR_TEXT_OFFSET_Y_DEFAULT = -15
-        RADAR_TEXT_OFFSET_CORRECTION = 15
-        RADAR_BORDER_OFFSET = 15
-        RADAR_ANGLE_ROTATION_OFFSET = 90
 
-        RADAR_TEXT_ANGLE_THRESHOLD_LOW = 40
-        RADAR_TEXT_ANGLE_THRESHOLD_HIGH = 320
+        if not hasattr(self, "radar_clean_pixmap"):
+            return
 
         detections, indices = self.detection_manager.get_detections()
 
-        if hasattr(self, "radar_clean_pixmap"):
-            pixmap = self.radar_clean_pixmap.copy()
-        else:
-            return
+        final_pixmap = self.radar_renderer.draw_detections(
+            base_pixmap=self.radar_clean_pixmap,
+            detections=detections,
+            indices=indices,
+            max_radius_m=self.settings_service.radar_radius,
+        )
 
-        painter = QPainter(pixmap)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-
-        font = QFont("Arial", 14, QFont.Weight.Bold)
-        painter.setFont(font)
-
-        center_x = pixmap.width() / 2
-        center_y = pixmap.height() / 2
-
-        offset_x = 0
-        offset_y = RADAR_TEXT_OFFSET_Y_DEFAULT
-
-        max_px_radius = min(center_x, center_y)
-
-        max_meters_setting = self.settings_service.radar_radius
-        if max_meters_setting <= 0:
-            max_meters_setting = 1
-
-        scale = max_px_radius / max_meters_setting
-
-        for event_id, event in detections.items():
-            index = str(indices.get(event_id, "?"))
-
-            pixel_dist = event.distance * scale
-
-            is_out_of_bounds = pixel_dist > max_px_radius
-            is_on_border = pixel_dist >= max_px_radius - RADAR_POINT_SIZE / 2
-
-            if is_out_of_bounds or is_on_border:
-                pixel_dist = max_px_radius - RADAR_BORDER_OFFSET
-
-                if (
-                    event.angle > RADAR_TEXT_ANGLE_THRESHOLD_HIGH
-                    or event.angle < RADAR_TEXT_ANGLE_THRESHOLD_LOW
-                ):
-                    offset_y = 0
-                    offset_x = RADAR_TEXT_OFFSET_CORRECTION
-
-            if is_out_of_bounds:
-                painter.setPen(QPen(QColor("orange"), RADAR_POINT_SIZE - 2))
-            else:
-                color = QColor("red")
-                painter.setPen(QPen(color, RADAR_POINT_SIZE))
-
-            rad_angle = math.radians(event.angle - RADAR_ANGLE_ROTATION_OFFSET)
-
-            x = center_x + pixel_dist * math.cos(rad_angle)
-            y = center_y + pixel_dist * math.sin(rad_angle)
-
-            painter.drawPoint(int(x), int(y))
-
-            painter.setPen(QPen(QColor("black"), 1))
-            painter.drawText(int(x) + offset_x, int(y) + offset_y, index)
-
-        painter.end()
-        self.ui.Radar.setPixmap(pixmap)
+        self.ui.Radar.setPixmap(final_pixmap)
 
     def update_detection_info(self) -> None:
         if self.searched_index is None:
@@ -529,17 +455,17 @@ class MainWindow(QMainWindow):
     def request_gps(self) -> None:
         self.pi_network.request_remote_gps()
 
-    def update_gps_ui(self, data: Dict[str, Any]) -> None:
-        strength = data.get("gps_strength")
-        lat = data.get("gps_lat")
-        lon = data.get("gps_lon")
+    def update_gps_ui(self, data: GPSData) -> None:
+        strength = data.strength
+        lat = data.lat
+        lon = data.lon
 
         if not lat or not lon:
             self.set_gps_ui_level(0)
             return
 
         new_lat, new_lon = float(lat), float(lon)
-        distance = self.calculate_distance(
+        distance = calculate_distance(
             self.current_coords[0], self.current_coords[1], new_lat, new_lon
         )
         if distance >= MIN_DISTANCE_THRESHOLD or self.force_gps_update:
@@ -560,31 +486,14 @@ class MainWindow(QMainWindow):
 
         self.set_gps_ui_level(gps_level)
 
-    def calculate_distance(self, lat1, lon1, lat2, lon2):
-
-        R = 6371000  # Радіус Землі в метрах
-        phi1, phi2 = math.radians(lat1), math.radians(lat2)
-        dphi = math.radians(lat2 - lat1)
-        dlambda = math.radians(lon2 - lon1)
-
-        a = (
-            math.sin(dphi / 2) ** 2
-            + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2) ** 2
-        )
-        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-
-        return R * c
-
     def set_gps_ui_level(self, level: int) -> None:
         self.ui.GPS_level.setProperty("level", level)
         update_element_styles(self.ui.GPS_level)
 
     @pyqtSlot(dict)
-    def handle_gps(self, data: Dict[str, Any]) -> None:
+    def handle_gps(self, data: GPSData) -> None:
         self.update_gps_ui(data)
-        print(
-            f"[MainWindow] GPS Received: {data.get('gps_lat')}, {data.get('gps_lon')}"
-        )
+        print(f"[MainWindow] GPS Received: {data.lat}, {data.lon}")
 
     def handle_radar_radius_change(self) -> None:
         new_radar_radius = self.ui.radarRadiusSpinbox.value()
@@ -618,8 +527,6 @@ class MainWindow(QMainWindow):
             if settings_data.get("pixmap"):
                 self.current_map = settings_data["pixmap"]
                 print(f"[MainWindow] Custom map set. Width: {self.current_map.width()}")
-
-                radar_max_radius = self.settings_service.radar_max_radius
 
                 self.scale_map()
 
@@ -795,7 +702,7 @@ class MainWindow(QMainWindow):
         self.settings_service.radio_range_GHz = [start_value, end_value]
         self.reset_radio_range_status()
 
-        # TODO - Підключити до NetworkService
+        self.pi_network.set_rf_range([start_value, end_value])
 
     def clear_radio_range_values(self) -> None:
         radio_range = self.settings_service.radio_range_GHz
@@ -850,46 +757,19 @@ class MainWindow(QMainWindow):
         start_spin_box.blockSignals(False)
         end_spin_box.blockSignals(False)
 
-    def start_jammer(self):
-        self.is_jammer_active = True
-        self.jammer_start_time = QDateTime.currentDateTime()
+    def on_jammer_state_changed(self, is_active: bool):
+        time_str = self.jammer_service.get_formatted_time()
+        self.ui.jammerTimerTime.setText(time_str)
+        self.ui.jammerOnTimerButton.setEnabled(not is_active)
+        self.ui.jammerOffTimerButton.setEnabled(is_active)
 
-        self.set_relays_ui_active(True)
-
-        self.ui.jammerOnTimerButton.setEnabled(False)
         update_element_styles(self.ui.jammerOnTimerButton)
-        self.ui.jammerOffTimerButton.setEnabled(True)
         update_element_styles(self.ui.jammerOffTimerButton)
 
-        if self.settings_service.is_jammer_auto_stop_enabled:
-            msec = self.settings_service.jammer_auto_stop_interval_s * 1000
-            self.jammer_stop_timer.start(msec)
-        # TODO - підключити до NetworkService
-
-    def stop_jammer(self):
-        self.is_jammer_active = False
-        self.jammer_start_time = None
-
-        self.set_relays_ui_active(False)
-        self.ui.jammerTimerTime.setText("00:00:00")
-
-        self.ui.jammerOffTimerButton.setEnabled(False)
-        update_element_styles(self.ui.jammerOffTimerButton)
-        self.ui.jammerOnTimerButton.setEnabled(True)
-        update_element_styles(self.ui.jammerOnTimerButton)
-
-        if self.jammer_stop_timer and self.jammer_stop_timer.isActive:
-            self.jammer_stop_timer.stop()
-
-        # TODO - підключити до NetworkService
-
-    def set_relays_ui_active(self, state: bool):
         for relay in self.settings_service.main_relays:
             label = getattr(self.ui, f"{relay.lower()}_label", None)
-            print("Label", relay, " name:", f"{relay.lower()}_label")
-            print(label)
             if label:
-                label.setEnabled(state)
+                label.setEnabled(is_active)
                 update_element_styles(label)
 
     # endregion
@@ -901,55 +781,27 @@ class MainWindow(QMainWindow):
         self.ui.DateLabel.setText(current_datetime.toString("dd.MM.yyyy"))
         self.ui.TimeLabel.setText(current_datetime.toString("hh:mm:ss"))
 
-        if self.is_jammer_active:
-            seconds_elapsed = self.jammer_start_time.secsTo(current_datetime)
-            jammer_time_display = (
-                QTime(0, 0, 0).addSecs(seconds_elapsed).toString("HH:mm:ss")
-            )
-            self.ui.jammerTimerTime.setText(jammer_time_display)
+        if self.jammer_service.is_active:
+            time_str = self.jammer_service.get_formatted_time()
+            self.ui.jammerTimerTime.setText(time_str)
 
     def rotate_radar_animation(self) -> None:
-        RADAR_ANIMATION_STEP_ANGLE = 6
-        current_angle = getattr(self, "radar_angle", 0)
-        current_angle = (current_angle + RADAR_ANIMATION_STEP_ANGLE) % 360
-        self.radar_angle = current_angle
+        has_detections = self.detection_manager.has_detections()
 
-        base_pixmap = self.draw_radar_section(current_angle)
-        self.ui.Radar_Section.setPixmap(base_pixmap)
+        anim_pixmap = self.radar_renderer.draw_scan_animation(
+            size=self.ui.Radar.size(), has_detections=has_detections
+        )
 
-    def draw_radar_section(self, angle: float) -> QPixmap:
-        base_pixmap = QPixmap(self.ui.Radar.size())
-        base_pixmap.fill(Qt.GlobalColor.transparent)
-
-        painter = QPainter(base_pixmap)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-
-        size = min(base_pixmap.width(), base_pixmap.height())
-        center = QPointF(base_pixmap.width() / 2, base_pixmap.height() / 2)
-
-        gradient = QConicalGradient(center, -angle)
-
-        if self.detection_manager.has_detections():
-            # Red alert colors
-            gradient.setColorAt(0.0, QColor(215, 40, 30, 100))
-            gradient.setColorAt(0.25, QColor(180, 30, 30, 70))
-            gradient.setColorAt(1.0, QColor(100, 30, 30, 20))
-        else:
-            # Green scanning colors
-            gradient.setColorAt(0.0, QColor(40, 215, 30, 90))
-            gradient.setColorAt(0.25, QColor(30, 180, 30, 50))
-            gradient.setColorAt(1.0, QColor(30, 100, 30, 10))
-
-        painter.setBrush(gradient)
-        painter.setPen(Qt.PenStyle.NoPen)
-        painter.drawEllipse(center, size / 2, size / 2)
-        painter.end()
-
-        return base_pixmap
+        self.ui.Radar_Section.setPixmap(anim_pixmap)
 
     @asyncSlot()
     async def refresh_map(self) -> None:
+
+        if self.is_radar_mode:
+            return
+
         print("[MainWindow] Loading map asynchronously...")
+
         map_type = self.map_types[self.current_map_type_index]
 
         result = await self.map_service.get_map_pixmap(
@@ -965,8 +817,6 @@ class MainWindow(QMainWindow):
             self.current_map = pixmap
             self.current_map_resolution = resolution
 
-            self.map_center_coords = self.current_coords.copy()
-
             self.scale_map()
         else:
             QMessageBox.warning(None, self.tr("Error"), self.tr("Failed to load map."))
@@ -978,73 +828,32 @@ class MainWindow(QMainWindow):
 
         scale_factor = self._calculate_scale_factor()
 
-        if scale_factor <= 0.0001:
-            return
-
-        final_pixmap = self._generate_view_pixmap(scale_factor)
-
-        if final_pixmap and not final_pixmap.isNull():
-            self.ui.map_background_label.setPixmap(final_pixmap)
-            self.ui.map_background_label.resize(final_pixmap.size())
-
-            self.ui.map_background_label.move(0, 0)
-
-    def _generate_view_pixmap(self, scale_factor: float) -> QPixmap:
-
-        view_w = self.ui.map_background_label.width()
-        view_h = self.ui.map_background_label.height()
-
-        if view_w <= 0 or view_h <= 0:
-            return QPixmap()
-
+        view_size = self.ui.map_background_label.size()
         radar_geo = self.ui.RadarFrame.geometry()
 
-        rx = radar_geo.center().x() - self.ui.map_background_label.x()
-        ry = radar_geo.center().y() - self.ui.map_background_label.y()
+        rel_x = radar_geo.center().x() - self.ui.map_background_label.x()
+        rel_y = radar_geo.center().y() - self.ui.map_background_label.y()
+        radar_center_relative = QPointF(rel_x, rel_y)
 
-        orig_w = self.current_map.width()
-        orig_h = self.current_map.height()
-
-        gps_cx = orig_w / 2.0
-        gps_cy = orig_h / 2.0
-
-        crop_x = gps_cx - (rx / scale_factor)
-        crop_y = gps_cy - (ry / scale_factor)
-
-        crop_w = view_w / scale_factor
-        crop_h = view_h / scale_factor
-
-        rect_x = int(crop_x)
-        rect_y = int(crop_y)
-        rect_w = int(math.ceil(crop_w))
-        rect_h = int(math.ceil(crop_h))
-
-        cropped = self.current_map.copy(rect_x, rect_y, rect_w, rect_h)
-
-        if cropped.isNull():
-            return QPixmap()
-
-        return cropped.scaled(
-            view_w,
-            view_h,
-            Qt.AspectRatioMode.IgnoreAspectRatio,
-            Qt.TransformationMode.SmoothTransformation,
+        final_pixmap = MapViewLogic.generate_view_pixmap(
+            source_map=self.current_map,
+            view_size=view_size,
+            radar_center_relative=radar_center_relative,
+            scale_factor=scale_factor,
         )
 
+        if not final_pixmap.isNull():
+            self.ui.map_background_label.setPixmap(final_pixmap)
+
+            self.ui.map_background_label.resize(final_pixmap.size())
+            self.ui.map_background_label.move(0, 0)
+
     def _calculate_scale_factor(self) -> float:
-        radar_radius_m = self.settings_service.radar_radius
-        if radar_radius_m <= 0:
-            return 0.0
-
-        radar_view_radius_px = self.ui.RadarFrame.width() / 2.0
-
-        target_px_per_meter = radar_view_radius_px / radar_radius_m
-
-        if self.current_map_resolution <= 0:
-            return 0.0
-        source_px_per_meter = 1.0 / self.current_map_resolution
-
-        return target_px_per_meter / source_px_per_meter
+        return MapViewLogic.calculate_scale_factor(
+            radar_radius_m=self.settings_service.radar_radius,
+            radar_view_width_px=self.ui.RadarFrame.width(),
+            map_resolution_m_px=self.current_map_resolution,
+        )
 
     @asyncSlot()
     async def change_map_type(self) -> None:

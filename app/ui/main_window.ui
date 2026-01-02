@@ -1054,6 +1054,9 @@ border-radius:450px;</string>
        <height>985</height>
       </size>
      </property>
+     <property name="styleSheet">
+      <string notr="true">background-color:#DCDDE1;</string>
+     </property>
      <property name="frameShape">
       <enum>QFrame::Shape::Panel</enum>
      </property>

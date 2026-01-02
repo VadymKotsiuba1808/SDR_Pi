@@ -511,6 +511,7 @@ class Ui_MainWindow(object):
         self.map_background_label.setEnabled(True)
         self.map_background_label.setGeometry(QtCore.QRect(0, 0, 1920, 985))
         self.map_background_label.setMinimumSize(QtCore.QSize(1920, 985))
+        self.map_background_label.setStyleSheet("background-color:#DCDDE1;")
         self.map_background_label.setFrameShape(QtWidgets.QFrame.Shape.Panel)
         self.map_background_label.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
         self.map_background_label.setText("")

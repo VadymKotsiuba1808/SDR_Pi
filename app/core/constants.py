@@ -1,3 +1,5 @@
+from typing import List
+
 """
 Файл зі статичними константами, які користувач не зможе напряму змінювати,
 пізніше трішки перенесу сюди певні значення з config.ini
@@ -10,3 +12,5 @@ SECURITY_KEY_HASH: str = (
 SECURITY_KEY_FILENAME: str = ".sdr_reset.key"
 
 USB_SCAN_INTERVAL_SECONDS: float = 1.5
+
+RELAY_NAMES_LIST: List[str] = ["K1", "K2", "K3"]

@@ -72,6 +72,7 @@ from app.core.detection_manager import DetectionManager
 from app.core.map_view_logic import MapViewLogic
 
 from app.models.detection_event import DetectionEvent
+from app.models.object_class import ObjectClass
 from app.models.log_entries import LogEntry, LogType, FalseAlarmPayload
 from app.models.gps_data import GPSData
 
@@ -189,6 +190,8 @@ class MainWindow(QMainWindow):
 
         # Сервіс бази даних (через мережу)
         self.db_service = DatabaseService(self.pi_network)
+
+        self.log_service = LogService()
 
         self.log_service = LogService()
 
@@ -548,8 +551,16 @@ class MainWindow(QMainWindow):
         move_dialog_down(self.db_window, self.geometry())
         self.db_window.exec()
 
-    def open_logs_dialog(self) -> None:
-        logs_dialog = LogDialog(self.log_service, self.settings_service)
+    def open_logs_dialog(self):
+        mock_classes = [
+            ObjectClass(1, name="Drone Sound"),
+            ObjectClass(2, name="Airplane"),
+            ObjectClass(3, name="Carlson"),
+            ObjectClass(4, name="Quadcopter"),
+            ObjectClass(5, name="UFO"),
+        ]
+
+        logs_dialog = LogDialog(self.log_service, mock_classes, self.settings_service)
         move_dialog_down(logs_dialog, self.geometry())
         logs_dialog.exec()
 

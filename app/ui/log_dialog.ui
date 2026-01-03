@@ -189,7 +189,7 @@ QPushButton#btnClose:pressed {
        <number>10</number>
       </property>
       <property name="topMargin">
-       <number>40</number>
+       <number>10</number>
       </property>
       <property name="bottomMargin">
        <number>40</number>
@@ -212,18 +212,39 @@ QPushButton#btnClose:pressed {
         <property name="title">
          <string>Фільтри пошуку</string>
         </property>
-        <layout class="QFormLayout" name="formLayout">
-         <property name="verticalSpacing">
-          <number>8</number>
-         </property>
-         <item row="0" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
           <widget class="QLabel" name="lblTime">
            <property name="text">
             <string>Час:</string>
            </property>
           </widget>
          </item>
-         <item row="2" column="0">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <item>
+            <widget class="QDateTimeEdit" name="inpTimeStart">
+             <property name="displayFormat">
+              <string>HH:mm:ss</string>
+             </property>
+             <property name="calendarPopup">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDateTimeEdit" name="inpTimeEnd">
+             <property name="displayFormat">
+              <string>HH:mm:ss</string>
+             </property>
+             <property name="calendarPopup">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
           <widget class="QLabel" name="lblFilterName">
            <property name="minimumSize">
             <size>
@@ -236,7 +257,7 @@ QPushButton#btnClose:pressed {
            </property>
           </widget>
          </item>
-         <item row="3" column="0" colspan="2">
+         <item>
           <widget class="QLineEdit" name="inpFilterName">
            <property name="maximumSize">
             <size>
@@ -249,27 +270,69 @@ QPushButton#btnClose:pressed {
            </property>
           </widget>
          </item>
-         <item row="4" column="0">
+         <item>
+          <widget class="QLabel" name="lblFilterClass">
+           <property name="text">
+            <string>Клас:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="cmbFilterClass">
+           <property name="maximumSize">
+            <size>
+             <width>250</width>
+             <height>16777215</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QLabel" name="lblFilterType">
            <property name="text">
             <string>Тип події:</string>
            </property>
           </widget>
          </item>
-         <item row="7" column="0">
+         <item>
+          <widget class="QComboBox" name="cmbFilterType">
+           <property name="maximumSize">
+            <size>
+             <width>250</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <item>
+            <property name="text">
+             <string>Всі</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Детекція (Detection)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Хибна тривога (False)</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
           <widget class="QLabel" name="lblDist">
            <property name="text">
-            <string>Дистанція (м):</string>
+            <string>Дистанція (км):</string>
            </property>
           </widget>
          </item>
-         <item row="8" column="0">
+         <item>
           <layout class="QHBoxLayout" name="layoutDist">
            <property name="spacing">
             <number>0</number>
            </property>
            <item>
-            <widget class="QSpinBox" name="inpDistMin">
+            <widget class="QDoubleSpinBox" name="inpDistMin">
              <property name="minimumSize">
               <size>
                <width>115</width>
@@ -280,10 +343,7 @@ QPushButton#btnClose:pressed {
               <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
              </property>
              <property name="maximum">
-              <number>50000</number>
-             </property>
-             <property name="value">
-              <number>0</number>
+              <double>999.990000000000009</double>
              </property>
             </widget>
            </item>
@@ -304,7 +364,7 @@ QPushButton#btnClose:pressed {
             </widget>
            </item>
            <item>
-            <widget class="QSpinBox" name="inpDistMax">
+            <widget class="QDoubleSpinBox" name="inpDistMax">
              <property name="minimumSize">
               <size>
                <width>115</width>
@@ -315,23 +375,23 @@ QPushButton#btnClose:pressed {
               <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
              </property>
              <property name="maximum">
-              <number>50000</number>
+              <double>5999.989999999999782</double>
              </property>
              <property name="value">
-              <number>5000</number>
+              <double>5000.000000000000000</double>
              </property>
             </widget>
            </item>
           </layout>
          </item>
-         <item row="9" column="0">
+         <item>
           <widget class="QLabel" name="lblAngle">
            <property name="text">
             <string>Кут (°):</string>
            </property>
           </widget>
          </item>
-         <item row="10" column="0">
+         <item>
           <layout class="QHBoxLayout" name="layoutAngle">
            <property name="spacing">
             <number>0</number>
@@ -388,55 +448,6 @@ QPushButton#btnClose:pressed {
             </widget>
            </item>
           </layout>
-         </item>
-         <item row="1" column="0" colspan="2">
-          <layout class="QHBoxLayout" name="horizontalLayout">
-           <item>
-            <widget class="QDateTimeEdit" name="inpTimeStart">
-             <property name="displayFormat">
-              <string>HH:mm:ss</string>
-             </property>
-             <property name="calendarPopup">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QDateTimeEdit" name="inpTimeEnd">
-             <property name="displayFormat">
-              <string>HH:mm:ss</string>
-             </property>
-             <property name="calendarPopup">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item row="5" column="0" colspan="2">
-          <widget class="QComboBox" name="cmbFilterType">
-           <property name="maximumSize">
-            <size>
-             <width>250</width>
-             <height>16777215</height>
-            </size>
-           </property>
-           <item>
-            <property name="text">
-             <string>Всі</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Детекція (Detection)</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Хибна тривога (False)</string>
-            </property>
-           </item>
-          </widget>
          </item>
         </layout>
        </widget>
@@ -533,7 +544,7 @@ QPushButton#btnClose:pressed {
             </column>
             <column>
              <property name="text">
-              <string>Частота, MHz</string>
+              <string>Частота</string>
              </property>
             </column>
             <column>

@@ -1,6 +1,5 @@
 from datetime import datetime
 import math
-import hashlib
 from typing import List, Set, Tuple, Optional, Dict
 from collections import Counter
 
@@ -16,7 +15,6 @@ from PyQt6.QtGui import (
     QMouseEvent,
     QPaintEvent,
     QPainterPath,
-    QTransform,
 )
 from PyQt6.QtCore import Qt, QPointF, QCoreApplication, QTranslator
 
@@ -25,6 +23,17 @@ from app.models.detection_event import DetectionEvent
 
 
 class ChartWidget(QWidget):
+    # --- КОНСТАНТИ ВІЗУАЛІЗАЦІЇ ---
+    LINE_WIDTH_NORMAL = 3
+    LINE_WIDTH_THIN = 1
+    DOT_RADIUS = 3
+
+    HIGHLIGHT_RADIUS_OFFSET = 3
+    HIGHLIGHT_FRAME_WIDTH = 2
+
+    TEXT_OFFSET_Y = -10
+    TIME_DIFF_S = 60
+
     def __init__(
         self, settings_service: ChartWidgetSettings, parent: Optional[QWidget] = None
     ) -> None:
@@ -40,10 +49,8 @@ class ChartWidget(QWidget):
         self.color_bg = QColor(0, 20, 0, 100)
         self.color_grid = QColor(50, 136, 68, 100)
         self.color_grid_faint = QColor(100, 150, 100, 50)
-        self.color_rf = QColor(255, 100, 100)
-        self.color_sound = QColor(100, 100, 255)
+
         self.color_highlight = QColor(255, 255, 0)
-        self.color_path = QColor(0, 255, 255)
         self.color_text = QColor(200, 200, 200)
 
     def _setup_state_variables(self) -> None:
@@ -70,6 +77,7 @@ class ChartWidget(QWidget):
     ) -> None:
         self.data = sorted(data, key=lambda x: x.timestamp)
         self.highlight_ids = highlight_ids or set()
+
         self.update()
 
     def set_chart_type(self, t: str) -> None:
@@ -77,21 +85,21 @@ class ChartWidget(QWidget):
         self.update()
 
     def _get_color_for_id(self, obj_id: str) -> QColor:
+        """
+        Генерує максимально відмінний колір, використовуючи золотий кут.
+        Гарантує, що сусіди не будуть схожими.
+        """
         if obj_id in self._id_color_cache:
             return self._id_color_cache[obj_id]
 
-        hash_obj = hashlib.md5(obj_id.encode())
-        hex_dig = hash_obj.hexdigest()
+        idx = len(self._id_color_cache)
 
-        r = int(hex_dig[0:2], 16)
-        g = int(hex_dig[2:4], 16)
-        b = int(hex_dig[4:6], 16)
+        hue = int((idx * 137.508) % 360)
 
-        col = QColor(r, g, b)
-        final_col = QColor.fromHsv(col.hue(), 200, 255)
+        color = QColor.fromHsv(hue, 200, 255)
 
-        self._id_color_cache[obj_id] = final_col
-        return final_col
+        self._id_color_cache[obj_id] = color
+        return color
 
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
         pos = event.pos()
@@ -120,10 +128,12 @@ class ChartWidget(QWidget):
             f"Time: {time_str}<br>"
             f"Dist: {data.distance}m, Angle: {data.angle:.0f}°<br>"
             f"Conf: {data.confidence:.2f}<br>"
-            f"False alarm: {is_highlighted}<br>"
             f"Type: {data.type}<br>"
             f"ID: {data.id[:8]}..."
         )
+        if is_highlighted:
+            txt += "<br><b style='color:yellow'>HIGHLIGHTED (False Alarm)</b>"
+
         QToolTip.showText(global_pos, txt, self)
 
     def paintEvent(self, event: QPaintEvent) -> None:
@@ -184,7 +194,6 @@ class ChartWidget(QWidget):
             )
 
         p.setPen(QPen(self.color_grid, 1))
-        # Відновлений коефіцієнт 1.1
         p.drawLine(
             QPointF(center.x(), center.y() - radius * 1.1),
             QPointF(center.x(), center.y() + radius * 1.1),
@@ -223,16 +232,8 @@ class ChartWidget(QWidget):
             if not events:
                 continue
 
-            last_event = events[-1]
-            sensor_type = last_event.type
-
-            # --- 1. Колір "Аури" (Тип) ---
-            aura_color = self.color_sound if sensor_type == "Sound" else self.color_rf
-            if last_event.id in self.highlight_ids:
-                aura_color = self.color_highlight
-
-            # --- 2. Колір "Ядра" (ID) ---
-            core_color = self._get_color_for_id(obj_id)
+            line_color = self._get_color_for_id(obj_id)
+            is_highlighted = events[-1].id in self.highlight_ids
 
             points: List[QPointF] = []
             timestamps: List[float] = []
@@ -245,26 +246,12 @@ class ChartWidget(QWidget):
                 timestamps.append(datetime.fromisoformat(ev.timestamp).timestamp())
                 self._interactive_points.append((pt, ev))
 
-            # --- Малювання ліній з урахуванням розривів (> 60 сек) ---
             if len(points) > 1:
-                # Налаштування пензлів
-                # "Аура" - тепер більш видима (Alpha 80) і товста (8px)
-                pen_aura_solid = QPen(
-                    QColor(aura_color.red(), aura_color.green(), aura_color.blue(), 80),
-                    8,
-                )
-                pen_aura_solid.setCapStyle(Qt.PenCapStyle.RoundCap)
+                pen_solid = QPen(line_color, self.LINE_WIDTH_NORMAL)
+                pen_solid.setCapStyle(Qt.PenCapStyle.RoundCap)
 
-                pen_aura_dash = QPen(
-                    QColor(aura_color.red(), aura_color.green(), aura_color.blue(), 60),
-                    4,
-                )
-                pen_aura_dash.setStyle(Qt.PenStyle.DotLine)
-
-                # "Ядро"
-                pen_core_solid = QPen(core_color, 3)
-                pen_core_dash = QPen(core_color, 1)
-                pen_core_dash.setStyle(Qt.PenStyle.DotLine)
+                pen_dash = QPen(line_color, self.LINE_WIDTH_THIN)
+                pen_dash.setStyle(Qt.PenStyle.DotLine)
 
                 for i in range(len(points) - 1):
                     p1 = points[i]
@@ -272,36 +259,33 @@ class ChartWidget(QWidget):
                     t1 = timestamps[i]
                     t2 = timestamps[i + 1]
 
-                    time_diff = t2 - t1
-
-                    if time_diff > 60:  # Розрив більше хвилини
-                        # Малюємо пунктир (тонший)
-                        p.setPen(pen_aura_dash)
-                        p.drawLine(p1, p2)
-                        p.setPen(pen_core_dash)
+                    if (t2 - t1) > self.TIME_DIFF_S:
+                        p.setPen(pen_dash)
                         p.drawLine(p1, p2)
                     else:
-                        # Малюємо суцільну лінію
-                        p.setPen(pen_aura_solid)
-                        p.drawLine(p1, p2)
-                        p.setPen(pen_core_solid)
+                        p.setPen(pen_solid)
                         p.drawLine(p1, p2)
 
-                # --- Маркери (Початок/Кінець) ---
+                # --- Маркери (початок/кінець) ---
                 start_pt = points[0]
                 end_pt = points[-1]
 
                 p.setPen(Qt.PenStyle.NoPen)
-                p.setBrush(QBrush(QColor(0, 255, 0)))  # Зелений старт
-                p.drawEllipse(start_pt, 4, 4)
+                p.setBrush(QBrush(QColor(0, 255, 0)))
+                p.drawEllipse(start_pt, self.DOT_RADIUS, self.DOT_RADIUS)
 
-                p.setBrush(QBrush(QColor(255, 50, 50)))  # Червоний фініш
-                p.drawEllipse(end_pt, 5, 5)
+                p.setBrush(QBrush(QColor(255, 50, 50)))
+                p.drawEllipse(end_pt, self.DOT_RADIUS + 1, self.DOT_RADIUS + 1)
+
+                # --- Підсвітка ТІЛЬКИ на останній точці  ---
+                if is_highlighted:
+                    p.setPen(QPen(self.color_highlight, self.HIGHLIGHT_FRAME_WIDTH))
+                    p.setBrush(Qt.BrushStyle.NoBrush)
+                    radius_hl = self.DOT_RADIUS + self.HIGHLIGHT_RADIUS_OFFSET
+                    p.drawEllipse(end_pt, radius_hl, radius_hl)
 
                 # --- Текст імені посередині лінії ---
                 mid_idx = len(points) // 2
-                # Беремо сегмент посередині для орієнтації тексту
-                # Якщо точок мало, беремо першу і останню
                 if len(points) > 2:
                     p_a = points[mid_idx - 1]
                     p_b = points[mid_idx]
@@ -312,16 +296,13 @@ class ChartWidget(QWidget):
                 mid_x = (p_a.x() + p_b.x()) / 2
                 mid_y = (p_a.y() + p_b.y()) / 2
 
-                # Розрахунок кута нахилу лінії
                 dx = p_b.x() - p_a.x()
                 dy = p_b.y() - p_a.y()
                 angle_deg = math.degrees(math.atan2(dy, dx))
 
-                # Щоб текст не був догори дригом
                 if 90 < abs(angle_deg) <= 180:
                     angle_deg += 180
 
-                # Скорочення імені
                 name_txt = events[0].name
                 if len(name_txt) > 10:
                     name_txt = name_txt[:10] + ".."
@@ -329,23 +310,30 @@ class ChartWidget(QWidget):
                 p.save()
                 p.translate(mid_x, mid_y)
                 p.rotate(angle_deg)
-                p.setPen(QColor(255, 255, 255))
+
+                text_col = self.color_highlight if is_highlighted else self.color_text
+                p.setPen(text_col)
+
                 p.setFont(QFont("Arial", 8, QFont.Weight.Bold))
-                # Малюємо трохи вище лінії (-5)
-                p.drawText(0, -8, name_txt)
+                p.drawText(0, self.TEXT_OFFSET_Y, name_txt)
                 p.restore()
 
             else:
                 # Одна точка
                 pt = points[0]
                 p.setPen(Qt.PenStyle.NoPen)
-                p.setBrush(QBrush(aura_color))
-                p.drawEllipse(pt, 6, 6)
-                p.setBrush(QBrush(core_color))
-                p.drawEllipse(pt, 3, 3)
+                p.setBrush(QBrush(line_color))
+                p.drawEllipse(pt, self.DOT_RADIUS, self.DOT_RADIUS)
 
-                p.setPen(QColor(255, 255, 255))
+                text_col = self.color_highlight if is_highlighted else self.color_text
+                p.setPen(text_col)
                 p.drawText(int(pt.x() + 8), int(pt.y()), events[0].name)
+
+                if is_highlighted:
+                    p.setPen(QPen(self.color_highlight, self.HIGHLIGHT_FRAME_WIDTH))
+                    p.setBrush(Qt.BrushStyle.NoBrush)
+                    radius_hl = self.DOT_RADIUS + self.HIGHLIGHT_RADIUS_OFFSET
+                    p.drawEllipse(pt, radius_hl, radius_hl)
 
     # -------------------------------------------------------------------------
     # CARTESIAN CHART (Timeline)
@@ -403,11 +391,8 @@ class ChartWidget(QWidget):
             if not events:
                 continue
 
-            sensor_type = events[0].type
-            aura_color = self.color_rf if sensor_type == "RF" else self.color_sound
-            if events[0].id in self.highlight_ids:
-                aura_color = self.color_highlight
-            core_color = self._get_color_for_id(obj_id)
+            line_color = self._get_color_for_id(obj_id)
+            is_highlighted = events[-1].id in self.highlight_ids
 
             points: List[QPointF] = []
             timestamps: List[float] = []
@@ -428,20 +413,9 @@ class ChartWidget(QWidget):
                 self._interactive_points.append((pt, ev))
 
             if len(points) > 1:
-                # Налаштування пензлів для Timeline
-                pen_aura_solid = QPen(
-                    QColor(aura_color.red(), aura_color.green(), aura_color.blue(), 80),
-                    8,
-                )
-                pen_aura_dash = QPen(
-                    QColor(aura_color.red(), aura_color.green(), aura_color.blue(), 60),
-                    4,
-                )
-                pen_aura_dash.setStyle(Qt.PenStyle.DotLine)
-
-                pen_core_solid = QPen(core_color, 3)
-                pen_core_dash = QPen(core_color, 1)
-                pen_core_dash.setStyle(Qt.PenStyle.DotLine)
+                pen_solid = QPen(line_color, self.LINE_WIDTH_NORMAL)
+                pen_dash = QPen(line_color, self.LINE_WIDTH_THIN)
+                pen_dash.setStyle(Qt.PenStyle.DotLine)
 
                 for i in range(len(points) - 1):
                     p1 = points[i]
@@ -449,22 +423,32 @@ class ChartWidget(QWidget):
                     t1 = timestamps[i]
                     t2 = timestamps[i + 1]
 
-                    time_diff = t2 - t1
-
-                    if time_diff > 60:
-                        p.setPen(pen_aura_dash)
-                        p.drawLine(p1, p2)
-                        p.setPen(pen_core_dash)
+                    if (t2 - t1) > self.TIME_DIFF_S:
+                        p.setPen(pen_dash)
                         p.drawLine(p1, p2)
                     else:
-                        p.setPen(pen_aura_solid)
+                        p.setPen(pen_solid)
                         p.drawLine(p1, p2)
-                        p.setPen(pen_core_solid)
-                        p.drawLine(p1, p2)
+
+                # Підсвітка ТІЛЬКИ останньої точки на таймлайні
+                if is_highlighted:
+                    end_pt = points[-1]
+                    p.setPen(QPen(self.color_highlight, self.HIGHLIGHT_FRAME_WIDTH))
+                    p.setBrush(Qt.BrushStyle.NoBrush)
+                    radius_hl = self.DOT_RADIUS + self.HIGHLIGHT_RADIUS_OFFSET
+                    p.drawEllipse(end_pt, radius_hl, radius_hl)
+
             else:
+                pt = points[0]
                 p.setPen(Qt.PenStyle.NoPen)
-                p.setBrush(QBrush(aura_color))
-                p.drawEllipse(points[0], 5, 5)
+                p.setBrush(QBrush(line_color))
+                p.drawEllipse(pt, self.DOT_RADIUS, self.DOT_RADIUS)
+
+                if is_highlighted:
+                    p.setPen(QPen(self.color_highlight, self.HIGHLIGHT_FRAME_WIDTH))
+                    p.setBrush(Qt.BrushStyle.NoBrush)
+                    radius_hl = self.DOT_RADIUS + self.HIGHLIGHT_RADIUS_OFFSET
+                    p.drawEllipse(pt, radius_hl, radius_hl)
 
     def _draw_cartesian_grid(
         self,
@@ -536,7 +520,6 @@ class ChartWidget(QWidget):
         if not self.data:
             return
 
-        # Рахуємо унікальні об'єкти
         unique_objects_map = {}
         for d in self.data:
             unique_objects_map[d.id] = d.object_class

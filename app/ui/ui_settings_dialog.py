@@ -12,7 +12,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 class Ui_SettingsDialog(object):
     def setupUi(self, SettingsDialog):
         SettingsDialog.setObjectName("SettingsDialog")
-        SettingsDialog.resize(500, 350)
+        SettingsDialog.resize(500, 520)
         SettingsDialog.setStyleSheet("QDialog {\n"
 "  background-color: #002f00;\n"
 "  color: #ffffff;\n"
@@ -36,9 +36,15 @@ class Ui_SettingsDialog(object):
 "  border-radius: 3px;\n"
 "}\n"
 "\n"
+"QLineEdit:disabled, QComboBox:disabled, QSpinBox:disabled, QDoubleSpinBox:disabled {\n"
+"  background-color: rgba(0, 0, 0, 0.6);  \n"
+"  border: 1px solid #1a3a21;            \n"
+"  color: #557766;                 \n"
+"}\n"
+"\n"
 "/* Стрілка випадаючого списку */\n"
 "QComboBox::drop-down {\n"
-"   \n"
+"    \n"
 "}\n"
 "QComboBox::down-arrow {\n"
 "    width: 16px;\n"
@@ -49,6 +55,27 @@ class Ui_SettingsDialog(object):
 "    width: 16px;\n"
 "    height: 16px;   \n"
 "    padding: 2px;\n"
+"}\n"
+"\n"
+"/* Чекбокси */\n"
+"QCheckBox {\n"
+"    color: #ffffff;\n"
+"    font-size: 18px;\n"
+"    spacing: 10px;\n"
+"}\n"
+"\n"
+"QCheckBox::indicator {\n"
+"    width: 20px;\n"
+"    height: 20px;\n"
+"    background-color: rgba(0, 10, 0, 0.8);\n"
+"    border: 1px solid #328844;\n"
+"    border-radius: 3px;\n"
+"}\n"
+"\n"
+"QCheckBox::indicator:checked {\n"
+"    background-color: #4CAF50;\n"
+"    border: 1px solid #4CAF50;\n"
+"    image: url(); /* Можна додати іконку галочки, але колір теж працює як індикатор */\n"
 "}\n"
 "\n"
 "/* Кнопки */\n"
@@ -96,7 +123,7 @@ class Ui_SettingsDialog(object):
         self.lblTitle.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.lblTitle.setObjectName("lblTitle")
         self.frameContent = QtWidgets.QFrame(parent=SettingsDialog)
-        self.frameContent.setGeometry(QtCore.QRect(20, 74, 461, 166))
+        self.frameContent.setGeometry(QtCore.QRect(20, 74, 461, 341))
         self.frameContent.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
         self.frameContent.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
         self.frameContent.setObjectName("frameContent")
@@ -108,7 +135,8 @@ class Ui_SettingsDialog(object):
         self.formLayout.setWidget(0, QtWidgets.QFormLayout.ItemRole.LabelRole, self.labelRadius)
         self.inpMaxRadius = QtWidgets.QDoubleSpinBox(parent=self.frameContent)
         self.inpMaxRadius.setButtonSymbols(QtWidgets.QAbstractSpinBox.ButtonSymbols.PlusMinus)
-        self.inpMaxRadius.setMaximum(1000.0)
+        self.inpMaxRadius.setMinimum(1.0)
+        self.inpMaxRadius.setMaximum(10000.0)
         self.inpMaxRadius.setProperty("value", 50.0)
         self.inpMaxRadius.setObjectName("inpMaxRadius")
         self.formLayout.setWidget(0, QtWidgets.QFormLayout.ItemRole.FieldRole, self.inpMaxRadius)
@@ -120,20 +148,39 @@ class Ui_SettingsDialog(object):
         self.formLayout.setWidget(2, QtWidgets.QFormLayout.ItemRole.LabelRole, self.labelRelay)
         self.cmbRelay = QtWidgets.QComboBox(parent=self.frameContent)
         self.cmbRelay.setObjectName("cmbRelay")
-        self.cmbRelay.addItem("")
-        self.cmbRelay.addItem("")
-        self.cmbRelay.addItem("")
         self.formLayout.setWidget(2, QtWidgets.QFormLayout.ItemRole.FieldRole, self.cmbRelay)
-        self.inpGpsInterval = QtWidgets.QDoubleSpinBox(parent=self.frameContent)
+        self.labelAutoStart = QtWidgets.QLabel(parent=self.frameContent)
+        self.labelAutoStart.setObjectName("labelAutoStart")
+        self.formLayout.setWidget(3, QtWidgets.QFormLayout.ItemRole.LabelRole, self.labelAutoStart)
+        self.chkJammerAutoStart = QtWidgets.QCheckBox(parent=self.frameContent)
+        self.chkJammerAutoStart.setObjectName("chkJammerAutoStart")
+        self.formLayout.setWidget(3, QtWidgets.QFormLayout.ItemRole.FieldRole, self.chkJammerAutoStart)
+        self.labelAutoStop = QtWidgets.QLabel(parent=self.frameContent)
+        self.labelAutoStop.setObjectName("labelAutoStop")
+        self.formLayout.setWidget(4, QtWidgets.QFormLayout.ItemRole.LabelRole, self.labelAutoStop)
+        self.chkJammerAutoStop = QtWidgets.QCheckBox(parent=self.frameContent)
+        self.chkJammerAutoStop.setObjectName("chkJammerAutoStop")
+        self.formLayout.setWidget(4, QtWidgets.QFormLayout.ItemRole.FieldRole, self.chkJammerAutoStop)
+        self.labelStopInterval = QtWidgets.QLabel(parent=self.frameContent)
+        self.labelStopInterval.setObjectName("labelStopInterval")
+        self.formLayout.setWidget(5, QtWidgets.QFormLayout.ItemRole.LabelRole, self.labelStopInterval)
+        self.inpJammerStopInterval = QtWidgets.QSpinBox(parent=self.frameContent)
+        self.inpJammerStopInterval.setEnabled(False)
+        self.inpJammerStopInterval.setButtonSymbols(QtWidgets.QAbstractSpinBox.ButtonSymbols.PlusMinus)
+        self.inpJammerStopInterval.setMinimum(10)
+        self.inpJammerStopInterval.setMaximum(36000)
+        self.inpJammerStopInterval.setProperty("value", 900)
+        self.inpJammerStopInterval.setObjectName("inpJammerStopInterval")
+        self.formLayout.setWidget(5, QtWidgets.QFormLayout.ItemRole.FieldRole, self.inpJammerStopInterval)
+        self.inpGpsInterval = QtWidgets.QSpinBox(parent=self.frameContent)
         self.inpGpsInterval.setButtonSymbols(QtWidgets.QAbstractSpinBox.ButtonSymbols.PlusMinus)
-        self.inpGpsInterval.setDecimals(0)
-        self.inpGpsInterval.setMinimum(10.0)
-        self.inpGpsInterval.setMaximum(1001.0)
-        self.inpGpsInterval.setProperty("value", 60.0)
+        self.inpGpsInterval.setMinimum(10)
+        self.inpGpsInterval.setMaximum(3600)
+        self.inpGpsInterval.setProperty("value", 60)
         self.inpGpsInterval.setObjectName("inpGpsInterval")
         self.formLayout.setWidget(1, QtWidgets.QFormLayout.ItemRole.FieldRole, self.inpGpsInterval)
         self.layoutWidget = QtWidgets.QWidget(parent=SettingsDialog)
-        self.layoutWidget.setGeometry(QtCore.QRect(21, 290, 461, 40))
+        self.layoutWidget.setGeometry(QtCore.QRect(20, 450, 461, 40))
         self.layoutWidget.setObjectName("layoutWidget")
         self.horizontalLayout = QtWidgets.QHBoxLayout(self.layoutWidget)
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
@@ -151,6 +198,7 @@ class Ui_SettingsDialog(object):
         self.horizontalLayout.addWidget(self.btnSave)
 
         self.retranslateUi(SettingsDialog)
+        self.chkJammerAutoStop.toggled['bool'].connect(self.inpJammerStopInterval.setEnabled) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(SettingsDialog)
 
     def retranslateUi(self, SettingsDialog):
@@ -160,10 +208,12 @@ class Ui_SettingsDialog(object):
         self.lblTitle.setText(_translate("SettingsDialog", "Налаштування"))
         self.labelRadius.setText(_translate("SettingsDialog", "Макс. радіус радару (км):"))
         self.labelGps.setText(_translate("SettingsDialog", "Інтервал GPS (с):"))
-        self.labelRelay.setText(_translate("SettingsDialog", "Основне реле:"))
-        self.cmbRelay.setItemText(0, _translate("SettingsDialog", "K1"))
-        self.cmbRelay.setItemText(1, _translate("SettingsDialog", "K1,K2"))
-        self.cmbRelay.setItemText(2, _translate("SettingsDialog", "K1,K2,K3"))
+        self.labelRelay.setText(_translate("SettingsDialog", "Набір реле:"))
+        self.labelAutoStart.setText(_translate("SettingsDialog", "Авто-старт глушилки:"))
+        self.chkJammerAutoStart.setText(_translate("SettingsDialog", "Активувати"))
+        self.labelAutoStop.setText(_translate("SettingsDialog", "Авто-стоп глушилки:"))
+        self.chkJammerAutoStop.setText(_translate("SettingsDialog", "Активувати"))
+        self.labelStopInterval.setText(_translate("SettingsDialog", "Інтервал авто-стопу (с):"))
         self.btnLogout.setText(_translate("SettingsDialog", "Вийти з акаунту"))
         self.btnCancel.setText(_translate("SettingsDialog", "Скасувати"))
         self.btnSave.setText(_translate("SettingsDialog", "Зберегти"))

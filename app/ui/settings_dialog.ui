@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>500</width>
-    <height>350</height>
+    <height>520</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -37,9 +37,15 @@ QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox {
   border-radius: 3px;
 }
 
+QLineEdit:disabled, QComboBox:disabled, QSpinBox:disabled, QDoubleSpinBox:disabled {
+  background-color: rgba(0, 0, 0, 0.6);  
+  border: 1px solid #1a3a21;            
+  color: #557766;                 
+}
+
 /* Стрілка випадаючого списку */
 QComboBox::drop-down {
-   
+    
 }
 QComboBox::down-arrow {
     width: 16px;
@@ -50,6 +56,27 @@ QDoubleSpinBox::up-button, QDoubleSpinBox::down-button, QSpinBox::up-button, QSp
     width: 16px;
     height: 16px;   
     padding: 2px;
+}
+
+/* Чекбокси */
+QCheckBox {
+    color: #ffffff;
+    font-size: 18px;
+    spacing: 10px;
+}
+
+QCheckBox::indicator {
+    width: 20px;
+    height: 20px;
+    background-color: rgba(0, 10, 0, 0.8);
+    border: 1px solid #328844;
+    border-radius: 3px;
+}
+
+QCheckBox::indicator:checked {
+    background-color: #4CAF50;
+    border: 1px solid #4CAF50;
+    image: url(); /* Можна додати іконку галочки, але колір теж працює як індикатор */
 }
 
 /* Кнопки */
@@ -120,7 +147,7 @@ QPushButton#btnLogout:pressed {
      <x>20</x>
      <y>74</y>
      <width>461</width>
-     <height>166</height>
+     <height>341</height>
     </rect>
    </property>
    <property name="frameShape">
@@ -145,8 +172,11 @@ QPushButton#btnLogout:pressed {
       <property name="buttonSymbols">
        <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
       </property>
+      <property name="minimum">
+       <double>1.000000000000000</double>
+      </property>
       <property name="maximum">
-       <double>1000.000000000000000</double>
+       <double>10000.000000000000000</double>
       </property>
       <property name="value">
        <double>50.000000000000000</double>
@@ -163,45 +193,80 @@ QPushButton#btnLogout:pressed {
     <item row="2" column="0">
      <widget class="QLabel" name="labelRelay">
       <property name="text">
-       <string>Основне реле:</string>
+       <string>Набір реле:</string>
       </property>
      </widget>
     </item>
     <item row="2" column="1">
-     <widget class="QComboBox" name="cmbRelay">
-      <item>
-       <property name="text">
-        <string>K1</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>K1,K2</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>K1,K2,K3</string>
-       </property>
-      </item>
+     <widget class="QComboBox" name="cmbRelay"/>
+    </item>
+    <item row="3" column="0">
+     <widget class="QLabel" name="labelAutoStart">
+      <property name="text">
+       <string>Авто-старт глушилки:</string>
+      </property>
      </widget>
     </item>
-    <item row="1" column="1">
-     <widget class="QDoubleSpinBox" name="inpGpsInterval">
+    <item row="3" column="1">
+     <widget class="QCheckBox" name="chkJammerAutoStart">
+      <property name="text">
+       <string>Активувати</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="0">
+     <widget class="QLabel" name="labelAutoStop">
+      <property name="text">
+       <string>Авто-стоп глушилки:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="1">
+     <widget class="QCheckBox" name="chkJammerAutoStop">
+      <property name="text">
+       <string>Активувати</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="0">
+     <widget class="QLabel" name="labelStopInterval">
+      <property name="text">
+       <string>Інтервал авто-стопу (с):</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="1">
+     <widget class="QSpinBox" name="inpJammerStopInterval">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
       <property name="buttonSymbols">
        <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
       </property>
-      <property name="decimals">
-       <number>0</number>
-      </property>
       <property name="minimum">
-       <double>10.000000000000000</double>
+       <number>10</number>
       </property>
       <property name="maximum">
-       <double>1001.000000000000000</double>
+       <number>36000</number>
       </property>
       <property name="value">
-       <double>60.000000000000000</double>
+       <number>900</number>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QSpinBox" name="inpGpsInterval">
+      <property name="buttonSymbols">
+       <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
+      </property>
+      <property name="minimum">
+       <number>10</number>
+      </property>
+      <property name="maximum">
+       <number>3600</number>
+      </property>
+      <property name="value">
+       <number>60</number>
       </property>
      </widget>
     </item>
@@ -210,8 +275,8 @@ QPushButton#btnLogout:pressed {
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>21</x>
-     <y>290</y>
+     <x>20</x>
+     <y>450</y>
      <width>461</width>
      <height>40</height>
     </rect>
@@ -255,5 +320,22 @@ QPushButton#btnLogout:pressed {
   </widget>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>chkJammerAutoStop</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>inpJammerStopInterval</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>350</x>
+     <y>290</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>350</x>
+     <y>340</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

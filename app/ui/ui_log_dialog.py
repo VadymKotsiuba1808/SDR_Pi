@@ -96,6 +96,14 @@ class Ui_LogDialog(object):
 "  color: #002509;\n"
 "}\n"
 "\n"
+"QPushButton:disabled {\n"
+"  border: 1px solid #5a6f5f;\n"
+"  background-color: #2f3a34;\n"
+"  color: #8fa89a;\n"
+"}\n"
+"\n"
+"\n"
+"\n"
 "QPushButton#btnApplyFilters {\n"
 "  background-color: #004400;\n"
 "  font-weight: bold;\n"
@@ -386,8 +394,19 @@ class Ui_LogDialog(object):
         self.cmbSituationTime.setMinimumSize(QtCore.QSize(300, 0))
         self.cmbSituationTime.setObjectName("cmbSituationTime")
         self.layoutSitControl.addWidget(self.cmbSituationTime)
-        spacerItem3 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
+        spacerItem3 = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum)
         self.layoutSitControl.addItem(spacerItem3)
+        self.btnSituationPrev = QtWidgets.QPushButton(parent=self.tabSituation)
+        self.btnSituationPrev.setEnabled(False)
+        self.btnSituationPrev.setObjectName("btnSituationPrev")
+        self.layoutSitControl.addWidget(self.btnSituationPrev)
+        spacerItem4 = QtWidgets.QSpacerItem(20, 20, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum)
+        self.layoutSitControl.addItem(spacerItem4)
+        self.btnSituationNext = QtWidgets.QPushButton(parent=self.tabSituation)
+        self.btnSituationNext.setObjectName("btnSituationNext")
+        self.layoutSitControl.addWidget(self.btnSituationNext)
+        spacerItem5 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
+        self.layoutSitControl.addItem(spacerItem5)
         self.verticalLayout_Sit.addLayout(self.layoutSitControl)
         self.chartContainerRadarSit = QtWidgets.QFrame(parent=self.tabSituation)
         self.chartContainerRadarSit.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
@@ -400,7 +419,7 @@ class Ui_LogDialog(object):
         self.horizontalLayout_Main.addWidget(self.frameContent)
 
         self.retranslateUi(LogDialog)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(3)
         QtCore.QMetaObject.connectSlotsByName(LogDialog)
 
     def retranslateUi(self, LogDialog):
@@ -451,4 +470,6 @@ class Ui_LogDialog(object):
         self.lblSignalTitle.setText(_translate("LogDialog", "Рівень сигналу / Впевненість"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabObject), _translate("LogDialog", "Аналіз об\'єкта"))
         self.lblSitTime.setText(_translate("LogDialog", "Час відображення:"))
+        self.btnSituationPrev.setText(_translate("LogDialog", "Попередній"))
+        self.btnSituationNext.setText(_translate("LogDialog", "Наступний"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabSituation), _translate("LogDialog", "Ситуація на радарі"))

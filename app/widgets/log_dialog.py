@@ -19,6 +19,7 @@ from app.models.log_entries import LogEntry
 from app.models.detection_event import DetectionEvent, DetectionType
 from app.models.object_class import ObjectClass
 from app.services.log_service import LogService
+from app.utils.ui_utils import update_element_styles
 
 
 class LogDialog(QDialog):
@@ -146,6 +147,8 @@ class LogDialog(QDialog):
 
         self.ui.cmbTargetObject.currentIndexChanged.connect(self._update_object_tab)
         self.ui.cmbSituationTime.currentIndexChanged.connect(self._update_situation_tab)
+        self.ui.btnSituationPrev.clicked.connect(self._prev_situation)
+        self.ui.btnSituationNext.clicked.connect(self._next_situation)
 
     def _load_language(self) -> None:
         lang_code = self.settings_service.lang_code
@@ -382,7 +385,7 @@ class LogDialog(QDialog):
                 except ValueError:
                     pass
 
-        sorted_times = sorted(list(timestamps), reverse=True)
+        sorted_times = sorted(list(timestamps), reverse=False)
         for t in sorted_times:
             self.ui.cmbSituationTime.addItem(t)
 
@@ -430,7 +433,11 @@ class LogDialog(QDialog):
         self.chart_signal.set_data(obj_data, false_ids)
 
     def _update_situation_tab(self) -> None:
-        time_str = self.ui.cmbSituationTime.currentText()
+        cmb = self.ui.cmbSituationTime
+        time_str = cmb.currentText()
+
+        self._update_situation_nav_buttons()
+
         if not time_str:
             self.chart_sit.set_data([])
             return
@@ -443,19 +450,62 @@ class LogDialog(QDialog):
         active_objects: List[DetectionEvent] = []
 
         for e in self.all_entries:
-            if e.is_detection:
-                try:
-                    dt = datetime.fromisoformat(e.timestamp)
-                    if (
-                        dt.year == sel_dt.year
-                        and dt.month == sel_dt.month
-                        and dt.day == sel_dt.day
-                        and dt.hour == sel_dt.hour
-                        and dt.minute == sel_dt.minute
-                    ):
-                        active_objects.append(e.payload)
-                except ValueError:
-                    pass
+            if not e.is_detection:
+                continue
+
+            try:
+                dt = datetime.fromisoformat(e.timestamp)
+            except ValueError:
+                continue
+
+            if (
+                dt.year == sel_dt.year
+                and dt.month == sel_dt.month
+                and dt.day == sel_dt.day
+                and dt.hour == sel_dt.hour
+                and dt.minute == sel_dt.minute
+            ):
+                active_objects.append(e.payload)
 
         false_ids = self._get_false_ids()
         self.chart_sit.set_data(active_objects, false_ids)
+
+    def _update_situation_nav_buttons(self) -> None:
+        cmb = self.ui.cmbSituationTime
+        btn_prev = self.ui.btnSituationPrev
+        btn_next = self.ui.btnSituationNext
+
+        index = cmb.currentIndex()
+        count = cmb.count()
+
+        btn_prev.setEnabled(index > 0)
+        btn_next.setEnabled(index < count - 1)
+
+        update_element_styles(btn_prev)
+        update_element_styles(btn_next)
+
+    def _prev_situation(self):
+        self._change_situation_index(-1)
+
+    def _next_situation(self):
+        self._change_situation_index(1)
+
+    def _change_situation_index(self, step: int):
+        cmb = self.ui.cmbSituationTime
+        btn_prev = self.ui.btnSituationPrev
+        btn_next = self.ui.btnSituationNext
+
+        count = cmb.count()
+        current = cmb.currentIndex()
+        new_index = current + step
+
+        if not (0 <= new_index < count):
+            return
+
+        cmb.setCurrentIndex(new_index)
+
+        btn_prev.setEnabled(new_index > 0)
+        update_element_styles(btn_prev)
+
+        btn_next.setEnabled(new_index < count - 1)
+        update_element_styles(btn_next)

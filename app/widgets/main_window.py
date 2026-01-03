@@ -553,11 +553,12 @@ class MainWindow(QMainWindow):
 
     def open_logs_dialog(self):
         mock_classes = [
-            ObjectClass(1, name="Drone Sound"),
-            ObjectClass(2, name="Airplane"),
-            ObjectClass(3, name="Carlson"),
-            ObjectClass(4, name="Quadcopter"),
-            ObjectClass(5, name="UFO"),
+            ObjectClass(1, name="shahed"),
+            ObjectClass(2, name="orlan"),
+            ObjectClass(3, name="mavic"),
+            ObjectClass(4, name="lancet"),
+            ObjectClass(5, name="zala"),
+            ObjectClass(6, name="fpv"),
         ]
 
         logs_dialog = LogDialog(self.log_service, mock_classes, self.settings_service)

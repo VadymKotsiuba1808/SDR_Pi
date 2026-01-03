@@ -16,7 +16,8 @@ from app.protocols import LogDialogSettings
 from app.ui.ui_log_dialog import Ui_LogDialog
 from app.widgets.chart_widget import ChartWidget
 from app.models.log_entries import LogEntry
-from app.models.detection_event import DetectionEvent
+from app.models.detection_event import DetectionEvent, DetectionType
+from app.models.object_class import ObjectClass
 from app.services.log_service import LogService
 
 
@@ -29,19 +30,20 @@ class LogDialog(QDialog):
     def __init__(
         self,
         log_service: LogService,
+        classes: List[ObjectClass],
         settings_service: LogDialogSettings,
         parent: Optional[QWidget] = None,
     ) -> None:
         super().__init__(parent)
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
 
-        self.service = log_service
+        self.log_service = log_service
+        self.classes = classes
         self.settings_service = settings_service
 
         self._load_ui()
         self._setup_state_variables()
-        self._setup_table_style()
-        self._init_charts()
+        self._adjust_fields()
         self._load_sessions_list()
         self._connect_handlers()
 
@@ -71,6 +73,21 @@ class LogDialog(QDialog):
         self.translator = QTranslator()
         self.all_entries: List[LogEntry] = []
         self.filtered_entries: List[LogEntry] = []
+
+    def _adjust_fields(self) -> None:
+        self._populate_class_cmb()
+        self._setup_table_style()
+        self._init_charts()
+        self._load_sessions_list()
+
+    def _populate_class_cmb(self):
+        self.ui.cmbFilterClass.clear()
+        self.ui.cmbFilterClass.addItem("Всі")
+
+        for class_obj in self.classes:
+            self.ui.cmbFilterClass.addItem(class_obj.name)
+
+        self.ui.cmbFilterClass.setCurrentIndex(0)
 
     def _setup_table_style(self) -> None:
         """Налаштування вигляду таблиці."""
@@ -107,7 +124,7 @@ class LogDialog(QDialog):
         self.ui.layoutChartRadarSit.addWidget(self.chart_sit)
 
     def _load_sessions_list(self) -> None:
-        sessions = self.service.get_available_sessions()
+        sessions = self.log_service.get_available_sessions()
         print(f"[LogDialog] Found {len(sessions)} available sessions.")
 
         self.ui.cmbSessions.clear()
@@ -146,7 +163,7 @@ class LogDialog(QDialog):
         fname = self.ui.cmbSessions.currentData()
         if fname:
             print(f"[LogDialog] Loading session data form file: {fname}")
-            self.all_entries = self.service.load_session_data(fname)
+            self.all_entries = self.log_service.load_session_data(fname)
 
             if self.all_entries:
                 try:
@@ -167,6 +184,11 @@ class LogDialog(QDialog):
         print("[LogDialog] Applying filters...")
 
         name_filter = self.ui.inpFilterName.text().lower()
+
+        class_filter: str = None
+        if self.ui.cmbFilterClass.currentIndex() != 0:
+            class_filter = self.ui.cmbFilterClass.currentText().lower()
+
         type_idx = self.ui.cmbFilterType.currentIndex()
 
         dist_min = self.ui.inpDistMin.value()
@@ -196,18 +218,24 @@ class LogDialog(QDialog):
             if type_idx == 2 and not e.is_false_alarm:
                 continue
 
-            # 3. Text Search (Name, ID, Class)
+            # 3. Class Filter
+            if class_filter:
+                obj_class = getattr(payload, "object_class", "")
+
+                if class_filter != obj_class.lower():
+                    continue
+
+            # 4. Text Search (Name, ID, Class)
             if name_filter:
                 det_id = getattr(payload, "id", getattr(payload, "detection_id", ""))
-                obj_class = getattr(payload, "object_class", "")
                 name = getattr(payload, "name", "")
 
-                search_text = f"{name} {det_id} {obj_class}".lower()
+                search_text = f"{name} {det_id}".lower()
 
                 if name_filter not in search_text:
                     continue
 
-            # 4. Numeric Filters (Only for detections)
+            # 5. Numeric Filters (Only for detections)
             if e.is_detection:
                 if not (dist_min <= payload.distance <= dist_max):
                     continue
@@ -225,8 +253,9 @@ class LogDialog(QDialog):
         print("[LogDialog] Resetting filters.")
         self.ui.inpFilterName.clear()
         self.ui.cmbFilterType.setCurrentIndex(0)
+        self.ui.cmbFilterClass.setCurrentIndex(0)
         self.ui.inpDistMin.setValue(0)
-        self.ui.inpDistMax.setValue(50000)
+        self.ui.inpDistMax.setValue(5000)
         self.ui.inpAngleMin.setValue(0)
         self.ui.inpAngleMax.setValue(360)
 
@@ -279,18 +308,23 @@ class LogDialog(QDialog):
                 t.setItem(row_idx, 2, name_item)
 
                 t.setItem(row_idx, 3, QTableWidgetItem(data.object_class))
+                formatted_frequency: str
+                if data.type == DetectionType.RF:
+                    formatted_frequency = f"{(data.frequency / 1_000_000_000):.3f} GHz"
+                else:
+                    formatted_frequency = f"{(data.frequency):.0f} Hz"
                 t.setItem(
                     row_idx,
                     4,
-                    QTableWidgetItem(f"{(data.frequency / 1_000_000):.1f} MHz"),
+                    QTableWidgetItem(formatted_frequency),
                 )
                 t.setItem(
                     row_idx,
                     5,
-                    QTableWidgetItem(f"{data.distance}m / {data.angle:.0f}°"),
+                    QTableWidgetItem(f"{data.distance}km / {data.angle:.0f}°"),
                 )
 
-                status_text = "False" if data.id in false_ids else "Real"
+                status_text = "False" if data.id in false_ids else "True"
                 item_status = QTableWidgetItem(status_text)
                 item_status.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
                 if data.id in false_ids:

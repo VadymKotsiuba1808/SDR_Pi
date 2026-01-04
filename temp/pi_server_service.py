@@ -5,7 +5,7 @@ from typing import Optional, Dict, Any, List
 from PyQt6.QtCore import QObject, pyqtSlot, QByteArray
 from PyQt6.QtNetwork import QTcpServer, QTcpSocket, QHostAddress
 
-# Імпортуємо моделі
+from temp.database_service import DatabaseService
 from app.models.detection_event import DetectionEvent
 from app.models.detection_object import DetectionObject
 from app.models.object_class import ObjectClass
@@ -23,8 +23,23 @@ class PiServerService(QObject):
         self.server: Optional[QTcpServer] = None
         self.client_socket: Optional[QTcpSocket] = None
 
-        # Тут можна буде ініціалізувати менеджери для БД та Hardware
-        # self.db_manager = ...
+        # --- ПІДКЛЮЧЕННЯ БД ---
+        self.db = DatabaseService()
+
+        # 1. Підключаємо основні сигнали (завантаження сторінок, списків, статус)
+        self.db.objects_page_loaded.connect(self.send_db_objects_page)
+        self.db.classes_loaded.connect(self.send_db_classes)
+        self.db.operation_status.connect(self.send_db_operation_status)
+
+        # 2. Підключаємо нові сигнали подій (Event-Driven)
+        self.db.object_added.connect(self.send_db_object_added)
+        self.db.object_updated.connect(self.send_db_object_updated)
+        self.db.object_deleted.connect(self.send_db_object_deleted)
+
+        self.db.class_added.connect(self.send_db_class_added)
+        self.db.class_updated.connect(self.send_db_class_updated)
+        self.db.class_deleted.connect(self.send_db_class_deleted)
+
         # self.hardware_manager = ...
 
     def start(self) -> None:
@@ -58,7 +73,7 @@ class PiServerService(QObject):
                 f"[PiProxy] Closing old connection from {self.client_socket.peerAddress().toString()}"
             )
             self.client_socket.close()
-            self.client_socket.deleteLater()  # Важливо для звільнення ресурсів Qt
+            self.client_socket.deleteLater()
 
         self.client_socket = self.server.nextPendingConnection()
         print(
@@ -71,8 +86,6 @@ class PiServerService(QObject):
     @pyqtSlot()
     def _handle_disconnected(self) -> None:
         print("[PiProxy] Client disconnected.")
-        # Не обнуляємо self.client_socket одразу тут, якщо плануємо реконнект,
-        # але в даній архітектурі це ок, бо чекаємо нового.
         self.client_socket = None
 
     @pyqtSlot()
@@ -80,7 +93,6 @@ class PiServerService(QObject):
         if not self.client_socket:
             return
 
-        # Використовуємо canReadLine, тому клієнт МАЄ додавати \n в кінці JSON
         while self.client_socket.canReadLine():
             line = self.client_socket.readLine().trimmed()
             try:
@@ -103,7 +115,6 @@ class PiServerService(QObject):
     def _process_command(self, action: str, data: Dict[str, Any]) -> None:
         """Головний маршрутизатор команд."""
 
-        # Розділяємо логіку на апаратну та серверну (БД) для чистоти коду
         if action.startswith("db_"):
             self._handle_db_command(action, data)
         else:
@@ -151,8 +162,8 @@ class PiServerService(QObject):
             pass
 
         elif action == "set_rf_range":
-            min, max = data.get("range")
-            print(f"[PiProxy] Set follow rf range {min}-{max}")
+            r_range = data.get("range", [])
+            print(f"[PiProxy] Set follow rf range {r_range}")
             # TODO: Set range for detecting
             pass
 
@@ -162,106 +173,75 @@ class PiServerService(QObject):
     def _handle_db_command(self, action: str, data: Dict[str, Any]) -> None:
         """Обробка CRUD операцій та запитів до бази даних."""
 
-        if action == "db_request_page":
-            page = data.get("page", 1)
-            size = data.get("size", 15)
+        try:
+            if action == "db_request_page":
+                page = data.get("page", 1)
+                size = data.get("size", 15)
+                self.db.request_objects_page(page, size)
 
-            # TODO: Реальна логіка
-            # items_dicts, total = self.db.get_objects(page, size)
-            # items_models = [DetectionObject.from_dict(d) for d in items_dicts]
-
-            # SIMULATION RESPONSE:
-            # self.send_db_objects_page(items_models, page, total)
-            pass
-
-        elif action == "db_request_add":
-            raw_obj = data.get("object")
-            if raw_obj:
-                try:
+            elif action == "db_request_add":
+                raw_obj = data.get("object")
+                if raw_obj:
+                    # Конвертуємо словник (від клієнта) у DTO
                     new_object_model = DetectionObject.from_dict(raw_obj)
                     print(f"[PiProxy] Adding object: {new_object_model.name}")
+                    self.db.add_object(new_object_model)
 
-                    # created_dict = self.db.add_object(new_object_model.to_dict())
-                    # created_model = DetectionObject.from_dict(created_dict)
-                    # self.send_db_object_added(created_model)
-                except Exception as e:
-                    print(f"[PiProxy] Add Error: {e}")
-                    # self.send_db_error("add", str(e))
-            pass
-
-        elif action == "db_request_update":
-            raw_obj = data.get("object")
-            if raw_obj:
-                try:
+            elif action == "db_request_update":
+                raw_obj = data.get("object")
+                if raw_obj:
                     updated_object_model = DetectionObject.from_dict(raw_obj)
                     print(f"[PiProxy] Updating object ID: {updated_object_model.id}")
+                    self.db.update_object(updated_object_model)
 
-                    # updated_dict = self.db.update_object(updated_object_model.to_dict())
-                    # updated_model = DetectionObject.from_dict(updated_dict)
-                    # self.send_db_object_updated(updated_model)
-                except Exception as e:
-                    print(f"[PiProxy] Update Error: {e}")
-                    # self.send_db_error("update", str(e))
-            pass
+            elif action == "db_request_delete":
+                obj_id = data.get("id")
+                print(f"[PiProxy] Deleting object ID: {obj_id}")
+                if obj_id:
+                    self.db.delete_object(obj_id)
 
-        elif action == "db_request_delete":
-            obj_id = data.get("id")
-            print(f"[PiProxy] Deleting object ID: {obj_id}")
+            elif action == "db_request_classes":
+                self.db.request_classes()
 
-            try:
-                # success = self.db.delete_object(obj_id)
-                # if success:
-                #     self.send_db_object_deleted(obj_id)
-                # else:
-                #     self.send_db_error("delete", "Object not found or could not be deleted")
-                pass
-            except Exception as e:
-                print(f"[PiProxy] Delete Error: {e}")
-                # self.send_db_error("delete", str(e))
-            pass
+            elif action == "db_request_add_class":
+                class_dict = data.get("class")
+                if class_dict:
+                    new_class = ObjectClass.from_dict(class_dict)
 
-        elif action == "db_request_classes":
-            # TODO: classes_dicts = self.db.get_classes()
-            # classes_models = [ObjectClass.from_dict(c) for c in classes_dicts]
+                    self.db.add_class(new_class)
 
-            # SIMULATION RESPONSE:
-            # self.send_db_classes(classes_models)
-            pass
+            elif action == "db_request_rename_class":
 
-        elif action == "db_request_add_class":
-            name = data.get("name")
-            # TODO: success = self.db.add_class(name)
-            # SIMULATION RESPONSE:
-            # self.send_db_classes(new_classes_models)
-            pass
+                old_cls_dict = data.get("old_class")
+                new_cls_dict = data.get("new_class")
 
-        elif action == "db_request_rename_class":
-            old = data.get("old")
-            new = data.get("new")
-            # TODO: success = self.db.rename_class(old, new)
-            # SIMULATION RESPONSE:
-            # self.send_db_classes(updated_classes_models)
-            pass
+                if old_cls_dict and new_cls_dict:
 
-        elif action == "db_request_delete_class":
-            class_id = data.get("id")
-            try:
-                # TODO: Логіка в БД має перевірити foreign keys або зробити SELECT count(*) ...
-                # is_used = self.db.is_class_used(class_id)
+                    cls_id = old_cls_dict.get("id")
+                    new_name = new_cls_dict.get("name")
+                    if cls_id and new_name:
+                        cls_model = ObjectClass(id=cls_id, name=new_name)
+                        self.db.update_class(cls_model)
+                    else:
+                        print("[PiProxy] Rename Class Error: Invalid Data")
+                else:
+                    print("[PiProxy] Rename Class Error: Missing old/new class data")
 
-                # if is_used:
-                #     self.send_db_error("delete_class", "Class is used")
-                # else:
-                #     self.db.delete_class(class_id)
-                #     new_classes_dicts = self.db.get_classes()
-                #     self.send_db_classes(...)
-                pass
-            except Exception as e:
-                print(f"[PiProxy] Delete Class Error: {e}")
-                # self.send_db_error("delete_class", f"Помилка сервера: {str(e)}")
+            elif action == "db_request_delete_class":
+                class_id = data.get("id")
+                if class_id:
+                    try:
+                        self.db.delete_class(class_id)
+                    except Exception as e:
+                        print(f"[PiProxy] Delete Class Error: {e}")
+                        self.send_db_error("delete_class", str(e))
 
-        else:
-            print(f"[PiProxy] Unknown DB command: {action}")
+            else:
+                print(f"[PiProxy] Unknown DB command: {action}")
+
+        except Exception as e:
+            print(f"[PiProxy] DB Logic Error: {e}")
+            self.send_db_error(action, str(e))
 
     # --- SENDER METHODS ---
 
@@ -284,10 +264,6 @@ class PiServerService(QObject):
                 print(f"[PiProxy] Send Error: {e}")
 
     def send_detection_event(self, event: DetectionEvent) -> None:
-        """
-        Відправляє подію виявлення.
-        Приймає типізований об'єкт DetectionEvent.
-        """
         print(f"[PiProxy] Sending Detection: {event.name}")
         self.send_packet("detection", event.to_dict())
 
@@ -303,15 +279,13 @@ class PiServerService(QObject):
         """Відправляє дані аналізу звуку."""
         self.send_packet("sound_stream", audio_analysis)
 
-    # --- DB RESPONSE SENDERS ---
+    # --- DB RESPONSE SENDERS (СЛОТИ) ---
 
+    @pyqtSlot(list, int, int)
     def send_db_objects_page(
         self, items: List[DetectionObject], page: int, total_items: int
     ) -> None:
-        """
-        Відправляє сторінку об'єктів для каталогу.
-        Приймає список моделей DetectionObject.
-        """
+
         print(f"[PiProxy] Sending DB Page {page}")
 
         items_dicts = [obj.to_dict() for obj in items]
@@ -321,8 +295,12 @@ class PiServerService(QObject):
             {"items": items_dicts, "page": page, "total": total_items},
         )
 
+    @pyqtSlot(str, bool, str)
     def send_db_operation_status(self, op_type: str, success: bool, msg: str) -> None:
-        """Відправляє результат CRUD операції."""
+        """
+        Слот: Відправляє результат CRUD операції.
+        """
+        print(f"[PiProxy] DB Operation Status: {op_type} -> {success} ({msg})")
         self.send_packet(
             "db_response_status", {"op": op_type, "success": success, "msg": msg}
         )
@@ -330,7 +308,6 @@ class PiServerService(QObject):
     def send_db_error(self, operation: str, error_message: str) -> None:
         """
         Відправляє повідомлення про помилку виконання операції.
-        Клієнт повинен показати це повідомлення користувачу.
         """
         print(f"[PiProxy] Sending Error ({operation}): {error_message}")
         self.send_packet(
@@ -338,33 +315,43 @@ class PiServerService(QObject):
             {"op": operation, "success": False, "msg": error_message},
         )
 
-    def send_db_object_added(self, obj: DetectionObject) -> None:
-        """
-        Повідомляє клієнта про успішне створення об'єкта.
-        Повертає повний об'єкт (з ID, який присвоїла БД).
-        """
-        print(f"[PiProxy] Sending Event: Object Added (ID: {obj.id})")
-        self.send_packet("db_event_object_added", {"object": obj.to_dict()})
-
-    def send_db_object_updated(self, obj: DetectionObject) -> None:
-        """
-        Повідомляє клієнта про оновлення об'єкта.
-        """
-        print(f"[PiProxy] Sending Event: Object Updated (ID: {obj.id})")
-        self.send_packet("db_event_object_updated", {"object": obj.to_dict()})
-
-    def send_db_object_deleted(self, obj_id: int) -> None:
-        """
-        Повідомляє клієнта про видалення об'єкта.
-        """
-        print(f"[PiProxy] Sending Event: Object Deleted (ID: {obj_id})")
-        self.send_packet("db_event_object_deleted", {"id": obj_id})
-
+    @pyqtSlot(list)
     def send_db_classes(self, classes: List[ObjectClass]) -> None:
         """
-        Відправляє список усіх класів.
-        Приймає список моделей ObjectClass.
+        Слот: Відправляє список усіх класів.
         """
         print(f"[PiProxy] Sending {len(classes)} classes")
         classes_dicts = [c.to_dict() for c in classes]
         self.send_packet("db_response_classes", {"classes": classes_dicts})
+
+    # --- PUSH EVENT SENDERS (Event-Driven) ---
+
+    @pyqtSlot(DetectionObject)
+    def send_db_object_added(self, obj: DetectionObject) -> None:
+        print(f"[PiProxy] Sending Event: Object Added (ID: {obj.id})")
+        self.send_packet("db_event_object_added", {"object": obj.to_dict()})
+
+    @pyqtSlot(DetectionObject)
+    def send_db_object_updated(self, obj: DetectionObject) -> None:
+        print(f"[PiProxy] Sending Event: Object Updated (ID: {obj.id})")
+        self.send_packet("db_event_object_updated", {"object": obj.to_dict()})
+
+    @pyqtSlot(int)
+    def send_db_object_deleted(self, obj_id: int) -> None:
+        print(f"[PiProxy] Sending Event: Object Deleted (ID: {obj_id})")
+        self.send_packet("db_event_object_deleted", {"id": obj_id})
+
+    @pyqtSlot(ObjectClass)
+    def send_db_class_added(self, cls: ObjectClass) -> None:
+        print(f"[PiProxy] Sending Event: Class Added (ID: {cls.id})")
+        self.send_packet("db_event_class_added", {"class": cls.to_dict()})
+
+    @pyqtSlot(ObjectClass)
+    def send_db_class_updated(self, cls: ObjectClass) -> None:
+        print(f"[PiProxy] Sending Event: Class Updated (ID: {cls.id})")
+        self.send_packet("db_event_class_renamed", {"class": cls.to_dict()})
+
+    @pyqtSlot(int)
+    def send_db_class_deleted(self, cls_id: int) -> None:
+        print(f"[PiProxy] Sending Event: Class Deleted (ID: {cls_id})")
+        self.send_packet("db_event_class_deleted", {"id": cls_id})

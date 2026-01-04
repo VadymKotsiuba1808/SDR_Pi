@@ -45,7 +45,6 @@ class LogDialog(QDialog):
         self._load_ui()
         self._setup_state_variables()
         self._adjust_fields()
-        self._load_sessions_list()
         self._connect_handlers()
 
         if self.ui.cmbSessions.count() > 0:
@@ -127,6 +126,7 @@ class LogDialog(QDialog):
     def _load_sessions_list(self) -> None:
         sessions = self.log_service.get_available_sessions()
         print(f"[LogDialog] Found {len(sessions)} available sessions.")
+        sessions.sort(key=lambda s: s.filename, reverse=True)
 
         self.ui.cmbSessions.clear()
         for s in sessions:

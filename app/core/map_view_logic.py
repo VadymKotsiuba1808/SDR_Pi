@@ -11,25 +11,25 @@ class MapViewLogic:
 
     @staticmethod
     def calculate_scale_factor(
-        radar_radius_m: float, radar_view_width_px: int, map_resolution_m_px: float
+        radar_radius_km: float, radar_view_width_px: int, map_resolution_km_px: float
     ) -> float:
         """
         Розраховує коефіцієнт масштабування (scale_factor) між реальною мапою та відображенням на екрані.
 
         """
-        if radar_radius_m <= 0:
+        if radar_radius_km <= 0:
             return 0.0
 
         radar_view_radius_px = radar_view_width_px / 2.0
 
-        target_px_per_meter = radar_view_radius_px / radar_radius_m
+        target_px_per_km = radar_view_radius_px / radar_radius_km
 
-        if map_resolution_m_px <= 0:
+        if map_resolution_km_px <= 0:
             return 0.0
 
-        source_px_per_meter = 1.0 / map_resolution_m_px
+        source_px_per_km = 1.0 / map_resolution_km_px
 
-        return target_px_per_meter / source_px_per_meter
+        return target_px_per_km / source_px_per_km
 
     @staticmethod
     def generate_view_pixmap(

@@ -258,8 +258,8 @@ class MegaTestOrchestrator(QObject):
             class_id=self.ctx.class_id_1,
             object_class="Unknown",
             is_dangerous=True,
-            rf_params=["433.92"],
-            sound_params=[],
+            rf_params_hz=["433.92"],
+            sound_params_hz=[],
         )
         self.service.request_db_add_object(obj)
 
@@ -271,8 +271,8 @@ class MegaTestOrchestrator(QObject):
             class_id=self.ctx.class_id_1,
             object_class="Unknown",
             is_dangerous=False,
-            rf_params=["915.0"],
-            sound_params=[1200],
+            rf_params_hz=["915.0"],
+            sound_params_hz=[1200],
         )
         self.service.request_db_update_object(obj)
 

@@ -95,6 +95,7 @@ class ClassManagerDialog(QDialog):
         if success:
             return
 
+        # TODO - Додати переклад
         titles = {
             "add_class": "Помилка створення класу",
             "rename_class": "Помилка перейменування",
@@ -103,9 +104,11 @@ class ClassManagerDialog(QDialog):
             "unknown": "Системна помилка",
         }
 
+        # TODO - Додати переклад
         title = titles.get(op_type, "Помилка операції")
 
         if op_type == "delete_class":
+            # TODO - Додати переклад
             msg += "\nМожливо ваш клас використовується певними об'єктами"
 
         QMessageBox.critical(self, title, msg)
@@ -125,11 +128,13 @@ class ClassManagerDialog(QDialog):
 
     def _on_item_clicked(self, item: QListWidgetItem) -> None:
         self.ui.inpClassName.setText(item.text())
+        # TODO - Додати переклад
         self.ui.btnAdd.setText("Зберегти")
 
     def _clear_selection(self) -> None:
         self.ui.lstClasses.clearSelection()
         self.ui.inpClassName.clear()
+        # TODO - Додати переклад
         self.ui.btnAdd.setText("Додати")
 
     def _handle_save(self) -> None:
@@ -167,6 +172,7 @@ class ClassManagerDialog(QDialog):
     def _delete_class(self) -> None:
         item = self.ui.lstClasses.currentItem()
         if not item:
+            # TODO - Додати переклад
             QMessageBox.warning(self, "Увага", "Виберіть клас для видалення.")
             return
 
@@ -174,6 +180,7 @@ class ClassManagerDialog(QDialog):
         class_id_data = item.data(Qt.ItemDataRole.UserRole)
         class_id = int(class_id_data) if class_id_data is not None else -1
 
+        # TODO - Додати переклад
         res = QMessageBox.question(
             self,
             "Видалення",

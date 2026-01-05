@@ -169,6 +169,7 @@ class ObjectManagerDialog(QDialog):
         )
 
         if not success:
+            # TODO - Додати переклад
             titles = {
                 "add": "Помилка додавання",
                 "update": "Помилка оновлення",
@@ -199,6 +200,7 @@ class ObjectManagerDialog(QDialog):
 
     def _populate_table(self, objects_list: List[DetectionObject]) -> None:
         self.ui.lblPageInfo.setText(
+            # TODO - Додати переклад
             f"Сторінка {self.current_page} з {self.total_pages}"
         )
         self.ui.btnPrevPage.setEnabled(self.current_page > 1)
@@ -225,6 +227,7 @@ class ObjectManagerDialog(QDialog):
 
         # Небезпека
         is_dang = obj.is_dangerous
+        # TODO - Додати переклад
         dang_item = QTableWidgetItem("ТАК" if is_dang else "Ні")
         if is_dang:
             dang_item.setForeground(Qt.GlobalColor.red)
@@ -310,6 +313,7 @@ class ObjectManagerDialog(QDialog):
     def _open_edit_dialog(self) -> None:
         obj_id = self._get_selected_id()
         if not obj_id:
+            # TODO - Додати переклад
             QMessageBox.warning(self, "Увага", "Виберіть об'єкт для редагування.")
             return
 
@@ -324,9 +328,11 @@ class ObjectManagerDialog(QDialog):
     def _handle_delete(self) -> None:
         obj_id = self._get_selected_id()
         if not obj_id:
+            # TODO - Додати переклад
             QMessageBox.warning(self, "Увага", "Виберіть об'єкт для видалення.")
             return
 
+        # TODO - Додати переклад
         confirm = QMessageBox.question(
             self,
             "Видалення",

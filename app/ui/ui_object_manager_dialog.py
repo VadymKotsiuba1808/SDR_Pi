@@ -187,7 +187,7 @@ class Ui_ObjectManager(object):
         item = self.tableWidget.horizontalHeaderItem(2)
         item.setText(_translate("ObjectManager", "Небезпека"))
         item = self.tableWidget.horizontalHeaderItem(3)
-        item.setText(_translate("ObjectManager", "RF (MHz)"))
+        item.setText(_translate("ObjectManager", "RF (GHz)"))
         item = self.tableWidget.horizontalHeaderItem(4)
         item.setText(_translate("ObjectManager", "Sound (Hz)"))
         self.btnPrevPage.setText(_translate("ObjectManager", "< Назад"))

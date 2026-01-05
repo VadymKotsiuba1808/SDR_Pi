@@ -1816,7 +1816,7 @@ QPushButton#viewObjectButton[enabled=&quot;false&quot;]{
        <x>1230</x>
        <y>140</y>
        <width>291</width>
-       <height>471</height>
+       <height>521</height>
       </rect>
      </property>
      <property name="styleSheet">
@@ -1862,7 +1862,7 @@ border: 2px solid red;
         <x>10</x>
         <y>120</y>
         <width>271</width>
-        <height>341</height>
+        <height>391</height>
        </rect>
       </property>
       <property name="styleSheet">

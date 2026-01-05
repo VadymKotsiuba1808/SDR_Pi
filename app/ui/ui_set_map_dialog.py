@@ -160,9 +160,9 @@ class Ui_SetMapDialog(object):
         self.radiusLabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.radiusLabel.setObjectName("radiusLabel")
         self.verticalLayout.addWidget(self.radiusLabel)
-        self.radiusMetersSpinBox = QtWidgets.QSpinBox(parent=self.controlPanelFrame)
-        self.radiusMetersSpinBox.setMinimumSize(QtCore.QSize(0, 60))
-        self.radiusMetersSpinBox.setStyleSheet("QSpinBox {\n"
+        self.radiusKmDoubleSpinBox = QtWidgets.QDoubleSpinBox(parent=self.controlPanelFrame)
+        self.radiusKmDoubleSpinBox.setMinimumSize(QtCore.QSize(0, 60))
+        self.radiusKmDoubleSpinBox.setStyleSheet("QDoubleSpinBox {\n"
 "    font-family: \'Roboto\';\n"
 "    font-weight: 500;\n"
 "    font-size: 26px;\n"
@@ -173,13 +173,13 @@ class Ui_SetMapDialog(object):
 "    text-align: center;\n"
 "}\n"
 "")
-        self.radiusMetersSpinBox.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.radiusMetersSpinBox.setButtonSymbols(QtWidgets.QAbstractSpinBox.ButtonSymbols.NoButtons)
-        self.radiusMetersSpinBox.setMinimum(1)
-        self.radiusMetersSpinBox.setMaximum(100000)
-        self.radiusMetersSpinBox.setProperty("value", 200)
-        self.radiusMetersSpinBox.setObjectName("radiusMetersSpinBox")
-        self.verticalLayout.addWidget(self.radiusMetersSpinBox)
+        self.radiusKmDoubleSpinBox.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.radiusKmDoubleSpinBox.setButtonSymbols(QtWidgets.QAbstractSpinBox.ButtonSymbols.NoButtons)
+        self.radiusKmDoubleSpinBox.setMinimum(0.1)
+        self.radiusKmDoubleSpinBox.setMaximum(5000.0)
+        self.radiusKmDoubleSpinBox.setProperty("value", 100.0)
+        self.radiusKmDoubleSpinBox.setObjectName("radiusKmDoubleSpinBox")
+        self.verticalLayout.addWidget(self.radiusKmDoubleSpinBox)
         self.rotateLabel = QtWidgets.QLabel(parent=self.controlPanelFrame)
         self.rotateLabel.setMaximumSize(QtCore.QSize(16777215, 30))
         self.rotateLabel.setStyleSheet("font-family: \'Roboto\';\n"
@@ -265,6 +265,15 @@ class Ui_SetMapDialog(object):
 "}")
         self.cancelButton.setObjectName("cancelButton")
         self.verticalLayout.addWidget(self.cancelButton)
+        self.radiusKmDoubleSpinBox.raise_()
+        self.selectImageButton.raise_()
+        self.setCenterButton.raise_()
+        self.scaleLabel.raise_()
+        self.radiusLabel.raise_()
+        self.rotateLabel.raise_()
+        self.rotateHorizontalSlider.raise_()
+        self.saveButton.raise_()
+        self.cancelButton.raise_()
 
         self.retranslateUi(SetMapDialog)
         self.saveButton.clicked.connect(SetMapDialog.accept) # type: ignore
@@ -279,7 +288,7 @@ class Ui_SetMapDialog(object):
         self.scaleLabel.setText(_translate("SetMapDialog", "Масштаб (%)"))
         self.zoomOutButton.setText(_translate("SetMapDialog", "-"))
         self.zoomInButton.setText(_translate("SetMapDialog", "+"))
-        self.radiusLabel.setText(_translate("SetMapDialog", "Радіус кола (м)"))
+        self.radiusLabel.setText(_translate("SetMapDialog", "Радіус кола (км)"))
         self.rotateLabel.setText(_translate("SetMapDialog", "Кут повороту"))
         self.saveButton.setText(_translate("SetMapDialog", "Зберегти"))
         self.cancelButton.setText(_translate("SetMapDialog", "Скасувати"))

@@ -695,6 +695,54 @@ class MainWindow(QMainWindow):
         self.is_radar_mode = False
         self.scale_map()
 
+    def open_settings_dialog(self):
+        self.settings_dialog = SettingsDialog(self.settings_service)
+        move_dialog_down(self.settings_dialog, self.geometry())
+
+        if self.settings_dialog.exec() == QDialog.DialogCode.Accepted:
+            new_settings = self.settings_dialog.get_settings()
+
+            new_radius = new_settings.radar_max_radius
+            new_interval = new_settings.gps_interval_s
+            new_main_relay = new_settings.main_relays
+            new_auto_start_enabled = new_settings.is_jammer_auto_start_enabled
+            new_auto_stop_enabled = new_settings.is_jammer_auto_stop_enabled
+
+            new_auto_stop_interval_s = new_settings.jammer_auto_stop_interval_s
+
+            if self.settings_service.radar_max_radius != new_radius:
+                self.settings_service.radar_max_radius = new_radius
+
+            if self.settings_service.gps_interval_s != new_interval:
+                self.settings_service.gps_interval_s = new_interval
+
+            if self.settings_service.main_relays != new_main_relay:
+                self.settings_service.main_relays = new_main_relay
+
+            if (
+                self.settings_service.is_jammer_auto_start_enabled
+                != new_auto_start_enabled
+            ):
+                self.settings_service.is_jammer_auto_start_enabled = (
+                    new_auto_start_enabled
+                )
+
+            if (
+                self.settings_service.is_jammer_auto_stop_enabled
+                != new_auto_stop_enabled
+            ):
+                self.settings_service.is_jammer_auto_stop_enabled = (
+                    new_auto_stop_enabled
+                )
+
+            if (
+                self.settings_service.jammer_auto_stop_interval_s
+                != new_auto_stop_interval_s
+            ):
+                self.settings_service.jammer_auto_stop_interval_s = (
+                    new_auto_stop_interval_s
+                )
+
     def set_radio_range(self) -> None:
         start_value = self.ui.radioStartDoubleSpinBox.value()
         end_value = self.ui.radioEndDoubleSpinBox.value()

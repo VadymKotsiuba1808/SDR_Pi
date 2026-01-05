@@ -7,6 +7,8 @@ import os
 from PyQt6.QtCore import QObject, pyqtSignal, QSettings, QFileSystemWatcher
 from typing import NamedTuple, Any
 
+from app.core.constants import RELAY_NAMES_LIST
+
 
 class Setting(NamedTuple):
     section: str
@@ -40,7 +42,7 @@ class SettingsService(QObject):
     # Signal
     radio_range_GHz: list[float]
     # Timers
-    gps_interval_s: float
+    gps_interval_s: int
     # Jammer
     main_relays: list[str]
     is_jammer_auto_start_enabled: bool
@@ -75,7 +77,7 @@ class SettingsService(QObject):
         # Timers
         "gps_interval_s": ("timers", int, 2),
         # Jammer
-        "main_relays": ("jammer", list, ["K1"]),
+        "main_relays": ("jammer", list, [RELAY_NAMES_LIST[0]]),
         "is_jammer_auto_start_enabled": ("jammer", bool, False),
         "is_jammer_auto_stop_enabled": ("jammer", bool, False),
         "jammer_auto_stop_interval_s": ("jammer", int, 900),

@@ -7,15 +7,16 @@ from PyQt6.QtWidgets import QWidget
 from PyQt6 import uic
 from PyQt6.QtCore import QEvent, QCoreApplication, QTranslator
 
+from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
 from app.ui.ui_keyboard_widget import Ui_KeyboardWidget
 from app.services.keyboard_service import KeyboardService
-from app.protocols import KeyboardWidgetSettings
+from app.protocols import LangSettings
 
 
 class KeyboardWidget(QWidget):
     def __init__(
         self,
-        settings: KeyboardWidgetSettings,
+        settings: LangSettings,
         keyboard_service: KeyboardService,
         parent=None,
     ):
@@ -36,14 +37,14 @@ class KeyboardWidget(QWidget):
 
     def changeEvent(self, event):
         if event.type() == QEvent.Type.LanguageChange:
-            if self.settings_service.compiled_ui_using_enabled:
+            if DEV_COMPILED_UI_USING_ENABLED:
                 print("Зміна мови, оновлюю UI...")
                 self.ui.retranslateUi(self)
         else:
             super().changeEvent(event)
 
     def _load_ui(self):
-        if self.settings_service.compiled_ui_using_enabled:
+        if DEV_COMPILED_UI_USING_ENABLED:
             self.ui = Ui_KeyboardWidget()
             self.ui.setupUi(self)
         else:

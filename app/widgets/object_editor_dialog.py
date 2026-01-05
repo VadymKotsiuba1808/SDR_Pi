@@ -4,12 +4,14 @@ from PyQt6.QtWidgets import QDialog, QMessageBox, QListWidgetItem, QWidget
 from PyQt6.QtCore import Qt, QEvent, QCoreApplication, QTranslator, pyqtSignal
 from PyQt6 import uic
 
-from app.protocols import ObjectEditorDialogSettings
+from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
+from app.protocols import LangSettings
 from app.widgets.keyboard_widget import KeyboardWidget
 from app.services.keyboard_service import KeyboardService
 from app.models.detection_object import DetectionObject
 from app.models.object_class import ObjectClass
 from app.ui.ui_object_editor_dialog import Ui_ObjectEditorDialog
+from app.utils.convert_measurement_unit import convert_ghz_to_hz
 
 
 class ObjectEditorDialog(QDialog):
@@ -20,7 +22,7 @@ class ObjectEditorDialog(QDialog):
 
     def __init__(
         self,
-        settings_service: ObjectEditorDialogSettings,
+        settings_service: LangSettings,
         keyboard: KeyboardService,
         known_classes: List[ObjectClass],
         parent: Optional[QWidget] = None,
@@ -54,13 +56,13 @@ class ObjectEditorDialog(QDialog):
 
     def changeEvent(self, event: QEvent) -> None:
         if event.type() == QEvent.Type.LanguageChange:
-            if self.settings_service.compiled_ui_using_enabled:
+            if DEV_COMPILED_UI_USING_ENABLED:
                 self.ui.retranslateUi(self)
         else:
             super().changeEvent(event)
 
     def _load_ui(self) -> None:
-        if self.settings_service.compiled_ui_using_enabled:
+        if DEV_COMPILED_UI_USING_ENABLED:
             self.ui = Ui_ObjectEditorDialog()
             self.ui.setupUi(self)
         else:
@@ -146,7 +148,7 @@ class ObjectEditorDialog(QDialog):
         self.ui.chkDangerous.setChecked(obj.is_dangerous)
 
         # 4. RF Params
-        rf_list: List[str] = obj.rf_params
+        rf_list: List[str] = obj.rf_params_hz
         if rf_list:
             self.ui.chkRFEnable.setChecked(True)
             self.ui.lstRFFreqs.clear()
@@ -157,9 +159,9 @@ class ObjectEditorDialog(QDialog):
                         f_min = float(parts[0])
                         f_max = float(parts[1]) if len(parts) > 1 else f_min
                         display_text = (
-                            f"{f_min} МГц"
+                            f"{f_min} ГГц"
                             if f_min == f_max
-                            else f"{f_min} - {f_max} МГц"
+                            else f"{f_min} - {f_max} ГГц"
                         )
                         item = QListWidgetItem(display_text)
                         item.setData(Qt.ItemDataRole.UserRole, rf_str)
@@ -168,7 +170,7 @@ class ObjectEditorDialog(QDialog):
                         continue
 
         # 5. Sound Params
-        snd_list: List[int] = obj.sound_params
+        snd_list: List[int] = obj.sound_params_hz
         if snd_list:
             self.ui.chkSoundEnable.setChecked(True)
             self.ui.lstSoundFreqs.clear()
@@ -211,8 +213,8 @@ class ObjectEditorDialog(QDialog):
             class_id=int(selected_class_id),
             object_class=selected_class_name,
             is_dangerous=self.ui.chkDangerous.isChecked(),
-            rf_params=rf_data,
-            sound_params=sound_data,
+            rf_params_hz=rf_data,
+            sound_params_hz=sound_data,
         )
 
         print(f"[ObjectEditor] Object saved: {name} (ClassID: {selected_class_id})")
@@ -291,8 +293,8 @@ class ObjectEditorDialog(QDialog):
             self.ui.inpRFMin.setValue(f_min)
             self.ui.inpRFMax.setValue(f_max)
 
-        raw_string = f"{f_min}-{f_max}"
-        display_text = f"{f_min} МГц" if f_min == f_max else f"{f_min} - {f_max} МГц"
+        raw_string = f"{convert_ghz_to_hz(f_min)}-{convert_ghz_to_hz(f_max)}"
+        display_text = f"{f_min} ГГц" if f_min == f_max else f"{f_min} - {f_max} ГГц"
 
         item = QListWidgetItem(display_text)
         item.setData(Qt.ItemDataRole.UserRole, raw_string)
@@ -330,7 +332,7 @@ class ObjectEditorDialog(QDialog):
         if self.ui.chkRFEnable.isChecked():
             for i in range(self.ui.lstRFFreqs.count()):
                 item = self.ui.lstRFFreqs.item(i)
-                val = item.data(Qt.ItemDataRole.UserRole)
+                val = item.data(Qt.ItemDataRole.UserRole).split("-")
                 if val:
                     data.append(str(val))
         return data

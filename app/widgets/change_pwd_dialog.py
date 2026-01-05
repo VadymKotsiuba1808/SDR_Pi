@@ -5,6 +5,7 @@ from PyQt6.QtCore import QCoreApplication, QEvent, QTranslator, Qt
 from PyQt6 import uic
 
 from app.protocols import ChangePwdDialogSettings
+from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
 from app.ui.ui_change_pwd_dialog import Ui_ChangePwdDialog
 from app.widgets.keyboard_widget import KeyboardWidget
 from app.services.keyboard_service import KeyboardService
@@ -41,14 +42,14 @@ class ChangePwdDialog(QDialog):
 
     def changeEvent(self, event: QEvent) -> None:
         if event.type() == QEvent.Type.LanguageChange:
-            if self.settings_service.compiled_ui_using_enabled:
+            if DEV_COMPILED_UI_USING_ENABLED:
                 print("[ChangePwdDialog] Language change detected, updating UI...")
                 self.ui.retranslateUi(self)
         else:
             super().changeEvent(event)
 
     def _load_ui(self) -> None:
-        if self.settings_service.compiled_ui_using_enabled:
+        if DEV_COMPILED_UI_USING_ENABLED:
             self.ui = Ui_ChangePwdDialog()
             self.ui.setupUi(self)
         else:

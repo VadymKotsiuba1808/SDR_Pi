@@ -47,6 +47,7 @@ from app.assets import resources_rc
 
 
 from app.protocols import OSService
+from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
 
 
 from app.widgets.set_map_dialog import SetMapDialog
@@ -71,7 +72,7 @@ from app.services.jammer_service import JammerService
 from app.core.detection_manager import DetectionManager
 from app.core.map_view_logic import MapViewLogic
 
-from app.models.detection_event import DetectionEvent
+from app.models.detection_event import DetectionEvent, DetectionType
 from app.models.object_class import ObjectClass
 from app.models.log_entries import LogEntry, LogType, FalseAlarmPayload
 from app.models.gps_data import GPSData
@@ -154,14 +155,14 @@ class MainWindow(QMainWindow):
 
     def changeEvent(self, event: QEvent) -> None:
         if event.type() == QEvent.Type.LanguageChange:
-            if self.settings_service.compiled_ui_using_enabled:
+            if DEV_COMPILED_UI_USING_ENABLED:
                 print("[MainWindow] Language change detected, updating UI...")
                 self.ui.retranslateUi(self)
         else:
             super().changeEvent(event)
 
     def _load_ui(self) -> None:
-        if self.settings_service.compiled_ui_using_enabled:
+        if DEV_COMPILED_UI_USING_ENABLED:
             self.ui = Ui_MainWindow()
             self.ui.setupUi(self)
         else:
@@ -186,7 +187,7 @@ class MainWindow(QMainWindow):
         self.pi_network.data_received.connect(self.handle_pi_data)
         self.pi_network.gps_received.connect(self.handle_gps)
         self.pi_network.detection_received.connect(self.handle_detection)
-        self.pi_network.set_rf_range(self.settings_service.radio_range_GHz)
+        self.pi_network.set_rf_range(self.settings_service.radio_range_ghz)
 
         # Сервіс бази даних (через мережу)
         self.db_service = DatabaseService(self.pi_network)
@@ -213,7 +214,7 @@ class MainWindow(QMainWindow):
 
         self.translator = QTranslator()
 
-        self.record_status_widget = RecordingStatusWidget(self.settings_service, self)
+        self.record_status_widget = RecordingStatusWidget(self)
 
         self.media_service = MediaPlayerService(self.system_service)
         self.media_service.playback_finished.connect(
@@ -234,13 +235,13 @@ class MainWindow(QMainWindow):
         )
 
     def _adjust_fields(self) -> None:
-        radar_max_radius = self.settings_service.radar_max_radius
+        radar_max_radius = self.settings_service.radar_max_radius_km
         self.ui.radarRadiusSpinbox.setMaximum(radar_max_radius)
 
-        radar_radius = self.settings_service.radar_radius
+        radar_radius = self.settings_service.radar_radius_km
         self.ui.radarRadiusSpinbox.setValue(radar_radius)
 
-        radio_range = self.settings_service.radio_range_GHz
+        radio_range = self.settings_service.radio_range_ghz
         self.ui.radioStartDoubleSpinBox.setValue(float(radio_range[0]))
         self.ui.radioEndDoubleSpinBox.setValue(float(radio_range[1]))
 
@@ -352,7 +353,7 @@ class MainWindow(QMainWindow):
         self.settings_service.lang_code = new_lang_code
         print(f"[MainWindow] Language changed to: {new_lang_code}")
 
-        if self.settings_service.compiled_ui_using_enabled:
+        if DEV_COMPILED_UI_USING_ENABLED:
             self.load_language()
 
     # endregion
@@ -388,7 +389,7 @@ class MainWindow(QMainWindow):
             base_pixmap=self.radar_clean_pixmap,
             detections=detections,
             indices=indices,
-            max_radius_m=self.settings_service.radar_radius,
+            max_radius_m=self.settings_service.radar_radius_km,
         )
 
         self.ui.Radar.setPixmap(final_pixmap)
@@ -407,7 +408,9 @@ class MainWindow(QMainWindow):
                 f"TYPE:    {target_event.type}\n"
                 f"NAME:    {target_event.name.upper()}\n"
                 f"CLASS:   {target_event.object_class.upper()}\n"
-                f"DIST:    {target_event.distance} m\n"
+                # TODO - Відформатувати окремо для звуку і радіо
+                f"FREQ:    {f"{(target_event.frequency_hz / 1_000_000_000):.3f} GHz" if(target_event.type==DetectionType.RF) else f"{(target_event.frequency_hz):.0f} Hz" } \n"
+                f"DIST:    {target_event.distance_km:.3f} km\n"
                 f"ANGLE:   {target_event.angle:.1f}°\n"
                 f"CONF:    {target_event.confidence * 100:.1f}%\n"
                 f"TIME:    {target_event.timestamp.split('T')[-1][:8]}\n"
@@ -500,7 +503,7 @@ class MainWindow(QMainWindow):
 
     def handle_radar_radius_change(self) -> None:
         new_radar_radius = self.ui.radarRadiusSpinbox.value()
-        self.settings_service.radar_radius = new_radar_radius
+        self.settings_service.radar_radius_km = new_radar_radius
 
         self.scale_map()
         self.update_radar()
@@ -577,33 +580,53 @@ class MainWindow(QMainWindow):
         if not new_settings:
             return
 
-        if self.settings_service.radar_max_radius != new_settings.radar_max_radius:
-            self.settings_service.radar_max_radius = new_settings.radar_max_radius
-            if self.settings_service.radar_radius > new_settings.radar_max_radius:
-                self.settings_service.radar_radius = int(new_settings.radar_max_radius)
-            self.settings_service.zoom = self.calculate_optimal_zoom(
-                new_settings.radar_max_radius
-            )
-            self.ui.radarRadiusSpinbox.setMaximum(new_settings.radar_max_radius)
+        new_radius = new_settings.radar_max_radius_km
+        new_interval = new_settings.gps_interval_s
+        new_main_relay = new_settings.main_relays
+        new_auto_start_enabled = new_settings.is_jammer_auto_start_enabled
+        new_auto_stop_enabled = new_settings.is_jammer_auto_stop_enabled
+
+        new_auto_stop_interval_s = new_settings.jammer_auto_stop_interval_s
+
+        if self.settings_service.radar_max_radius_km != new_radius:
+            self.settings_service.radar_max_radius_km = new_radius
+            if self.settings_service.radar_radius_km > new_radius:
+                self.settings_service.radar_radius_km = new_radius
+
+            self.settings_service.zoom = self.calculate_optimal_zoom(new_radius)
+            self.ui.radarRadiusSpinbox.setMaximum(new_radius)
+
             self.refresh_map()
 
-        if self.settings_service.gps_interval_s != new_settings.gps_interval_s:
-            self.settings_service.gps_interval_s = new_settings.gps_interval_s
-            self.timer_gps.setInterval(new_settings.gps_interval_s * 1000)
+        if self.settings_service.gps_interval_s != new_interval:
+            self.settings_service.gps_interval_s = new_interval
+            self.timer_gps.setInterval(new_interval * 1000)
 
-        if self.settings_service.main_relays != new_settings.main_relays:
-            self.settings_service.main_relays = new_settings.main_relays
+        if self.settings_service.main_relays != new_main_relay:
+            self.settings_service.main_relays = new_main_relay
 
-    def calculate_optimal_zoom(self, radius_m: float) -> int:
-        BASE_RADIUS = 500.0
+        if self.settings_service.is_jammer_auto_start_enabled != new_auto_start_enabled:
+            self.settings_service.is_jammer_auto_start_enabled = new_auto_start_enabled
+
+        if self.settings_service.is_jammer_auto_stop_enabled != new_auto_stop_enabled:
+            self.settings_service.is_jammer_auto_stop_enabled = new_auto_stop_enabled
+
+        if (
+            self.settings_service.jammer_auto_stop_interval_s
+            != new_auto_stop_interval_s
+        ):
+            self.settings_service.jammer_auto_stop_interval_s = new_auto_stop_interval_s
+
+    def calculate_optimal_zoom(self, radius_km: float) -> int:
+        BASE_RADIUS_KM = 0.5
         BASE_ZOOM = 16
         MAX_TILES_ROW_COUNT = 6
 
-        if radius_m <= 0:
+        if radius_km <= 0:
             return BASE_ZOOM
 
-        meter_per_tile = BASE_RADIUS / MAX_TILES_ROW_COUNT
-        tiles_count = math.ceil(radius_m / meter_per_tile)
+        km_per_tile = BASE_RADIUS_KM / MAX_TILES_ROW_COUNT
+        tiles_count = math.ceil(radius_km / km_per_tile)
         scale_k = MAX_TILES_ROW_COUNT / tiles_count
         zoom_diff = math.log2(scale_k)
 
@@ -707,65 +730,17 @@ class MainWindow(QMainWindow):
         self.is_radar_mode = False
         self.scale_map()
 
-    def open_settings_dialog(self):
-        self.settings_dialog = SettingsDialog(self.settings_service)
-        move_dialog_down(self.settings_dialog, self.geometry())
-
-        if self.settings_dialog.exec() == QDialog.DialogCode.Accepted:
-            new_settings = self.settings_dialog.get_settings()
-
-            new_radius = new_settings.radar_max_radius
-            new_interval = new_settings.gps_interval_s
-            new_main_relay = new_settings.main_relays
-            new_auto_start_enabled = new_settings.is_jammer_auto_start_enabled
-            new_auto_stop_enabled = new_settings.is_jammer_auto_stop_enabled
-
-            new_auto_stop_interval_s = new_settings.jammer_auto_stop_interval_s
-
-            if self.settings_service.radar_max_radius != new_radius:
-                self.settings_service.radar_max_radius = new_radius
-
-            if self.settings_service.gps_interval_s != new_interval:
-                self.settings_service.gps_interval_s = new_interval
-
-            if self.settings_service.main_relays != new_main_relay:
-                self.settings_service.main_relays = new_main_relay
-
-            if (
-                self.settings_service.is_jammer_auto_start_enabled
-                != new_auto_start_enabled
-            ):
-                self.settings_service.is_jammer_auto_start_enabled = (
-                    new_auto_start_enabled
-                )
-
-            if (
-                self.settings_service.is_jammer_auto_stop_enabled
-                != new_auto_stop_enabled
-            ):
-                self.settings_service.is_jammer_auto_stop_enabled = (
-                    new_auto_stop_enabled
-                )
-
-            if (
-                self.settings_service.jammer_auto_stop_interval_s
-                != new_auto_stop_interval_s
-            ):
-                self.settings_service.jammer_auto_stop_interval_s = (
-                    new_auto_stop_interval_s
-                )
-
     def set_radio_range(self) -> None:
         start_value = self.ui.radioStartDoubleSpinBox.value()
         end_value = self.ui.radioEndDoubleSpinBox.value()
 
-        self.settings_service.radio_range_GHz = [start_value, end_value]
+        self.settings_service.radio_range_ghz = [start_value, end_value]
         self.reset_radio_range_status()
 
         self.pi_network.set_rf_range([start_value, end_value])
 
     def clear_radio_range_values(self) -> None:
-        radio_range = self.settings_service.radio_range_GHz
+        radio_range = self.settings_service.radio_range_ghz
 
         self.ui.radioStartDoubleSpinBox.setValue(float(radio_range[0]))
         self.ui.radioEndDoubleSpinBox.setValue(float(radio_range[1]))
@@ -910,9 +885,9 @@ class MainWindow(QMainWindow):
 
     def _calculate_scale_factor(self) -> float:
         return MapViewLogic.calculate_scale_factor(
-            radar_radius_m=self.settings_service.radar_radius,
+            radar_radius_km=self.settings_service.radar_radius_km,
             radar_view_width_px=self.ui.RadarFrame.width(),
-            map_resolution_m_px=self.current_map_resolution,
+            map_resolution_km_px=self.current_map_resolution,
         )
 
     @asyncSlot()

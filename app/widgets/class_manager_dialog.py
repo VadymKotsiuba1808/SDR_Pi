@@ -9,19 +9,22 @@ from PyQt6.QtWidgets import (
 from PyQt6 import uic
 from PyQt6.QtCore import Qt, QEvent, QTranslator, QCoreApplication
 
+from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
 from app.ui.ui_class_manager_dialog import Ui_ClassManagerDialog
 from app.widgets.keyboard_widget import KeyboardWidget
 from app.services.keyboard_service import KeyboardService
 from app.services.pi_network_service import PiNetworkService
 from app.models.object_class import ObjectClass
-from app.protocols import ClassManagerDialogSettings
+from app.services.database_service import DatabaseService
+from app.protocols import LangSettings
 
 
 class ClassManagerDialog(QDialog):
+
     def __init__(
         self,
         network_service: PiNetworkService,
-        settings_service: ClassManagerDialogSettings,
+        settings_service: LangSettings,
         keyboard_service: KeyboardService,
         parent: Optional[QWidget] = None,
     ) -> None:
@@ -40,13 +43,13 @@ class ClassManagerDialog(QDialog):
 
     def changeEvent(self, event: QEvent) -> None:
         if event.type() == QEvent.Type.LanguageChange:
-            if self.settings_service.compiled_ui_using_enabled:
+            if DEV_COMPILED_UI_USING_ENABLED:
                 self.ui.retranslateUi(self)
         else:
             super().changeEvent(event)
 
     def _load_ui(self) -> None:
-        if self.settings_service.compiled_ui_using_enabled:
+        if DEV_COMPILED_UI_USING_ENABLED:
             self.ui = Ui_ClassManagerDialog()
             self.ui.setupUi(self)
         else:

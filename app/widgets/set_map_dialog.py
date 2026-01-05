@@ -13,6 +13,7 @@ from PyQt6.QtCore import Qt, QEvent, QPointF, QCoreApplication, QTranslator
 
 from PyQt6 import uic
 
+from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
 from app.protocols import SetMapDialogSettings
 from app.ui.ui_set_map_dialog import Ui_SetMapDialog
 
@@ -46,19 +47,15 @@ class SetMapDialog(QDialog):
         print("[Init] Ініціалізацію завершено\n")
 
     def changeEvent(self, event):
-        # Ловимо подію, яку надіслав installTranslator
         if event.type() == QEvent.Type.LanguageChange:
-            if self.settings_service.compiled_ui_using_enabled:
+            if DEV_COMPILED_UI_USING_ENABLED:
                 print("Зміна мови, оновлюю UI...")
-                # Викликаємо авто-згенеровану функцію
                 self.ui.retranslateUi(self)
         else:
-            # Передаємо всі інші події (натискання клавіш, зміна розміру тощо)
-            # на стандартну обробку
             super().changeEvent(event)
 
     def _load_ui(self):
-        if self.settings_service.compiled_ui_using_enabled:
+        if DEV_COMPILED_UI_USING_ENABLED:
             self.ui = Ui_SetMapDialog()
             self.ui.setupUi(self)
         else:
@@ -112,8 +109,7 @@ class SetMapDialog(QDialog):
 
         QCoreApplication.removeTranslator(self.translator)
 
-        # Завантажуємо та встановлюємо новий
-        path = f"app/i18n/qm/app_{lang_code}.qm"  # Перевірте правильність шляху
+        path = f"app/i18n/qm/app_{lang_code}.qm"
         if self.translator.load(path):
             QCoreApplication.installTranslator(self.translator)
         else:
@@ -122,7 +118,7 @@ class SetMapDialog(QDialog):
     def handle_select_image(self):
         print("[on_select_image] Відкривається діалог вибору зображення...")
         file_path, _ = QFileDialog.getOpenFileName(
-            None,  # Використовуємо None для уникнення проблем з модальністю
+            None,
             self.tr("Виберіть зображення карти"),
             "",
             self.tr("Зображення (*.png *.jpg *.bmp *.jpeg)"),
@@ -149,13 +145,11 @@ class SetMapDialog(QDialog):
             f"[on_select_image] Зображення завантажено, розмір: {self.original_pixmap.width()}x{self.original_pixmap.height()}"
         )
 
-        # --- ВИПРАВЛЕННЯ: Повертаємо QPointF ---
         self.center_point_f = QPointF(self.original_pixmap.rect().center())
         print(f"[on_select_image] Початковий центр зображення: {self.center_point_f}")
-        # ---
 
         self.ui.scaleSpinBox.setValue(100)
-        self.ui.rotateSpinBox.setValue(0)  # Скидаємо кут
+        self.ui.rotateSpinBox.setValue(0)
 
         self.update_map_display()
 
@@ -229,7 +223,6 @@ class SetMapDialog(QDialog):
             Qt.TransformationMode.SmoothTransformation,
         )
 
-        # --- ВИПРАВЛЕННЯ: Повертаємо QPointF ---
         scaled_center_point_f = self.center_point_f * self.current_scale
         self.current_offset_f = self.screen_center_f - scaled_center_point_f
         # ---
@@ -239,21 +232,15 @@ class SetMapDialog(QDialog):
 
         painter = QPainter(display_pixmap)
 
-        # --- ОНОВЛЕННЯ: Додаємо логіку обертання ---
-        painter.save()  # Зберігаємо стан painter
+        painter.save()
 
-        # 1. Переходимо до центру екрана (точка обертання)
         painter.translate(self.screen_center_f)
-        # 2. Обертаємо
         painter.rotate(self.current_rotation)
-        # 3. Повертаємось
         painter.translate(-self.screen_center_f)
 
-        # 4. Малюємо pixmap з його зсувом (збереженим у QPointF)
         painter.drawPixmap(self.current_offset_f, scaled_pixmap)
 
-        painter.restore()  # Відновлюємо стан (скасовуємо translate/rotate)
-        # --- КІНЕЦЬ ОНОВЛЕННЯ ---
+        painter.restore()
 
         painter.end()
 
@@ -327,15 +314,15 @@ class SetMapDialog(QDialog):
             return  # Важливо: не викликаємо super().accept()
 
         screen_circle_radius_px = self.ui.centerCircleLabel.width() / 2
-        user_defined_radius_m = self.ui.radiusMetersSpinBox.value()
+        user_defined_radius_km = self.ui.radiusKmDoubleSpinBox.value()
         current_view_scale = self.ui.scaleSpinBox.value() / 100.0
 
         print(
-            f"[accept] Радіус на екрані: {screen_circle_radius_px}px = {user_defined_radius_m}м"
+            f"[accept] Радіус на екрані: {screen_circle_radius_px}px = {user_defined_radius_km}км"
         )
         print(f"[accept] Поточний масштаб перегляду: {current_view_scale}")
 
-        if user_defined_radius_m <= 0 or current_view_scale <= 0:
+        if user_defined_radius_km <= 0 or current_view_scale <= 0:
             print("[accept] ПОМИЛКА: некоректні значення радіуса або масштабу")
             QMessageBox.warning(
                 None,
@@ -344,14 +331,14 @@ class SetMapDialog(QDialog):
             )
             return  # Не викликаємо super().accept()
 
-        displayed_px_per_meter = screen_circle_radius_px / user_defined_radius_m
-        original_px_per_meter = displayed_px_per_meter / current_view_scale
-        print(f"[accept] Пікселів на метр (оригінал): {original_px_per_meter}")
+        displayed_px_per_km = screen_circle_radius_px / user_defined_radius_km
+        original_px_per_km = displayed_px_per_km / current_view_scale
+        print(f"[accept] Пікселів на км (оригінал): {original_px_per_km}")
 
-        target_diameter_m = self.settings_service.radar_max_radius * 2
-        target_size_px = int(round(target_diameter_m * original_px_per_meter))
+        target_diameter_km = self.settings_service.radar_max_radius_km * 2
+        target_size_px = int(round(target_diameter_km * original_px_per_km))
         print(
-            f"[accept] Цільовий розмір карти: {target_size_px}px ({target_diameter_m}м)"
+            f"[accept] Цільовий розмір карти: {target_size_px}px ({target_diameter_km}км)"
         )
 
         final_pixmap = QPixmap(
@@ -383,10 +370,10 @@ class SetMapDialog(QDialog):
         # Зберігаємо налаштування у змінну класу
         self.result_settings = {
             "pixmap": final_pixmap,
-            "px_per_meter": original_px_per_meter,
-            "rotation": self.current_rotation,  # Додаємо кут
-            "total_diameter_meters": target_diameter_m,  # Розкоментував
-            "center_px_point": final_center_f.toPoint(),  # Розкоментував
+            "px_per_meter": original_px_per_km,
+            "rotation": self.current_rotation,
+            "total_diameter_km": target_diameter_km,
+            "center_px_point": final_center_f.toPoint(),
         }
 
         print(f"[accept] Збережено налаштування\n")

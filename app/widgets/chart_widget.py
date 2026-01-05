@@ -18,7 +18,7 @@ from PyQt6.QtGui import (
 )
 from PyQt6.QtCore import Qt, QPointF, QCoreApplication, QTranslator
 
-from app.protocols import ChartWidgetSettings
+from app.protocols import LangSettings
 from app.models.detection_event import DetectionEvent
 
 
@@ -35,7 +35,7 @@ class ChartWidget(QWidget):
     TIME_DIFF_S = 60
 
     def __init__(
-        self, settings_service: ChartWidgetSettings, parent: Optional[QWidget] = None
+        self, settings_service: LangSettings, parent: Optional[QWidget] = None
     ) -> None:
         super().__init__(parent)
 
@@ -126,7 +126,7 @@ class ChartWidget(QWidget):
         txt = (
             f"<b>{data.name}</b> ({data.object_class})<br>"
             f"Time: {time_str}<br>"
-            f"Dist: {data.distance}m, Angle: {data.angle:.0f}°<br>"
+            f"Dist: {data.distance_km:.3f}km, Angle: {data.angle:.0f}°<br>"
             f"Conf: {data.confidence:.2f}<br>"
             f"Type: {data.type}<br>"
             f"ID: {data.id[:8]}..."
@@ -164,7 +164,9 @@ class ChartWidget(QWidget):
         radius = min(w, h) / 2 - 30
 
         sorted_data = sorted(self.data, key=lambda x: x.timestamp)
-        max_dist_val = max([d.distance for d in sorted_data]) if sorted_data else 1000
+        max_dist_val = (
+            max([d.distance_km for d in sorted_data]) if sorted_data else 1000
+        )
 
         scale_step = 500
         if max_dist_val < 100:
@@ -190,7 +192,7 @@ class ChartWidget(QWidget):
             p.drawText(
                 int(center.x() + 5),
                 int(center.y() - r_current + 10),
-                f"{int(max_dist * i)}m",
+                f"{(max_dist * i):.2f}km",
             )
 
         p.setPen(QPen(self.color_grid, 1))
@@ -240,7 +242,7 @@ class ChartWidget(QWidget):
 
             for ev in events:
                 pt = self._get_polar_pos(
-                    center, radius, ev.angle, ev.distance, max_dist
+                    center, radius, ev.angle, ev.distance_km, max_dist
                 )
                 points.append(pt)
                 timestamps.append(datetime.fromisoformat(ev.timestamp).timestamp())
@@ -368,12 +370,12 @@ class ChartWidget(QWidget):
 
         if mode == "timeline":
             max_data_dist = (
-                max([d.distance for d in sorted_data]) if sorted_data else 1000
+                max([d.distance_km for d in sorted_data]) if sorted_data else 1000
             )
             y_max = math.ceil(max_data_dist / 1000) * 1000
             if y_max == 0:
                 y_max = 1000
-            label_formatter = lambda v: f"{int(v)}m"
+            label_formatter = lambda v: f"{v:.2f}km"
         else:
             y_max = 1.0
 
@@ -402,7 +404,7 @@ class ChartWidget(QWidget):
                 x_ratio = (t_curr - t_start) / duration
                 x = px + x_ratio * pw
 
-                val_y = ev.distance if mode == "timeline" else ev.confidence
+                val_y = ev.distance_km if mode == "timeline" else ev.confidence
                 norm_y = val_y / y_max
                 norm_y = max(0, min(1, norm_y))
                 y = (py + ph) - (norm_y * ph)
@@ -513,7 +515,7 @@ class ChartWidget(QWidget):
         p.drawRect(int(px), int(py), int(pw), int(ph))
 
         p.setPen(self.color_text)
-        title = "Distance ▲" if "m" in label_formatter(0) else "Confidence ▲"
+        title = "Distance ▲" if "km" in label_formatter(0) else "Confidence ▲"
         p.drawText(int(px), int(py - 10), title)
 
     def _draw_bar(self, p: QPainter) -> None:

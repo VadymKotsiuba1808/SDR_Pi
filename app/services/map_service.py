@@ -8,6 +8,12 @@ import httpx
 from PIL import Image, ImageDraw
 from PyQt6.QtGui import QPixmap
 
+from app.core.constants import (
+    DEV_TILE_DIVIDER_ENABLED,
+    MAPS_API_URL,
+    MAPS_IMG_FORMAT,
+    MAPS_IMG_FORMAT,
+)
 from app.protocols import MapServiceSettings
 
 
@@ -93,7 +99,7 @@ class MapService:
 
         print(
             f"[MapService] Size: {geo_data['width_px']}x{geo_data['height_px']} | "
-            f"Res: {geo_data['meters_per_pixel']:.4f} m/px"
+            f"Res: {geo_data['km_per_pixel']:.4f} km/px"
         )
 
         try:
@@ -102,7 +108,7 @@ class MapService:
 
             pixmap = self._crop_and_convert(full_img, geo_data)
 
-            return [pixmap, geo_data["meters_per_pixel"]]
+            return [pixmap, geo_data["km_per_pixel"]]
 
         except Exception as e:
             print(f"[MapService] Critical Map Error: {e}")
@@ -113,12 +119,12 @@ class MapService:
     ) -> Dict[str, Any]:
 
         zoom = self.settings_service.zoom
-        radar_max_radius_m = self.settings_service.radar_max_radius
+        radar_max_radius_km = self.settings_service.radar_max_radius_km
         add_width_k, add_height_k = add_sizes_k
 
-        meters_per_pixel = self.get_resolution_at_lat(zoom, lat)
+        km_per_pixel = self.get_resolution_at_lat(zoom, lat) / 1000.0
 
-        radius_px = radar_max_radius_m / meters_per_pixel
+        radius_px = radar_max_radius_km / km_per_pixel
 
         width_px = math.ceil(radius_px * 2 * add_width_k)
         height_px = math.ceil(radius_px * 2 * add_height_k)
@@ -139,7 +145,7 @@ class MapService:
         tile_y_max = int(bottom_right_px_y // self.TILE_SIZE)
 
         return {
-            "meters_per_pixel": meters_per_pixel,
+            "km_per_pixel": km_per_pixel,
             "width_px": width_px,
             "height_px": height_px,
             "top_left_px_x": top_left_px_x,
@@ -155,9 +161,9 @@ class MapService:
         self, geo_data: Dict[str, Any], map_type: MapTypes
     ) -> Image.Image:
 
-        base_url = self.settings_service.base_url
+        base_url = MAPS_API_URL
         api_key = self.settings_service.api_key
-        img_format = str(self.settings_service.img_format)
+        img_format = str(MAPS_IMG_FORMAT)
         map_type_str = map_type.value
 
         tile_x_min = geo_data["tile_x_min"]
@@ -190,7 +196,7 @@ class MapService:
             py = (y - tile_y_min) * self.TILE_SIZE
             full_img.paste(img, (px, py))
 
-            if self.settings_service.tile_divider_enabled:
+            if DEV_TILE_DIVIDER_ENABLED:
                 draw = ImageDraw.Draw(full_img)
                 draw.rectangle(
                     [px, py, px + self.TILE_SIZE, py + self.TILE_SIZE],
@@ -203,7 +209,7 @@ class MapService:
         self, full_img: Image.Image, geo_data: Dict[str, Any]
     ) -> QPixmap:
 
-        img_format = str(self.settings_service.img_format)
+        img_format = str(MAPS_IMG_FORMAT)
 
         top_left_px_x = geo_data["top_left_px_x"]
         top_left_px_y = geo_data["top_left_px_y"]

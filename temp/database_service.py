@@ -169,8 +169,8 @@ class DatabaseService(QObject):
                     class_id=s.class_id,
                     object_class=cls_name,
                     is_dangerous=bool(s.is_dangerous),
-                    rf_params=s.rf_params if s.rf_params else [],
-                    sound_params=s.sound_params if s.sound_params else [],
+                    rf_params_hz=s.rf_params if s.rf_params else [],
+                    sound_params_hz=s.sound_params if s.sound_params else [],
                 )
                 data.append(obj_dto)
 
@@ -206,8 +206,8 @@ class DatabaseService(QObject):
                 name=obj_data.name,
                 class_id=target_class_id,
                 is_dangerous=obj_data.is_dangerous,
-                rf_params=obj_data.rf_params,
-                sound_params=obj_data.sound_params,
+                rf_params=obj_data.rf_params_hz,
+                sound_params=obj_data.sound_params_hz,
             )
 
             session.add(new_sig)
@@ -220,8 +220,8 @@ class DatabaseService(QObject):
                 class_id=new_sig.class_id,
                 object_class=target_class_name,
                 is_dangerous=new_sig.is_dangerous,
-                rf_params=new_sig.rf_params,
-                sound_params=new_sig.sound_params,
+                rf_params_hz=new_sig.rf_params,
+                sound_params_hz=new_sig.sound_params,
             )
 
             self.operation_status.emit("add_object", True, "Object successfully added")
@@ -265,8 +265,8 @@ class DatabaseService(QObject):
             sig.name = obj_data.name
             sig.class_id = target_class_id
             sig.is_dangerous = obj_data.is_dangerous
-            sig.rf_params = obj_data.rf_params
-            sig.sound_params = obj_data.sound_params
+            sig.rf_params = obj_data.rf_params_hz
+            sig.sound_params = obj_data.sound_params_hz
 
             session.commit()
             session.refresh(sig)
@@ -277,8 +277,8 @@ class DatabaseService(QObject):
                 class_id=sig.class_id,
                 object_class=target_class_name,
                 is_dangerous=sig.is_dangerous,
-                rf_params=sig.rf_params,
-                sound_params=sig.sound_params,
+                rf_params_hz=sig.rf_params,
+                sound_params_hz=sig.sound_params,
             )
 
             self.operation_status.emit(

@@ -7,6 +7,7 @@ from PyQt6.QtNetwork import QTcpServer, QTcpSocket, QHostAddress
 
 from app.services.settings_service import SettingsService
 from app.models.detection_event import DetectionEvent
+from app.models.gps_data import GPSData
 
 
 class PiNetworkService(QObject):
@@ -17,7 +18,7 @@ class PiNetworkService(QObject):
     """
 
     data_received = pyqtSignal(dict)  # Сирі дані (якщо не розпізнано)
-    gps_received = pyqtSignal(dict)  # GPS координати {lat, lon, alt}
+    gps_received = pyqtSignal(dict)  # Об'єкт GPS
     detection_received = pyqtSignal(DetectionEvent)  # Об'єкт детекції
 
     # --- Сигнали для потокових даних ---
@@ -142,7 +143,8 @@ class PiNetworkService(QObject):
                     self.detection_received.emit(event_obj)
 
                 elif action == "gps_position":
-                    self.gps_received.emit(data)
+                    obj = GPSData.from_dict(data)
+                    self.gps_received.emit(obj)
 
                 elif action == "rf_stream":
                     self.rf_data_received.emit(data)

@@ -40,8 +40,7 @@ class SettingsService(QObject):
     tile_divider_enabled: bool
     compiled_ui_using_enabled: bool
     # Signal
-    radio_range_GHz: list
-    sound_range_GHz: list
+    radio_range_GHz: list[float]
     # Timers
     gps_interval_s: int
     # Jammer
@@ -75,7 +74,6 @@ class SettingsService(QObject):
         "compiled_ui_using_enabled": Setting("dev", bool, True),
         # Signal
         "radio_range_GHz": ("signal", list, [0.0, 9.9]),
-        "sound_range_GHz": ("signal", list, [0.0, 9.9]),
         # Timers
         "gps_interval_s": ("timers", int, 2),
         # Jammer

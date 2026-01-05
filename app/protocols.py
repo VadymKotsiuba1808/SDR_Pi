@@ -16,11 +16,6 @@ class MapServiceSettings(Protocol):
     tile_divider_enabled: bool
 
 
-class ApiServerSettings(Protocol):
-    host: str
-    port: int
-
-
 class LoginDialogSettings(Protocol):
     role: str
     owner_password_hash: str

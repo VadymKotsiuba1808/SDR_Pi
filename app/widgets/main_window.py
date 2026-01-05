@@ -1,20 +1,21 @@
-"""
-Головне вікно програми (Controller).
-Зв'язує графічний інтерфейс (View) з сервісами та логікою. Обробляє навігацію та глобальні події.
-"""
-
 import os
 import math
 import asyncio
+from typing import Optional, List, Dict, Any, cast
+
 from PyQt6.QtWidgets import (
     QMainWindow,
-    QApplication,
     QDialog,
     QMessageBox,
     QFileDialog,
+    QWidget,
+    QPushButton,
+    QDoubleSpinBox,
+    QLineEdit,
 )
 from PyQt6.QtCore import (
     QTimer,
+    QTime,
     QDateTime,
     Qt,
     QPointF,
@@ -23,7 +24,6 @@ from PyQt6.QtCore import (
     QTranslator,
     pyqtSlot,
     pyqtSignal,
-    QThread,
     QUrl,
 )
 from PyQt6.QtGui import (
@@ -34,85 +34,112 @@ from PyQt6.QtGui import (
     QPen,
     QDesktopServices,
     QFont,
-    QTextCursor,
+    QShowEvent,
+    QCloseEvent,
 )
-
 from PyQt6 import uic
 from qasync import asyncSlot
 
+
 from app.ui.ui_main_window import Ui_MainWindow
+from app.ui.components.radar_renderer import RadarRenderer
 from app.assets import resources_rc
+
+
+from app.protocols import OSService
+
 
 from app.widgets.set_map_dialog import SetMapDialog
 from app.widgets.autosize_window import make_scalable
 from app.widgets.log_dialog import LogDialog
-from app.services.pi_network_service import PiNetworkService
 from app.widgets.record_status_widget import RecordingStatusWidget
 from app.widgets.object_manager_dialog import ObjectManagerDialog
+from app.widgets.settings_dialog import SettingsDialog
+
+
+from app.services.pi_network_service import PiNetworkService
 from app.services.settings_service import SettingsService
 from app.services.map_service import MapService, MapTypes
 from app.services.keyboard_service import KeyboardService
-from app.widgets.settings_dialog import SettingsDialog
 from app.services.recording_service import RecordingService
 from app.services.media_player_service import MediaPlayerService
-from app.services.pi_network_service import PiNetworkService
 from app.services.database_service import DatabaseService
+from app.services.log_service import LogService
+from app.services.jammer_service import JammerService
+
+
 from app.core.detection_manager import DetectionManager
+from app.core.map_view_logic import MapViewLogic
+
 from app.models.detection_event import DetectionEvent
-from app.protocols import OSService
+from app.models.log_entries import LogEntry, LogType, FalseAlarmPayload
+from app.models.gps_data import GPSData
+
+
 from app.utils.ui_utils import update_element_styles, move_dialog_down
-from app.utils.test_data_provider import TestDataProvider
 from app.utils.system_utils import (
     get_wifi_signal_strength,
     restart_process,
 )
+from app.utils.geo_utils import calculate_distance
+
+
+MIN_DISTANCE_THRESHOLD = 2.0  # Мінімальна зміна позиції в метрах для оновлення мапи
+DEFAULT_START_COORDS = [49.43440, 27.00543]
+
+TIMER_INTERVAL_TIME_UPDATE = 1 * 1000
+TIMER_INTERVAL_RADAR_ANIM = 60
+TIMER_INTERVAL_WIFI_UPDATE = 30 * 1000
+
+SIGNAL_LEVEL_COUNT = 4
 
 
 class MainWindow(QMainWindow):
-    _sig_start_recording = pyqtSignal(str)
-    _sig_stop_recording = pyqtSignal()
+    """
+    Головне вікно програми (Controller).
+    Зв'язує графічний інтерфейс (View) з сервісами та логікою.
+    Обробляє навігацію та глобальні події.
+    """
 
     def __init__(
         self,
         settings: SettingsService,
         keyboard: KeyboardService,
         system: OSService,
-        parent=None,
-    ):
+        parent: Optional[QWidget] = None,
+    ) -> None:
         super().__init__(parent)
+
         self.settings_service = settings
         self.system_service = system
         self.keyboard_service = keyboard
 
         self._load_ui()
-        print("[MainWindow] Інтерфейс завантажено.")
+        print("[MainWindow] Interface loaded.")
 
         self._setup_state_variables()
         self._init_recording_service()
-
         self._adjust_fields()
-
         self._connect_handlers()
         self._setup_timers()
 
         self.update_wifi_signal_info()
-
         self.change_language()
 
+        self.update_gps_and_map()
         self._start_async_tasks()
 
-        print("Головне вікно успішно ініціалізовано.")
-
-    def showEvent(self, event):
-        """
-        Викликається, коли віджет показується.
-        Використовуємо для первинного розрахунку геометрії.
-        """
-        super().showEvent(event)
-        self.ui.map_background_label.setScaledContents(False)
-
-        self._update_map_geometry()
+        # FIXME -
+        # TODO - Видалити рефреш
         self.refresh_map()
+
+        print("[MainWindow] Initialization complete.")
+
+    # region --- Init ---
+    def showEvent(self, event: QShowEvent) -> None:
+
+        super().showEvent(event)
+        # self.ui.map_background_label.setScaledContents(False)
 
         self.radar_clean_pixmap = QPixmap(":/images/radar.png").scaled(
             self.ui.Radar.size(),
@@ -120,16 +147,19 @@ class MainWindow(QMainWindow):
             Qt.TransformationMode.FastTransformation,
         )
 
-    def changeEvent(self, event):
+    def resizeEvent(self, event) -> None:
+        self._update_map_geometry()
+        super().resizeEvent(event)
+
+    def changeEvent(self, event: QEvent) -> None:
         if event.type() == QEvent.Type.LanguageChange:
             if self.settings_service.compiled_ui_using_enabled:
-                print("Зміна мови, оновлюю UI...")
+                print("[MainWindow] Language change detected, updating UI...")
                 self.ui.retranslateUi(self)
         else:
-
             super().changeEvent(event)
 
-    def _load_ui(self):
+    def _load_ui(self) -> None:
         if self.settings_service.compiled_ui_using_enabled:
             self.ui = Ui_MainWindow()
             self.ui.setupUi(self)
@@ -137,31 +167,47 @@ class MainWindow(QMainWindow):
             uic.loadUi("app/ui/main_window.ui", self)
             self.ui = self
 
-    def _setup_state_variables(self):
-
-        self.test_data_provider = TestDataProvider()
+    def _setup_state_variables(self) -> None:
 
         self.map_service = MapService(settings=self.settings_service)
 
-        self.searched_index = None
+        # Індекс об'єкта, який зараз шукається/відображається
+        self.searched_index: Optional[int] = None
 
+        self.radar_renderer = RadarRenderer()
+
+        # Менеджер детекцій
         self.detection_manager = DetectionManager(self)
         self.detection_manager.detections_changed.connect(self._update_detection_ui)
 
+        # Мережевий сервіс (Pi)
         self.pi_network = PiNetworkService(self.settings_service, self)
         self.pi_network.data_received.connect(self.handle_pi_data)
         self.pi_network.gps_received.connect(self.handle_gps)
-        self.pi_network.detection_received.connect(self.detection_manager.add_detection)
-        self.pi_network.rf_data_received.connect(self.handle_rf_data)
-        self.pi_network.sound_data_received.connect(self.handle_sound_data)
+        self.pi_network.detection_received.connect(self.handle_detection)
+        self.pi_network.set_rf_range(self.settings_service.radio_range_GHz)
 
+        # Сервіс бази даних (через мережу)
         self.db_service = DatabaseService(self.pi_network)
 
-        self.current_map_type_index = 0
-        self.map_types = [e for e in MapTypes]
-        self.current_coords = [49.43440, 27.00543]
-        self.isRadarMode = False
-        self.is_alert = False
+        self.log_service = LogService()
+
+        # Змінні карти
+        self.current_map_type_index: int = 0
+        self.map_types: List[MapTypes] = [e for e in MapTypes]
+        self.current_coords: List[float] = DEFAULT_START_COORDS
+        self.current_map: Optional[QPixmap] = None
+        self.add_sizes_map_k: List[float] = [1.0, 1.0]
+        self.current_map_resolution: float = 1.0
+
+        # UI Стани
+        self.is_radar_mode: bool = False
+        self.is_alert: bool = False
+        self.force_gps_update: bool = False
+
+        self.jammer_service = JammerService(self.pi_network, self.settings_service)
+        self.jammer_service.state_changed.connect(self.on_jammer_state_changed)
+
         self.translator = QTranslator()
 
         self.record_status_widget = RecordingStatusWidget(self.settings_service, self)
@@ -171,9 +217,7 @@ class MainWindow(QMainWindow):
             lambda: self.ui.filesViewButton.setChecked(False)
         )
 
-        self.media_process = None
-
-    def _init_recording_service(self):
+    def _init_recording_service(self) -> None:
         self.recorder = RecordingService(self.system_service, self)
 
         self.recorder.recording_started.connect(self.on_recording_started)
@@ -186,7 +230,7 @@ class MainWindow(QMainWindow):
             self.record_status_widget.on_pause_toggled
         )
 
-    def _adjust_fields(self):
+    def _adjust_fields(self) -> None:
         radar_max_radius = self.settings_service.radar_max_radius
         self.ui.radarRadiusSpinbox.setMaximum(radar_max_radius)
 
@@ -194,13 +238,8 @@ class MainWindow(QMainWindow):
         self.ui.radarRadiusSpinbox.setValue(radar_radius)
 
         radio_range = self.settings_service.radio_range_GHz
-
         self.ui.radioStartDoubleSpinBox.setValue(float(radio_range[0]))
         self.ui.radioEndDoubleSpinBox.setValue(float(radio_range[1]))
-
-        sound_range = self.settings_service.sound_range_GHz
-        self.ui.soundStartDoubleSpinBox.setValue(float(sound_range[0]))
-        self.ui.soundEndDoubleSpinBox.setValue(float(sound_range[1]))
 
         current_lang = self.settings_service.lang_code
         self.ui.langComboBox.setCurrentIndex(1 if current_lang == "en" else 0)
@@ -215,7 +254,7 @@ class MainWindow(QMainWindow):
 
         self.ui.screenRecordingLayout.addWidget(self.record_status_widget)
 
-    def _connect_handlers(self):
+    def _connect_handlers(self) -> None:
         self.ui.mapLayoutButton.clicked.connect(self.change_map_type)
         self.ui.screenSaveButton.clicked.connect(self.take_screenshot)
         self.ui.homeButton.clicked.connect(self.update_gps_and_map)
@@ -235,20 +274,13 @@ class MainWindow(QMainWindow):
         self.ui.index_search_edit.returnPressed.connect(self.perform_search)
 
         self.ui.saveRadioRangePushButton.clicked.connect(self.set_radio_range)
-        self.ui.saveSoundRangePushButton.clicked.connect(self.set_sound_range)
         self.ui.clearRadioRangePushButton.clicked.connect(self.clear_radio_range_values)
-        self.ui.clearSoundRangePushButton.clicked.connect(self.clear_sound_range_values)
+        self.ui.chartRangePushButton.clicked.connect(self.open_range_chart_dialog)
 
         self.ui.radioStartDoubleSpinBox.valueChanged.connect(
             self.handle_signal_range_change
         )
         self.ui.radioEndDoubleSpinBox.valueChanged.connect(
-            self.handle_signal_range_change
-        )
-        self.ui.soundStartDoubleSpinBox.valueChanged.connect(
-            self.handle_signal_range_change
-        )
-        self.ui.soundEndDoubleSpinBox.valueChanged.connect(
             self.handle_signal_range_change
         )
 
@@ -258,57 +290,48 @@ class MainWindow(QMainWindow):
             self.handle_toggle_recording_pause
         )
 
-    def _setup_timers(self):
+        self.ui.jammerOnTimerButton.clicked.connect(self.jammer_service.start)
+        self.ui.jammerOffTimerButton.clicked.connect(self.jammer_service.stop)
+
+    def _setup_timers(self) -> None:
         self.timer_1sec = QTimer(self)
         self.timer_1sec.timeout.connect(self.update_time_and_date)
-        self.timer_1sec.start(1000)
+        self.timer_1sec.start(TIMER_INTERVAL_TIME_UPDATE)
 
         self.timer_radar = QTimer(self)
         self.timer_radar.timeout.connect(self.rotate_radar_animation)
-        self.timer_radar.start(60)
-
-        # self.test_update_timer = QTimer(self)
-        # self.test_update_timer.timeout.connect(self.update_status_bar_with_test_data)
-        # self.test_update_timer.start(10 * 60 * 1000)
+        self.timer_radar.start(TIMER_INTERVAL_RADAR_ANIM)
 
         self.timer_wifi = QTimer(self)
         self.timer_wifi.timeout.connect(self.update_wifi_signal_info)
-        self.timer_wifi.start(30 * 1000)
+        self.timer_wifi.start(TIMER_INTERVAL_WIFI_UPDATE)
+
+        self.timer_gps = QTimer(self)
+        self.timer_gps.timeout.connect(self.request_gps)
+        self.timer_gps.start(self.settings_service.gps_interval_s * 1000)
 
     @asyncSlot()
-    async def _start_async_tasks(self):
+    async def _start_async_tasks(self) -> None:
         """
         Запускає всі фонові асинхронні задачі.
-        Цей метод має викликатися з 'main' ПІСЛЯ створення вікна.
         """
-        print("Запуск фонових асинхронних задач (сервер та слухач)...")
+        print("[MainWindow] Starting async background tasks (network)...")
         self.pi_network.start()
 
-    def _update_map_geometry(self):
-        """
-        Обчислює та оновлює коефіцієнти та зміщення
-        на основі ПОТОЧНИХ розмірів віджетів.
-        (з розширеним логуванням)
-        """
+    def _update_map_geometry(self) -> None:
+        radar_rect = self.ui.RadarFrame.geometry()
+        parent_widget = self.ui.map_background_label.parent()
 
-        if not self.ui.Radar.width() or not self.ui.Radar.height():
-            return
+        self.add_sizes_map_k = MapViewLogic.calculate_map_expansion_coefficients(
+            radar_rect=radar_rect,
+            background_width=parent_widget.width(),
+            background_height=parent_widget.height(),
+        )
 
-        radar_width = self.ui.RadarFrame.width()
-        radar_height = self.ui.RadarFrame.height()
-
-        map_bg_width = self.ui.map_background_label.width()
-        map_bg_height = self.ui.map_background_label.height()
-
-        self.add_sizes_map_k = [
-            map_bg_width / radar_width,
-            map_bg_height / radar_height,
-        ]
-
-    def load_language(self):
+    def load_language(self) -> None:
         lang_code = self.settings_service.lang_code
 
-        if lang_code == None:
+        if lang_code is None:
             return
 
         QCoreApplication.removeTranslator(self.translator)
@@ -317,103 +340,57 @@ class MainWindow(QMainWindow):
         if self.translator.load(path):
             QCoreApplication.installTranslator(self.translator)
         else:
-            print(f"Помилка: не вдалося завантажити {path}")
+            print(f"[MainWindow] Error: Failed to load translation file: {path}")
 
-    def change_language(self):
+    def change_language(self) -> None:
         index = self.ui.langComboBox.currentIndex()
-        new_lang_code = None
-
-        if index == 1:
-            new_lang_code = "en"
-        else:
-            new_lang_code = "uk"
+        new_lang_code = "en" if index == 1 else "uk"
 
         self.settings_service.lang_code = new_lang_code
-        print("Ok")
+        print(f"[MainWindow] Language changed to: {new_lang_code}")
+
         if self.settings_service.compiled_ui_using_enabled:
             self.load_language()
 
-    def handle_rf_data(self, data):
-        """Заглушка для обробки потокових RF-даних."""
-        pass  # Логіка буде додана пізніше
+    # endregion
 
-    def handle_sound_data(self, data):
-        """Заглушка для обробки потокових звукових даних."""
-        pass  # Логіка буде додана пізніше
+    # region --- Data Handlers ---
+
+    def handle_detection(self, detection: DetectionEvent):
+        self.detection_manager.add_detection(detection)
+
+        if (
+            self.settings_service.is_jammer_auto_start_enabled
+            and not self.jammer_service.is_active
+        ):
+            self.jammer_service.start()
+
+        log = LogEntry(LogType.DETECTION, detection)
+        self.log_service.add_log(log)
 
     @pyqtSlot()
-    def _update_detection_ui(self):
-        """Оновлює UI на основі поточних детекцій."""
+    def _update_detection_ui(self) -> None:
         self.update_radar()
         self.update_detection_info()
         self.update_alert_status()
 
-    def update_radar(self):
-        """Перемальовує радар. Точки поза радіусом 'липнуть' до краю."""
+    def update_radar(self) -> None:
+
+        if not hasattr(self, "radar_clean_pixmap"):
+            return
+
         detections, indices = self.detection_manager.get_detections()
 
-        POINT_SIZE = 20
+        final_pixmap = self.radar_renderer.draw_detections(
+            base_pixmap=self.radar_clean_pixmap,
+            detections=detections,
+            indices=indices,
+            max_radius_m=self.settings_service.radar_radius,
+        )
 
-        pixmap = self.radar_clean_pixmap.copy()
-        painter = QPainter(pixmap)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        self.ui.Radar.setPixmap(final_pixmap)
 
-        font = QFont("Arial", 14, QFont.Weight.Bold)
-        painter.setFont(font)
-
-        center_x = pixmap.width() / 2
-        center_y = pixmap.height() / 2
-
-        offset_x = 0
-        offset_y = -15
-
-        max_px_radius = min(center_x, center_y)
-
-        max_meters_setting = self.settings_service.radar_radius
-        if max_meters_setting <= 0:
-            max_meters_setting = 1000
-
-        scale = max_px_radius / max_meters_setting
-
-        for event_id, event in detections.items():
-            index = indices.get(event_id, "?")
-
-            pixel_dist = event.distance * scale
-
-            is_out_of_bounds = pixel_dist > max_px_radius
-            is_on_border = pixel_dist >= max_px_radius - POINT_SIZE / 2
-
-            if is_out_of_bounds or is_on_border:
-                pixel_dist = max_px_radius - 15
-                if event.angle > 320 or event.angle < 40:
-                    offset_y = 0
-                    offset_x = 15
-
-            if is_out_of_bounds:
-                painter.setPen(QPen(QColor("orange"), POINT_SIZE - 2))
-            else:
-                color = QColor("red")
-                painter.setPen(QPen(color, POINT_SIZE))
-
-            rad_angle = math.radians(event.angle - 90)
-
-            x = center_x + pixel_dist * math.cos(rad_angle)
-            y = center_y + pixel_dist * math.sin(rad_angle)
-
-            painter.drawPoint(int(x), int(y))
-
-            painter.setPen(QPen(QColor("black"), 1))
-            painter.drawText(int(x) + offset_x, int(y) + offset_y, str(index))
-
-        painter.end()
-        self.ui.Radar.setPixmap(pixmap)
-
-    def update_detection_info(self):
-        """
-        Відображає детальну інформацію ТІЛЬКИ для self.searched_index.
-        Якщо нічого не шукаємо -> пусто.
-        Якщо ціль з таким індексом зникла -> "Target Lost".
-        """
+    def update_detection_info(self) -> None:
         if self.searched_index is None:
             self.ui.detection_info_text.clear()
             return
@@ -436,22 +413,19 @@ class MainWindow(QMainWindow):
         else:
             self.ui.detection_info_text.setPlainText(
                 f"INDEX {self.searched_index}: \n\n[OFFLINE] / [NOT FOUND]\n\n"
-                "Ціль зникла з радару або ще не виявлена."
+                "Target lost or not yet detected."
             )
 
-    def find_event_by_searched_index(self):
+    def find_event_by_searched_index(self) -> Optional[DetectionEvent]:
         detections, indices = self.detection_manager.get_detections()
 
-        target_event = None
         for eid, idx in indices.items():
             if idx == self.searched_index:
-                target_event = detections.get(eid)
-                break
+                return detections.get(eid)
 
-        return target_event
+        return None
 
-    def update_alert_status(self):
-        """Оновлює статус тривог на основі детекцій."""
+    def update_alert_status(self) -> None:
         detections, _ = self.detection_manager.get_detections()
 
         has_rf = any(e.type == "RF" for e in detections.values())
@@ -464,64 +438,80 @@ class MainWindow(QMainWindow):
 
         self.ui.falseAlarmButton.setEnabled(self.detection_manager.has_detections())
 
-    def handle_false_alarm(self):
-        """Повідомляє про хибну тривогу для поточної детекцій і очищує."""
+    def handle_false_alarm(self) -> None:
         target_event = self.find_event_by_searched_index()
         if target_event:
             self.pi_network.report_false_alarm(target_event.id)
             self.detection_manager.remove_detection(target_event.id)
 
-    def request_gps(self):
-        """Запитує GPS з callback для обробки відповіді."""
+            payload = FalseAlarmPayload(target_event.id, target_event.name)
+            log = LogEntry(LogType.FALSE_ALARM, payload)
+            self.log_service.add_log(log)
+
+    # endregion
+
+    # region --- GPS & Map ---
+
+    def request_gps(self) -> None:
         self.pi_network.request_remote_gps()
 
-    def update_gps_ui(self, data):
-        strength = data.get("gps_strength")
-        lat = data.get("gps_lat")
-        lon = data.get("gps_lon")
+    def update_gps_ui(self, data: GPSData) -> None:
+        strength = data.strength
+        lat = data.lat
+        lon = data.lon
 
-        if self.current_coords[0] != lat or self.current_coords[1] != lon:
-            self.current_coords = [lat, lon]
+        if not lat or not lon:
+            self.set_gps_ui_level(0)
+            return
+
+        new_lat, new_lon = float(lat), float(lon)
+        distance = calculate_distance(
+            self.current_coords[0], self.current_coords[1], new_lat, new_lon
+        )
+        if distance >= MIN_DISTANCE_THRESHOLD or self.force_gps_update:
+            self.current_coords = [new_lat, new_lon]
             self.refresh_map()
+            self.force_gps_update = False
+            print(f"[MainWindow] Map refreshed. Distance moved: {distance:.2f} m")
+        else:
+            print(
+                f"[MainWindow] Update skipped. Distance change too small: {distance:.2f} m"
+            )
 
-        print("gps_signal_strength:", strength)
+        print(f"GPS Signal Strength: {strength}")
 
         gps_level = 0
-
         if strength:
-            gps_level = math.ceil(strength / 25)
+            gps_level = math.ceil(strength / (100 / SIGNAL_LEVEL_COUNT))
 
-        self.ui.GPS_level.setProperty("level", gps_level)
+        self.set_gps_ui_level(gps_level)
+
+    def set_gps_ui_level(self, level: int) -> None:
+        self.ui.GPS_level.setProperty("level", level)
         update_element_styles(self.ui.GPS_level)
 
     @pyqtSlot(dict)
-    def handle_gps(self, data):
-        """Обробка GPS-відповіді з викликом."""
+    def handle_gps(self, data: GPSData) -> None:
         self.update_gps_ui(data)
+        print(f"[MainWindow] GPS Received: {data.lat}, {data.lon}")
 
-        print(
-            f"[MainWindow] Отримано GPS: {data.get('gps_lat')}, {data.get('gps_lon')}"
-        )
-
-    def handle_radar_radius_change(self):
+    def handle_radar_radius_change(self) -> None:
         new_radar_radius = self.ui.radarRadiusSpinbox.value()
         self.settings_service.radar_radius = new_radar_radius
 
         self.scale_map()
-
         self.update_radar()
 
-    def handle_add_map(self):
-        btn = self.sender()
+    def handle_add_map(self) -> None:
+        btn = cast(QPushButton, self.sender())
 
-        if btn.isChecked() == False:
-            self.refresh_map()
+        if not btn.isChecked():
+            asyncio.create_task(self.refresh_map())
             return
 
         self.open_set_map_dialog()
 
-    def open_set_map_dialog(self):
-
+    def open_set_map_dialog(self) -> None:
         self.dialog = SetMapDialog(
             settings=self.settings_service, add_sizes_map_k=self.add_sizes_map_k
         )
@@ -532,88 +522,144 @@ class MainWindow(QMainWindow):
         result = self.scalable_dialog.exec()
 
         if result == QDialog.DialogCode.Accepted:
-
             settings_data = self.scalable_dialog.get_settings()
 
-            if self.current_map:
+            if settings_data.get("pixmap"):
                 self.current_map = settings_data["pixmap"]
-                print("Width:", self.current_map.width())
-                radar_max_radius = self.settings_service.radar_max_radius
-                self.current_map_radius = (
-                    settings_data["px_per_meter"] * radar_max_radius
-                )
+                print(f"[MainWindow] Custom map set. Width: {self.current_map.width()}")
+
                 self.scale_map()
 
-            print("ГОЛОВНЕ ВІКНО: Отримано налаштування!")
-
+            print("[MainWindow] Map settings applied.")
         else:
             self.ui.addMapButton.setChecked(False)
-            print("ГОЛОВНЕ ВІКНО: Налаштування скасовано.")
+            print("[MainWindow] Map settings cancelled.")
 
         self.scalable_dialog = None
 
-    def open_database_manager(self):
+    # endregion
+
+    # region --- Dialogs ---
+
+    def open_database_manager(self) -> None:
         self.db_window = ObjectManagerDialog(
             self.db_service, self.settings_service, self.keyboard_service
         )
         move_dialog_down(self.db_window, self.geometry())
         self.db_window.exec()
 
-    def open_logs_dialog(self):
-        logs_dialog = LogDialog(self.settings_service)
+    def open_logs_dialog(self) -> None:
+        logs_dialog = LogDialog(self.log_service, self.settings_service)
         move_dialog_down(logs_dialog, self.geometry())
         logs_dialog.exec()
 
+    def open_settings_dialog(self) -> None:
+        self.settings_dialog = SettingsDialog(self.settings_service)
+        move_dialog_down(self.settings_dialog, self.geometry())
+
+        if self.settings_dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+
+        new_settings = self.settings_dialog.get_settings()
+
+        if not new_settings:
+            return
+
+        if self.settings_service.radar_max_radius != new_settings.radar_max_radius:
+            self.settings_service.radar_max_radius = new_settings.radar_max_radius
+            if self.settings_service.radar_radius > new_settings.radar_max_radius:
+                self.settings_service.radar_radius = int(new_settings.radar_max_radius)
+            self.settings_service.zoom = self.calculate_optimal_zoom(
+                new_settings.radar_max_radius
+            )
+            self.ui.radarRadiusSpinbox.setMaximum(new_settings.radar_max_radius)
+            self.refresh_map()
+
+        if self.settings_service.gps_interval_s != new_settings.gps_interval_s:
+            self.settings_service.gps_interval_s = new_settings.gps_interval_s
+            self.timer_gps.setInterval(new_settings.gps_interval_s * 1000)
+
+        if self.settings_service.main_relays != new_settings.main_relays:
+            self.settings_service.main_relays = new_settings.main_relays
+
+    def calculate_optimal_zoom(self, radius_m: float) -> int:
+        BASE_RADIUS = 500.0
+        BASE_ZOOM = 16
+        MAX_TILES_ROW_COUNT = 6
+
+        if radius_m <= 0:
+            return BASE_ZOOM
+
+        meter_per_tile = BASE_RADIUS / MAX_TILES_ROW_COUNT
+        tiles_count = math.ceil(radius_m / meter_per_tile)
+        scale_k = MAX_TILES_ROW_COUNT / tiles_count
+        zoom_diff = math.log2(scale_k)
+
+        optimal_zoom = BASE_ZOOM + zoom_diff
+        final_zoom = math.floor(optimal_zoom)
+
+        return max(0, min(19, final_zoom))
+
+    def open_range_chart_dialog(self) -> None:
+        # TODO: Implement chart dialog
+        pass
+
+    # endregion
+
+    # region --- Screen Recording ---
+
     @pyqtSlot(bool)
-    def handle_toggle_recording(self):
-        button = self.sender()
+    def handle_toggle_recording(self) -> None:
+        button = cast(QPushButton, self.sender())
 
         if button.isChecked():
             filename = f"./screen_records/record_{QDateTime.currentDateTime().toString('yyyy-MM-dd_hh-mm-ss')}.mp4"
             os.makedirs(os.path.dirname(filename), exist_ok=True)
-
             self.recorder.start_recording(filename)
         else:
             self.recorder.stop_recording()
 
     @pyqtSlot()
-    def on_recording_started(self):
-        print("[MainWindow] Отримано підтвердження старту. Показ віджета.")
+    def on_recording_started(self) -> None:
+        print("[MainWindow] Recording started. Showing status widget.")
         self.record_status_widget.setVisible(True)
 
     @pyqtSlot()
-    def on_recording_stopped(self):
-        print("[MainWindow] Отримано підтвердження зупинки. Ховаємо віджет.")
+    def on_recording_stopped(self) -> None:
+        print("[MainWindow] Recording stopped. Hiding status widget.")
         if self.ui.screenRecordButton.isChecked():
             self.ui.screenRecordButton.setChecked(False)
         self.record_status_widget.reset_state()
 
     @pyqtSlot(str)
-    def show_error_message(self, error_text):
-        print(f"ПОМИЛКА ЗАПИСУ: {error_text}")
-        QMessageBox.critical(self, "Помилка запису", error_text)
+    def show_error_message(self, error_text: str) -> None:
+        print(f"[MainWindow] Recording Error: {error_text}")
+        QMessageBox.critical(self, "Recording Error", error_text)
         self.on_recording_stopped()
 
-    def handle_toggle_recording_pause(self, is_paused):
+    def handle_toggle_recording_pause(self, is_paused: bool) -> None:
         self.recorder.toggle_pause(is_paused)
 
-    def handle_open_file(self):
+    # endregion
 
-        btn = self.sender()
+    # region --- Media Player ---
+
+    def handle_open_file(self) -> None:
+        btn = cast(QPushButton, self.sender())
 
         if not btn.isChecked():
             if hasattr(self, "media_service") and self.media_service:
                 self.media_service.stop()
-                print("Переглядач успішно закритий")
+                print("[MainWindow] Media player closed.")
             return
 
         file_filters = (
-            f"{self.tr('Медіа файли (*.png *.jpg *.jpeg *.bmp *.mp4 *.avi *.mkv)')};;"
+            f"{self.tr('Media Files (*.png *.jpg *.jpeg *.bmp *.mp4 *.avi *.mkv)')};;"
         )
 
         file_path, _ = QFileDialog.getOpenFileName(
             self,
-            self.tr("Оберіть файл для перегляду"),
+            self.tr("Select file to view"),
             "",
             file_filters,
         )
@@ -625,22 +671,28 @@ class MainWindow(QMainWindow):
         try:
             self.media_service.play(file_path)
         except Exception as e:
-            print(f"Критична помилка запуску VLC: {e}")
+            print(
+                f"[MainWindow] Critical VLC Error: {e}. Opening in default OS player."
+            )
             url = QUrl.fromLocalFile(file_path)
             QDesktopServices.openUrl(url)
 
-    def set_radar_mode(self):
-        if self.isRadarMode:
+    # endregion
+
+    # region --- Modes & Settings ---
+
+    def set_radar_mode(self) -> None:
+        if self.is_radar_mode:
             return
 
-        self.isRadarMode = True
+        self.is_radar_mode = True
         self.ui.map_background_label.setPixmap(QPixmap())
 
-    def set_map_mode(self):
-        if self.isRadarMode == False:
+    def set_map_mode(self) -> None:
+        if not self.is_radar_mode:
             return
 
-        self.isRadarMode = False
+        self.is_radar_mode = False
         self.scale_map()
 
     def open_settings_dialog(self):
@@ -691,14 +743,16 @@ class MainWindow(QMainWindow):
                     new_auto_stop_interval_s
                 )
 
-    def set_radio_range(self):
+    def set_radio_range(self) -> None:
         start_value = self.ui.radioStartDoubleSpinBox.value()
         end_value = self.ui.radioEndDoubleSpinBox.value()
 
         self.settings_service.radio_range_GHz = [start_value, end_value]
         self.reset_radio_range_status()
 
-    def clear_radio_range_values(self):
+        self.pi_network.set_rf_range([start_value, end_value])
+
+    def clear_radio_range_values(self) -> None:
         radio_range = self.settings_service.radio_range_GHz
 
         self.ui.radioStartDoubleSpinBox.setValue(float(radio_range[0]))
@@ -706,62 +760,41 @@ class MainWindow(QMainWindow):
 
         self.reset_radio_range_status()
 
-    def reset_radio_range_status(self):
+    def reset_radio_range_status(self) -> None:
         self.ui.radioStartDoubleSpinBox.setProperty("status", "saved")
         self.ui.radioEndDoubleSpinBox.setProperty("status", "saved")
 
         update_element_styles(self.ui.radioStartDoubleSpinBox)
         update_element_styles(self.ui.radioEndDoubleSpinBox)
 
-    def set_sound_range(self):
-        start_value = self.ui.soundStartDoubleSpinBox.value()
-        end_value = self.ui.soundEndDoubleSpinBox.value()
+        self.ui.saveRadioRangePushButton.setEnabled(False)
+        update_element_styles(self.ui.saveRadioRangePushButton)
+        self.ui.clearRadioRangePushButton.setEnabled(False)
+        update_element_styles(self.ui.clearRadioRangePushButton)
 
-        self.settings_service.sound_range_GHz = [start_value, end_value]
+    def handle_signal_range_change(self, value: float) -> None:
+        current_spin_box = cast(QDoubleSpinBox, self.sender())
 
-        self.reset_sound_range_status()
+        start_spin_box: Optional[QDoubleSpinBox] = None
+        end_spin_box: Optional[QDoubleSpinBox] = None
 
-    def clear_sound_range_values(self):
-        sound_range = self.settings_service.sound_range_GHz
-
-        self.ui.soundStartDoubleSpinBox.setValue(float(sound_range[0]))
-        self.ui.soundEndDoubleSpinBox.setValue(float(sound_range[1]))
-
-        self.reset_sound_range_status()
-
-    def reset_sound_range_status(self):
-        self.ui.soundStartDoubleSpinBox.setProperty("status", "saved")
-        self.ui.soundEndDoubleSpinBox.setProperty("status", "saved")
-
-        update_element_styles(self.ui.soundStartDoubleSpinBox)
-        update_element_styles(self.ui.soundEndDoubleSpinBox)
-
-    def handle_signal_range_change(self, value):
-        current_spin_box = self.sender()
-
-        start_spin_box = None
-        end_spin_box = None
-
-        match current_spin_box.objectName():
-            case "radioStartDoubleSpinBox":
-                start_spin_box = current_spin_box
-                end_spin_box = self.ui.radioEndDoubleSpinBox
-            case "radioEndDoubleSpinBox":
-                start_spin_box = self.ui.radioStartDoubleSpinBox
-                end_spin_box = current_spin_box
-            case "soundStartDoubleSpinBox":
-                start_spin_box = current_spin_box
-                end_spin_box = self.ui.soundEndDoubleSpinBox
-            case "soundEndDoubleSpinBox":
-                start_spin_box = self.ui.soundStartDoubleSpinBox
-                end_spin_box = current_spin_box
+        name = current_spin_box.objectName()
+        if name == "radioStartDoubleSpinBox":
+            start_spin_box = current_spin_box
+            end_spin_box = self.ui.radioEndDoubleSpinBox
+        elif name == "radioEndDoubleSpinBox":
+            start_spin_box = self.ui.radioStartDoubleSpinBox
+            end_spin_box = current_spin_box
 
         if start_spin_box is None or end_spin_box is None:
             return
 
         current_spin_box.setProperty("status", "unsaved")
-
         update_element_styles(current_spin_box)
+        self.ui.saveRadioRangePushButton.setEnabled(True)
+        update_element_styles(self.ui.saveRadioRangePushButton)
+        self.ui.clearRadioRangePushButton.setEnabled(True)
+        update_element_styles(self.ui.clearRadioRangePushButton)
 
         start_spin_box.blockSignals(True)
         end_spin_box.blockSignals(True)
@@ -772,143 +805,125 @@ class MainWindow(QMainWindow):
         start_spin_box.blockSignals(False)
         end_spin_box.blockSignals(False)
 
-    def update_time_and_date(self):
+    def on_jammer_state_changed(self, is_active: bool):
+        time_str = self.jammer_service.get_formatted_time()
+        self.ui.jammerTimerTime.setText(time_str)
+        self.ui.jammerOnTimerButton.setEnabled(not is_active)
+        self.ui.jammerOffTimerButton.setEnabled(is_active)
+
+        update_element_styles(self.ui.jammerOnTimerButton)
+        update_element_styles(self.ui.jammerOffTimerButton)
+
+        for relay in self.settings_service.main_relays:
+            label = getattr(self.ui, f"{relay.lower()}_label", None)
+            if label:
+                label.setEnabled(is_active)
+                update_element_styles(label)
+
+    # endregion
+
+    # region --- Animations & Updates ---
+
+    def update_time_and_date(self) -> None:
         current_datetime = QDateTime.currentDateTime()
         self.ui.DateLabel.setText(current_datetime.toString("dd.MM.yyyy"))
         self.ui.TimeLabel.setText(current_datetime.toString("hh:mm:ss"))
 
-    def rotate_radar_animation(self):
-        current_angle = getattr(self, "radar_angle", 0)
-        current_angle = (current_angle + 6) % 360
-        self.radar_angle = current_angle
+        if self.jammer_service.is_active:
+            time_str = self.jammer_service.get_formatted_time()
+            self.ui.jammerTimerTime.setText(time_str)
 
-        base_pixmap = self.draw_radar_section(current_angle)
+    def rotate_radar_animation(self) -> None:
+        has_detections = self.detection_manager.has_detections()
 
-        self.ui.Radar_Section.setPixmap(base_pixmap)
+        anim_pixmap = self.radar_renderer.draw_scan_animation(
+            size=self.ui.Radar.size(), has_detections=has_detections
+        )
 
-    def draw_radar_section(self, angle):
-        base_pixmap = QPixmap(self.ui.Radar.size())
-        base_pixmap.fill(Qt.GlobalColor.transparent)
-
-        painter = QPainter(base_pixmap)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-
-        size = min(base_pixmap.width(), base_pixmap.height())
-        center = QPointF(base_pixmap.width() / 2, base_pixmap.height() / 2)
-
-        gradient = QConicalGradient(center, -angle)
-
-        if self.detection_manager.has_detections():
-            gradient.setColorAt(
-                0.0, QColor(215, 40, 30, 100)
-            )  # яскраво-червоний на початку
-            gradient.setColorAt(0.25, QColor(180, 30, 30, 70))
-            gradient.setColorAt(1.0, QColor(100, 30, 30, 20))
-        else:
-            gradient.setColorAt(0.0, QColor(40, 215, 30, 90))
-            gradient.setColorAt(0.25, QColor(30, 180, 30, 50))
-            gradient.setColorAt(1.0, QColor(30, 100, 30, 10))
-
-        painter.setBrush(gradient)
-        painter.setPen(Qt.PenStyle.NoPen)
-        painter.drawEllipse(center, size / 2, size / 2)
-        painter.end()
-
-        return base_pixmap
-
-    def flush_radar_dots(self):
-        self.ui.Radar.setPixmap(QPixmap(":/images/radar.png"))
+        self.ui.Radar_Section.setPixmap(anim_pixmap)
 
     @asyncSlot()
-    async def refresh_map(self):
-        print("Запускаю асинхронне завантаження карти...")
+    async def refresh_map(self) -> None:
+
+        if self.is_radar_mode:
+            return
+
+        print("[MainWindow] Loading map asynchronously...")
+
         map_type = self.map_types[self.current_map_type_index]
 
-        pixmap, current_radius_px = await self.map_service.get_map_pixmap(
+        result = await self.map_service.get_map_pixmap(
             coord=self.current_coords,
             map_type=map_type,
             add_sizes_k=self.add_sizes_map_k,
         )
 
-        if pixmap:
-            print("Карта успішно завантажена.")
+        if result:
+            pixmap, resolution = result
+            print(f"[MainWindow] Map loaded. Res: {resolution:.4f} m/px")
+
             self.current_map = pixmap
-            self.current_map_radius = current_radius_px
+            self.current_map_resolution = resolution
 
             self.scale_map()
-
         else:
-            QMessageBox.warning(
-                None, self.tr("Помилка"), self.tr("Не вдалося завантажити карту.")
-            )
-            print("Не вдалося завантажити карту.")
+            QMessageBox.warning(None, self.tr("Error"), self.tr("Failed to load map."))
+            print("[MainWindow] Error: Failed to load map.")
 
-    def scale_map(self):
-
-        if self.isRadarMode:
-            print("Режим радару: зміна карти не відбувається")
+    def scale_map(self) -> None:
+        if self.is_radar_mode or not self.current_map:
             return
 
-        pixmap = self.current_map
-        current_radius_px = self.current_map_radius
-        if pixmap:
-            radar_radius_m = self.settings_service.radar_radius
-            radar_max_radius_m = self.settings_service.radar_max_radius
-            radius_px = self.ui.RadarFrame.width() / 2
+        scale_factor = self._calculate_scale_factor()
 
-            scale_factor = (radius_px / current_radius_px) * (
-                radar_max_radius_m / radar_radius_m
-            )
-            print(f"Масштабування карти: {scale_factor:.3f}x")
+        view_size = self.ui.map_background_label.size()
+        radar_geo = self.ui.RadarFrame.geometry()
 
-            scaled_pixmap = pixmap.scaled(
-                int(pixmap.width() * scale_factor),
-                int(pixmap.height() * scale_factor),
-                Qt.AspectRatioMode.KeepAspectRatioByExpanding,
-                Qt.TransformationMode.SmoothTransformation,
-            )
+        rel_x = radar_geo.center().x() - self.ui.map_background_label.x()
+        rel_y = radar_geo.center().y() - self.ui.map_background_label.y()
+        radar_center_relative = QPointF(rel_x, rel_y)
 
-            self.ui.map_background_label.setPixmap(scaled_pixmap)
-            self.ui.map_background_label.resize(scaled_pixmap.size())
+        final_pixmap = MapViewLogic.generate_view_pixmap(
+            source_map=self.current_map,
+            view_size=view_size,
+            radar_center_relative=radar_center_relative,
+            scale_factor=scale_factor,
+        )
 
-            radar_center = self.ui.RadarFrame.geometry().center()
+        if not final_pixmap.isNull():
+            self.ui.map_background_label.setPixmap(final_pixmap)
 
-            pixmap_center = self.ui.map_background_label.rect().center()
+            self.ui.map_background_label.resize(final_pixmap.size())
+            self.ui.map_background_label.move(0, 0)
 
-            new_x = radar_center.x() - pixmap_center.x()
-            new_y = radar_center.y() - pixmap_center.y()
-
-            self.ui.map_background_label.move(new_x, new_y)
-        else:
-            print("При зміні радіусу карта не буда знайдена.")
+    def _calculate_scale_factor(self) -> float:
+        return MapViewLogic.calculate_scale_factor(
+            radar_radius_m=self.settings_service.radar_radius,
+            radar_view_width_px=self.ui.RadarFrame.width(),
+            map_resolution_m_px=self.current_map_resolution,
+        )
 
     @asyncSlot()
-    async def change_map_type(self):
+    async def change_map_type(self) -> None:
         self.current_map_type_index = (self.current_map_type_index + 1) % len(
             self.map_types
         )
         await self.refresh_map()
 
-    def take_screenshot(self):
+    def take_screenshot(self) -> None:
         screenshot = self.grab()
         filename = f"./screenshots/screenshot_{QDateTime.currentDateTime().toString('yyyy-MM-dd_hh-mm-ss')}.png"
         os.makedirs(os.path.dirname(filename), exist_ok=True)
 
         screenshot.save(filename, "png")
-        print(f"Знімок екрану збережено як {filename}")
+        print(f"[MainWindow] Screenshot saved to: {filename}")
 
-    @asyncSlot()
-    async def update_gps_and_map(self):
+    def update_gps_and_map(self) -> None:
+        self.force_gps_update = True
         self.request_gps()
 
-        await self.refresh_map()
-
     @pyqtSlot()
-    def perform_search(self):
-        """
-        Встановлює активний індекс для відображення інформації.
-        Викликається при натисканні Enter у полі пошуку.
-        """
+    def perform_search(self) -> None:
         text = self.ui.index_search_edit.text().strip()
 
         if not text:
@@ -931,38 +946,36 @@ class MainWindow(QMainWindow):
         self.update_detection_info()
 
     @pyqtSlot(dict)
-    def handle_pi_data(self, data):
-        """Обробка загальних даних від іншої Raspberry Pi."""
-        print(f"Отримано загальні дані від Pi: {data}")
+    def handle_pi_data(self, data: Dict[str, Any]) -> None:
+        print(f"[MainWindow] Received generic data from Pi: {data}")
 
-    def update_wifi_signal_info(self):
+    def update_wifi_signal_info(self) -> None:
         wifi_strength = get_wifi_signal_strength(self.system_service.is_windows)
-        print("wifi_signal_strength:", wifi_strength)
 
         wifi_level = 0
-
         if wifi_strength:
-            wifi_level = math.ceil(wifi_strength / 25)
+            wifi_level = math.ceil(wifi_strength / (100 / SIGNAL_LEVEL_COUNT))
 
         self.ui.WiFi_level.setProperty("level", wifi_level)
         update_element_styles(self.ui.WiFi_level)
 
-    def restart_app(self):
+    def restart_app(self) -> None:
+        print("[MainWindow] Logout requested. Restarting application...")
         self.settings_service.remember_me = False
         self.setEnabled(False)
-        print("Performing restart...")
-
         restart_process()
 
-    def closeEvent(self, event):
-        print("Закриття програми...")
+    # endregion
+
+    def closeEvent(self, event: QCloseEvent) -> None:
+        print("[MainWindow] Application closing...")
 
         if self.recorder.isRunning():
-            print("[MainWindow] Закриття. Зупиняю потік запису...")
+            print("[MainWindow] Closing: Stopping recording thread...")
             self.recorder.stop_recording()
 
             if not self.recorder.wait(3000):
-                print("[MainWindow] Потік не відповів. Примусова зупинка.")
+                print("[MainWindow] Thread did not stop. Forcing termination.")
                 self.recorder.terminate()
 
         event.accept()

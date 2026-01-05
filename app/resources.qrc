@@ -36,9 +36,6 @@
     <file alias="images/addMapBtn_on.png">assets/images/addMapBtn_on.png</file>
     <file alias="images/addMapBtn_off.png">assets/images/addMapBtn_off.png</file>
     <file alias="images/addMapBtn_disabled.png">assets/images/addMapBtn_disabled.png</file>
-    <file alias="icons/chart.png">assets/icons/chart.png</file>
-    <file alias="icons/save.png">assets/icons/save.png</file>
-    <file alias="icons/clear.png">assets/icons/clear.png</file>
     <file alias="icons/pause.png">assets/icons/pause.png</file>
     <file alias="icons/play.png">assets/icons/play.png</file>
     <file alias="icons/record_indicator.png">assets/icons/record_indicator.png</file>
@@ -55,6 +52,15 @@
     <file alias="images/viewLogsBtn_on.png">assets/images/viewLogsBtn_on.png</file>
     <file alias="images/viewLogsBtn_off.png">assets/images/viewLogsBtn_off.png</file>
     <file alias="images/viewLogsBtn_disabled.png">assets/images/viewLogsBtn_disabled.png</file>
+    <file alias="images/clearBtn_on.png">assets/images/clearBtn_on.png</file>
+    <file alias="images/clearBtn_off.png">assets/images/clearBtn_off.png</file>
+    <file alias="images/clearBtn_disabled.png">assets/images/clearBtn_disabled.png</file>
+    <file alias="images/saveBtn_on.png">assets/images/saveBtn_on.png</file>
+    <file alias="images/saveBtn_off.png">assets/images/saveBtn_off.png</file>
+    <file alias="images/saveBtn_disabled.png">assets/images/saveBtn_disabled.png</file>
+    <file alias="images/openChartBtn_on.png">assets/images/openChartBtn_on.png</file>
+    <file alias="images/openChartBtn_off.png">assets/images/openChartBtn_off.png</file>
+    <file alias="images/openChartBtn_disabled.png">assets/images/openChartBtn_disabled.png</file>
 </qresource>
 </RCC>
 

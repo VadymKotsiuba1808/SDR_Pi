@@ -9,6 +9,7 @@ from PyQt6.QtNetwork import QTcpServer, QTcpSocket, QHostAddress
 from app.models.detection_event import DetectionEvent
 from app.models.detection_object import DetectionObject
 from app.models.object_class import ObjectClass
+from app.models.gps_data import GPSData
 
 
 class PiServerService(QObject):
@@ -291,9 +292,9 @@ class PiServerService(QObject):
         print(f"[PiProxy] Sending Detection: {event.name}")
         self.send_packet("detection", event.to_dict())
 
-    def send_gps_data(self, gps_data: Dict[str, Any]) -> None:
+    def send_gps_data(self, gps_data: GPSData) -> None:
         """Відправляє координати {lat, lon, alt}."""
-        self.send_packet("gps_position", gps_data)
+        self.send_packet("gps_position", gps_data.to_dict())
 
     def send_rf_stream_data(self, spectrum_data: Dict[str, Any]) -> None:
         """Відправляє пакет даних спектру."""

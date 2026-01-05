@@ -33,7 +33,7 @@ class LogEntry:
 
     type: str
     payload: Union[DetectionEvent, FalseAlarmPayload]
-    timestamp: str = datetime.now().isoformat()
+    timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
 
     @property
     def is_detection(self):

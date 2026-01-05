@@ -16,7 +16,7 @@ class SettingsData:
 
     radar_max_radius: float = 1000.0
     gps_interval_s: int = 120
-    main_relay: List[str] = field(default_factory=lambda: ["K1"])
+    main_relays: List[str] = field(default_factory=lambda: ["K1"])
 
 
 class SettingsDialog(QDialog):
@@ -68,7 +68,7 @@ class SettingsDialog(QDialog):
         self.ui.inpMaxRadius.setValue(s.radar_max_radius / 1000)
         self.ui.inpGpsInterval.setValue(s.gps_interval_s)
 
-        relay_val = ",".join(s.main_relay)
+        relay_val = ",".join(s.main_relays)
         index = self.ui.cmbRelay.findText(relay_val)
         if index >= 0:
             self.ui.cmbRelay.setCurrentIndex(index)
@@ -108,7 +108,7 @@ class SettingsDialog(QDialog):
         self.new_settings = SettingsData(
             radar_max_radius=radius_m,
             gps_interval_s=gps_interval,
-            main_relay=relays,
+            main_relays=relays,
         )
 
         print(f"[Settings] Configuration saved: {self.new_settings}")

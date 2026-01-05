@@ -38,12 +38,14 @@ class SettingsService(QObject):
     tile_divider_enabled: bool
     compiled_ui_using_enabled: bool
     # Signal
-    radio_range_GHz: list
-    sound_range_GHz: list
+    radio_range_GHz: list[float]
     # Timers
     gps_interval_s: float
-    # Relays
-    main_relay: list
+    # Jammer
+    main_relays: list[str]
+    is_jammer_auto_start_enabled: bool
+    is_jammer_auto_stop_enabled: bool
+    jammer_auto_stop_interval_s: int
     # UI
     lang_code: str
 
@@ -70,11 +72,13 @@ class SettingsService(QObject):
         "compiled_ui_using_enabled": Setting("dev", bool, True),
         # Signal
         "radio_range_GHz": ("signal", list, [0.0, 9.9]),
-        "sound_range_GHz": ("signal", list, [0.0, 9.9]),
         # Timers
         "gps_interval_s": ("timers", int, 2),
-        # Relays
-        "main_relay": ("relays", list, ["K1"]),
+        # Jammer
+        "main_relays": ("jammer", list, ["K1"]),
+        "is_jammer_auto_start_enabled": ("jammer", bool, False),
+        "is_jammer_auto_stop_enabled": ("jammer", bool, False),
+        "jammer_auto_stop_interval_s": ("jammer", int, 900),
         # UI
         "lang_code": ("ui", str, "uk"),
     }

@@ -125,91 +125,15 @@ background: rgba(0, 10, 0, 0.1);</string>
      <widget class="QDoubleSpinBox" name="radioStartDoubleSpinBox">
       <property name="geometry">
        <rect>
-        <x>146</x>
-        <y>9</y>
-        <width>130</width>
-        <height>41</height>
+        <x>100</x>
+        <y>30</y>
+        <width>145</width>
+        <height>50</height>
        </rect>
       </property>
       <property name="styleSheet">
        <string notr="true">QDoubleSpinBox{
-	font-size:24px;
-	padding:2px;
-color:#fff;
-}
-
-QDoubleSpinBox[status=&quot;unsaved&quot;]{
-	border:5px solid darkred; 
-}
-
-QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {
-    width: 22px;
-    height: 18px;
-}</string>
-      </property>
-      <property name="buttonSymbols">
-       <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
-      </property>
-      <property name="showGroupSeparator" stdset="0">
-       <bool>false</bool>
-      </property>
-      <property name="singleStep">
-       <double>0.100000000000000</double>
-      </property>
-      <property name="status" stdset="0">
-       <string>saved</string>
-      </property>
-     </widget>
-     <widget class="QDoubleSpinBox" name="soundStartDoubleSpinBox">
-      <property name="geometry">
-       <rect>
-        <x>146</x>
-        <y>52</y>
-        <width>130</width>
-        <height>41</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QDoubleSpinBox{
-	font-size:24px;
-	padding:2px;
-color:#fff;
-}
-
-QDoubleSpinBox[status=&quot;unsaved&quot;]{
-	border:5px solid darkred; 
-}
-
-QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {
-    width: 22px;
-    height: 18px;
-}</string>
-      </property>
-      <property name="buttonSymbols">
-       <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
-      </property>
-      <property name="showGroupSeparator" stdset="0">
-       <bool>false</bool>
-      </property>
-      <property name="singleStep">
-       <double>0.100000000000000</double>
-      </property>
-      <property name="status" stdset="0">
-       <string>saved</string>
-      </property>
-     </widget>
-     <widget class="QDoubleSpinBox" name="soundEndDoubleSpinBox">
-      <property name="geometry">
-       <rect>
-        <x>310</x>
-        <y>52</y>
-        <width>130</width>
-        <height>41</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QDoubleSpinBox{
-	font-size:24px;
+	font-size:28px;
 	padding:2px;
 color:#fff;
 }
@@ -239,15 +163,15 @@ QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {
      <widget class="QDoubleSpinBox" name="radioEndDoubleSpinBox">
       <property name="geometry">
        <rect>
-        <x>310</x>
-        <y>9</y>
-        <width>130</width>
-        <height>41</height>
+        <x>290</x>
+        <y>30</y>
+        <width>145</width>
+        <height>50</height>
        </rect>
       </property>
       <property name="styleSheet">
        <string notr="true">QDoubleSpinBox{
-	font-size:24px;
+	font-size:28px;
 	padding:2px;
 color:#fff;
 }
@@ -283,11 +207,11 @@ QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {
        <string>saved</string>
       </property>
      </widget>
-     <widget class="QLabel" name="rangeDivideLabel_1">
+     <widget class="QLabel" name="rangeDivideLabel">
       <property name="geometry">
        <rect>
-        <x>278</x>
-        <y>10</y>
+        <x>250</x>
+        <y>31</y>
         <width>30</width>
         <height>31</height>
        </rect>
@@ -295,34 +219,7 @@ QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {
       <property name="styleSheet">
        <string notr="true">QLabel{
 border:none;
-font-size:56px;
-color:#fff;
-
-}</string>
-      </property>
-      <property name="text">
-       <string>-</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignmentFlag::AlignCenter</set>
-      </property>
-      <property name="indent">
-       <number>-1</number>
-      </property>
-     </widget>
-     <widget class="QLabel" name="rangeDivideLabel_2">
-      <property name="geometry">
-       <rect>
-        <x>278</x>
-        <y>50</y>
-        <width>30</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QLabel{
-border:none;
-font-size:56px;
+font-size:64px;
 color:#fff;
 
 }</string>
@@ -341,56 +238,46 @@ color:#fff;
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>20</y>
-        <width>121</width>
-        <height>20</height>
+        <y>11</y>
+        <width>81</width>
+        <height>71</height>
        </rect>
       </property>
       <property name="styleSheet">
        <string notr="true">border:none;
-font-size:22px;
+font-size:28px;
 color:#fff;</string>
       </property>
       <property name="text">
-       <string>Radio, GHz</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Radio, GHz&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
-     </widget>
-     <widget class="QLabel" name="soundRangeLabel">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>63</y>
-        <width>131</width>
-        <height>20</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color:#fff;
-border:none;
-font-size:22px;</string>
-      </property>
-      <property name="text">
-       <string>Sound, GHz</string>
+      <property name="wordWrap">
+       <bool>true</bool>
       </property>
      </widget>
      <widget class="QPushButton" name="saveRadioRangePushButton">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
       <property name="geometry">
        <rect>
-        <x>515</x>
-        <y>9</y>
-        <width>41</width>
-        <height>41</height>
+        <x>500</x>
+        <y>30</y>
+        <width>50</width>
+        <height>50</height>
        </rect>
       </property>
       <property name="styleSheet">
-       <string notr="true">QPushButton{background-image: url(:/icons/save.png);
-background-position:center;
-border-radius:6px;
-color:#fff;
+       <string notr="true">QPushButton{
+border-image: url(:/images/saveBtn_off.png)  stretch stretch;
 }
 
 QPushButton:pressed, QPushButton:checked{
-background-color:#2b6425
+border-image: url(:/images/saveBtn_on.png)  stretch stretch;
+}
+
+QPushButton:disabled{
+border-image: url(:/images/saveBtn_disabled.png)  stretch stretch;
 }</string>
       </property>
       <property name="text">
@@ -400,78 +287,26 @@ background-color:#2b6425
        <bool>false</bool>
       </property>
      </widget>
-     <widget class="QPushButton" name="saveSoundRangePushButton">
+     <widget class="QPushButton" name="chartRangePushButton">
       <property name="geometry">
        <rect>
-        <x>515</x>
-        <y>52</y>
-        <width>41</width>
-        <height>41</height>
+        <x>560</x>
+        <y>30</y>
+        <width>50</width>
+        <height>50</height>
        </rect>
       </property>
       <property name="styleSheet">
-       <string notr="true">QPushButton{background-image: url(:/icons/save.png);
-background-position:center;
-border-radius:6px;
-color:#fff;
+       <string notr="true">QPushButton{
+border-image: url(:/images/openChartBtn_off.png)  stretch stretch;
 }
 
 QPushButton:pressed, QPushButton:checked{
-background-color:#2b6425
-}</string>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-      <property name="checkable">
-       <bool>false</bool>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="chartRadioRangePushButton">
-      <property name="geometry">
-       <rect>
-        <x>570</x>
-        <y>9</y>
-        <width>41</width>
-        <height>41</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QPushButton{background-image: url(:/icons/chart.png);
-background-position:center;
-border-radius:6px;
-color:#fff;
+border-image: url(:/images/openChartBtn_on.png)  stretch stretch;
 }
 
-QPushButton:pressed, QPushButton:checked{
-background-color:#2b6425
-}</string>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-      <property name="checkable">
-       <bool>false</bool>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="chartSoundRangePushButton">
-      <property name="geometry">
-       <rect>
-        <x>570</x>
-        <y>52</y>
-        <width>41</width>
-        <height>41</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QPushButton{background-image: url(:/icons/chart.png);
-background-position:center;
-border-radius:6px;
-color:#fff;
-}
-
-QPushButton:pressed, QPushButton:checked{
-background-color:#2b6425
+QPushButton:disabled{
+border-image: url(:/images/openChartBtn_disabled.png)  stretch stretch;
 }</string>
       </property>
       <property name="text">
@@ -482,53 +317,38 @@ background-color:#2b6425
       </property>
      </widget>
      <widget class="QPushButton" name="clearRadioRangePushButton">
-      <property name="geometry">
-       <rect>
-        <x>460</x>
-        <y>9</y>
-        <width>41</width>
-        <height>41</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QPushButton{background-image: url(:/icons/clear.png);
-background-position:center;
-border-radius:6px;
-}
-
-QPushButton:pressed, QPushButton:checked{
-background-color:#2b6425
-}</string>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-      <property name="checkable">
+      <property name="enabled">
        <bool>false</bool>
       </property>
-     </widget>
-     <widget class="QPushButton" name="clearSoundRangePushButton">
       <property name="geometry">
        <rect>
-        <x>460</x>
-        <y>52</y>
-        <width>41</width>
-        <height>41</height>
+        <x>440</x>
+        <y>30</y>
+        <width>50</width>
+        <height>50</height>
        </rect>
       </property>
       <property name="styleSheet">
-       <string notr="true">QPushButton{background-image: url(:/icons/clear.png);
-background-position:center;
-border-radius:6px;
-color:#fff;
+       <string notr="true">QPushButton{
+border-image: url(:/images/clearBtn_off.png)  stretch stretch;
 }
 
 QPushButton:pressed, QPushButton:checked{
-background-color:#2b6425
+border-image: url(:/images/clearBtn_on.png)  stretch stretch;
+}
+
+QPushButton:disabled{
+border-image: url(:/images/clearBtn_disabled.png)  stretch stretch;
 }</string>
       </property>
       <property name="text">
        <string/>
+      </property>
+      <property name="iconSize">
+       <size>
+        <width>56</width>
+        <height>56</height>
+       </size>
       </property>
       <property name="checkable">
        <bool>false</bool>
@@ -942,7 +762,7 @@ color: #FFF500;</string>
        <set>Qt::AlignmentFlag::AlignCenter</set>
       </property>
      </widget>
-     <widget class="QLabel" name="TimerTime">
+     <widget class="QLabel" name="jammerTimerTime">
       <property name="geometry">
        <rect>
         <x>76</x>
@@ -967,7 +787,7 @@ color: #E4E7E4;
        <set>Qt::AlignmentFlag::AlignCenter</set>
       </property>
      </widget>
-     <widget class="QPushButton" name="onTimerButton">
+     <widget class="QPushButton" name="jammerOnTimerButton">
       <property name="geometry">
        <rect>
         <x>30</x>
@@ -1008,7 +828,10 @@ QPushButton[enabled=&quot;false&quot;]{
        <string>ON</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="offTimerButton">
+     <widget class="QPushButton" name="jammerOffTimerButton">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
       <property name="geometry">
        <rect>
         <x>30</x>
@@ -1050,7 +873,7 @@ QPushButton[enabled=&quot;false&quot;]{
       </property>
      </widget>
     </widget>
-    <widget class="QLabel" name="k_label_1">
+    <widget class="QLabel" name="k1_label">
      <property name="enabled">
       <bool>false</bool>
      </property>
@@ -1087,7 +910,7 @@ QPushButton[enabled=&quot;false&quot;]{
       <set>Qt::AlignmentFlag::AlignCenter</set>
      </property>
     </widget>
-    <widget class="QLabel" name="k_label_2">
+    <widget class="QLabel" name="k2_label">
      <property name="enabled">
       <bool>false</bool>
      </property>
@@ -1124,7 +947,7 @@ QPushButton[enabled=&quot;false&quot;]{
       <set>Qt::AlignmentFlag::AlignCenter</set>
      </property>
     </widget>
-    <widget class="QLabel" name="k_label_3">
+    <widget class="QLabel" name="k3_label">
      <property name="enabled">
       <bool>false</bool>
      </property>
@@ -1231,6 +1054,9 @@ border-radius:450px;</string>
        <height>985</height>
       </size>
      </property>
+     <property name="styleSheet">
+      <string notr="true">background-color:#DCDDE1;</string>
+     </property>
      <property name="frameShape">
       <enum>QFrame::Shape::Panel</enum>
      </property>
@@ -1297,7 +1123,7 @@ background-color:transparent;</string>
        </widget>
       </item>
       <item>
-       <widget class="QSpinBox" name="radarRadiusSpinbox">
+       <widget class="QDoubleSpinBox" name="radarRadiusSpinbox">
         <property name="font">
          <font>
           <family>Roboto</family>
@@ -1306,25 +1132,27 @@ background-color:transparent;</string>
          </font>
         </property>
         <property name="styleSheet">
-         <string notr="true">font-family: 'Roboto';
+         <string notr="true">QDoubleSpinBox{
+font-family: 'Roboto';
 font-weight: 500;
-font-size: 26px;
-color:#fff;</string>
+font-size: 28px;
+padding:2px;
+color:#fff;
+}
+
+QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {
+    width: 22px;
+    height: 18px;
+}</string>
         </property>
         <property name="wrapping">
          <bool>false</bool>
         </property>
         <property name="buttonSymbols">
-         <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
+         <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
         </property>
         <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>100000</number>
-        </property>
-        <property name="singleStep">
-         <number>10</number>
+         <double>0.010000000000000</double>
         </property>
        </widget>
       </item>
@@ -2137,9 +1965,9 @@ QPushButton#viewLogsButton:disabled{
     <zorder>mapLayoutButton</zorder>
     <zorder>screenSaveButton</zorder>
     <zorder>TimerFrame</zorder>
-    <zorder>k_label_1</zorder>
-    <zorder>k_label_2</zorder>
-    <zorder>k_label_3</zorder>
+    <zorder>k1_label</zorder>
+    <zorder>k2_label</zorder>
+    <zorder>k3_label</zorder>
     <zorder>RadarFrame</zorder>
     <zorder>RadarSettings</zorder>
     <zorder>addMapButton</zorder>

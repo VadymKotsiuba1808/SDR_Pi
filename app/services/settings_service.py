@@ -25,24 +25,18 @@ class SettingsService(QObject):
     pi_target_port: int
     pi_is_receiver: bool
     # Maps
-    radar_radius: int
-    radar_max_radius: int
+    radar_radius_km: float
+    radar_max_radius_km: float
     api_key: str
-    base_url: str
-    scale: str
     zoom: int
-    img_format: str
     # Auth
     role: str
     owner_password_hash: str
     remember_me: bool
-    # Dev
-    tile_divider_enabled: bool
-    compiled_ui_using_enabled: bool
     # Signal
-    radio_range_GHz: list[float]
+    radio_range_ghz: list[float]
     # Timers
-    gps_interval_s: float
+    gps_interval_s: int
     # Jammer
     main_relays: list[str]
     is_jammer_auto_start_enabled: bool
@@ -58,22 +52,16 @@ class SettingsService(QObject):
         "pi_target_port": ("pinetwork", int, 6000),
         "pi_is_receiver": ("pinetwork", bool, True),
         # Maps
-        "radar_radius": ("maps", int, 500),
-        "radar_max_radius": ("maps", int, 1000),
+        "radar_radius_km": ("maps", float, 100),
+        "radar_max_radius_km": ("maps", float, 200),
         "api_key": ("maps", str, ""),
-        "base_url": ("maps", str, "https://api.maptiler.com/maps"),
-        "scale": ("maps", str, "@2x"),
         "zoom": ("maps", int, 15),
-        "img_format": Setting("maps", str, "png"),
         # Auth
         "role": Setting("auth", str, "operator"),
         "owner_password_hash": Setting("auth", str, ""),
         "remember_me": Setting("auth", bool, False),
-        # Dev
-        "tile_divider_enabled": Setting("dev", bool, False),
-        "compiled_ui_using_enabled": Setting("dev", bool, True),
         # Signal
-        "radio_range_GHz": ("signal", list, [0.0, 9.9]),
+        "radio_range_ghz": ("signal", list, [0.0, 9.9]),
         # Timers
         "gps_interval_s": ("timers", int, 2),
         # Jammer

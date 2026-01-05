@@ -14,3 +14,10 @@ SECURITY_KEY_FILENAME: str = ".sdr_reset.key"
 USB_SCAN_INTERVAL_SECONDS: float = 1.5
 
 RELAY_NAMES_LIST: List[str] = ["K1", "K2", "K3"]
+
+MAPS_API_URL: str = "https://api.maptiler.com/maps"
+MAPS_IMG_FORMAT: str = "png"
+MAPS_SCALE: str = "@2x"
+
+DEV_COMPILED_UI_USING_ENABLED: bool = True
+DEV_TILE_DIVIDER_ENABLED: bool = False

@@ -6,80 +6,42 @@
 from typing import Protocol
 
 
+class LangSettings(Protocol):
+    lang_code: str
+
+
 class MapServiceSettings(Protocol):
     api_key: str
-    base_url: str
-    radar_max_radius: int
-    scale: float
+    radar_max_radius_km: int
     zoom: int
-    img_format: str
-    tile_divider_enabled: bool
 
 
 class LoginDialogSettings(Protocol):
     role: str
     owner_password_hash: str
     remember_me: bool
-    compiled_ui_using_enabled: bool
     lang_code: str
 
 
 class ChangePwdDialogSettings(Protocol):
     owner_password_hash: str
-    compiled_ui_using_enabled: bool
     lang_code: str
 
 
 class SetMapDialogSettings(Protocol):
-    radar_max_radius: int
-    compiled_ui_using_enabled: bool
-    lang_code: str
-
-
-class RecordingStatusWidgetSettings(Protocol):
-    compiled_ui_using_enabled: bool
-
-
-class KeyboardWidgetSettings(Protocol):
-    compiled_ui_using_enabled: bool
-    lang_code: str
-
-
-class ObjectEditorDialogSettings(Protocol):
-    compiled_ui_using_enabled: bool
-    lang_code: str
-
-
-class ObjectManagerDialogSettings(Protocol):
-    compiled_ui_using_enabled: bool
-    lang_code: str
-
-
-class ClassManagerDialogSettings(Protocol):
-    compiled_ui_using_enabled: bool
+    radar_max_radius_km: int
     lang_code: str
 
 
 class SettingsDialogSettings(Protocol):
-    compiled_ui_using_enabled: bool
     lang_code: str
-    radar_max_radius: float
+    radar_max_radius_km: float
     gps_interval_s: int
     main_relays: str
     is_jammer_auto_start_enabled: bool
     is_jammer_auto_stop_enabled: bool
     jammer_auto_stop_interval_s: int
     remember_me: bool
-
-
-class ChartWidgetSettings(Protocol):
-    compiled_ui_using_enabled: bool
-    lang_code: str
-
-
-class LogDialogSettings(Protocol):
-    compiled_ui_using_enabled: bool
-    lang_code: str
 
 
 class OSService(Protocol):

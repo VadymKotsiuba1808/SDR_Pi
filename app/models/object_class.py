@@ -1,9 +1,10 @@
+from typing import Optional
 from dataclasses import dataclass
 
 
 @dataclass
 class ObjectClass:
-    id: int
+    id: Optional[int]
     name: str
 
     @staticmethod

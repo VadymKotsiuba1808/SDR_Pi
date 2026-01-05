@@ -80,9 +80,11 @@ class ObjectEditorDialog(QDialog):
         self.update_classes_list(self.object_classes)
 
         if self.is_edit_mode and self.object_data:
+            # TODO - Додати переклад
             self.setWindowTitle("Редагування об'єкта")
             self._load_data_into_fields()
         else:
+            # TODO - Додати переклад
             self.setWindowTitle("Додавання нового об'єкта")
             if self.ui.comboClass.count() > 0:
                 self.ui.comboClass.setCurrentIndex(0)
@@ -185,6 +187,7 @@ class ObjectEditorDialog(QDialog):
         name = self.ui.inpName.text().strip()
         if not name:
             print("[ObjectEditor] Save failed: Name is empty.")
+            # TODO - Додати переклад
             QMessageBox.warning(self, "Помилка", "Введіть назву об'єкта.")
             return
 
@@ -193,6 +196,7 @@ class ObjectEditorDialog(QDialog):
 
         if selected_class_id is None:
             print("[ObjectEditor] Save failed: Class not selected.")
+            # TODO - Додати переклад
             QMessageBox.warning(self, "Помилка", "Виберіть клас.")
             return
 

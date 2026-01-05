@@ -7,6 +7,8 @@ from PyQt6.QtNetwork import QTcpServer, QTcpSocket, QHostAddress
 
 from app.services.settings_service import SettingsService
 from app.models.detection_event import DetectionEvent
+from app.models.detection_object import DetectionObject
+from app.models.object_class import ObjectClass
 from app.models.gps_data import GPSData
 
 
@@ -28,12 +30,18 @@ class PiNetworkService(QObject):
     # --- Сигнали для роботи з БД  ---
     # (objects_list, page, total_items)
     db_objects_page_received = pyqtSignal(list, int, int)
+    db_object_added = pyqtSignal(DetectionObject)
+    db_object_updated = pyqtSignal(DetectionObject)
+    db_object_deleted = pyqtSignal(int)  # ID
 
     # (operation_type, success, message)
     db_operation_status = pyqtSignal(str, bool, str)
 
     # (classes_list)
     db_classes_received = pyqtSignal(list)
+    db_class_added = pyqtSignal(ObjectClass)  # Повертає новий клас з ID
+    db_class_renamed = pyqtSignal(ObjectClass)  # Повертає оновлений клас
+    db_class_deleted = pyqtSignal(int)
 
     # --- Сигнали стану з'єднання ---
     connection_status_changed = pyqtSignal(bool)
@@ -157,8 +165,8 @@ class PiNetworkService(QObject):
                     page = data.get("page", 1)
                     total = data.get("total", 0)
 
-                    # models = [DetectionObject.from_dict(d) for d in items_raw]
-                    # self.db_objects_page_received.emit(models, page, total)
+                    models = [DetectionObject.from_dict(d) for d in items_raw]
+                    self.db_objects_page_received.emit(models, page, total)
 
                 elif action == "db_response_status":
                     op_type = data.get("op", "unknown")
@@ -168,9 +176,42 @@ class PiNetworkService(QObject):
 
                 elif action == "db_response_classes":
                     classes_raw = data.get("classes", [])
-                    # models = [ObjectClass.from_dict(c) for c in classes_raw]
-                    # self.db_classes_received.emit(models)
+                    models = [ObjectClass.from_dict(c) for c in classes_raw]
+                    self.db_classes_received.emit(models)
 
+                elif action == "db_event_object_added":
+                    obj_dict = data.get("object")
+                    if obj_dict:
+                        self.db_object_added.emit(DetectionObject.from_dict(obj_dict))
+
+                elif action == "db_event_object_updated":
+                    obj_dict = data.get("object")
+                    if obj_dict:
+                        self.db_object_updated.emit(DetectionObject.from_dict(obj_dict))
+
+                elif action == "db_event_object_deleted":
+                    obj_id = data.get("id")
+                    if obj_id is not None:
+                        self.db_object_deleted.emit(int(obj_id))
+
+                # --- DB CACHE UPDATES (CLASSES) - ТУТ НОВЕ ---
+                elif action == "db_event_class_added":
+                    # Server sends: {"class": {"id": 1, "name": "Drone"}}
+                    cls_dict = data.get("class")
+                    if cls_dict:
+                        self.db_class_added.emit(ObjectClass.from_dict(cls_dict))
+
+                elif action == "db_event_class_renamed":
+                    # Server sends: {"class": {"id": 1, "name": "Super Drone"}}
+                    cls_dict = data.get("class")
+                    if cls_dict:
+                        self.db_class_renamed.emit(ObjectClass.from_dict(cls_dict))
+
+                elif action == "db_event_class_deleted":
+                    # Server sends: {"id": 1}
+                    cls_id = data.get("id")
+                    if cls_id is not None:
+                        self.db_class_deleted.emit(int(cls_id))
                 else:
                     # Fallback для невідомих пакетів
                     self.data_received.emit(packet)
@@ -242,13 +283,13 @@ class PiNetworkService(QObject):
         print(f"[PiNet] DB Request: Objects Page {page}")
         self.send_packet("db_request_page", {"page": page, "size": page_size})
 
-    def request_db_add_object(self, obj_data: Dict[str, Any]) -> None:
-        print(f"[PiNet] DB Request: Add Object '{obj_data.get('name')}'")
-        self.send_packet("db_request_add", {"object": obj_data})
+    def request_db_add_object(self, obj_data: DetectionObject) -> None:
+        print(f"[PiNet] DB Request: Add Object '{obj_data.name}'")
+        self.send_packet("db_request_add", {"object": obj_data.to_dict()})
 
-    def request_db_update_object(self, obj_data: Dict[str, Any]) -> None:
-        print(f"[PiNet] DB Request: Update Object ID {obj_data.get('id')}")
-        self.send_packet("db_request_update", {"object": obj_data})
+    def request_db_update_object(self, obj_data: DetectionObject) -> None:
+        print(f"[PiNet] DB Request: Update Object ID {obj_data.id}")
+        self.send_packet("db_request_update", {"object": obj_data.to_dict()})
 
     def request_db_delete_object(self, object_id: int) -> None:
         print(f"[PiNet] DB Request: Delete Object ID {object_id}")
@@ -258,13 +299,23 @@ class PiNetworkService(QObject):
         print("[PiNet] DB Request: Get All Classes")
         self.send_packet("db_request_classes")
 
-    def request_db_add_class(self, class_name: str) -> None:
-        print(f"[PiNet] DB Request: Add Class '{class_name}'")
-        self.send_packet("db_request_add_class", {"name": class_name})
+    def request_db_add_class(self, class_obj: ObjectClass) -> None:
+        print(f"[PiNet] DB Request: Add Class '{class_obj.name}'")
+        self.send_packet("db_request_add_class", {"class": class_obj.to_dict()})
 
-    def request_db_rename_class(self, old_name: str, new_name: str) -> None:
-        print(f"[PiNet] DB Request: Rename Class '{old_name}' -> '{new_name}'")
-        self.send_packet("db_request_rename_class", {"old": old_name, "new": new_name})
+    def request_db_rename_class(
+        self, old_class_obj: ObjectClass, new_class_obj: ObjectClass
+    ) -> None:
+        print(
+            f"[PiNet] DB Request: Rename Class '{old_class_obj.name}' -> '{new_class_obj.name}'"
+        )
+        self.send_packet(
+            "db_request_rename_class",
+            {
+                "old_class": old_class_obj.to_dict(),
+                "new_class": new_class_obj.to_dict(),
+            },
+        )
 
     def request_db_delete_class(self, class_id: int) -> None:
         print(f"[PiNet] DB Request: Delete Class ID {class_id}")

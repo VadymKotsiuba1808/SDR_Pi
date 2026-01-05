@@ -14,7 +14,7 @@ from PyQt6.QtCore import Qt, QEvent, QCoreApplication, QTranslator
 from app.protocols import ObjectManagerDialogSettings
 from app.widgets.object_editor_dialog import ObjectEditorDialog
 from app.widgets.class_manager_dialog import ClassManagerDialog
-from app.services.database_service import DatabaseService
+from app.services.pi_network_service import PiNetworkService
 from app.services.keyboard_service import KeyboardService
 from app.models.detection_object import DetectionObject
 from app.models.object_class import ObjectClass
@@ -32,7 +32,7 @@ class ObjectManagerDialog(QDialog):
 
     def __init__(
         self,
-        db_service: DatabaseService,
+        network_service: PiNetworkService,
         settings_service: ObjectManagerDialogSettings,
         keyboard: KeyboardService,
         parent: Optional[QWidget] = None,
@@ -40,7 +40,7 @@ class ObjectManagerDialog(QDialog):
         super().__init__(parent)
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
 
-        self.db_service = db_service
+        self.network_service = network_service
         self.settings_service = settings_service
         self.keyboard_service = keyboard
 
@@ -76,6 +76,8 @@ class ObjectManagerDialog(QDialog):
         self.total_items: int = 0
         self.translator = QTranslator()
 
+        self.edit_obj: DetectionObject = None
+
     def _init_table(self) -> None:
         header = self.ui.tableWidget.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
@@ -99,8 +101,14 @@ class ObjectManagerDialog(QDialog):
         self.ui.btnPrevPage.clicked.connect(self._prev_page)
         self.ui.btnNextPage.clicked.connect(self._next_page)
 
-        self.db_service.objects_page_loaded.connect(self._populate_table_from_db)
-        self.db_service.operation_status.connect(self._handle_db_status)
+        self.network_service.db_operation_status.connect(self._handle_db_status)
+        self.network_service.db_objects_page_received.connect(
+            self._populate_table_from_db
+        )
+        self.network_service.db_object_added.connect(self.add_cache_obj)
+        self.network_service.db_object_updated.connect(self.update_cache_obj)
+        self.network_service.db_object_deleted.connect(self.delete_cache_obj)
+        self.network_service.db_classes_received.connect(self._open_editor)
 
     def refresh_data(self) -> None:
         last_page_in_cache = self.current_load * self.PRELOAD_PAGES_COUNT
@@ -130,7 +138,7 @@ class ObjectManagerDialog(QDialog):
             print(
                 f"[ObjectManager] Requesting DB Chunk #{self.current_load} (Limit: {limit})..."
             )
-            self.db_service.request_objects_page(self.current_load, limit)
+            self.network_service.request_db_objects_page(self.current_load, limit)
 
     def _load_language(self) -> None:
         lang_code = self.settings_service.lang_code
@@ -159,8 +167,19 @@ class ObjectManagerDialog(QDialog):
         print(
             f"[ObjectManager] DB Operation '{op_type}': Success={success}, Msg='{msg}'"
         )
-        if success:
-            self.refresh_data()
+
+        if not success:
+            # TODO - Додати переклад
+            titles = {
+                "add": "Помилка додавання",
+                "update": "Помилка оновлення",
+                "delete": "Помилка видалення",
+                "get_page": "Помилка завантаження",
+                "unknown": "Помилка бази даних",
+            }
+            title = titles.get(op_type, "Помилка")
+
+            QMessageBox.critical(self, title, msg)
 
     def _populate_table_from_db(
         self,
@@ -181,6 +200,7 @@ class ObjectManagerDialog(QDialog):
 
     def _populate_table(self, objects_list: List[DetectionObject]) -> None:
         self.ui.lblPageInfo.setText(
+            # TODO - Додати переклад
             f"Сторінка {self.current_page} з {self.total_pages}"
         )
         self.ui.btnPrevPage.setEnabled(self.current_page > 1)
@@ -190,31 +210,37 @@ class ObjectManagerDialog(QDialog):
 
         for obj in objects_list:
             row_idx = self.ui.tableWidget.rowCount()
+            self._set_object_row(obj, row_idx)
+
+    def _set_object_row(self, obj: DetectionObject, row_idx: int):
+
+        if row_idx >= self.ui.tableWidget.rowCount():
             self.ui.tableWidget.insertRow(row_idx)
 
-            # Назва
-            name_item = QTableWidgetItem(obj.name)
-            name_item.setData(Qt.ItemDataRole.UserRole, obj.id)  # ID типу int
-            self.ui.tableWidget.setItem(row_idx, 0, name_item)
+        # Назва
+        name_item = QTableWidgetItem(obj.name)
+        name_item.setData(Qt.ItemDataRole.UserRole, obj.id)  # ID типу int
+        self.ui.tableWidget.setItem(row_idx, 0, name_item)
 
-            # Клас
-            self.ui.tableWidget.setItem(row_idx, 1, QTableWidgetItem(obj.object_class))
+        # Клас
+        self.ui.tableWidget.setItem(row_idx, 1, QTableWidgetItem(obj.object_class))
 
-            # Небезпека
-            is_dang = obj.is_dangerous
-            dang_item = QTableWidgetItem("ТАК" if is_dang else "Ні")
-            if is_dang:
-                dang_item.setForeground(Qt.GlobalColor.red)
-            self.ui.tableWidget.setItem(row_idx, 2, dang_item)
+        # Небезпека
+        is_dang = obj.is_dangerous
+        # TODO - Додати переклад
+        dang_item = QTableWidgetItem("ТАК" if is_dang else "Ні")
+        if is_dang:
+            dang_item.setForeground(Qt.GlobalColor.red)
+        self.ui.tableWidget.setItem(row_idx, 2, dang_item)
 
-            # --- RF (Радіо) ---
-            rf_list = obj.rf_params
-            rf_str = "-"
-            if rf_list:
-                if len(rf_list) == 1:
-                    rf_str = f"{rf_list[0]} MHz"
-                else:
-                    rf_str = f"{len(rf_list)} freq(s)"
+        # --- RF (Радіо) ---
+        rf_list = obj.rf_params
+        rf_str = "-"
+        if rf_list:
+            if len(rf_list) == 1:
+                rf_str = f"{rf_list[0]} MHz"
+            else:
+                rf_str = f"{len(rf_list)} freq(s)"
 
             self.ui.tableWidget.setItem(row_idx, 3, QTableWidgetItem(rf_str))
 
@@ -240,7 +266,10 @@ class ObjectManagerDialog(QDialog):
 
     def _open_class_manager(self) -> None:
         dialog = ClassManagerDialog(
-            self.db_service, self.settings_service, self.keyboard_service, parent=self
+            self.network_service,
+            self.settings_service,
+            self.keyboard_service,
+            parent=self,
         )
         move_dialog_down(dialog, self.geometry(), 0)
         dialog.exec()
@@ -249,53 +278,42 @@ class ObjectManagerDialog(QDialog):
         self.cached_objects = []
         self.refresh_data()
 
-    def _open_editor(self, obj_data: Optional[DetectionObject]) -> None:
-        classes_list: List[ObjectClass] = self.db_service.get_all_classes()
+    def _open_editor(self, classes_list: List[ObjectClass]) -> None:
 
         dialog = ObjectEditorDialog(
             settings_service=self.settings_service,
             keyboard=self.keyboard_service,
             known_classes=classes_list,
             parent=self,
-            object_data=obj_data,
+            object_data=self.edit_obj,
         )
         move_dialog_down(dialog, self.geometry(), -90)
 
         if dialog.exec() == QDialog.DialogCode.Accepted:
             new_object = dialog.get_new_object()
             if new_object:
-                if obj_data:
-                    self.db_service.update_object(new_object.to_dict())
+                if self.edit_obj:
+                    self.network_service.request_db_update_object(new_object.to_dict())
                 else:
-                    self.db_service.add_object(new_object.to_dict())
+                    self.network_service.request_db_add_object(new_object.to_dict())
 
-            self.cached_objects = []
-            if not obj_data:
-                self.current_load = 1
-                self.current_page = 1
+            # self.cached_objects = []
+            # if not self.edit_obj:
+            #     self.current_load = 1
+            #     self.current_page = 1
             self.refresh_data()
 
-    def _handle_class_management_from_editor(
-        self, editor_dialog: ObjectEditorDialog
-    ) -> None:
-        manager = ClassManagerDialog(
-            self.db_service,
-            self.settings_service,
-            self.keyboard_service,
-            parent=editor_dialog,
-        )
-        move_dialog_down(manager, editor_dialog.geometry(), 0)
-        manager.exec()
-
-        new_classes = self.db_service.get_all_classes()
-        editor_dialog.update_classes_list(new_classes)
+    def request_classes_and_open_editor(self):
+        self.network_service.request_db_classes()
 
     def _open_add_dialog(self) -> None:
-        self._open_editor(None)
+        self.edit_obj = None
+        self.request_classes_and_open_editor()
 
     def _open_edit_dialog(self) -> None:
         obj_id = self._get_selected_id()
         if not obj_id:
+            # TODO - Додати переклад
             QMessageBox.warning(self, "Увага", "Виберіть об'єкт для редагування.")
             return
 
@@ -304,14 +322,17 @@ class ObjectManagerDialog(QDialog):
         if not target_obj:
             return
 
-        self._open_editor(target_obj)
+        self.edit_obj = target_obj
+        self.request_classes_and_open_editor()
 
     def _handle_delete(self) -> None:
         obj_id = self._get_selected_id()
         if not obj_id:
+            # TODO - Додати переклад
             QMessageBox.warning(self, "Увага", "Виберіть об'єкт для видалення.")
             return
 
+        # TODO - Додати переклад
         confirm = QMessageBox.question(
             self,
             "Видалення",
@@ -319,5 +340,24 @@ class ObjectManagerDialog(QDialog):
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
         if confirm == QMessageBox.StandardButton.Yes:
-            self.db_service.delete_object(obj_id)
-            self.cached_objects = []
+            self.network_service.request_db_delete_object(obj_id)
+
+    def add_cache_obj(self, obj: DetectionObject):
+        self.cached_objects.append(obj)
+        self.refresh_data()
+
+    def update_cache_obj(self, new_obj: DetectionObject):
+        index = next(
+            (i for i, x in enumerate(self.cached_objects) if x.id == new_obj.id), None
+        )
+
+        if index is not None:
+            self.cached_objects[index] = new_obj
+            self.refresh_data()
+
+    def delete_cache_obj(self, id: int):
+        index = next((i for i, x in enumerate(self.cached_objects) if x.id == id), None)
+
+        if index is not None:
+            self.cached_objects.pop(index)
+            self.refresh_data()

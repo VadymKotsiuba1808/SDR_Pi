@@ -42,7 +42,7 @@ class SettingsService(QObject):
     # Signal
     radio_range_GHz: list[float]
     # Timers
-    gps_interval_s: int
+    gps_interval_s: float
     # Jammer
     main_relays: list[str]
     is_jammer_auto_start_enabled: bool

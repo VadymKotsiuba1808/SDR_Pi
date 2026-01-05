@@ -9,6 +9,11 @@ import uuid
 from datetime import datetime
 
 
+class DetectionType:
+    RF = "RF"
+    SOUND = "Sound"
+
+
 @dataclass
 class DetectionEvent:
 
@@ -26,9 +31,9 @@ class DetectionEvent:
     def from_dict(data: dict) -> "DetectionEvent":
         """Парсинг вхідного словника JSON у об'єкт."""
 
-        raw_type = data.get("type", "RF")
-        if raw_type not in ["RF", "Sound"]:
-            raw_type = "RF"
+        raw_type = data.get("type", DetectionType.RF)
+        if raw_type not in [DetectionType.RF, DetectionType.SOUND]:
+            raw_type = DetectionType.RF
 
         obj_class = data.get("object_class", data.get("class", "unknown"))
 

@@ -1,6 +1,7 @@
 from datetime import datetime
 import math
-from typing import List, Set, Tuple, Optional, Dict, Union
+from typing import List, Set, Tuple, Optional, Dict
+from collections import Counter
 
 import numpy as np
 from PyQt6.QtWidgets import QWidget, QToolTip
@@ -13,6 +14,7 @@ from PyQt6.QtGui import (
     QPolygonF,
     QMouseEvent,
     QPaintEvent,
+    QPainterPath,
 )
 from PyQt6.QtCore import Qt, QPointF, QCoreApplication, QTranslator
 
@@ -21,10 +23,16 @@ from app.models.detection_event import DetectionEvent
 
 
 class ChartWidget(QWidget):
-    """
-    Універсальний віджет для малювання графіків.
-    Всі лінійні графіки тепер мають уніфіковану сітку.
-    """
+    # --- КОНСТАНТИ ВІЗУАЛІЗАЦІЇ ---
+    LINE_WIDTH_NORMAL = 3
+    LINE_WIDTH_THIN = 1
+    DOT_RADIUS = 3
+
+    HIGHLIGHT_RADIUS_OFFSET = 3
+    HIGHLIGHT_FRAME_WIDTH = 2
+
+    TEXT_OFFSET_Y = -10
+    TIME_DIFF_S = 60
 
     def __init__(
         self, settings_service: ChartWidgetSettings, parent: Optional[QWidget] = None
@@ -41,10 +49,8 @@ class ChartWidget(QWidget):
         self.color_bg = QColor(0, 20, 0, 100)
         self.color_grid = QColor(50, 136, 68, 100)
         self.color_grid_faint = QColor(100, 150, 100, 50)
-        self.color_rf = QColor(255, 100, 100)
-        self.color_sound = QColor(100, 100, 255)
+
         self.color_highlight = QColor(255, 255, 0)
-        self.color_path = QColor(0, 255, 255)
         self.color_text = QColor(200, 200, 200)
 
     def _setup_state_variables(self) -> None:
@@ -53,6 +59,7 @@ class ChartWidget(QWidget):
         self.data: List[DetectionEvent] = []
         self.highlight_ids: Set[str] = set()
 
+        self._id_color_cache: Dict[str, QColor] = {}
         self._interactive_points: List[Tuple[QPointF, DetectionEvent]] = []
 
     def _load_language(self) -> None:
@@ -64,32 +71,44 @@ class ChartWidget(QWidget):
         path = f"app/i18n/qm/app_{lang_code}.qm"
         if self.translator.load(path):
             QCoreApplication.installTranslator(self.translator)
-        else:
-            print(f"[ChartWidget] Error: Failed to load translation file: {path}")
 
     def set_data(
         self, data: List[DetectionEvent], highlight_ids: Optional[Set[str]] = None
     ) -> None:
-        """Оновлює дані для відображення."""
-        self.data = data
+        self.data = sorted(data, key=lambda x: x.timestamp)
         self.highlight_ids = highlight_ids or set()
+
         self.update()
 
     def set_chart_type(self, t: str) -> None:
-        """Змінює тип графіка (timeline, polar, bar, etc)."""
         self.chart_type = t
         self.update()
 
+    def _get_color_for_id(self, obj_id: str) -> QColor:
+        """
+        Генерує максимально відмінний колір, використовуючи золотий кут.
+        Гарантує, що сусіди не будуть схожими.
+        """
+        if obj_id in self._id_color_cache:
+            return self._id_color_cache[obj_id]
+
+        idx = len(self._id_color_cache)
+
+        hue = int((idx * 137.508) % 360)
+
+        color = QColor.fromHsv(hue, 200, 255)
+
+        self._id_color_cache[obj_id] = color
+        return color
+
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
-        """Обробка руху миші для показу підказок (tooltip)."""
         pos = event.pos()
         found = False
 
         for point, data in self._interactive_points:
-            if abs(pos.x() - point.x()) < 10 and abs(pos.y() - point.y()) < 10:
-
+            if abs(pos.x() - point.x()) < 15 and abs(pos.y() - point.y()) < 15:
                 dist = math.hypot(pos.x() - point.x(), pos.y() - point.y())
-                if dist < 8:
+                if dist < 10:
                     self._show_tooltip(event.globalPosition().toPoint(), data)
                     found = True
                     break
@@ -109,9 +128,12 @@ class ChartWidget(QWidget):
             f"Time: {time_str}<br>"
             f"Dist: {data.distance}m, Angle: {data.angle:.0f}°<br>"
             f"Conf: {data.confidence:.2f}<br>"
-            f"False alarm: {is_highlighted}<br>"
-            f"Type: {data.type}"
+            f"Type: {data.type}<br>"
+            f"ID: {data.id[:8]}..."
         )
+        if is_highlighted:
+            txt += "<br><b style='color:yellow'>HIGHLIGHTED (False Alarm)</b>"
+
         QToolTip.showText(global_pos, txt, self)
 
     def paintEvent(self, event: QPaintEvent) -> None:
@@ -133,13 +155,15 @@ class ChartWidget(QWidget):
         elif self.chart_type == "bar":
             self._draw_bar(p)
 
+    # -------------------------------------------------------------------------
+    # POLAR CHART
+    # -------------------------------------------------------------------------
     def _draw_polar_chart(self, p: QPainter, mode: str) -> None:
         w, h = self.width(), self.height()
         center = QPointF(w / 2, h / 2)
         radius = min(w, h) / 2 - 30
 
         sorted_data = sorted(self.data, key=lambda x: x.timestamp)
-
         max_dist_val = max([d.distance for d in sorted_data]) if sorted_data else 1000
 
         scale_step = 500
@@ -151,18 +175,11 @@ class ChartWidget(QWidget):
             view_max_dist = scale_step
 
         self._draw_polar_grid(p, center, radius, view_max_dist)
-
-        if mode == "path":
-            self._draw_polar_path_content(p, sorted_data, center, radius, view_max_dist)
-        elif mode == "radar_snapshot":
-            self._draw_radar_points_content(
-                p, sorted_data, center, radius, view_max_dist
-            )
+        self._draw_radar_content(p, sorted_data, center, radius, view_max_dist)
 
     def _draw_polar_grid(
         self, p: QPainter, center: QPointF, radius: float, max_dist: int
     ) -> None:
-        """Малює концентричні кола та осі."""
         for i in np.arange(0.2, 1.2, 0.2):
             p.setPen(QPen(self.color_grid, 1))
             r_current = radius * i
@@ -177,12 +194,10 @@ class ChartWidget(QWidget):
             )
 
         p.setPen(QPen(self.color_grid, 1))
-        # Вертикальна лінія
         p.drawLine(
             QPointF(center.x(), center.y() - radius * 1.1),
             QPointF(center.x(), center.y() + radius * 1.1),
         )
-        # Горизонтальна лінія
         p.drawLine(
             QPointF(center.x() - radius * 1.1, center.y()),
             QPointF(center.x() + radius * 1.1, center.y()),
@@ -193,11 +208,13 @@ class ChartWidget(QWidget):
     ) -> QPointF:
         rad = math.radians(angle - 90)
         r_px = (dist / max_dist) * radius
+        if r_px > radius:
+            r_px = radius
         x = center.x() + r_px * math.cos(rad)
         y = center.y() + r_px * math.sin(rad)
         return QPointF(x, y)
 
-    def _draw_polar_path_content(
+    def _draw_radar_content(
         self,
         p: QPainter,
         data: List[DetectionEvent],
@@ -205,67 +222,122 @@ class ChartWidget(QWidget):
         radius: float,
         max_dist: int,
     ) -> None:
-        path_points: List[QPointF] = []
+        grouped_data: Dict[str, List[DetectionEvent]] = {}
         for d in data:
-            pt = self._get_polar_pos(center, radius, d.angle, d.distance, max_dist)
-            path_points.append(pt)
-            self._interactive_points.append((pt, d))
+            if d.id not in grouped_data:
+                grouped_data[d.id] = []
+            grouped_data[d.id].append(d)
 
-        if len(path_points) > 1:
-            p.setPen(QPen(self.color_path, 2, Qt.PenStyle.DashLine))
-            p.drawPolyline(path_points)
+        for obj_id, events in grouped_data.items():
+            if not events:
+                continue
 
-        p.setFont(QFont("Arial", 8))
-        for i, pt in enumerate(path_points):
+            line_color = self._get_color_for_id(obj_id)
+            is_highlighted = events[-1].id in self.highlight_ids
 
-            is_key_point = i == 0 or i == len(path_points) - 1 or i % 5 == 0
-            if is_key_point:
-                dt = datetime.fromisoformat(data[i].timestamp)
-                time_str = dt.strftime("%H:%M:%S")
+            points: List[QPointF] = []
+            timestamps: List[float] = []
 
-                p.setPen(Qt.PenStyle.NoPen)
-                color = (
-                    self.color_highlight
-                    if i == len(path_points) - 1
-                    else self.color_path
+            for ev in events:
+                pt = self._get_polar_pos(
+                    center, radius, ev.angle, ev.distance, max_dist
                 )
-                p.setBrush(QBrush(color))
-                p.drawEllipse(pt, 4, 4)
+                points.append(pt)
+                timestamps.append(datetime.fromisoformat(ev.timestamp).timestamp())
+                self._interactive_points.append((pt, ev))
 
-                p.setPen(self.color_text)
-                p.drawText(int(pt.x() - 20), int(pt.y() - 10), time_str)
-            else:
+            if len(points) > 1:
+                pen_solid = QPen(line_color, self.LINE_WIDTH_NORMAL)
+                pen_solid.setCapStyle(Qt.PenCapStyle.RoundCap)
+
+                pen_dash = QPen(line_color, self.LINE_WIDTH_THIN)
+                pen_dash.setStyle(Qt.PenStyle.DotLine)
+
+                for i in range(len(points) - 1):
+                    p1 = points[i]
+                    p2 = points[i + 1]
+                    t1 = timestamps[i]
+                    t2 = timestamps[i + 1]
+
+                    if (t2 - t1) > self.TIME_DIFF_S:
+                        p.setPen(pen_dash)
+                        p.drawLine(p1, p2)
+                    else:
+                        p.setPen(pen_solid)
+                        p.drawLine(p1, p2)
+
+                # --- Маркери (початок/кінець) ---
+                start_pt = points[0]
+                end_pt = points[-1]
+
                 p.setPen(Qt.PenStyle.NoPen)
-                p.setBrush(QBrush(self.color_path))
-                p.drawEllipse(pt, 2, 2)
+                p.setBrush(QBrush(QColor(0, 255, 0)))
+                p.drawEllipse(start_pt, self.DOT_RADIUS, self.DOT_RADIUS)
 
-    def _draw_radar_points_content(
-        self,
-        p: QPainter,
-        data: List[DetectionEvent],
-        center: QPointF,
-        radius: float,
-        max_dist: int,
-    ) -> None:
-        for d in data:
-            pt = self._get_polar_pos(center, radius, d.angle, d.distance, max_dist)
+                p.setBrush(QBrush(QColor(255, 50, 50)))
+                p.drawEllipse(end_pt, self.DOT_RADIUS + 1, self.DOT_RADIUS + 1)
 
-            col = self.color_sound if d.type == "Sound" else self.color_rf
-            if d.id in self.highlight_ids:
-                col = self.color_highlight
+                # --- Підсвітка ТІЛЬКИ на останній точці  ---
+                if is_highlighted:
+                    p.setPen(QPen(self.color_highlight, self.HIGHLIGHT_FRAME_WIDTH))
+                    p.setBrush(Qt.BrushStyle.NoBrush)
+                    radius_hl = self.DOT_RADIUS + self.HIGHLIGHT_RADIUS_OFFSET
+                    p.drawEllipse(end_pt, radius_hl, radius_hl)
 
-            p.setBrush(QBrush(col))
-            p.setPen(Qt.PenStyle.NoPen)
+                # --- Текст імені посередині лінії ---
+                mid_idx = len(points) // 2
+                if len(points) > 2:
+                    p_a = points[mid_idx - 1]
+                    p_b = points[mid_idx]
+                else:
+                    p_a = start_pt
+                    p_b = end_pt
 
-            # Розмір точки залежить від confidence
-            size = 3 + d.confidence * 4
-            p.drawEllipse(pt, size, size)
+                mid_x = (p_a.x() + p_b.x()) / 2
+                mid_y = (p_a.y() + p_b.y()) / 2
 
-            p.setPen(QColor(255, 255, 255))
-            p.drawText(int(pt.x() + 5), int(pt.y()), d.name)
+                dx = p_b.x() - p_a.x()
+                dy = p_b.y() - p_a.y()
+                angle_deg = math.degrees(math.atan2(dy, dx))
 
-            self._interactive_points.append((pt, d))
+                if 90 < abs(angle_deg) <= 180:
+                    angle_deg += 180
 
+                name_txt = events[0].name
+                if len(name_txt) > 10:
+                    name_txt = name_txt[:10] + ".."
+
+                p.save()
+                p.translate(mid_x, mid_y)
+                p.rotate(angle_deg)
+
+                text_col = self.color_highlight if is_highlighted else self.color_text
+                p.setPen(text_col)
+
+                p.setFont(QFont("Arial", 8, QFont.Weight.Bold))
+                p.drawText(0, self.TEXT_OFFSET_Y, name_txt)
+                p.restore()
+
+            else:
+                # Одна точка
+                pt = points[0]
+                p.setPen(Qt.PenStyle.NoPen)
+                p.setBrush(QBrush(line_color))
+                p.drawEllipse(pt, self.DOT_RADIUS, self.DOT_RADIUS)
+
+                text_col = self.color_highlight if is_highlighted else self.color_text
+                p.setPen(text_col)
+                p.drawText(int(pt.x() + 8), int(pt.y()), events[0].name)
+
+                if is_highlighted:
+                    p.setPen(QPen(self.color_highlight, self.HIGHLIGHT_FRAME_WIDTH))
+                    p.setBrush(Qt.BrushStyle.NoBrush)
+                    radius_hl = self.DOT_RADIUS + self.HIGHLIGHT_RADIUS_OFFSET
+                    p.drawEllipse(pt, radius_hl, radius_hl)
+
+    # -------------------------------------------------------------------------
+    # CARTESIAN CHART (Timeline)
+    # -------------------------------------------------------------------------
     def _draw_cartesian_chart(
         self, p: QPainter, mode: str, num_ticks: int = 20
     ) -> None:
@@ -275,7 +347,6 @@ class ChartWidget(QWidget):
         margin_top = 30.0
         margin_bottom = 30.0
 
-        # Tuple (x, y, width, height)
         plot_rect = (
             margin_left,
             margin_top,
@@ -288,12 +359,10 @@ class ChartWidget(QWidget):
         if not sorted_data:
             return
 
-        # X Axis (Time) calculation
         t_start = datetime.fromisoformat(sorted_data[0].timestamp).timestamp()
         t_end = datetime.fromisoformat(sorted_data[-1].timestamp).timestamp()
         duration = t_end - t_start or 1
 
-        # Y Axis calculation
         y_max = 1.0
         label_formatter = lambda v: f"{int(v*100)}%"
 
@@ -308,44 +377,78 @@ class ChartWidget(QWidget):
         else:
             y_max = 1.0
 
-        # 1. Спільна сітка
         self._draw_cartesian_grid(
             p, plot_rect, y_max, t_start, t_end, duration, num_ticks, label_formatter
         )
 
-        # 2. Малювання даних
-        points_signal: List[QPointF] = []
+        grouped_data: Dict[str, List[DetectionEvent]] = {}
+        for d in sorted_data:
+            if d.id not in grouped_data:
+                grouped_data[d.id] = []
+            grouped_data[d.id].append(d)
 
-        for ev in sorted_data:
-            t_curr = datetime.fromisoformat(ev.timestamp).timestamp()
-            x_ratio = (t_curr - t_start) / duration
-            x = px + x_ratio * pw
+        for obj_id, events in grouped_data.items():
+            if not events:
+                continue
 
-            val_y = ev.distance if mode == "timeline" else ev.confidence
-            norm_y = val_y / y_max
+            line_color = self._get_color_for_id(obj_id)
+            is_highlighted = events[-1].id in self.highlight_ids
 
-            # Clamp
-            norm_y = max(0, min(1, norm_y))
+            points: List[QPointF] = []
+            timestamps: List[float] = []
 
-            y = (py + ph) - (norm_y * ph)
-            pt = QPointF(x, y)
+            for ev in events:
+                t_curr = datetime.fromisoformat(ev.timestamp).timestamp()
+                x_ratio = (t_curr - t_start) / duration
+                x = px + x_ratio * pw
 
-            if mode == "timeline":
-                if px <= x <= (px + pw):
-                    color = self.color_rf if ev.type == "RF" else self.color_sound
-                    if ev.id in self.highlight_ids:
-                        color = self.color_highlight
-                    p.setBrush(QBrush(color))
-                    p.setPen(Qt.PenStyle.NoPen)
-                    p.drawEllipse(pt, 6, 6)
-                    self._interactive_points.append((pt, ev))
-            else:
-                # Для signal накопичуємо точки для полілінії
-                points_signal.append(pt)
+                val_y = ev.distance if mode == "timeline" else ev.confidence
+                norm_y = val_y / y_max
+                norm_y = max(0, min(1, norm_y))
+                y = (py + ph) - (norm_y * ph)
+
+                pt = QPointF(x, y)
+                points.append(pt)
+                timestamps.append(t_curr)
                 self._interactive_points.append((pt, ev))
 
-        if mode == "signal" and points_signal:
-            self._draw_signal_poly(p, points_signal, plot_rect)
+            if len(points) > 1:
+                pen_solid = QPen(line_color, self.LINE_WIDTH_NORMAL)
+                pen_dash = QPen(line_color, self.LINE_WIDTH_THIN)
+                pen_dash.setStyle(Qt.PenStyle.DotLine)
+
+                for i in range(len(points) - 1):
+                    p1 = points[i]
+                    p2 = points[i + 1]
+                    t1 = timestamps[i]
+                    t2 = timestamps[i + 1]
+
+                    if (t2 - t1) > self.TIME_DIFF_S:
+                        p.setPen(pen_dash)
+                        p.drawLine(p1, p2)
+                    else:
+                        p.setPen(pen_solid)
+                        p.drawLine(p1, p2)
+
+                # Підсвітка ТІЛЬКИ останньої точки на таймлайні
+                if is_highlighted:
+                    end_pt = points[-1]
+                    p.setPen(QPen(self.color_highlight, self.HIGHLIGHT_FRAME_WIDTH))
+                    p.setBrush(Qt.BrushStyle.NoBrush)
+                    radius_hl = self.DOT_RADIUS + self.HIGHLIGHT_RADIUS_OFFSET
+                    p.drawEllipse(end_pt, radius_hl, radius_hl)
+
+            else:
+                pt = points[0]
+                p.setPen(Qt.PenStyle.NoPen)
+                p.setBrush(QBrush(line_color))
+                p.drawEllipse(pt, self.DOT_RADIUS, self.DOT_RADIUS)
+
+                if is_highlighted:
+                    p.setPen(QPen(self.color_highlight, self.HIGHLIGHT_FRAME_WIDTH))
+                    p.setBrush(Qt.BrushStyle.NoBrush)
+                    radius_hl = self.DOT_RADIUS + self.HIGHLIGHT_RADIUS_OFFSET
+                    p.drawEllipse(pt, radius_hl, radius_hl)
 
     def _draw_cartesian_grid(
         self,
@@ -364,7 +467,7 @@ class ChartWidget(QWidget):
         grid_pen = QPen(self.color_grid_faint)
         grid_pen.setStyle(Qt.PenStyle.DashLine)
 
-        # --- Y Axis (Horizontal Lines) ---
+        # Y Axis
         for i in range(num_ticks + 1):
             ratio = i / num_ticks
             y = (py + ph) - (ratio * ph)
@@ -382,6 +485,7 @@ class ChartWidget(QWidget):
             tw = fm.horizontalAdvance(txt)
             p.drawText(int(px - tw - 5), int(y + 4), txt)
 
+        # X Axis
         step_time = math.ceil((duration / 60) / 10) * 60
         if step_time == 0:
             step_time = 60
@@ -412,32 +516,16 @@ class ChartWidget(QWidget):
         title = "Distance ▲" if "m" in label_formatter(0) else "Confidence ▲"
         p.drawText(int(px), int(py - 10), title)
 
-    def _draw_signal_poly(
-        self,
-        p: QPainter,
-        points: List[QPointF],
-        rect: Tuple[float, float, float, float],
-    ) -> None:
-        (px, py, pw, ph) = rect
-
-        p.setPen(QPen(self.color_rf, 2))
-        p.drawPolyline(points)
-
-        p.setBrush(QBrush(QColor(255, 100, 100, 50)))
-        p.setPen(Qt.PenStyle.NoPen)
-        poly_points = (
-            [QPointF(px, py + ph)] + points + [QPointF(points[-1].x(), py + ph)]
-        )
-        p.drawPolygon(QPolygonF(poly_points))
-
-        p.setBrush(QBrush(self.color_rf))
-        for pt in points:
-            p.drawEllipse(pt, 3, 3)
-
     def _draw_bar(self, p: QPainter) -> None:
-        from collections import Counter
+        if not self.data:
+            return
 
-        counts = Counter([d.object_class for d in self.data])
+        unique_objects_map = {}
+        for d in self.data:
+            unique_objects_map[d.id] = d.object_class
+
+        counts = Counter(unique_objects_map.values())
+
         if not counts:
             return
 
@@ -465,7 +553,5 @@ class ChartWidget(QWidget):
             y = h - margin - bar_h
 
             p.drawRect(int(x), int(y), int(bar_width), int(bar_h))
-
             p.drawText(int(x), int(y - 5), str(val))
-
             p.drawText(int(x), int(h - margin + 20), cls)

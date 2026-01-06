@@ -19,7 +19,8 @@ from PyQt6.QtGui import (
 from PyQt6.QtCore import Qt, QPointF, QCoreApplication, QTranslator
 
 from app.protocols import LangSettings
-from app.models.detection_event import DetectionEvent
+from app.models.detection_event import DetectionEvent, DetectionType
+from app.utils.convert_measurement_unit import convert_hz_to_ghz
 
 
 class ChartWidget(QWidget):
@@ -127,6 +128,7 @@ class ChartWidget(QWidget):
             f"<b>{data.name}</b> ({data.object_class})<br>"
             f"Time: {time_str}<br>"
             f"Dist: {data.distance_km:.3f}km, Angle: {data.angle:.0f}°<br>"
+            f"FREQ: {f"{convert_hz_to_ghz(data.frequency_hz):.3f}GHz" if(data.type==DetectionType.RF) else f"{(data.frequency_hz):.0f}Hz"}<br>"
             f"Conf: {data.confidence:.2f}<br>"
             f"Type: {data.type}<br>"
             f"ID: {data.id[:8]}..."
@@ -164,36 +166,51 @@ class ChartWidget(QWidget):
         radius = min(w, h) / 2 - 30
 
         sorted_data = sorted(self.data, key=lambda x: x.timestamp)
-        max_dist_val = (
-            max([d.distance_km for d in sorted_data]) if sorted_data else 1000
-        )
+        max_dist_val = max([d.distance_km for d in sorted_data]) if sorted_data else 1.0
 
-        scale_step = 500
-        if max_dist_val < 100:
-            scale_step = 100
+        view_max_dist, step, _ = self._calculate_nice_axis(max_dist_val, target_ticks=5)
 
-        view_max_dist = math.ceil(max_dist_val / scale_step) * scale_step
-        if view_max_dist == 0:
-            view_max_dist = scale_step
-
-        self._draw_polar_grid(p, center, radius, view_max_dist)
+        self._draw_polar_grid(p, center, radius, view_max_dist, step)
         self._draw_radar_content(p, sorted_data, center, radius, view_max_dist)
 
     def _draw_polar_grid(
-        self, p: QPainter, center: QPointF, radius: float, max_dist: int
+        self, p: QPainter, center: QPointF, radius: float, max_dist: float, step: float
     ) -> None:
-        for i in np.arange(0.2, 1.2, 0.2):
-            p.setPen(QPen(self.color_grid, 1))
-            r_current = radius * i
-            p.drawEllipse(center, r_current, r_current)
+        main_pen = QPen(self.color_grid, 1)
 
-            p.setPen(self.color_text)
-            p.setFont(QFont("Arial", 8))
-            p.drawText(
-                int(center.x() + 5),
-                int(center.y() - r_current + 10),
-                f"{(max_dist * i):.2f}km",
-            )
+        sub_color = QColor(self.color_grid)
+        sub_color.setAlpha(40)
+        sub_pen = QPen(sub_color, 1)
+        sub_pen.setStyle(Qt.PenStyle.DotLine)
+
+        p.setFont(QFont("Arial", 8))
+
+        num_steps = int(max_dist / step)
+
+        total_sub_steps = num_steps * 2
+
+        for i in range(1, total_sub_steps + 1):
+            val = i * (step / 2)
+            if val > max_dist:
+                break
+
+            r_current = (val / max_dist) * radius
+
+            is_main = abs(val % step) < 0.001 or abs((val % step) - step) < 0.001
+
+            if is_main:
+                p.setPen(main_pen)
+                p.drawEllipse(center, r_current, r_current)
+
+                p.setPen(self.color_text)
+                p.drawText(
+                    int(center.x() + 5),
+                    int(center.y() - r_current + 10),
+                    f"{val:.1f}km" if step < 1 else f"{int(val)}km",
+                )
+            else:
+                p.setPen(sub_pen)
+                p.drawEllipse(center, r_current, r_current)
 
         p.setPen(QPen(self.color_grid, 1))
         p.drawLine(
@@ -370,17 +387,32 @@ class ChartWidget(QWidget):
 
         if mode == "timeline":
             max_data_dist = (
-                max([d.distance_km for d in sorted_data]) if sorted_data else 1000
+                max([d.distance_km for d in sorted_data]) if sorted_data else 1.0
             )
-            y_max = math.ceil(max_data_dist / 1000) * 1000
-            if y_max == 0:
-                y_max = 1000
-            label_formatter = lambda v: f"{v:.2f}km"
+            nice_max, nice_step, actual_ticks = self._calculate_nice_axis(
+                max_data_dist, target_ticks=10
+            )
+
+            y_max = nice_max
+            calculated_ticks = actual_ticks
+
+            if nice_step < 1:
+                label_formatter = lambda v: f"{v:.1f}km"
+            else:
+                label_formatter = lambda v: f"{int(v)}km"
         else:
             y_max = 1.0
+            calculated_ticks = 10
 
         self._draw_cartesian_grid(
-            p, plot_rect, y_max, t_start, t_end, duration, num_ticks, label_formatter
+            p,
+            plot_rect,
+            y_max,
+            t_start,
+            t_end,
+            duration,
+            calculated_ticks,
+            label_formatter,
         )
 
         grouped_data: Dict[str, List[DetectionEvent]] = {}
@@ -466,49 +498,97 @@ class ChartWidget(QWidget):
         (px, py, pw, ph) = rect
 
         p.setFont(QFont("Arial", 8))
+
         grid_pen = QPen(self.color_grid_faint)
         grid_pen.setStyle(Qt.PenStyle.DashLine)
 
-        # Y Axis
-        for i in range(num_ticks + 1):
-            ratio = i / num_ticks
+        sub_grid_color = QColor(self.color_grid_faint)
+        sub_grid_color.setAlpha(30)
+        sub_grid_pen = QPen(sub_grid_color)
+        sub_grid_pen.setStyle(Qt.PenStyle.DotLine)
+
+        total_y_steps = num_ticks * 2
+
+        for i in range(total_y_steps + 1):
+            ratio = i / total_y_steps
             y = (py + ph) - (ratio * ph)
             val = ratio * y_max_val
 
-            p.setPen(grid_pen)
-            p.drawLine(QPointF(px, y), QPointF(px + pw, y))
+            is_main = i % 2 == 0
 
-            if num_ticks > 10 and i % 2 != 0:
-                continue
+            if is_main:
+                p.setPen(grid_pen)
+                p.drawLine(QPointF(px, y), QPointF(px + pw, y))
 
-            p.setPen(self.color_text)
-            txt = label_formatter(val)
-            fm = p.fontMetrics()
-            tw = fm.horizontalAdvance(txt)
-            p.drawText(int(px - tw - 5), int(y + 4), txt)
+                p.setPen(self.color_text)
+                txt = label_formatter(val)
+                fm = p.fontMetrics()
+                tw = fm.horizontalAdvance(txt)
+                p.drawText(int(px - tw - 5), int(y + 4), txt)
+            else:
+                p.setPen(sub_grid_pen)
+                p.drawLine(QPointF(px, y), QPointF(px + pw, y))
 
-        # X Axis
-        step_time = math.ceil((duration / 60) / 10) * 60
-        if step_time == 0:
-            step_time = 60
+        target_step = duration / max(1, num_ticks)
 
-        first_tick_ts = math.ceil(t_start / step_time) * step_time
+        nice_intervals = [
+            10,
+            30,
+            60,
+            120,
+            300,
+            600,
+            900,
+            1800,
+            3600,
+            7200,
+            14400,
+            21600,
+            43200,
+            86400,
+        ]
+
+        step_time = nice_intervals[0]
+        if target_step > nice_intervals[-1]:
+            step_time = nice_intervals[-1]
+        else:
+            for interval in nice_intervals:
+                if target_step <= interval:
+                    step_time = interval
+                    break
+
+        sub_step_time = step_time / 2
+
+        first_tick_ts = math.ceil(t_start / sub_step_time) * sub_step_time
         current_t = first_tick_ts
 
         while current_t <= t_end:
             ratio = (current_t - t_start) / duration
-            x = px + ratio * pw
 
-            if 0 <= ratio <= 1:
-                p.setPen(grid_pen)
-                p.drawLine(QPointF(x, py), QPointF(x, py + ph))
+            if 0 <= ratio <= 1.01:
+                x = px + ratio * pw
 
-                dt_label = datetime.fromtimestamp(current_t).strftime("%H:%M")
-                p.setPen(self.color_text)
-                tw = p.fontMetrics().horizontalAdvance(dt_label)
-                p.drawText(int(x - tw / 2), int(py + ph + 20), dt_label)
+                remainder = current_t % step_time
+                is_main = (remainder < 0.1) or (abs(remainder - step_time) < 0.1)
 
-            current_t += step_time
+                if is_main:
+                    p.setPen(grid_pen)
+                    p.drawLine(QPointF(x, py), QPointF(x, py + ph))
+
+                    dt_obj = datetime.fromtimestamp(current_t)
+                    if step_time < 60:
+                        dt_label = dt_obj.strftime("%H:%M:%S")
+                    else:
+                        dt_label = dt_obj.strftime("%H:%M")
+
+                    p.setPen(self.color_text)
+                    tw = p.fontMetrics().horizontalAdvance(dt_label)
+                    p.drawText(int(x - tw / 2), int(py + ph + 20), dt_label)
+                else:
+                    p.setPen(sub_grid_pen)
+                    p.drawLine(QPointF(x, py), QPointF(x, py + ph))
+
+            current_t += sub_step_time
 
         p.setPen(QPen(self.color_grid, 2))
         p.setBrush(Qt.BrushStyle.NoBrush)
@@ -557,3 +637,37 @@ class ChartWidget(QWidget):
             p.drawRect(int(x), int(y), int(bar_width), int(bar_h))
             p.drawText(int(x), int(y - 5), str(val))
             p.drawText(int(x), int(h - margin + 20), cls)
+
+    def _calculate_nice_axis(
+        self, max_val: float, target_ticks: int = 5
+    ) -> Tuple[float, float, int]:
+        """
+        Повертає (nice_max, nice_step, actual_ticks).
+        Адаптується під будь-які дані (0.5 км, 70 км, 5000 км).
+        """
+        if max_val <= 0:
+            return 10.0, 1.0, 10
+
+        raw_step = max_val / target_ticks
+
+        mag = math.floor(math.log10(raw_step))
+        mag_pow = 10**mag
+
+        mag_norm = raw_step / mag_pow
+
+        if mag_norm < 1.5:
+            nice_step_norm = 1.0
+        elif mag_norm < 3.0:
+            nice_step_norm = 2.0
+        elif mag_norm < 7.0:
+            nice_step_norm = 5.0
+        else:
+            nice_step_norm = 10.0
+
+        nice_step = nice_step_norm * mag_pow
+
+        nice_max = math.ceil(max_val / nice_step) * nice_step
+
+        actual_ticks = int(nice_max / nice_step)
+
+        return nice_max, nice_step, actual_ticks

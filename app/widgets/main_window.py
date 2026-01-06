@@ -84,6 +84,7 @@ from app.utils.system_utils import (
     restart_process,
 )
 from app.utils.geo_utils import calculate_distance
+from app.utils.convert_measurement_unit import convert_hz_to_ghz
 
 
 MIN_DISTANCE_THRESHOLD = 2.0  # Мінімальна зміна позиції в метрах для оновлення мапи
@@ -389,7 +390,7 @@ class MainWindow(QMainWindow):
             base_pixmap=self.radar_clean_pixmap,
             detections=detections,
             indices=indices,
-            max_radius_m=self.settings_service.radar_radius_km,
+            max_radius_km=self.settings_service.radar_radius_km,
         )
 
         self.ui.Radar.setPixmap(final_pixmap)
@@ -409,7 +410,7 @@ class MainWindow(QMainWindow):
                 f"NAME:    {target_event.name.upper()}\n"
                 f"CLASS:   {target_event.object_class.upper()}\n"
                 # TODO - Відформатувати окремо для звуку і радіо
-                f"FREQ:    {f"{(target_event.frequency_hz / 1_000_000_000):.3f} GHz" if(target_event.type==DetectionType.RF) else f"{(target_event.frequency_hz):.0f} Hz" } \n"
+                f"FREQ:    {f"{convert_hz_to_ghz(target_event.frequency_hz):.3f} GHz" if(target_event.type==DetectionType.RF) else f"{(target_event.frequency_hz):.0f} Hz" } \n"
                 f"DIST:    {target_event.distance_km:.3f} km\n"
                 f"ANGLE:   {target_event.angle:.1f}°\n"
                 f"CONF:    {target_event.confidence * 100:.1f}%\n"

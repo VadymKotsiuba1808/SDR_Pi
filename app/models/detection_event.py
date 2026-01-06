@@ -44,7 +44,7 @@ class DetectionEvent:
             object_class=obj_class,
             confidence=float(data.get("confidence", 0.0)),
             timestamp=data.get("timestamp", datetime.now().isoformat()),
-            distance_km=int(data.get("distance_km", 0)),
+            distance_km=float(data.get("distance_km", 0)),
             angle=float(data.get("angle", 0)),
             frequency_hz=float(data.get("frequency_hz", 0)),
         )

@@ -20,7 +20,7 @@ class PiNetworkService(QObject):
     """
 
     data_received = pyqtSignal(dict)  # Сирі дані (якщо не розпізнано)
-    gps_received = pyqtSignal(dict)  # Об'єкт GPS
+    gps_received = pyqtSignal(GPSData)  # Об'єкт GPS
     detection_received = pyqtSignal(DetectionEvent)  # Об'єкт детекції
 
     # --- Сигнали для потокових даних ---
@@ -104,6 +104,7 @@ class PiNetworkService(QObject):
         self.socket.connected.connect(self._handle_connected)
         self.socket.disconnected.connect(self._handle_disconnected)
         self.socket.readyRead.connect(self._read_data)
+        self.socket.errorOccurred.connect(self._handle_error)
 
         ip = self.settings.pi_target_ip
         port = self.settings.pi_target_port
@@ -111,8 +112,8 @@ class PiNetworkService(QObject):
         print(f"[PiNet] Connecting to {ip}:{port}...")
         self.socket.connectToHost(ip, port)
 
-        if not self.socket.waitForConnected(3000):
-            pass
+        # if not self.socket.waitForConnected(3000):
+        #     pass
 
     @pyqtSlot()
     def _handle_connected(self) -> None:
@@ -129,6 +130,22 @@ class PiNetworkService(QObject):
         if not self.settings.pi_is_receiver:
             print("[PiNet] Will try to reconnect in 5s...")
             self.reconnect_timer.start(5000)
+
+    @pyqtSlot()
+    def _handle_error(self, socket_error) -> None:
+        print(f"[PiNet] Socket Error: {self.socket.errorString()}")
+        self.connection_status_changed.emit(False)
+        self._schedule_reconnect()
+
+    def _schedule_reconnect(self):
+        if not self.settings.pi_is_receiver:
+            if not self.reconnect_timer.isActive():
+                print("[PiNet] Scheduling reconnect in 3s...")
+                self.reconnect_timer.start(3000)
+
+            if self.socket:
+                self.socket.deleteLater()
+                self.socket = None
 
     @pyqtSlot()
     def _read_data(self) -> None:

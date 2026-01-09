@@ -237,7 +237,7 @@ class Ui_MainWindow(object):
 "*[level=\"4\"] { background-image: url(:/images/level_4.png); }\n"
 "*{background-color:transparent;}")
         self.GPS_level.setText("")
-        self.GPS_level.setProperty("level", 4)
+        self.GPS_level.setProperty("level", 0)
         self.GPS_level.setObjectName("GPS_level")
         self.WiFi = QtWidgets.QFrame(parent=self.Header)
         self.WiFi.setGeometry(QtCore.QRect(420, 17, 198, 60))
@@ -264,7 +264,7 @@ class Ui_MainWindow(object):
 "*[level=\"4\"] { background-image: url(:/images/level_4.png); }\n"
 "*{background-color:transparent;}")
         self.WiFi_level.setText("")
-        self.WiFi_level.setProperty("level", 2)
+        self.WiFi_level.setProperty("level", 0)
         self.WiFi_level.setObjectName("WiFi_level")
         self.TimeLabel = QtWidgets.QLabel(parent=self.Header)
         self.TimeLabel.setGeometry(QtCore.QRect(30, 50, 141, 29))

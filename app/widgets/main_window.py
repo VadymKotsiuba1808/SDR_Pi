@@ -11,7 +11,7 @@ from PyQt6.QtWidgets import (
     QWidget,
     QPushButton,
     QDoubleSpinBox,
-    QLineEdit,
+    QApplication,
 )
 from PyQt6.QtCore import (
     QTimer,
@@ -23,17 +23,11 @@ from PyQt6.QtCore import (
     QCoreApplication,
     QTranslator,
     pyqtSlot,
-    pyqtSignal,
     QUrl,
 )
 from PyQt6.QtGui import (
     QPixmap,
-    QConicalGradient,
-    QPainter,
-    QColor,
-    QPen,
     QDesktopServices,
-    QFont,
     QShowEvent,
     QCloseEvent,
 )
@@ -963,13 +957,18 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event: QCloseEvent) -> None:
         print("[MainWindow] Application closing...")
+        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        try:
+            if self.recorder.isRunning():
+                print("[MainWindow] Closing: Stopping recording thread...")
+                self.recorder.stop_recording()
 
-        if self.recorder.isRunning():
-            print("[MainWindow] Closing: Stopping recording thread...")
-            self.recorder.stop_recording()
+                if not self.recorder.wait(3000):
+                    print("[MainWindow] Thread did not stop. Forcing termination.")
+                    self.recorder.terminate()
 
-            if not self.recorder.wait(3000):
-                print("[MainWindow] Thread did not stop. Forcing termination.")
-                self.recorder.terminate()
-
-        event.accept()
+            if self.log_service:
+                self.log_service.stop()
+        finally:
+            QApplication.restoreOverrideCursor()
+            event.accept()

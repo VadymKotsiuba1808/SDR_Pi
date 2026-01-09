@@ -3,6 +3,7 @@
 Дозволяє користувачу вибрати та налаштувати власне зображення мапи.
 """
 
+from typing import List
 from PyQt6.QtWidgets import (
     QDialog,
     QFileDialog,
@@ -21,7 +22,10 @@ from app.ui.ui_set_map_dialog import Ui_SetMapDialog
 class SetMapDialog(QDialog):
 
     def __init__(
-        self, settings: SetMapDialogSettings, add_sizes_map_k=[1, 1], parent=None
+        self,
+        settings: SetMapDialogSettings,
+        add_sizes_map_k: List[float] = [1, 1],
+        parent=None,
     ):
         super().__init__(parent)
         print("[Init] Ініціалізація SetMapDialog...")

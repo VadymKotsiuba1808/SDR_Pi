@@ -1,12 +1,15 @@
 from PyQt6.QtCore import QObject, QTimer, QDateTime, pyqtSignal
+
+from app.protocols import JammerServiceSettings
 from app.services.pi_network_service import PiNetworkService
-from app.services.settings_service import SettingsService
 
 
 class JammerService(QObject):
     state_changed = pyqtSignal(bool)
 
-    def __init__(self, pi_network: PiNetworkService, settings_service: SettingsService):
+    def __init__(
+        self, pi_network: PiNetworkService, settings_service: JammerServiceSettings
+    ):
         super().__init__()
         self.pi_network = pi_network
         self.settings = settings_service
@@ -45,6 +48,24 @@ class JammerService(QObject):
             self.auto_stop_timer.stop()
 
         self.state_changed.emit(False)
+
+    def update_auto_stop(self):
+
+        if not self.is_active or self.start_time is None:
+            return
+
+        if self.settings.is_jammer_auto_stop_enabled:
+            sec = self.settings.jammer_auto_stop_interval_s - self.start_time.secsTo(
+                QDateTime.currentDateTime()
+            )
+            if sec <= 0:
+                self.stop()
+                return
+
+            msec = sec * 1000
+            self.auto_stop_timer.start(msec)
+        elif self.auto_stop_timer.isActive():
+            self.auto_stop_timer.stop()
 
     def get_formatted_time(self) -> str:
 

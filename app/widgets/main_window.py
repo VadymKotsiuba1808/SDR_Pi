@@ -609,14 +609,20 @@ class MainWindow(QMainWindow):
         if self.settings_service.is_jammer_auto_start_enabled != new_auto_start_enabled:
             self.settings_service.is_jammer_auto_start_enabled = new_auto_start_enabled
 
+        is_jammer_timer_changed = False
         if self.settings_service.is_jammer_auto_stop_enabled != new_auto_stop_enabled:
             self.settings_service.is_jammer_auto_stop_enabled = new_auto_stop_enabled
+            is_jammer_timer_changed = True
 
         if (
             self.settings_service.jammer_auto_stop_interval_s
             != new_auto_stop_interval_s
         ):
             self.settings_service.jammer_auto_stop_interval_s = new_auto_stop_interval_s
+            is_jammer_timer_changed = True
+
+        if is_jammer_timer_changed:
+            self.jammer_service.update_auto_stop()
 
     def calculate_optimal_zoom(self, radius_km: float) -> int:
         BASE_RADIUS_KM = 0.5

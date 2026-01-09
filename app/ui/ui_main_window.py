@@ -904,7 +904,7 @@ class Ui_MainWindow(object):
         self.viewObjectButton.setCheckable(False)
         self.viewObjectButton.setObjectName("viewObjectButton")
         self.detection_info_box = QtWidgets.QFrame(parent=self.Body)
-        self.detection_info_box.setGeometry(QtCore.QRect(1230, 140, 291, 471))
+        self.detection_info_box.setGeometry(QtCore.QRect(1230, 140, 291, 521))
         self.detection_info_box.setStyleSheet("background: rgba(0, 10, 0, 0.8);\n"
 "border: 2px solid #328844;")
         self.detection_info_box.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
@@ -927,7 +927,7 @@ class Ui_MainWindow(object):
         self.index_search_edit.setProperty("is_valid", True)
         self.index_search_edit.setObjectName("index_search_edit")
         self.detection_info_text = QtWidgets.QTextEdit(parent=self.detection_info_box)
-        self.detection_info_text.setGeometry(QtCore.QRect(10, 120, 271, 341))
+        self.detection_info_text.setGeometry(QtCore.QRect(10, 120, 271, 391))
         self.detection_info_text.setStyleSheet("background: rgba(30, 30, 30, 0.8);\n"
 "border: 1px solid #328844;\n"
 "font-size:24px;\n"

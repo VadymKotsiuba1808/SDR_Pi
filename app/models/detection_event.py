@@ -23,9 +23,9 @@ class DetectionEvent:
     object_class: str
     confidence: float
     timestamp: str
-    distance: int
+    distance_km: float
     angle: float
-    frequency: float
+    frequency_hz: float
 
     @staticmethod
     def from_dict(data: dict) -> "DetectionEvent":
@@ -44,9 +44,9 @@ class DetectionEvent:
             object_class=obj_class,
             confidence=float(data.get("confidence", 0.0)),
             timestamp=data.get("timestamp", datetime.now().isoformat()),
-            distance=int(data.get("distance", 0)),
+            distance_km=float(data.get("distance_km", 0)),
             angle=float(data.get("angle", 0)),
-            frequency=float(data.get("frequency", 0)),
+            frequency_hz=float(data.get("frequency_hz", 0)),
         )
 
     def to_dict(self) -> dict:
@@ -57,7 +57,7 @@ class DetectionEvent:
             "object_class": self.object_class,
             "confidence": self.confidence,
             "timestamp": self.timestamp,
-            "distance": self.distance,
+            "distance_km": self.distance_km,
             "angle": self.angle,
-            "frequency": self.frequency,
+            "frequency_hz": self.frequency_hz,
         }

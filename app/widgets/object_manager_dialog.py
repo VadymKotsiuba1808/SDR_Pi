@@ -11,7 +11,8 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt, QEvent, QCoreApplication, QTranslator
 
-from app.protocols import ObjectManagerDialogSettings
+from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
+from app.protocols import LangSettings
 from app.widgets.object_editor_dialog import ObjectEditorDialog
 from app.widgets.class_manager_dialog import ClassManagerDialog
 from app.services.pi_network_service import PiNetworkService
@@ -20,6 +21,7 @@ from app.models.detection_object import DetectionObject
 from app.models.object_class import ObjectClass
 from app.ui.ui_object_manager_dialog import Ui_ObjectManager
 from app.utils.ui_utils import move_dialog_down
+from app.utils.convert_measurement_unit import convert_hz_to_ghz
 
 
 class ObjectManagerDialog(QDialog):
@@ -33,7 +35,7 @@ class ObjectManagerDialog(QDialog):
     def __init__(
         self,
         network_service: PiNetworkService,
-        settings_service: ObjectManagerDialogSettings,
+        settings_service: LangSettings,
         keyboard: KeyboardService,
         parent: Optional[QWidget] = None,
     ) -> None:
@@ -54,13 +56,13 @@ class ObjectManagerDialog(QDialog):
 
     def changeEvent(self, event: QEvent) -> None:
         if event.type() == QEvent.Type.LanguageChange:
-            if self.settings_service.compiled_ui_using_enabled:
+            if DEV_COMPILED_UI_USING_ENABLED:
                 self.ui.retranslateUi(self)
         else:
             super().changeEvent(event)
 
     def _load_ui(self) -> None:
-        if self.settings_service.compiled_ui_using_enabled:
+        if DEV_COMPILED_UI_USING_ENABLED:
             self.ui = Ui_ObjectManager()
             self.ui.setupUi(self)
         else:
@@ -234,18 +236,18 @@ class ObjectManagerDialog(QDialog):
         self.ui.tableWidget.setItem(row_idx, 2, dang_item)
 
         # --- RF (Радіо) ---
-        rf_list = obj.rf_params
+        rf_list = obj.rf_params_hz
         rf_str = "-"
         if rf_list:
             if len(rf_list) == 1:
-                rf_str = f"{rf_list[0]} MHz"
+                rf_str = f"{convert_hz_to_ghz(rf_list[0]):.2f} GHz"
             else:
                 rf_str = f"{len(rf_list)} freq(s)"
 
             self.ui.tableWidget.setItem(row_idx, 3, QTableWidgetItem(rf_str))
 
             # --- Sound ---
-            snd_list = obj.sound_params
+            snd_list = obj.sound_params_hz
             snd_str = "-"
             if snd_list:
                 if len(snd_list) > 3:

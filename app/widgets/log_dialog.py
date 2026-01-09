@@ -12,7 +12,8 @@ from PyQt6.QtCore import Qt, QTime, QEvent, QCoreApplication, QTranslator
 from PyQt6 import uic
 from PyQt6.QtGui import QFont, QColor
 
-from app.protocols import LogDialogSettings
+from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
+from app.protocols import LangSettings
 from app.ui.ui_log_dialog import Ui_LogDialog
 from app.widgets.chart_widget import ChartWidget
 from app.models.log_entries import LogEntry
@@ -20,6 +21,7 @@ from app.models.detection_event import DetectionEvent, DetectionType
 from app.models.object_class import ObjectClass
 from app.services.log_service import LogService
 from app.utils.ui_utils import update_element_styles
+from app.utils.convert_measurement_unit import convert_hz_to_ghz
 
 
 class LogDialog(QDialog):
@@ -32,7 +34,7 @@ class LogDialog(QDialog):
         self,
         log_service: LogService,
         classes: List[ObjectClass],
-        settings_service: LogDialogSettings,
+        settings_service: LangSettings,
         parent: Optional[QWidget] = None,
     ) -> None:
         super().__init__(parent)
@@ -55,14 +57,14 @@ class LogDialog(QDialog):
 
     def changeEvent(self, event: QEvent) -> None:
         if event.type() == QEvent.Type.LanguageChange:
-            if self.settings_service.compiled_ui_using_enabled:
+            if DEV_COMPILED_UI_USING_ENABLED:
                 print("[LogDialog] Language change detected, updating UI...")
                 self.ui.retranslateUi(self)
         else:
             super().changeEvent(event)
 
     def _load_ui(self) -> None:
-        if self.settings_service.compiled_ui_using_enabled:
+        if DEV_COMPILED_UI_USING_ENABLED:
             self.ui = Ui_LogDialog()
             self.ui.setupUi(self)
         else:
@@ -240,7 +242,7 @@ class LogDialog(QDialog):
 
             # 5. Numeric Filters (Only for detections)
             if e.is_detection:
-                if not (dist_min <= payload.distance <= dist_max):
+                if not (dist_min <= payload.distance_km <= dist_max):
                     continue
                 if not (angle_min <= payload.angle <= angle_max):
                     continue
@@ -313,9 +315,11 @@ class LogDialog(QDialog):
                 t.setItem(row_idx, 3, QTableWidgetItem(data.object_class))
                 formatted_frequency: str
                 if data.type == DetectionType.RF:
-                    formatted_frequency = f"{(data.frequency / 1_000_000_000):.3f} GHz"
+                    formatted_frequency = (
+                        f"{convert_hz_to_ghz(data.frequency_hz):.3f} GHz"
+                    )
                 else:
-                    formatted_frequency = f"{(data.frequency):.0f} Hz"
+                    formatted_frequency = f"{(data.frequency_hz):.0f} Hz"
                 t.setItem(
                     row_idx,
                     4,
@@ -324,7 +328,7 @@ class LogDialog(QDialog):
                 t.setItem(
                     row_idx,
                     5,
-                    QTableWidgetItem(f"{data.distance}km / {data.angle:.0f}°"),
+                    QTableWidgetItem(f"{data.distance_km:.3f}km / {data.angle:.0f}°"),
                 )
 
                 status_text = "False" if data.id in false_ids else "True"

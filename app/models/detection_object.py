@@ -16,8 +16,8 @@ class DetectionObject:
     object_class: str  # Популюється назвою класу
 
     is_dangerous: bool = False
-    rf_params: List[str] = field(default_factory=list)  # Список рядків "min-max"
-    sound_params: List[int] = field(default_factory=list)  # Список чисел
+    rf_params_hz: List[str] = field(default_factory=list)  # Список рядків "min-max"
+    sound_params_hz: List[int] = field(default_factory=list)  # Список чисел
 
     @staticmethod
     def from_dict(data: dict) -> "DetectionObject":
@@ -30,8 +30,8 @@ class DetectionObject:
             class_id=int(data.get("class_id", 0)),
             object_class=data.get("object_class", "Unknown"),
             is_dangerous=bool(data.get("is_dangerous", False)),
-            rf_params=data.get("rf_params", []),
-            sound_params=data.get("sound_params", []),
+            rf_params_hz=data.get("rf_params_hz", []),
+            sound_params_hz=data.get("sound_params_hz", []),
         )
 
     def to_dict(self) -> dict:
@@ -41,6 +41,6 @@ class DetectionObject:
             "class_id": self.class_id,
             "object_class": self.object_class,
             "is_dangerous": self.is_dangerous,
-            "rf_params": self.rf_params,
-            "sound_params": self.sound_params,
+            "rf_params_hz": self.rf_params_hz,
+            "sound_params_hz": self.sound_params_hz,
         }

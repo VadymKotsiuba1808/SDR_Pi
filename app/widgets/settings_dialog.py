@@ -6,6 +6,7 @@ from PyQt6.QtWidgets import QDialog, QWidget
 from PyQt6.QtCore import Qt, QEvent, QTranslator, QCoreApplication
 from PyQt6 import uic
 
+from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
 from app.protocols import SettingsDialogSettings
 from app.ui.ui_settings_dialog import Ui_SettingsDialog
 from app.utils.system_utils import restart_process
@@ -18,7 +19,7 @@ from app.core.constants import RELAY_NAMES_LIST
 class SettingsData:
     """Клас для зберігання налаштувань діалогу (DTO)."""
 
-    radar_max_radius: float = 1000.0
+    radar_max_radius_km: float = 200.0
     gps_interval_s: int = 120
     main_relays: List[str] = field(default_factory=lambda: [RELAY_NAMES_LIST[0]])
     is_jammer_auto_start_enabled: bool = False
@@ -58,14 +59,14 @@ class SettingsDialog(QDialog):
 
     def changeEvent(self, event: QEvent) -> None:
         if event.type() == QEvent.Type.LanguageChange:
-            if self.settings_service.compiled_ui_using_enabled:
+            if DEV_COMPILED_UI_USING_ENABLED:
                 print("[Settings] Language change detected, retranslating UI...")
                 self.ui.retranslateUi(self)
         else:
             super().changeEvent(event)
 
     def _load_ui(self) -> None:
-        if self.settings_service.compiled_ui_using_enabled:
+        if DEV_COMPILED_UI_USING_ENABLED:
             self.ui = Ui_SettingsDialog()
             self.ui.setupUi(self)
         else:
@@ -75,7 +76,7 @@ class SettingsDialog(QDialog):
     def _adjust_fields(self) -> None:
         s = self.settings_service
 
-        self.ui.inpMaxRadius.setValue(s.radar_max_radius / 1000)
+        self.ui.inpMaxRadius.setValue(s.radar_max_radius_km)
         self.ui.inpGpsInterval.setValue(s.gps_interval_s)
 
         self._populate_relay_cmb()
@@ -135,7 +136,7 @@ class SettingsDialog(QDialog):
         restart_process()
 
     def _handle_save(self) -> None:
-        radius_m = float(self.ui.inpMaxRadius.value() * 1000)
+        radius_km = self.ui.inpMaxRadius.value()
         gps_interval = int(self.ui.inpGpsInterval.value())
         relays = self.ui.cmbRelay.currentText().split(RELAYS_DIVIDER)
         auto_start_enabled = self.ui.chkJammerAutoStart.isChecked()
@@ -144,7 +145,7 @@ class SettingsDialog(QDialog):
         auto_stop_interval_s = self.ui.inpJammerStopInterval.value()
 
         self.new_settings = SettingsData(
-            radar_max_radius=radius_m,
+            radar_max_radius_km=radius_km,
             gps_interval_s=gps_interval,
             main_relays=relays,
             is_jammer_auto_start_enabled=auto_start_enabled,

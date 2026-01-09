@@ -312,7 +312,7 @@ border:none;
 background-color:transparent;</string>
       </property>
       <property name="text">
-       <string>Радіус кола (м)</string>
+       <string>Радіус кола (км)</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -320,7 +320,7 @@ background-color:transparent;</string>
      </widget>
     </item>
     <item>
-     <widget class="QSpinBox" name="radiusMetersSpinBox">
+     <widget class="QDoubleSpinBox" name="radiusKmDoubleSpinBox">
       <property name="minimumSize">
        <size>
         <width>0</width>
@@ -328,7 +328,7 @@ background-color:transparent;</string>
        </size>
       </property>
       <property name="styleSheet">
-       <string notr="true">QSpinBox {
+       <string notr="true">QDoubleSpinBox {
 	font-family: 'Roboto';
 	font-weight: 500;
 	font-size: 26px;
@@ -347,13 +347,13 @@ background-color:transparent;</string>
        <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
       </property>
       <property name="minimum">
-       <number>1</number>
+       <double>0.100000000000000</double>
       </property>
       <property name="maximum">
-       <number>100000</number>
+       <double>5000.000000000000000</double>
       </property>
       <property name="value">
-       <number>200</number>
+       <double>100.000000000000000</double>
       </property>
      </widget>
     </item>
@@ -531,6 +531,15 @@ QPushButton:pressed{
      </widget>
     </item>
    </layout>
+   <zorder>radiusKmDoubleSpinBox</zorder>
+   <zorder>selectImageButton</zorder>
+   <zorder>setCenterButton</zorder>
+   <zorder>scaleLabel</zorder>
+   <zorder>radiusLabel</zorder>
+   <zorder>rotateLabel</zorder>
+   <zorder>rotateHorizontalSlider</zorder>
+   <zorder>saveButton</zorder>
+   <zorder>cancelButton</zorder>
   </widget>
  </widget>
  <resources>

@@ -26,7 +26,7 @@ class RadarRenderer:
         base_pixmap: QPixmap,
         detections: Dict[str, Any],
         indices: Dict[str, int],
-        max_radius_m: float,
+        max_radius_km: float,
     ) -> QPixmap:
         """
         Малює точки виявлених об'єктів на копії базового зображення радара.
@@ -46,13 +46,13 @@ class RadarRenderer:
 
         max_px_radius = min(center_x, center_y)
 
-        safe_max_radius_m = max_radius_m if max_radius_m > 0 else 1.0
-        scale = max_px_radius / safe_max_radius_m
+        safe_max_radius_km = max_radius_km if max_radius_km > 0 else 1.0
+        scale = max_px_radius / safe_max_radius_km
 
         for event_id, event in detections.items():
             index = str(indices.get(event_id, "?"))
 
-            pixel_dist = event.distance * scale
+            pixel_dist = event.distance_km * scale
 
             is_out_of_bounds = pixel_dist > max_px_radius
             is_on_border = pixel_dist * 1.05 >= max_px_radius - RADAR_POINT_SIZE / 2

@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
-  <class>ObjectManager</class>
-  <widget class="QDialog" name="ObjectManager">
-    <property name="geometry">
-      <rect>
-        <x>0</x>
-        <y>0</y>
-        <width>1080</width>
-        <height>700</height>
-      </rect>
-    </property>
-    <property name="windowTitle">
-      <string>База об'єктів детекції</string>
-    </property>
-    <property name="styleSheet">
-      <string notr="true">QDialog{
+ <class>ObjectManager</class>
+ <widget class="QDialog" name="ObjectManager">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1080</width>
+    <height>700</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>База об'єктів детекції</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QDialog{
   border: 2px solid #4CAF50; 
     border-radius: 6px;
 }
@@ -94,209 +94,209 @@ QPushButton#btnClose {
     /* Стандартний стиль */
 }
 </string>
-    </property>
-    <layout class="QVBoxLayout" name="verticalLayout">
-      <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_Top">
-          <item>
-            <widget class="QLabel" name="label">
-              <property name="font">
-                <font>
-                  <family>Roboto</family>
-                  <pointsize>-1</pointsize>
-                  <bold>true</bold>
-                </font>
-              </property>
-              <property name="text">
-                <string>Список об'єктів</string>
-              </property>
-            </widget>
-          </item>
-          <item>
-            <spacer name="horizontalSpacer">
-              <property name="orientation">
-                <enum>Qt::Orientation::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-                <size>
-                  <width>40</width>
-                  <height>20</height>
-                </size>
-              </property>
-            </spacer>
-          </item>
-          <item>
-            <widget class="QPushButton" name="btnRefresh">
-              <property name="text">
-                <string>Оновити</string>
-              </property>
-            </widget>
-          </item>
-        </layout>
-      </item>
-      <item>
-        <widget class="QTableWidget" name="tableWidget">
-          <property name="selectionMode">
-            <enum>QAbstractItemView::SelectionMode::SingleSelection</enum>
-          </property>
-          <property name="selectionBehavior">
-            <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
-          </property>
-          <property name="sortingEnabled">
-            <bool>false</bool>
-          </property>
-          <attribute name="horizontalHeaderMinimumSectionSize">
-            <number>190</number>
-          </attribute>
-          <attribute name="horizontalHeaderDefaultSectionSize">
-            <number>190</number>
-          </attribute>
-          <column>
-            <property name="text">
-              <string>Назва</string>
-            </property>
-          </column>
-          <column>
-            <property name="text">
-              <string>Клас</string>
-            </property>
-          </column>
-          <column>
-            <property name="text">
-              <string>Небезпека</string>
-            </property>
-          </column>
-          <column>
-            <property name="text">
-              <string>RF (MHz)</string>
-            </property>
-          </column>
-          <column>
-            <property name="text">
-              <string>Sound (Hz)</string>
-            </property>
-          </column>
-        </widget>
-      </item>
-      <item>
-        <widget class="QFrame" name="framePagination">
-          <layout class="QHBoxLayout" name="horizontalLayout_Page">
-            <property name="leftMargin">
-              <number>0</number>
-            </property>
-            <property name="rightMargin">
-              <number>0</number>
-            </property>
-            <item>
-              <spacer name="horizontalSpacer_3">
-                <property name="orientation">
-                  <enum>Qt::Orientation::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                  <size>
-                    <width>0</width>
-                    <height>0</height>
-                  </size>
-                </property>
-              </spacer>
-            </item>
-            <item>
-              <widget class="QPushButton" name="btnPrevPage">
-                <property name="text">
-                  <string>&lt; Назад</string>
-                </property>
-              </widget>
-            </item>
-            <item>
-              <widget class="QLabel" name="lblPageInfo">
-                <property name="styleSheet">
-                  <string>font-weight: bold; margin: 0 15px;</string>
-                </property>
-                <property name="text">
-                  <string>Сторінка 1 з 1</string>
-                </property>
-                <property name="alignment">
-                  <set>Qt::AlignmentFlag::AlignCenter</set>
-                </property>
-              </widget>
-            </item>
-            <item>
-              <widget class="QPushButton" name="btnNextPage">
-                <property name="text">
-                  <string>Вперед &gt;</string>
-                </property>
-              </widget>
-            </item>
-            <item>
-              <spacer name="horizontalSpacer_4">
-                <property name="orientation">
-                  <enum>Qt::Orientation::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                  <size>
-                    <width>0</width>
-                    <height>0</height>
-                  </size>
-                </property>
-              </spacer>
-            </item>
-          </layout>
-        </widget>
-      </item>
-      <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_Bottom">
-          <item>
-            <widget class="QPushButton" name="btnManageClasses">
-              <property name="text">
-                <string>Класи</string>
-              </property>
-            </widget>
-          </item>
-          <item>
-            <widget class="QPushButton" name="btnAdd">
-              <property name="text">
-                <string>Додати новий</string>
-              </property>
-            </widget>
-          </item>
-          <item>
-            <widget class="QPushButton" name="btnEdit">
-              <property name="text">
-                <string>Редагувати обраний</string>
-              </property>
-            </widget>
-          </item>
-          <item>
-            <spacer name="horizontalSpacer_2">
-              <property name="orientation">
-                <enum>Qt::Orientation::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-                <size>
-                  <width>40</width>
-                  <height>20</height>
-                </size>
-              </property>
-            </spacer>
-          </item>
-          <item>
-            <widget class="QPushButton" name="btnDelete">
-              <property name="text">
-                <string>Видалити</string>
-              </property>
-            </widget>
-          </item>
-          <item>
-            <widget class="QPushButton" name="btnClose">
-              <property name="text">
-                <string>Закрити</string>
-              </property>
-            </widget>
-          </item>
-        </layout>
-      </item>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_Top">
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="font">
+        <font>
+         <family>Roboto</family>
+         <pointsize>-1</pointsize>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Список об'єктів</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnRefresh">
+       <property name="text">
+        <string>Оновити</string>
+       </property>
+      </widget>
+     </item>
     </layout>
-  </widget>
-  <resources/>
-  <connections/>
+   </item>
+   <item>
+    <widget class="QTableWidget" name="tableWidget">
+     <property name="selectionMode">
+      <enum>QAbstractItemView::SelectionMode::SingleSelection</enum>
+     </property>
+     <property name="selectionBehavior">
+      <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
+     </property>
+     <property name="sortingEnabled">
+      <bool>false</bool>
+     </property>
+     <attribute name="horizontalHeaderMinimumSectionSize">
+      <number>190</number>
+     </attribute>
+     <attribute name="horizontalHeaderDefaultSectionSize">
+      <number>190</number>
+     </attribute>
+     <column>
+      <property name="text">
+       <string>Назва</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Клас</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Небезпека</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>RF (GHz)</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Sound (Hz)</string>
+      </property>
+     </column>
+    </widget>
+   </item>
+   <item>
+    <widget class="QFrame" name="framePagination">
+     <layout class="QHBoxLayout" name="horizontalLayout_Page">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <spacer name="horizontalSpacer_3">
+        <property name="orientation">
+         <enum>Qt::Orientation::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnPrevPage">
+        <property name="text">
+         <string>&lt; Назад</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="lblPageInfo">
+        <property name="styleSheet">
+         <string>font-weight: bold; margin: 0 15px;</string>
+        </property>
+        <property name="text">
+         <string>Сторінка 1 з 1</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnNextPage">
+        <property name="text">
+         <string>Вперед &gt;</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_4">
+        <property name="orientation">
+         <enum>Qt::Orientation::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_Bottom">
+     <item>
+      <widget class="QPushButton" name="btnManageClasses">
+       <property name="text">
+        <string>Класи</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnAdd">
+       <property name="text">
+        <string>Додати новий</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnEdit">
+       <property name="text">
+        <string>Редагувати обраний</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnDelete">
+       <property name="text">
+        <string>Видалити</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnClose">
+       <property name="text">
+        <string>Закрити</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
 </ui>

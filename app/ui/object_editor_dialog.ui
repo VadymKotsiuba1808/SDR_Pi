@@ -385,7 +385,7 @@ QPushButton#btnDelete:pressed {
             <item>
              <widget class="QLabel" name="lblFreqMin">
               <property name="text">
-               <string>Від (МГц):</string>
+               <string>Від (ГГц):</string>
               </property>
              </widget>
             </item>
@@ -405,7 +405,7 @@ QPushButton#btnDelete:pressed {
             <item>
              <widget class="QLabel" name="lblFreqMax">
               <property name="text">
-               <string>До (МГц):</string>
+               <string>До (ГГц):</string>
               </property>
              </widget>
             </item>

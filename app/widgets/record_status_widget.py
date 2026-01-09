@@ -8,23 +8,21 @@ from PyQt6.QtCore import pyqtSlot, QSize
 from PyQt6.QtGui import QIcon
 from PyQt6 import uic
 
+from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
 from app.ui.ui_record_status_widget import Ui_RecordingStatusWidget
 from app.utils.ui_utils import update_element_styles
-from app.protocols import RecordingStatusWidgetSettings
 
 
 class RecordingStatusWidget(QWidget):
-    def __init__(self, settings: RecordingStatusWidgetSettings, parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent)
-
-        self.settings_service = settings
 
         self._load_ui()
 
         self.setVisible(False)
 
     def _load_ui(self):
-        if self.settings_service.compiled_ui_using_enabled:
+        if DEV_COMPILED_UI_USING_ENABLED:
             self.ui = Ui_RecordingStatusWidget()
             self.ui.setupUi(self)
         else:

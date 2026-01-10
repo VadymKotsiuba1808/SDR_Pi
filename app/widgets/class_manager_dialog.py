@@ -75,7 +75,6 @@ class ClassManagerDialog(QDialog):
         self.ui.lstClasses.itemClicked.connect(self._on_item_clicked)
 
         self.network_service.db_operation_status.connect(self._handle_db_status)
-        self.network_service.db_classes_received.connect(self._populate_list)
         self.network_service.db_class_added.connect(self.add_cache_class)
         self.network_service.db_class_renamed.connect(self.update_cache_class)
         self.network_service.db_class_deleted.connect(self.delete_cache_class)
@@ -89,13 +88,47 @@ class ClassManagerDialog(QDialog):
             return
         QCoreApplication.removeTranslator(self.translator)
 
+    def _populate_list(self, classes: Optional[List[ObjectClass]] = None):
+        if classes:
+            self.cached_classes = classes
+
+        self.ui.lstClasses.clear()
+
+        for c in self.cached_classes:
+            item = QListWidgetItem(c.name)
+            item.setData(Qt.ItemDataRole.UserRole, c.id)
+            self.ui.lstClasses.addItem(item)
+
+        self._clear_selection()
+
+    def _on_classes_received_for_list(self, classes: List[ObjectClass]):
+        try:
+            self.network_service.db_classes_received.disconnect(
+                self._on_classes_received_for_list
+            )
+        except TypeError:
+            pass
+
+        self._populate_list(classes)
+
+    def request_classes(self):
+        self.network_service.db_classes_received.connect(
+            self._on_classes_received_for_list
+        )
+        self.network_service.request_db_classes()
+
     def _refresh_list(self) -> None:
 
-        self.network_service.request_db_classes()
+        self.request_classes()
         print(f"[ClassManager] Loaded classes.")
 
     def _handle_db_status(self, op_type: str, success: bool, msg: str) -> None:
         if success:
+            return
+
+        relevant_ops = ["add_class", "rename_class", "delete_class", "get_classes"]
+
+        if op_type not in relevant_ops and op_type != "unknown":
             return
 
         # TODO - Додати переклад
@@ -115,19 +148,6 @@ class ClassManagerDialog(QDialog):
             msg += "\nМожливо ваш клас використовується певними об'єктами"
 
         QMessageBox.critical(self, title, msg)
-
-    def _populate_list(self, classes: Optional[List[ObjectClass]] = None):
-        if classes:
-            self.cached_classes = classes
-
-        self.ui.lstClasses.clear()
-
-        for c in self.cached_classes:
-            item = QListWidgetItem(c.name)
-            item.setData(Qt.ItemDataRole.UserRole, c.id)
-            self.ui.lstClasses.addItem(item)
-
-        self._clear_selection()
 
     def _on_item_clicked(self, item: QListWidgetItem) -> None:
         self.ui.inpClassName.setText(item.text())
@@ -168,6 +188,13 @@ class ClassManagerDialog(QDialog):
 
         else:
             print(f"[ClassManager] Adding new class '{text}'...")
+
+            is_repeat = any(x.name == text for x in self.cached_classes)
+
+            if is_repeat:
+                # TODO - Додати переклад
+                QMessageBox.critical(self, "Увага", "Клас з такою назвою вже існує.")
+                return
 
             new_class = ObjectClass(name=text)
             self.network_service.request_db_add_class(new_class)

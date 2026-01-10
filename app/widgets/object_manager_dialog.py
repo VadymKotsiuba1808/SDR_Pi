@@ -110,7 +110,6 @@ class ObjectManagerDialog(QDialog):
         self.network_service.db_object_added.connect(self.add_cache_obj)
         self.network_service.db_object_updated.connect(self.update_cache_obj)
         self.network_service.db_object_deleted.connect(self.delete_cache_obj)
-        self.network_service.db_classes_received.connect(self._open_editor)
 
     def refresh_data(self) -> None:
         last_page_in_cache = self.current_load * self.PRELOAD_PAGES_COUNT
@@ -166,9 +165,12 @@ class ObjectManagerDialog(QDialog):
             self.refresh_data()
 
     def _handle_db_status(self, op_type: str, success: bool, msg: str) -> None:
-        print(
-            f"[ObjectManager] DB Operation '{op_type}': Success={success}, Msg='{msg}'"
-        )
+        relevant_ops = ["add", "update", "delete", "get_page"]
+
+        if op_type not in relevant_ops and op_type != "unknown":
+            return
+
+        print(f"[ObjectManager] DB Operation '{op_type}': ...")
 
         if not success:
             # TODO - Додати переклад
@@ -305,7 +307,20 @@ class ObjectManagerDialog(QDialog):
             #     self.current_page = 1
             self.refresh_data()
 
+    def _on_classes_received_for_editor(self, classes: List[ObjectClass]):
+        try:
+            self.network_service.db_classes_received.disconnect(
+                self._on_classes_received_for_editor
+            )
+        except TypeError:
+            pass
+
+        self._open_editor(classes)
+
     def request_classes_and_open_editor(self):
+        self.network_service.db_classes_received.connect(
+            self._on_classes_received_for_editor
+        )
         self.network_service.request_db_classes()
 
     def _open_add_dialog(self) -> None:

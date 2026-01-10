@@ -126,7 +126,7 @@ class Ui_SetMapDialog(object):
         self.scaleSpinBox.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.scaleSpinBox.setButtonSymbols(QtWidgets.QAbstractSpinBox.ButtonSymbols.NoButtons)
         self.scaleSpinBox.setMinimum(1)
-        self.scaleSpinBox.setMaximum(500)
+        self.scaleSpinBox.setMaximum(1000)
         self.scaleSpinBox.setProperty("value", 100)
         self.scaleSpinBox.setObjectName("scaleSpinBox")
         self.scaleLayout.addWidget(self.scaleSpinBox)

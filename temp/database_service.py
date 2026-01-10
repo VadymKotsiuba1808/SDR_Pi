@@ -27,7 +27,7 @@ from sqlalchemy.event import listen
 from app.models.detection_object import DetectionObject
 from app.models.object_class import ObjectClass
 
-DB_CONNECTION_STRING: str = "sqlite:///./sdr_pi.db"
+DB_CONNECTION_STRING: str = "sqlite:///./temp/sdr_pi.db"
 
 Base: Any = declarative_base()
 
@@ -47,8 +47,8 @@ class Signature(Base):
         Integer, ForeignKey("object_classes.id"), nullable=False, index=True
     )
     is_dangerous: bool = Column(Boolean, default=False)
-    rf_params: List[str] = Column(JSON, default=list)
-    sound_params: List[float] = Column(JSON, default=list)
+    rf_params: Optional[List[str]] = Column(JSON, nullable=True)
+    sound_params: Optional[List[float]] = Column(JSON, nullable=True)
     object_class_rel = relationship("ObjectClassEntity", back_populates="signatures")
 
 

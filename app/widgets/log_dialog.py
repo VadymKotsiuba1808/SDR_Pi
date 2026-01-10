@@ -302,10 +302,18 @@ class LogDialog(QDialog):
             except ValueError:
                 time_str = entry.timestamp
 
+            if entry.is_detection:
+                # TODO - Додати переклад
+                d1 = datetime.fromisoformat(entry.payload.timestamp)
+                d2 = datetime.fromisoformat(entry.timestamp)
+                latency_ms = int((d2 - d1).total_seconds() * 1000)
+                time_str += f" ({latency_ms}мс)"
+
             t.setItem(row_idx, 0, QTableWidgetItem(time_str))
 
             if entry.is_detection:
                 data: DetectionEvent = entry.payload
+
                 t.setItem(row_idx, 1, QTableWidgetItem(data.type))
                 # TODO - Додати переклад
                 short_id = data.id[:8]
@@ -339,15 +347,6 @@ class LogDialog(QDialog):
                     item_status.setForeground(Qt.GlobalColor.yellow)
                 t.setItem(row_idx, 6, item_status)
 
-                d1 = datetime.fromisoformat(entry.timestamp)
-                d2 = datetime.fromisoformat(data.timestamp)
-                latency_ms = int((d2 - d1).total_seconds() * 1000)
-                t.setItem(
-                    row_idx,
-                    7,
-                    QTableWidgetItem(str(latency_ms)),
-                )
-
             elif entry.is_false_alarm:
                 data = entry.payload
 
@@ -361,7 +360,6 @@ class LogDialog(QDialog):
                 t.setItem(row_idx, 4, QTableWidgetItem("-"))
                 t.setItem(row_idx, 5, QTableWidgetItem("-"))
                 t.setItem(row_idx, 6, QTableWidgetItem("-"))
-                t.setItem(row_idx, 7, QTableWidgetItem("-"))
 
         t.resizeRowsToContents()
 

@@ -3,4 +3,4 @@ def convert_ghz_to_hz(value: float) -> int:
 
 
 def convert_hz_to_ghz(value: float) -> float:
-    return float(value / 1_000_000_000)
+    return round(float(value / 1_000_000_000), 3)

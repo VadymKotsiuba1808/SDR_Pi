@@ -21,3 +21,5 @@ MAPS_SCALE: str = "@2x"
 
 DEV_COMPILED_UI_USING_ENABLED: bool = True
 DEV_TILE_DIVIDER_ENABLED: bool = False
+
+RF_PARAMS__DIVIDER: str = "-"

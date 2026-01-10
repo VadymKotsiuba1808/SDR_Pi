@@ -11,7 +11,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt, QEvent, QCoreApplication, QTranslator
 
-from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
+from app.core.constants import DEV_COMPILED_UI_USING_ENABLED, RF_PARAMS__DIVIDER
 from app.protocols import LangSettings
 from app.widgets.object_editor_dialog import ObjectEditorDialog
 from app.widgets.class_manager_dialog import ClassManagerDialog
@@ -89,7 +89,7 @@ class ObjectManagerDialog(QDialog):
         self.ui.tableWidget.setColumnWidth(4, 150)
 
     def _connect_handlers(self) -> None:
-        self.ui.btnRefresh.clicked.connect(self.refresh_data)
+        self.ui.btnRefresh.clicked.connect(self._force_refresh)
 
         self.ui.btnManageClasses.clicked.connect(self._open_class_manager)
 
@@ -146,6 +146,10 @@ class ObjectManagerDialog(QDialog):
         if lang_code is None:
             return
         QCoreApplication.removeTranslator(self.translator)
+
+    def _force_refresh(self) -> None:
+        self.cached_objects = []
+        self.refresh_data()
 
     def _calculate_start_index(self) -> int:
         global_start = (self.current_page - 1) * self.PAGE_SIZE
@@ -242,22 +246,25 @@ class ObjectManagerDialog(QDialog):
         rf_str = "-"
         if rf_list:
             if len(rf_list) == 1:
-                rf_str = f"{convert_hz_to_ghz(rf_list[0]):.2f} GHz"
+                rf_arr = rf_list[0].split(RF_PARAMS__DIVIDER)
+                min = round(convert_hz_to_ghz(int(rf_arr[0])), 2)
+                max = round(convert_hz_to_ghz(int(rf_arr[1])), 2)
+                rf_str = f"{min}-{max} GHz"
             else:
                 rf_str = f"{len(rf_list)} freq(s)"
 
-            self.ui.tableWidget.setItem(row_idx, 3, QTableWidgetItem(rf_str))
+        self.ui.tableWidget.setItem(row_idx, 3, QTableWidgetItem(rf_str))
 
-            # --- Sound ---
-            snd_list = obj.sound_params_hz
-            snd_str = "-"
-            if snd_list:
-                if len(snd_list) > 3:
-                    snd_str = f"{len(snd_list)} items"
-                else:
-                    snd_str = ", ".join(map(str, snd_list)) + " Hz"
+        # --- Sound ---
+        snd_list = obj.sound_params_hz
+        snd_str = "-"
+        if snd_list:
+            if len(snd_list) > 3:
+                snd_str = f"{len(snd_list)} items"
+            else:
+                snd_str = ", ".join(map(str, snd_list)) + " Hz"
 
-            self.ui.tableWidget.setItem(row_idx, 4, QTableWidgetItem(snd_str))
+        self.ui.tableWidget.setItem(row_idx, 4, QTableWidgetItem(snd_str))
 
     def _get_selected_id(self) -> Optional[int]:
         selected_items = self.ui.tableWidget.selectedItems()
@@ -297,9 +304,10 @@ class ObjectManagerDialog(QDialog):
             new_object = dialog.get_new_object()
             if new_object:
                 if self.edit_obj:
-                    self.network_service.request_db_update_object(new_object.to_dict())
+                    new_object.id = self.edit_obj.id
+                    self.network_service.request_db_update_object(new_object)
                 else:
-                    self.network_service.request_db_add_object(new_object.to_dict())
+                    self.network_service.request_db_add_object(new_object)
 
             # self.cached_objects = []
             # if not self.edit_obj:
@@ -360,7 +368,7 @@ class ObjectManagerDialog(QDialog):
             self.network_service.request_db_delete_object(obj_id)
 
     def add_cache_obj(self, obj: DetectionObject):
-        self.cached_objects.append(obj)
+        self.cached_objects.insert(0, obj)
         self.refresh_data()
 
     def update_cache_obj(self, new_obj: DetectionObject):

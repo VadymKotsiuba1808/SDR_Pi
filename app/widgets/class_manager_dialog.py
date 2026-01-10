@@ -143,10 +143,6 @@ class ClassManagerDialog(QDialog):
         # TODO - Додати переклад
         title = titles.get(op_type, "Помилка операції")
 
-        if op_type == "delete_class":
-            # TODO - Додати переклад
-            msg += "\nМожливо ваш клас використовується певними об'єктами"
-
         QMessageBox.critical(self, title, msg)
 
     def _on_item_clicked(self, item: QListWidgetItem) -> None:
@@ -182,7 +178,7 @@ class ClassManagerDialog(QDialog):
             )
             if index is not None:
                 old_class = self.cached_classes[index]
-                new_class = ObjectClass(name=text)
+                new_class = ObjectClass(id=None, name=text)
 
                 self.network_service.request_db_rename_class(old_class, new_class)
 
@@ -196,7 +192,7 @@ class ClassManagerDialog(QDialog):
                 QMessageBox.critical(self, "Увага", "Клас з такою назвою вже існує.")
                 return
 
-            new_class = ObjectClass(name=text)
+            new_class = ObjectClass(id=None, name=text)
             self.network_service.request_db_add_class(new_class)
 
     def _delete_class(self) -> None:

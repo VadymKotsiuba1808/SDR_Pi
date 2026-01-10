@@ -9,8 +9,11 @@ class ObjectClass:
 
     @staticmethod
     def from_dict(data: dict) -> "ObjectClass":
+        raw_id = data.get("id")
+        class_id = int(raw_id) if raw_id is not None else None
+
         return ObjectClass(
-            id=int(data.get("id", 0)),
+            id=class_id,
             name=data.get("name", "Unnamed"),
         )
 

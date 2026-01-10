@@ -79,6 +79,7 @@ from app.utils.system_utils import (
 from app.utils.geo_utils import calculate_distance
 from app.utils.convert_measurement_unit import convert_hz_to_ghz
 
+STATIONARY_SECONDS = 10
 
 MIN_DISTANCE_THRESHOLD = 2.0  # Мінімальна зміна позиції в метрах для оновлення мапи
 DEFAULT_START_COORDS = [49.43440, 27.00543]
@@ -308,7 +309,12 @@ class MainWindow(QMainWindow):
 
     def _setup_timers(self) -> None:
         self.timer_1sec = QTimer(self)
-        self.timer_1sec.timeout.connect(self.update_time_and_date)
+        self.timer_1sec.timeout.connect(
+            lambda: (
+                self.update_time_and_date(),
+                self.update_false_alarm_button_state(),
+            )
+        )
         self.timer_1sec.start(TIMER_INTERVAL_TIME_UPDATE)
 
         self.timer_radar = QTimer(self)
@@ -444,6 +450,27 @@ class MainWindow(QMainWindow):
 
         return None
 
+    def update_false_alarm_button_state(self) -> None:
+        if self.searched_index is None:
+            self.ui.falseAlarmButton.setEnabled(False)
+            return
+
+        target_event = self.find_event_by_searched_index()
+
+        if not target_event:
+            self.ui.falseAlarmButton.setEnabled(False)
+            return
+
+        target = self.detection_manager.get_target_by_id(target_event.id)
+
+        if target:
+            is_stationary = target.is_stationary_for(STATIONARY_SECONDS)
+
+            self.ui.falseAlarmButton.setEnabled(is_stationary)
+
+        else:
+            self.ui.falseAlarmButton.setEnabled(False)
+
     def update_alert_status(self) -> None:
         targets = self.detection_manager.get_targets()
 
@@ -455,7 +482,7 @@ class MainWindow(QMainWindow):
         update_element_styles(self.ui.RF_alert)
         update_element_styles(self.ui.Sound_alert)
 
-        self.ui.falseAlarmButton.setEnabled(self.detection_manager.has_detections())
+        # self.ui.falseAlarmButton.setEnabled(self.detection_manager.has_detections())
 
     def handle_false_alarm(self) -> None:
         target_event = self.find_event_by_searched_index()
@@ -960,6 +987,7 @@ class MainWindow(QMainWindow):
         update_element_styles(self.ui.index_search_edit)
 
         self.update_detection_info()
+        self.update_false_alarm_button_state()
 
     @pyqtSlot(dict)
     def handle_pi_data(self, data: Dict[str, Any]) -> None:

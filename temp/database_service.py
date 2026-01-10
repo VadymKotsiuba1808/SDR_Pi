@@ -69,6 +69,7 @@ class DBWorker(QRunnable):
 
 class DatabaseService(QObject):
     # Основні сигнали для списків
+    objects_all_loaded = pyqtSignal(list, int)
     objects_page_loaded = pyqtSignal(list, int, int)
     classes_loaded = pyqtSignal(list)
     operation_status = pyqtSignal(str, bool, str)
@@ -108,6 +109,10 @@ class DatabaseService(QObject):
         worker = DBWorker(self._fetch_page_task, page, page_size)
         self.threadpool.start(worker)
 
+    def request_all_objects(self) -> None:
+        worker = DBWorker(self._fetch_all_task)
+        self.threadpool.start(worker)
+
     def add_object(self, obj_data: DetectionObject) -> None:
         worker = DBWorker(self._add_object_task, obj_data)
         self.threadpool.start(worker)
@@ -137,20 +142,46 @@ class DatabaseService(QObject):
         self.threadpool.start(worker)
 
     # --- Internal Tasks ---
+    def _signature_to_dto(self, s: Signature) -> DetectionObject:
+        return DetectionObject(
+            id=s.id,
+            name=str(s.name),
+            class_id=s.class_id,
+            object_class=s.object_class_rel.name if s.object_class_rel else "Unknown",
+            is_dangerous=bool(s.is_dangerous),
+            rf_params_hz=s.rf_params or [],
+            sound_params_hz=s.sound_params or [],
+        )
+
+    def _fetch_all_task(self) -> None:
+        session: Session = self.Session()
+        try:
+            signatures = (
+                session.query(Signature)
+                .options(joinedload(Signature.object_class_rel))
+                .order_by(Signature.id.desc())
+                .all()
+            )
+
+            data = [self._signature_to_dto(s) for s in signatures]
+
+            self.objects_all_loaded.emit(data, len(data))
+
+        except Exception as e:
+            print(f"[DB Error Fetch All] {e}")
+            self.objects_all_loaded.emit([], 0)
+        finally:
+            session.close()
 
     def _fetch_page_task(self, page: int, page_size: int) -> None:
         session: Session = self.Session()
         try:
-            count_query = session.query(func.count(Signature.id))
-            total_items: int = count_query.scalar() or 0
-            total_pages: int = math.ceil(total_items / page_size)
+            total_items: int = session.query(func.count(Signature.id)).scalar() or 0
+            total_pages: int = math.ceil(total_items / page_size) if page_size else 0
 
-            if page < 1:
-                page = 1
-            if page > total_pages and total_pages > 0:
-                page = total_pages
-
+            page = max(1, min(page, total_pages)) if total_pages > 0 else 1
             offset: int = (page - 1) * page_size
+
             signatures = (
                 session.query(Signature)
                 .options(joinedload(Signature.object_class_rel))
@@ -160,21 +191,10 @@ class DatabaseService(QObject):
                 .all()
             )
 
-            data = []
-            for s in signatures:
-                cls_name = s.object_class_rel.name if s.object_class_rel else "Unknown"
-                obj_dto = DetectionObject(
-                    id=s.id,
-                    name=str(s.name),
-                    class_id=s.class_id,
-                    object_class=cls_name,
-                    is_dangerous=bool(s.is_dangerous),
-                    rf_params_hz=s.rf_params if s.rf_params else [],
-                    sound_params_hz=s.sound_params if s.sound_params else [],
-                )
-                data.append(obj_dto)
+            data = [self._signature_to_dto(s) for s in signatures]
 
             self.objects_page_loaded.emit(data, page, total_items)
+
         except Exception as e:
             print(f"[DB Error Fetch Page] {e}")
             self.objects_page_loaded.emit([], 1, 0)

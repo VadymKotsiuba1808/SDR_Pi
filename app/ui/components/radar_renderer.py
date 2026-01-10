@@ -1,9 +1,12 @@
 import math
-from typing import Dict, Any, Optional
+from typing import List, Optional, Tuple
 
 from PyQt6.QtGui import QPainter, QPen, QColor, QFont, QPixmap, QConicalGradient
-from PyQt6.QtCore import Qt, QPointF
+from PyQt6.QtCore import Qt, QPointF, QRect
 
+from app.models.radar_target import RadarTarget
+
+# Константи
 RADAR_POINT_SIZE = 20
 RADAR_TEXT_OFFSET_Y_DEFAULT = -15
 RADAR_TEXT_OFFSET_CORRECTION = 15
@@ -21,11 +24,15 @@ class RadarRenderer:
     def __init__(self):
         self.radar_angle = 0
 
+        # Кеш для обробки кліків
+        self._last_scale = 1.0
+        self._last_center = (0, 0)
+        self._current_targets: List[RadarTarget] = []
+
     def draw_detections(
         self,
         base_pixmap: QPixmap,
-        detections: Dict[str, Any],
-        indices: Dict[str, int],
+        targets: List[RadarTarget],
         max_radius_km: float,
     ) -> QPixmap:
         """
@@ -40,32 +47,42 @@ class RadarRenderer:
 
         font = QFont("Arial", 14, QFont.Weight.Bold)
         painter.setFont(font)
+        fm = painter.fontMetrics()
 
         center_x = result.width() / 2.0
         center_y = result.height() / 2.0
 
         max_px_radius = min(center_x, center_y)
-
         safe_max_radius_km = max_radius_km if max_radius_km > 0 else 1.0
         scale = max_px_radius / safe_max_radius_km
 
-        for event_id, event in detections.items():
-            index = str(indices.get(event_id, "?"))
+        self._last_scale = scale
+        self._last_center = (center_x, center_y)
+        self._current_targets = targets
 
-            pixel_dist = event.distance_km * scale
+        occupied_rects: List[QRect] = []
+
+        sorted_targets = sorted(targets, key=lambda t: t.distance_km)
+
+        for target in sorted_targets:
+            index_str = str(target.visual_index)
+
+            pixel_dist = target.distance_km * scale
 
             is_out_of_bounds = pixel_dist > max_px_radius
             is_on_border = pixel_dist * 1.05 >= max_px_radius - RADAR_POINT_SIZE / 2
 
             offset_x = 0
             offset_y = RADAR_TEXT_OFFSET_Y_DEFAULT
+            correction_applied = False
 
             if is_out_of_bounds or is_on_border:
                 pixel_dist = max_px_radius - RADAR_BORDER_OFFSET
+                correction_applied = True
 
                 if (
-                    event.angle > RADAR_TEXT_ANGLE_THRESHOLD_HIGH
-                    or event.angle < RADAR_TEXT_ANGLE_THRESHOLD_LOW
+                    target.angle > RADAR_TEXT_ANGLE_THRESHOLD_HIGH
+                    or target.angle < RADAR_TEXT_ANGLE_THRESHOLD_LOW
                 ):
                     offset_y = 0
                     offset_x = RADAR_TEXT_OFFSET_CORRECTION
@@ -78,18 +95,131 @@ class RadarRenderer:
             pen.setCapStyle(Qt.PenCapStyle.RoundCap)
             painter.setPen(pen)
 
-            rad_angle = math.radians(event.angle - RADAR_ANGLE_ROTATION_OFFSET)
-
+            rad_angle = math.radians(target.angle - RADAR_ANGLE_ROTATION_OFFSET)
             x = center_x + pixel_dist * math.cos(rad_angle)
             y = center_y + pixel_dist * math.sin(rad_angle)
 
             painter.drawPoint(int(x), int(y))
 
             painter.setPen(QPen(QColor("black"), 1))
-            painter.drawText(int(x) + offset_x, int(y) + offset_y, index)
+
+            text_w = fm.horizontalAdvance(index_str)
+            text_h = fm.height()
+
+            tx = int(x) + offset_x
+            ty = int(y) + offset_y
+
+            if not correction_applied:
+                ty -= text_h // 4
+
+            text_rect = QRect(tx, ty - text_h, text_w, text_h)
+
+            final_rect = self._resolve_collision(
+                text_rect, occupied_rects, result.rect()
+            )
+
+            painter.drawText(final_rect.bottomLeft(), index_str)
+            occupied_rects.append(final_rect)
 
         painter.end()
         return result
+
+    def _resolve_collision(
+        self, current: QRect, occupied: List[QRect], bounds: QRect
+    ) -> QRect:
+        """Намагається знайти вільне місце для тексту, зсуваючи його."""
+        if not bounds.contains(current):
+            current = self._fit_in_bounds(current, bounds)
+
+        collision = False
+        for rect in occupied:
+            if current.intersects(rect):
+                collision = True
+                break
+
+        if not collision:
+            return current
+
+        shifts = [
+            (0, -20),
+            (0, 20),
+            (25, 0),
+            (-25, 0),
+            (20, -20),
+        ]
+
+        original_pos = current.topLeft()
+
+        for dx, dy in shifts:
+            current.moveTopLeft(original_pos)
+            current.translate(dx, dy)
+
+            if not bounds.contains(current):
+                continue
+
+            is_free = True
+            for rect in occupied:
+                if current.intersects(rect):
+                    is_free = False
+                    break
+
+            if is_free:
+                return current
+
+        current.moveTopLeft(original_pos)
+        return current
+
+    def _fit_in_bounds(self, rect: QRect, bounds: QRect) -> QRect:
+        """Зсуває rect так, щоб він був всередині bounds."""
+        if rect.left() < bounds.left():
+            rect.moveLeft(bounds.left())
+        if rect.right() > bounds.right():
+            rect.moveRight(bounds.right())
+        if rect.top() < bounds.top():
+            rect.moveTop(bounds.top())
+        if rect.bottom() > bounds.bottom():
+            rect.moveBottom(bounds.bottom())
+        return rect
+
+    def get_target_id_at_position(
+        self, click_x: int, click_y: int, tolerance_px: int = 20
+    ) -> Optional[int]:
+        """
+        Повертає ID цілі під курсором.
+        Використовує збережені під час draw_detections параметри масштабування.
+        """
+        center_x, center_y = self._last_center
+        scale = self._last_scale
+
+        closest_target = None
+        min_dist = float("inf")
+
+        max_px_radius = min(center_x, center_y)
+
+        for target in self._current_targets:
+            pixel_dist = target.distance_km * scale
+
+            if pixel_dist > max_px_radius:
+                pixel_dist = max_px_radius - RADAR_BORDER_OFFSET
+
+            rad_angle = math.radians(target.angle - RADAR_ANGLE_ROTATION_OFFSET)
+
+            target_x = center_x + pixel_dist * math.cos(rad_angle)
+            target_y = center_y + pixel_dist * math.sin(rad_angle)
+
+            dist_to_click = math.sqrt(
+                (click_x - target_x) ** 2 + (click_y - target_y) ** 2
+            )
+
+            if dist_to_click <= tolerance_px:
+                if dist_to_click < min_dist:
+                    min_dist = dist_to_click
+                    closest_target = target
+
+        if not closest_target:
+            return None
+
+        return closest_target.visual_index
 
     def draw_scan_animation(self, size, has_detections: bool) -> QPixmap:
         """

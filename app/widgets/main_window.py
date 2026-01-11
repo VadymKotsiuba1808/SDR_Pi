@@ -42,8 +42,7 @@ from app.assets import resources_rc
 from app.protocols import OSService
 from app.core.constants import (
     DEV_COMPILED_UI_USING_ENABLED,
-    SCREENSHOTS_DIR_PATH,
-    SCREEN_RECORDS_DIR_PATH,
+    MEDIA_DIR_PATH,
 )
 
 
@@ -705,7 +704,7 @@ class MainWindow(QMainWindow):
         button = cast(QPushButton, self.sender())
 
         if button.isChecked():
-            filename = f"{SCREEN_RECORDS_DIR_PATH}/record_{QDateTime.currentDateTime().toString('yyyy-MM-dd_hh-mm-ss')}.mp4"
+            filename = f"{MEDIA_DIR_PATH}/record_{QDateTime.currentDateTime().toString('yyyy-MM-dd_hh-mm-ss')}.mp4"
             os.makedirs(os.path.dirname(filename), exist_ok=True)
             self.recorder.start_recording(filename)
         else:
@@ -749,10 +748,15 @@ class MainWindow(QMainWindow):
             f"{self.tr('Media Files (*.png *.jpg *.jpeg *.bmp *.mp4 *.avi *.mkv)')};;"
         )
 
+        directory_to_open = os.path.abspath(MEDIA_DIR_PATH)
+
+        if not os.path.exists(directory_to_open):
+            os.makedirs(directory_to_open, exist_ok=True)
+
         file_path, _ = QFileDialog.getOpenFileName(
             self,
             self.tr("Select file to view"),
-            "",
+            directory_to_open,
             file_filters,
         )
 
@@ -960,7 +964,7 @@ class MainWindow(QMainWindow):
 
     def take_screenshot(self) -> None:
         screenshot = self.grab()
-        filename = f"{SCREENSHOTS_DIR_PATH}/screenshot_{QDateTime.currentDateTime().toString('yyyy-MM-dd_hh-mm-ss')}.png"
+        filename = f"{MEDIA_DIR_PATH}/screenshot_{QDateTime.currentDateTime().toString('yyyy-MM-dd_hh-mm-ss')}.png"
         os.makedirs(os.path.dirname(filename), exist_ok=True)
 
         screenshot.save(filename, "png")

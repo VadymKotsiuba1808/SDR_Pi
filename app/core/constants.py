@@ -26,8 +26,7 @@ DEV_TILE_DIVIDER_ENABLED: bool = False
 RF_PARAMS__DIVIDER: str = "-"
 
 LOGS_DIR_PATH: str = "./logs"
-SCREENSHOTS_DIR_PATH: str = "./screenshots"
-SCREEN_RECORDS_DIR_PATH: str = "./screen_records"
+MEDIA_DIR_PATH: str = "./media"
 
 
 class CLEAN_TARGET_NAME(Enum):

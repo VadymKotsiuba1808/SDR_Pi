@@ -6,8 +6,7 @@ from typing import List
 from app.protocols import CleanerServiceSettings
 from app.core.constants import (
     LOGS_DIR_PATH,
-    SCREENSHOTS_DIR_PATH,
-    SCREEN_RECORDS_DIR_PATH,
+    MEDIA_DIR_PATH,
     CLEAN_TARGET_NAME,
 )
 
@@ -44,7 +43,7 @@ class CleanerService:
             if target_settings.enabled:
                 days = target_settings.days
                 self.targets.append(
-                    CleanTarget(SCREENSHOTS_DIR_PATH, days, [".png", ".jpg", ".jpeg"])
+                    CleanTarget(MEDIA_DIR_PATH, days, [".png", ".jpg", ".jpeg"])
                 )
 
         if CLEAN_TARGET_NAME.SCREEN_RECORDS in clean_settings:
@@ -52,7 +51,7 @@ class CleanerService:
             if target_settings.enabled:
                 days = target_settings.days
                 self.targets.append(
-                    CleanTarget(SCREEN_RECORDS_DIR_PATH, days, [".mp4", ".avi", ".mkv"])
+                    CleanTarget(MEDIA_DIR_PATH, days, [".mp4", ".avi", ".mkv"])
                 )
 
     def clean_sdr_data(self):

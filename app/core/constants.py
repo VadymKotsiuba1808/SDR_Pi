@@ -1,4 +1,5 @@
 from typing import List
+from enum import Enum
 
 """
 Файл зі статичними константами, які користувач не зможе напряму змінювати,
@@ -23,3 +24,13 @@ DEV_COMPILED_UI_USING_ENABLED: bool = True
 DEV_TILE_DIVIDER_ENABLED: bool = False
 
 RF_PARAMS__DIVIDER: str = "-"
+
+LOGS_DIR_PATH: str = "./logs"
+SCREENSHOTS_DIR_PATH: str = "./screenshots"
+SCREEN_RECORDS_DIR_PATH: str = "./screen_records"
+
+
+class CLEAN_TARGET_NAME(Enum):
+    LOGS = "logs"
+    SCREENSHOTS = "screenshots"
+    SCREEN_RECORDS = "screen_records"

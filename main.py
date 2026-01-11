@@ -12,6 +12,7 @@ from app.widgets.main_window import MainWindow
 from app.widgets.login_dialog import LoginDialog
 from app.services.settings_service import SettingsService
 from app.services.system_service import SystemService
+from app.services.cleaner_service import CleanerService
 
 from app.services.keyboard_service import KeyboardService
 from app.widgets.autosize_window import (
@@ -27,6 +28,9 @@ async def main():
     settings_service = SettingsService()
     system_service = SystemService()
     keyboard_service = KeyboardService(system_service)
+
+    clean_service = CleanerService(settings_service)
+    clean_service.clean_sdr_data()
 
     future = asyncio.Future()
     # Коректне закриття при виході з програми

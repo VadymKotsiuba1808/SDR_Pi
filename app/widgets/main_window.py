@@ -40,7 +40,11 @@ from app.assets import resources_rc
 
 
 from app.protocols import OSService
-from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
+from app.core.constants import (
+    DEV_COMPILED_UI_USING_ENABLED,
+    SCREENSHOTS_DIR_PATH,
+    SCREEN_RECORDS_DIR_PATH,
+)
 
 
 from app.widgets.set_map_dialog import SetMapDialog
@@ -199,8 +203,6 @@ class MainWindow(QMainWindow):
 
         # Сервіс бази даних (через мережу)
         self.db_service = DatabaseService(self.pi_network)
-
-        self.log_service = LogService()
 
         self.log_service = LogService()
 
@@ -628,11 +630,11 @@ class MainWindow(QMainWindow):
 
         new_radius = new_settings.radar_max_radius_km
         new_interval = new_settings.gps_interval_s
-        new_main_relay = new_settings.main_relays
+        new_main_relays = new_settings.main_relays
         new_auto_start_enabled = new_settings.is_jammer_auto_start_enabled
         new_auto_stop_enabled = new_settings.is_jammer_auto_stop_enabled
-
         new_auto_stop_interval_s = new_settings.jammer_auto_stop_interval_s
+        new_clean_settings = new_settings.clean_settings
 
         if self.settings_service.radar_max_radius_km != new_radius:
             self.settings_service.radar_max_radius_km = new_radius
@@ -648,8 +650,8 @@ class MainWindow(QMainWindow):
             self.settings_service.gps_interval_s = new_interval
             self.timer_gps.setInterval(new_interval * 1000)
 
-        if self.settings_service.main_relays != new_main_relay:
-            self.settings_service.main_relays = new_main_relay
+        if self.settings_service.main_relays != new_main_relays:
+            self.settings_service.main_relays = new_main_relays
 
         if self.settings_service.is_jammer_auto_start_enabled != new_auto_start_enabled:
             self.settings_service.is_jammer_auto_start_enabled = new_auto_start_enabled
@@ -668,6 +670,9 @@ class MainWindow(QMainWindow):
 
         if is_jammer_timer_changed:
             self.jammer_service.update_auto_stop()
+
+        if self.settings_service.clean_settings != new_clean_settings:
+            self.settings_service.clean_settings = new_clean_settings
 
     def calculate_optimal_zoom(self, radius_km: float) -> int:
         BASE_RADIUS_KM = 0.5
@@ -700,7 +705,7 @@ class MainWindow(QMainWindow):
         button = cast(QPushButton, self.sender())
 
         if button.isChecked():
-            filename = f"./screen_records/record_{QDateTime.currentDateTime().toString('yyyy-MM-dd_hh-mm-ss')}.mp4"
+            filename = f"{SCREEN_RECORDS_DIR_PATH}/record_{QDateTime.currentDateTime().toString('yyyy-MM-dd_hh-mm-ss')}.mp4"
             os.makedirs(os.path.dirname(filename), exist_ok=True)
             self.recorder.start_recording(filename)
         else:
@@ -955,7 +960,7 @@ class MainWindow(QMainWindow):
 
     def take_screenshot(self) -> None:
         screenshot = self.grab()
-        filename = f"./screenshots/screenshot_{QDateTime.currentDateTime().toString('yyyy-MM-dd_hh-mm-ss')}.png"
+        filename = f"{SCREENSHOTS_DIR_PATH}/screenshot_{QDateTime.currentDateTime().toString('yyyy-MM-dd_hh-mm-ss')}.png"
         os.makedirs(os.path.dirname(filename), exist_ok=True)
 
         screenshot.save(filename, "png")

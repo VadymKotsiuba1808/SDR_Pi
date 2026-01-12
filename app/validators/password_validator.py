@@ -4,6 +4,8 @@
 """
 
 import string
+from PyQt6.QtCore import QCoreApplication
+
 from app.validators.base_validator import BaseValidator
 
 
@@ -21,6 +23,7 @@ class PasswordValidator(BaseValidator):
 
         """
         super().__init__()
+        self.context = "PasswordValidator"
         self.min_length = min_length
 
         # Визначаємо набір "безпечних" символів
@@ -45,17 +48,26 @@ class PasswordValidator(BaseValidator):
 
         if not password or not isinstance(password, str):
             self._errors["password"].append(
-                "Пароль повинен бути рядком і не може бути порожнім."
+                QCoreApplication.translate(
+                    self.context, "The password must be a string and cannot be empty."
+                )
             )
             # Якщо це не рядок, подальші перевірки не мають сенсу
             return
 
         # Перевірка чи всі символи є "дозволеними" (букви, цифри, пунктуація)
         if not all(c in self.allowed_characters for c in password):
-            self._errors["password"].append("Пароль містить неприпустимі символи.")
+            self._errors["password"].append(
+                QCoreApplication.translate(
+                    self.context, "The password contains invalid characters."
+                )
+            )
 
         # Перевірка мінімальної довжини ---
         if len(password) < self.min_length:
-            self._errors["password"].append(
-                f"Пароль повинен мати принаймні {self.min_length} символи."
+            template = QCoreApplication.translate(
+                self.context, "Password must be at least {count} characters long."
             )
+            msg = template.format(count=self.min_length)
+
+            self._errors["password"].append(msg)

@@ -23,6 +23,7 @@ from PyQt6.QtCore import (
     QTranslator,
     pyqtSlot,
     QUrl,
+    QStorageInfo,
 )
 from PyQt6.QtGui import (
     QPixmap,
@@ -133,6 +134,8 @@ class MainWindow(QMainWindow):
             Qt.WidgetAttribute.WA_TransparentForMouseEvents
         )
         self.ui.Radar.installEventFilter(self)
+
+        self.check_free_memory(800)
 
         # FIXME -
         # TODO - Видалити рефреш
@@ -375,6 +378,27 @@ class MainWindow(QMainWindow):
     # endregion
 
     # region --- Data Handlers ---
+
+    def check_free_memory(self, mb_space: int = 500) -> bool:
+        storage = QStorageInfo("/")
+
+        min_video_space = mb_space * 1024 * 1024
+        available_bytes = storage.bytesAvailable()
+        available_mb = round(available_bytes / 1024 / 1024, 0)
+
+        if available_bytes < min_video_space:
+
+            QMessageBox.warning(
+                self,
+                self.tr("Not enough disk space"),
+                self.tr(
+                    f"Available only: {available_mb} MB.\n"
+                    "To use media functions and logging, please free up disk space."
+                ),
+            )
+            return False
+
+        return True
 
     def handle_detection(self, detection: DetectionEvent):
         self.detection_manager.add_detection(detection)
@@ -699,14 +723,24 @@ class MainWindow(QMainWindow):
 
     # region --- Screen Recording ---
 
+    def disabled_media_btns(self):
+        self.ui.screenRecordButton.setEnabled(False)
+        self.ui.screenSaveButton.setEnabled(False)
+
     @pyqtSlot(bool)
     def handle_toggle_recording(self) -> None:
         button = cast(QPushButton, self.sender())
 
         if button.isChecked():
-            filename = f"{MEDIA_DIR_PATH}/record_{QDateTime.currentDateTime().toString('yyyy-MM-dd_hh-mm-ss')}.mp4"
-            os.makedirs(os.path.dirname(filename), exist_ok=True)
-            self.recorder.start_recording(filename)
+            is_space_enough = self.check_free_memory()
+            if is_space_enough:
+                filename = f"{MEDIA_DIR_PATH}/record_{QDateTime.currentDateTime().toString('yyyy-MM-dd_hh-mm-ss')}.mp4"
+                os.makedirs(os.path.dirname(filename), exist_ok=True)
+                self.recorder.start_recording(filename)
+            else:
+                button.setChecked(False)
+                self.disabled_media_btns()
+
         else:
             self.recorder.stop_recording()
 
@@ -963,12 +997,16 @@ class MainWindow(QMainWindow):
         await self.refresh_map()
 
     def take_screenshot(self) -> None:
-        screenshot = self.grab()
-        filename = f"{MEDIA_DIR_PATH}/screenshot_{QDateTime.currentDateTime().toString('yyyy-MM-dd_hh-mm-ss')}.png"
-        os.makedirs(os.path.dirname(filename), exist_ok=True)
+        is_space_enough = self.check_free_memory()
+        if is_space_enough:
+            screenshot = self.grab()
+            filename = f"{MEDIA_DIR_PATH}/screenshot_{QDateTime.currentDateTime().toString('yyyy-MM-dd_hh-mm-ss')}.png"
+            os.makedirs(os.path.dirname(filename), exist_ok=True)
 
-        screenshot.save(filename, "png")
-        print(f"[MainWindow] Screenshot saved to: {filename}")
+            screenshot.save(filename, "png")
+            print(f"[Success] Скріншот збережено: {filename}")
+        else:
+            self.disabled_media_btns()
 
     def update_gps_and_map(self) -> None:
         self.force_gps_update = True

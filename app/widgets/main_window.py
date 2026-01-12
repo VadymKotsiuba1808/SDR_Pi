@@ -392,8 +392,13 @@ class MainWindow(QMainWindow):
                 self,
                 self.tr("Not enough disk space"),
                 self.tr(
-                    f"Available only: {available_mb} MB.\n"
-                    "To use media functions and logging, please free up disk space."
+                    "Available only: "
+                    + str(available_mb)
+                    + self.tr("MB.")
+                    + "\n"
+                    + self.tr(
+                        "To use media functions and logging, please free up disk space."
+                    )
                 ),
             )
             return False

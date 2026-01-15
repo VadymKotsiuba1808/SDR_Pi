@@ -5,6 +5,11 @@
 /logs/*.json
 /logs/*.jsonl
 
+# DB
+*.db
+*.db-shm
+*.db-wal
+
 .vscode/
 # Byte-compiled / optimized / DLL files
 __pycache__/

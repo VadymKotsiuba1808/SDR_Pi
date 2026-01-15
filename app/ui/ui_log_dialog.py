@@ -12,7 +12,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 class Ui_LogDialog(object):
     def setupUi(self, LogDialog):
         LogDialog.setObjectName("LogDialog")
-        LogDialog.resize(1400, 762)
+        LogDialog.resize(1500, 762)
         LogDialog.setStyleSheet("QDialog {\n"
 "  background-color: #002f00;\n"
 "  color: #ffffff;\n"
@@ -419,7 +419,7 @@ class Ui_LogDialog(object):
         self.horizontalLayout_Main.addWidget(self.frameContent)
 
         self.retranslateUi(LogDialog)
-        self.tabWidget.setCurrentIndex(3)
+        self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(LogDialog)
 
     def retranslateUi(self, LogDialog):

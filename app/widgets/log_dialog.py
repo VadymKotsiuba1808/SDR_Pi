@@ -107,6 +107,7 @@ class LogDialog(QDialog):
         t.setColumnWidth(4, 180)  # Freq
         t.setColumnWidth(5, 150)  # Dist/Angle
         t.setColumnWidth(6, 100)  # Status
+        t.setColumnWidth(7, 100)  # Latency
 
     def _init_charts(self) -> None:
         """Ініціалізація віджетів графіків для кожної вкладки."""
@@ -301,12 +302,20 @@ class LogDialog(QDialog):
             except ValueError:
                 time_str = entry.timestamp
 
+            if entry.is_detection:
+                # TODO - Додати переклад
+                d1 = datetime.fromisoformat(entry.payload.timestamp)
+                d2 = datetime.fromisoformat(entry.timestamp)
+                latency_ms = int((d2 - d1).total_seconds() * 1000)
+                time_str += f" ({latency_ms}мс)"
+
             t.setItem(row_idx, 0, QTableWidgetItem(time_str))
 
             if entry.is_detection:
                 data: DetectionEvent = entry.payload
-                t.setItem(row_idx, 1, QTableWidgetItem(data.type))
 
+                t.setItem(row_idx, 1, QTableWidgetItem(data.type))
+                # TODO - Додати переклад
                 short_id = data.id[:8]
                 name_item = QTableWidgetItem(f"{data.name}\nID: {short_id}...")
                 name_item.setToolTip(f"Full ID: {data.id}")

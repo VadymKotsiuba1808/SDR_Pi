@@ -33,6 +33,18 @@ class SetMapDialogSettings(Protocol):
     lang_code: str
 
 
+class NetworkServiceSettings(Protocol):
+    pi_target_ip: str
+    pi_target_port: int
+    pi_is_receiver: bool
+
+
+class JammerServiceSettings(Protocol):
+    main_relays: list[str]
+    is_jammer_auto_stop_enabled: bool
+    jammer_auto_stop_interval_s: int
+
+
 class SettingsDialogSettings(Protocol):
     lang_code: str
     radar_max_radius_km: float

@@ -4,14 +4,14 @@ from PyQt6.QtWidgets import QDialog, QMessageBox, QListWidgetItem, QWidget
 from PyQt6.QtCore import Qt, QEvent, QCoreApplication, QTranslator, pyqtSignal
 from PyQt6 import uic
 
-from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
+from app.core.constants import DEV_COMPILED_UI_USING_ENABLED, RF_PARAMS__DIVIDER
 from app.protocols import LangSettings
 from app.widgets.keyboard_widget import KeyboardWidget
 from app.services.keyboard_service import KeyboardService
 from app.models.detection_object import DetectionObject
 from app.models.object_class import ObjectClass
 from app.ui.ui_object_editor_dialog import Ui_ObjectEditorDialog
-from app.utils.convert_measurement_unit import convert_ghz_to_hz
+from app.utils.convert_measurement_unit import convert_ghz_to_hz, convert_hz_to_ghz
 
 
 class ObjectEditorDialog(QDialog):
@@ -155,9 +155,9 @@ class ObjectEditorDialog(QDialog):
             for rf_str in rf_list:
                 if isinstance(rf_str, str):
                     try:
-                        parts = rf_str.split("-")
-                        f_min = float(parts[0])
-                        f_max = float(parts[1]) if len(parts) > 1 else f_min
+                        parts = rf_str.split(RF_PARAMS__DIVIDER)
+                        f_min = convert_hz_to_ghz(float(parts[0]))
+                        f_max = convert_hz_to_ghz(float(parts[1]))
                         display_text = (
                             f"{f_min} ГГц"
                             if f_min == f_max
@@ -327,17 +327,21 @@ class ObjectEditorDialog(QDialog):
         if row >= 0:
             self.ui.lstSoundFreqs.takeItem(row)
 
-    def _collect_rf_data(self) -> List[str]:
+    def _collect_rf_data(self) -> Optional[List[str]]:
         data: List[str] = []
         if self.ui.chkRFEnable.isChecked():
             for i in range(self.ui.lstRFFreqs.count()):
                 item = self.ui.lstRFFreqs.item(i)
-                val = item.data(Qt.ItemDataRole.UserRole).split("-")
-                if val:
+                val = item.data(Qt.ItemDataRole.UserRole)
+                if val is not None:
                     data.append(str(val))
+
+        if len(data) == 0:
+            return None
+
         return data
 
-    def _collect_sound_data(self) -> List[int]:
+    def _collect_sound_data(self) -> Optional[List[int]]:
         data: List[int] = []
         if self.ui.chkSoundEnable.isChecked():
             for i in range(self.ui.lstSoundFreqs.count()):
@@ -345,4 +349,8 @@ class ObjectEditorDialog(QDialog):
                 val = item.data(Qt.ItemDataRole.UserRole)
                 if val is not None:
                     data.append(int(val))
+
+        if len(data) == 0:
+            return None
+
         return data

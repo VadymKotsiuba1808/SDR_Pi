@@ -5,7 +5,7 @@ from typing import Optional, Dict, Any, List
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot, QByteArray, QTimer
 from PyQt6.QtNetwork import QTcpServer, QTcpSocket, QHostAddress
 
-from app.services.settings_service import SettingsService
+from app.protocols import NetworkServiceSettings
 from app.models.detection_event import DetectionEvent
 from app.models.detection_object import DetectionObject
 from app.models.object_class import ObjectClass
@@ -47,7 +47,7 @@ class PiNetworkService(QObject):
     connection_status_changed = pyqtSignal(bool)
 
     def __init__(
-        self, settings: SettingsService, parent: Optional[QObject] = None
+        self, settings: NetworkServiceSettings, parent: Optional[QObject] = None
     ) -> None:
         super().__init__(parent)
         self.settings = settings

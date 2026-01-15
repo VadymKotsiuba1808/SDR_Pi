@@ -11,11 +11,10 @@ from PyQt6.QtWidgets import (
     QWidget,
     QPushButton,
     QDoubleSpinBox,
-    QLineEdit,
+    QApplication,
 )
 from PyQt6.QtCore import (
     QTimer,
-    QTime,
     QDateTime,
     Qt,
     QPointF,
@@ -23,17 +22,11 @@ from PyQt6.QtCore import (
     QCoreApplication,
     QTranslator,
     pyqtSlot,
-    pyqtSignal,
     QUrl,
 )
 from PyQt6.QtGui import (
     QPixmap,
-    QConicalGradient,
-    QPainter,
-    QColor,
-    QPen,
     QDesktopServices,
-    QFont,
     QShowEvent,
     QCloseEvent,
 )
@@ -86,6 +79,7 @@ from app.utils.system_utils import (
 from app.utils.geo_utils import calculate_distance
 from app.utils.convert_measurement_unit import convert_hz_to_ghz
 
+STATIONARY_SECONDS = 10
 
 MIN_DISTANCE_THRESHOLD = 2.0  # Мінімальна зміна позиції в метрах для оновлення мапи
 DEFAULT_START_COORDS = [49.43440, 27.00543]
@@ -132,6 +126,11 @@ class MainWindow(QMainWindow):
         self.update_gps_and_map()
         self._start_async_tasks()
 
+        self.ui.Radar_Section.setAttribute(
+            Qt.WidgetAttribute.WA_TransparentForMouseEvents
+        )
+        self.ui.Radar.installEventFilter(self)
+
         # FIXME -
         # TODO - Видалити рефреш
         self.refresh_map()
@@ -161,6 +160,14 @@ class MainWindow(QMainWindow):
                 self.ui.retranslateUi(self)
         else:
             super().changeEvent(event)
+
+    def eventFilter(self, source, event):
+        if source == self.ui.Radar and event.type() == QEvent.Type.MouseButtonPress:
+            if event.button() == Qt.MouseButton.LeftButton:
+                pos = event.pos()
+                self.handle_radar_click(pos.x(), pos.y())
+                return True
+        return super().eventFilter(source, event)
 
     def _load_ui(self) -> None:
         if DEV_COMPILED_UI_USING_ENABLED:
@@ -267,7 +274,9 @@ class MainWindow(QMainWindow):
         self.ui.screenRecordButton.clicked.connect(self.handle_toggle_recording)
         self.ui.filesViewButton.clicked.connect(self.handle_open_file)
         self.ui.viewObjectButton.clicked.connect(self.open_database_manager)
-        self.ui.viewLogsButton.clicked.connect(self.open_logs_dialog)
+        self.ui.viewLogsButton.clicked.connect(
+            self.request_classes_and_open_logs_dialog
+        )
 
         self.ui.falseAlarmButton.clicked.connect(self.handle_false_alarm)
         self.ui.menuButton.clicked.connect(self.open_settings_dialog)
@@ -300,7 +309,12 @@ class MainWindow(QMainWindow):
 
     def _setup_timers(self) -> None:
         self.timer_1sec = QTimer(self)
-        self.timer_1sec.timeout.connect(self.update_time_and_date)
+        self.timer_1sec.timeout.connect(
+            lambda: (
+                self.update_time_and_date(),
+                self.update_false_alarm_button_state(),
+            )
+        )
         self.timer_1sec.start(TIMER_INTERVAL_TIME_UPDATE)
 
         self.timer_radar = QTimer(self)
@@ -373,6 +387,13 @@ class MainWindow(QMainWindow):
         log = LogEntry(LogType.DETECTION, detection)
         self.log_service.add_log(log)
 
+    def handle_radar_click(self, x, y):
+        event_id = self.radar_renderer.get_target_id_at_position(x, y)
+
+        if event_id:
+            self.ui.index_search_edit.setText(str(event_id))
+            self.perform_search()
+
     @pyqtSlot()
     def _update_detection_ui(self) -> None:
         self.update_radar()
@@ -384,12 +405,11 @@ class MainWindow(QMainWindow):
         if not hasattr(self, "radar_clean_pixmap"):
             return
 
-        detections, indices = self.detection_manager.get_detections()
+        targets = self.detection_manager.get_targets()
 
         final_pixmap = self.radar_renderer.draw_detections(
             base_pixmap=self.radar_clean_pixmap,
-            detections=detections,
-            indices=indices,
+            targets=targets,
             max_radius_km=self.settings_service.radar_radius_km,
         )
 
@@ -409,7 +429,6 @@ class MainWindow(QMainWindow):
                 f"TYPE:    {target_event.type}\n"
                 f"NAME:    {target_event.name.upper()}\n"
                 f"CLASS:   {target_event.object_class.upper()}\n"
-                # TODO - Відформатувати окремо для звуку і радіо
                 f"FREQ:    {f"{convert_hz_to_ghz(target_event.frequency_hz):.3f} GHz" if(target_event.type==DetectionType.RF) else f"{(target_event.frequency_hz):.0f} Hz" } \n"
                 f"DIST:    {target_event.distance_km:.3f} km\n"
                 f"ANGLE:   {target_event.angle:.1f}°\n"
@@ -424,26 +443,46 @@ class MainWindow(QMainWindow):
             )
 
     def find_event_by_searched_index(self) -> Optional[DetectionEvent]:
-        detections, indices = self.detection_manager.get_detections()
-
-        for eid, idx in indices.items():
-            if idx == self.searched_index:
-                return detections.get(eid)
+        targets = self.detection_manager.get_targets()
+        for t in targets:
+            if t.visual_index == self.searched_index:
+                return t.event
 
         return None
 
-    def update_alert_status(self) -> None:
-        detections, _ = self.detection_manager.get_detections()
+    def update_false_alarm_button_state(self) -> None:
+        if self.searched_index is None:
+            self.ui.falseAlarmButton.setEnabled(False)
+            return
 
-        has_rf = any(e.type == "RF" for e in detections.values())
-        has_sound = any(e.type == "Sound" for e in detections.values())
+        target_event = self.find_event_by_searched_index()
+
+        if not target_event:
+            self.ui.falseAlarmButton.setEnabled(False)
+            return
+
+        target = self.detection_manager.get_target_by_id(target_event.id)
+
+        if target:
+            is_stationary = target.is_stationary_for(STATIONARY_SECONDS)
+
+            self.ui.falseAlarmButton.setEnabled(is_stationary)
+
+        else:
+            self.ui.falseAlarmButton.setEnabled(False)
+
+    def update_alert_status(self) -> None:
+        targets = self.detection_manager.get_targets()
+
+        has_rf = any(t.event.type == DetectionType.RF for t in targets)
+        has_sound = any(t.event.type == DetectionType.SOUND for t in targets)
 
         self.ui.RF_alert.setProperty("alert", has_rf)
         self.ui.Sound_alert.setProperty("alert", has_sound)
         update_element_styles(self.ui.RF_alert)
         update_element_styles(self.ui.Sound_alert)
 
-        self.ui.falseAlarmButton.setEnabled(self.detection_manager.has_detections())
+        # self.ui.falseAlarmButton.setEnabled(self.detection_manager.has_detections())
 
     def handle_false_alarm(self) -> None:
         target_event = self.find_event_by_searched_index()
@@ -513,23 +552,23 @@ class MainWindow(QMainWindow):
         btn = cast(QPushButton, self.sender())
 
         if not btn.isChecked():
-            asyncio.create_task(self.refresh_map())
+            self.refresh_map()
             return
 
         self.open_set_map_dialog()
 
     def open_set_map_dialog(self) -> None:
-        self.dialog = SetMapDialog(
+        map_dialog = SetMapDialog(
             settings=self.settings_service, add_sizes_map_k=self.add_sizes_map_k
         )
 
         ScalableDialog = make_scalable(QDialog)
-        self.scalable_dialog = ScalableDialog(widget_to_scale=self.dialog)
+        scalable_dialog = ScalableDialog(widget_to_scale=map_dialog)
 
-        result = self.scalable_dialog.exec()
+        result = scalable_dialog.exec()
 
         if result == QDialog.DialogCode.Accepted:
-            settings_data = self.scalable_dialog.get_settings()
+            settings_data = scalable_dialog.get_settings()
 
             if settings_data.get("pixmap"):
                 self.current_map = settings_data["pixmap"]
@@ -549,34 +588,40 @@ class MainWindow(QMainWindow):
     # region --- Dialogs ---
 
     def open_database_manager(self) -> None:
-        self.db_window = ObjectManagerDialog(
+        db_window = ObjectManagerDialog(
             self.pi_network, self.settings_service, self.keyboard_service
         )
-        move_dialog_down(self.db_window, self.geometry())
-        self.db_window.exec()
+        move_dialog_down(db_window, self.geometry())
+        db_window.exec()
 
-    def open_logs_dialog(self):
-        mock_classes = [
-            ObjectClass(1, name="shahed"),
-            ObjectClass(2, name="orlan"),
-            ObjectClass(3, name="mavic"),
-            ObjectClass(4, name="lancet"),
-            ObjectClass(5, name="zala"),
-            ObjectClass(6, name="fpv"),
-        ]
+    def open_logs_dialog(self, classes: List[ObjectClass]):
 
-        logs_dialog = LogDialog(self.log_service, mock_classes, self.settings_service)
+        logs_dialog = LogDialog(self.log_service, classes, self.settings_service)
         move_dialog_down(logs_dialog, self.geometry())
         logs_dialog.exec()
 
-    def open_settings_dialog(self) -> None:
-        self.settings_dialog = SettingsDialog(self.settings_service)
-        move_dialog_down(self.settings_dialog, self.geometry())
+    def _on_classes_received_for_logs(self, classes: List[ObjectClass]):
+        try:
+            self.pi_network.db_classes_received.disconnect(
+                self._on_classes_received_for_logs
+            )
+        except TypeError:
+            pass
 
-        if self.settings_dialog.exec() != QDialog.DialogCode.Accepted:
+        self.open_logs_dialog(classes)
+
+    def request_classes_and_open_logs_dialog(self):
+        self.pi_network.db_classes_received.connect(self._on_classes_received_for_logs)
+        self.pi_network.request_db_classes()
+
+    def open_settings_dialog(self) -> None:
+        settings_dialog = SettingsDialog(self.settings_service)
+        move_dialog_down(settings_dialog, self.geometry())
+
+        if settings_dialog.exec() != QDialog.DialogCode.Accepted:
             return
 
-        new_settings = self.settings_dialog.get_settings()
+        new_settings = settings_dialog.get_settings()
 
         if not new_settings:
             return
@@ -609,14 +654,20 @@ class MainWindow(QMainWindow):
         if self.settings_service.is_jammer_auto_start_enabled != new_auto_start_enabled:
             self.settings_service.is_jammer_auto_start_enabled = new_auto_start_enabled
 
+        is_jammer_timer_changed = False
         if self.settings_service.is_jammer_auto_stop_enabled != new_auto_stop_enabled:
             self.settings_service.is_jammer_auto_stop_enabled = new_auto_stop_enabled
+            is_jammer_timer_changed = True
 
         if (
             self.settings_service.jammer_auto_stop_interval_s
             != new_auto_stop_interval_s
         ):
             self.settings_service.jammer_auto_stop_interval_s = new_auto_stop_interval_s
+            is_jammer_timer_changed = True
+
+        if is_jammer_timer_changed:
+            self.jammer_service.update_auto_stop()
 
     def calculate_optimal_zoom(self, radius_km: float) -> int:
         BASE_RADIUS_KM = 0.5
@@ -853,6 +904,10 @@ class MainWindow(QMainWindow):
             self.current_map = pixmap
             self.current_map_resolution = resolution
 
+            if self.ui.addMapButton.isChecked():
+                self.ui.addMapButton.setChecked(False)
+                update_element_styles(self.ui.addMapButton)
+
             self.scale_map()
         else:
             QMessageBox.warning(None, self.tr("Error"), self.tr("Failed to load map."))
@@ -932,6 +987,7 @@ class MainWindow(QMainWindow):
         update_element_styles(self.ui.index_search_edit)
 
         self.update_detection_info()
+        self.update_false_alarm_button_state()
 
     @pyqtSlot(dict)
     def handle_pi_data(self, data: Dict[str, Any]) -> None:
@@ -957,13 +1013,18 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event: QCloseEvent) -> None:
         print("[MainWindow] Application closing...")
+        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        try:
+            if self.recorder.isRunning():
+                print("[MainWindow] Closing: Stopping recording thread...")
+                self.recorder.stop_recording()
 
-        if self.recorder.isRunning():
-            print("[MainWindow] Closing: Stopping recording thread...")
-            self.recorder.stop_recording()
+                if not self.recorder.wait(3000):
+                    print("[MainWindow] Thread did not stop. Forcing termination.")
+                    self.recorder.terminate()
 
-            if not self.recorder.wait(3000):
-                print("[MainWindow] Thread did not stop. Forcing termination.")
-                self.recorder.terminate()
-
-        event.accept()
+            if self.log_service:
+                self.log_service.stop()
+        finally:
+            QApplication.restoreOverrideCursor()
+            event.accept()

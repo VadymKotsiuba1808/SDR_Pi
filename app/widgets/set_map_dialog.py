@@ -3,6 +3,7 @@
 Дозволяє користувачу вибрати та налаштувати власне зображення мапи.
 """
 
+from typing import List
 from PyQt6.QtWidgets import (
     QDialog,
     QFileDialog,
@@ -21,7 +22,10 @@ from app.ui.ui_set_map_dialog import Ui_SetMapDialog
 class SetMapDialog(QDialog):
 
     def __init__(
-        self, settings: SetMapDialogSettings, add_sizes_map_k=[1, 1], parent=None
+        self,
+        settings: SetMapDialogSettings,
+        add_sizes_map_k: List[float] = [1, 1],
+        parent=None,
     ):
         super().__init__(parent)
         print("[Init] Ініціалізація SetMapDialog...")
@@ -206,9 +210,8 @@ class SetMapDialog(QDialog):
         self.update_map_display()
 
     def update_map_display(self):
-        print("[update_map_display] Оновлення зображення карти...")
+        print("[update_map_display] Оновлення відображення (Optimized)...")
         if not self.original_pixmap:
-            print("[update_map_display] Немає зображення для відображення — очищаю фон")
             bg_pixmap = QPixmap(self.ui.mapDisplayLabel.size())
             bg_pixmap.fill(Qt.GlobalColor.transparent)
             self.ui.mapDisplayLabel.setPixmap(bg_pixmap)
@@ -216,88 +219,68 @@ class SetMapDialog(QDialog):
 
         self.current_scale = self.ui.scaleSpinBox.value() / 100.0
 
-        scaled_pixmap = self.original_pixmap.scaled(
-            int(self.original_pixmap.width() * self.current_scale),
-            int(self.original_pixmap.height() * self.current_scale),
-            Qt.AspectRatioMode.KeepAspectRatio,
-            Qt.TransformationMode.SmoothTransformation,
-        )
-
-        scaled_center_point_f = self.center_point_f * self.current_scale
-        self.current_offset_f = self.screen_center_f - scaled_center_point_f
-        # ---
-
         display_pixmap = QPixmap(self.ui.mapDisplayLabel.size())
         display_pixmap.fill(Qt.GlobalColor.transparent)
 
         painter = QPainter(display_pixmap)
 
-        painter.save()
+        painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
         painter.translate(self.screen_center_f)
+
         painter.rotate(self.current_rotation)
-        painter.translate(-self.screen_center_f)
 
-        painter.drawPixmap(self.current_offset_f, scaled_pixmap)
+        painter.scale(self.current_scale, self.current_scale)
 
-        painter.restore()
+        painter.translate(-self.center_point_f)
+
+        painter.drawPixmap(0, 0, self.original_pixmap)
 
         painter.end()
 
         self.ui.mapDisplayLabel.setPixmap(display_pixmap)
-        print("[update_map_display] Відображення оновлено\n")
 
     def eventFilter(self, source, event):
         if source is self.ui.mapDisplayLabel or source is self.ui.centerCircleLabel:
             if event.type() == QEvent.Type.MouseButtonPress and self.is_centering_mode:
                 if event.button() == Qt.MouseButton.LeftButton:
 
-                    # 1. Отримуємо позицію кліку (у координатах mapDisplayLabel)
-                    label_click_pos_f = QPointF(
-                        source.mapTo(self.ui.mapDisplayLabel, event.pos())
-                    )
-                    print(
-                        f"[eventFilter] Клік у режимі центрування: {label_click_pos_f}"
-                    )
+                    click_pos = source.mapTo(self.ui.mapDisplayLabel, event.pos())
+                    click_point = QPointF(click_pos)
 
                     if self.current_scale == 0:
-                        print("[eventFilter] ПОМИЛКА: масштаб 0")
                         return True
 
-                    # 2. Створюємо "зворотну" трансформацію
                     transform = QTransform()
-                    # 2a. Переходимо до точки обертання
                     transform.translate(
                         self.screen_center_f.x(), self.screen_center_f.y()
                     )
-                    # 2b. Обертаємо у ЗВОРОТНИЙ бік
-                    transform.rotate(-self.current_rotation)
-                    # 2c. Повертаємось
-                    transform.translate(
-                        -self.screen_center_f.x(), -self.screen_center_f.y()
+                    transform.rotate(self.current_rotation)
+                    transform.scale(self.current_scale, self.current_scale)
+
+                    full_transform = QTransform()
+                    full_transform.translate(
+                        self.screen_center_f.x(), self.screen_center_f.y()
+                    )
+                    full_transform.rotate(self.current_rotation)
+                    full_transform.scale(self.current_scale, self.current_scale)
+                    full_transform.translate(
+                        -self.center_point_f.x(), -self.center_point_f.y()
                     )
 
-                    # 3. Застосовуємо зворотну трансформацію до точки кліку
-                    unrotated_click_pos_f = transform.map(label_click_pos_f)
+                    inverted_transform, invertible = full_transform.inverted()
 
-                    # 4. Тепер розраховуємо координати на зображенні (стара логіка)
-                    img_x = (
-                        unrotated_click_pos_f.x() - self.current_offset_f.x()
-                    ) / self.current_scale
-                    img_y = (
-                        unrotated_click_pos_f.y() - self.current_offset_f.y()
-                    ) / self.current_scale
+                    if invertible:
+                        image_point_clicked = inverted_transform.map(click_point)
 
-                    self.center_point_f = QPointF(img_x, img_y)
-                    print(
-                        f"[eventFilter] Новий центр зображення: {self.center_point_f}"
-                    )
-                    # --- КІНЕЦЬ ОНОВЛЕННЯ ---
+                        self.center_point_f = image_point_clicked
+                        print(f"[eventFilter] Новий центр: {self.center_point_f}")
 
-                    self.is_centering_mode = False
-                    self.clear_cross_cursor()
-                    self.update_map_display()
-                    return True
+                        self.is_centering_mode = False
+                        self.clear_cross_cursor()
+                        self.update_map_display()
+                        return True
 
         return super().eventFilter(source, event)
 
@@ -341,6 +324,13 @@ class SetMapDialog(QDialog):
             f"[accept] Цільовий розмір карти: {target_size_px}px ({target_diameter_km}км)"
         )
 
+        if target_size_px > 10000:
+            QMessageBox.critical(
+                "Помилка",
+                "Завантажене зображення занадто велике, спробуйте використати іншу картинку",
+            )
+            return
+
         final_pixmap = QPixmap(
             int(target_size_px * self.add_sizes_map_k[0]),
             int(target_size_px * self.add_sizes_map_k[1]),
@@ -354,15 +344,11 @@ class SetMapDialog(QDialog):
 
         painter = QPainter(final_pixmap)
 
-        # --- ОНОВЛЕННЯ: Обертання при збереженні ---
-        # 1. Переходимо до центру фінального зображення
         painter.translate(final_center_f)
-        # 2. Обертаємо канву
+
         painter.rotate(self.current_rotation)
-        # 3. Малюємо оригінальний pixmap, зсунувши його на його центр
-        # (щоб 'center_point_f' опинився в 'final_center_f')
+
         painter.drawPixmap(-self.center_point_f, self.original_pixmap)
-        # --- КІНЕЦЬ ОНОВЛЕННЯ ---
 
         painter.end()
         print("[accept] Малювання завершено")

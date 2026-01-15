@@ -1,110 +1,151 @@
-"""
-Менеджер для управління детекціями: додавання, видалення, TTL, індексація.
-"""
+from typing import Dict, List, Optional
+from datetime import datetime, timedelta
 
 from PyQt6.QtCore import QObject, pyqtSignal, QTimer
 from app.models.detection_event import DetectionEvent
-from datetime import datetime, timedelta  #
+from app.models.radar_target import RadarTarget
 
 
 class DetectionManager(QObject):
+    """
+    Менеджер для управління детекціями: додавання, видалення, TTL, індексація.
+    """
+
     detections_changed = pyqtSignal()
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[QObject] = None) -> None:
         super().__init__(parent)
-        self.current_detections = {}
-        self.detection_indices = {}
 
-        self.ignored_detections = {}
+        self.active_targets: Dict[str, RadarTarget] = {}
 
-        self.next_index = 1
-        self.update_requested = False
-        self.ttl_timer = QTimer(self)
+        self.index_history: Dict[str, int] = {}
+
+        self.ignored_ids: Dict[str, datetime] = {}
+
+        self.next_index: int = 1
+
+        self.update_requested: bool = False
+        self.ttl_timer: QTimer = QTimer(self)
         self.ttl_timer.timeout.connect(self._check_ttl)
-        self.ttl_timer.start(3000)
-        self.ttl_seconds = 30
+        self.ttl_timer.start(1000)
+        self.ttl_seconds: int = 30
 
-    def add_detection(self, event: DetectionEvent):
-        event_id = event.id
+    def add_detection(self, event: DetectionEvent) -> None:
+        """Головний метод додавання або оновлення цілі."""
 
-        if event_id in self.ignored_detections:
-            expiry_time = self.ignored_detections[event_id]
-            if datetime.now() < expiry_time:
-                return
-            else:
-                del self.ignored_detections[event_id]
-        # ---------------------------
+        if self._is_ignored(event.id):
+            return
 
-        if event_id in self.current_detections:
-            self.current_detections[event_id] = event
+        if event.id in self.active_targets:
+            self.active_targets[event.id].update(event)
             self._trigger_update()
             return
 
-        self.current_detections[event_id] = event
-        self.detection_indices[event_id] = self.next_index
-        self.next_index += 1
+        visual_index: int = self._get_visual_index(event.id)
+
+        new_target = RadarTarget(event=event, visual_index=visual_index)
+
+        self.active_targets[event.id] = new_target
         self._trigger_update()
 
-    def remove_detection(self, event_id):
-        if event_id not in self.current_detections:
+    def remove_detection(self, event_id: str) -> None:
+        """Ручне видалення цілі (наприклад, кнопкою 'False Alarm')."""
+        if event_id not in self.active_targets:
             return
 
-        # Додаємо ID в список ігнорування на 3 секунди вперед
-        self.ignored_detections[event_id] = datetime.now() + timedelta(seconds=3)
+        self.ignored_ids[event_id] = datetime.now() + timedelta(seconds=3)
 
-        del self.current_detections[event_id]
-        del self.detection_indices[event_id]
+        del self.active_targets[event_id]
 
-        if not self.current_detections:
-            self.next_index = 1
-
+        self._check_cleanup()
         self._trigger_update()
 
-    def _check_ttl(self):
-        now = datetime.now()
+    def clear_detections(self) -> None:
+        """Повне очищення всіх детекцій."""
+        expiry: datetime = datetime.now() + timedelta(seconds=3)
 
-        to_remove = [
-            eid
-            for eid, event in self.current_detections.items()
-            if (now - datetime.fromisoformat(event.timestamp)).total_seconds()
-            > self.ttl_seconds
-        ]
-        for eid in to_remove:
-            del self.current_detections[eid]
-            del self.detection_indices[eid]
+        eid: str
+        for eid in self.active_targets:
+            self.ignored_ids[eid] = expiry
 
-        if to_remove:
-            if not self.current_detections:
-                self.next_index = 1
-            self._trigger_update()
+        self.active_targets.clear()
 
-        ignored_to_remove = [
-            eid for eid, expiry in self.ignored_detections.items() if now > expiry
-        ]
-        for eid in ignored_to_remove:
-            del self.ignored_detections[eid]
-
-    def clear_detections(self):
-        expiry = datetime.now() + timedelta(seconds=3)
-        for eid in self.current_detections:
-            self.ignored_detections[eid] = expiry
-
-        self.current_detections.clear()
-        self.detection_indices.clear()
         self.next_index = 1
+        self.index_history.clear()
+
         self._trigger_update()
 
-    def get_detections(self):
-        return self.current_detections, self.detection_indices
+    def _check_ttl(self) -> None:
+        """Періодична перевірка на застарілі дані."""
+        ids_to_remove: List[str] = [
+            tid
+            for tid, target in self.active_targets.items()
+            if target.is_expired(self.ttl_seconds)
+        ]
 
-    def has_detections(self):
-        return bool(self.current_detections)
+        tid: str
+        for tid in ids_to_remove:
+            del self.active_targets[tid]
 
-    def _trigger_update(self):
+        now: datetime = datetime.now()
+        expired_ignores: List[str] = [
+            tid for tid, exp in self.ignored_ids.items() if now > exp
+        ]
+
+        for tid in expired_ignores:
+            del self.ignored_ids[tid]
+
+        if ids_to_remove:
+            self._check_cleanup()
+            self._trigger_update()
+
+    def _get_visual_index(self, event_id: str) -> int:
+        """Логіка вибору індексу: повертає старий з історії або створює новий."""
+        if event_id in self.index_history:
+            return self.index_history[event_id]
+
+        idx: int = self.next_index
+        self.next_index += 1
+        self.index_history[event_id] = idx
+        return idx
+
+    def _check_cleanup(self) -> None:
+        """Якщо активних цілей не залишилось, скидаємо лічильник індексів."""
+        if not self.active_targets:
+            self.next_index = 1
+            self.index_history.clear()
+
+    def _is_ignored(self, event_id: str) -> bool:
+        """Перевіряє, чи знаходиться ID в списку ігнорування."""
+        if event_id in self.ignored_ids:
+            if datetime.now() < self.ignored_ids[event_id]:
+                return True
+            else:
+                del self.ignored_ids[event_id]
+        return False
+
+    def get_targets(self) -> List[RadarTarget]:
+        """Повертає список всіх активних об'єктів (для малювання)."""
+        return list(self.active_targets.values())
+
+    def get_target_by_id(self, event_id: str) -> Optional[RadarTarget]:
+        """Пошук конкретного об'єкта за ID (для обробки кліків)."""
+        return self.active_targets.get(event_id)
+
+    def get_index_by_id(self, event_id: str) -> Optional[int]:
+        """Повертає візуальний індекс за ID події."""
+        target: Optional[RadarTarget] = self.active_targets.get(event_id)
+        return target.visual_index if target else None
+
+    def has_detections(self) -> bool:
+        """Перевірка на наявність будь-яких цілей."""
+        return bool(self.active_targets)
+
+    def _trigger_update(self) -> None:
         if not self.update_requested:
             self.update_requested = True
             QTimer.singleShot(50, self._emit_debounced)
 
-    def _emit_debounced(self):
+    def _emit_debounced(self) -> None:
         self.update_requested = False
         self.detections_changed.emit()

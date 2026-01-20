@@ -483,8 +483,8 @@ class AdvancedNetworkUtility(QObject):
 
         return {
             "data_magnitude": spectrum.tolist(),
-            "center_freq": 915_000_000.0,  # 915 MHz
-            "sample_rate": 10_000_000.0,  # 10 MHz
+            "center_freq_hz": 915_000_000.0,  # 915 MHz
+            "sample_rate_hz": 10_000_000.0,  # 10 MHz
             "timestamp": t,
         }
 
@@ -503,8 +503,8 @@ class AdvancedNetworkUtility(QObject):
 
         return {
             "data_magnitude": spectrum.tolist(),
-            "center_freq": 0,
-            "sample_rate": 44100.0,
+            "center_freq_hz": 0,
+            "sample_rate_hz": 44100.0,
             "timestamp": t,
         }
 

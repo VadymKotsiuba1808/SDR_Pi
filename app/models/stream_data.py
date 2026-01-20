@@ -27,8 +27,8 @@ class StreamDataChunk:
         return StreamDataChunk(
             stream_type=data.get("stream_type", type),
             data_magnitude=magnitude_array,
-            center_freq_hz=float(data.get("center_freq", 0)),
-            sample_rate_hz=float(data.get("sample_rate", 0)),
+            center_freq_hz=float(data.get("center_freq_hz", 0)),
+            sample_rate_hz=float(data.get("sample_rate_hz", 0)),
             timestamp=float(data.get("timestamp", time.time())),
         )
 
@@ -36,7 +36,7 @@ class StreamDataChunk:
         return {
             "stream_type": self.stream_type,
             "data_magnitude": self.data_magnitude.tolist(),
-            "center_freq": self.center_freq_hz,
-            "sample_rate": self.sample_rate_hz,
+            "center_freq_hz": self.center_freq_hz,
+            "sample_rate_hz": self.sample_rate_hz,
             "timestamp": self.timestamp,
         }

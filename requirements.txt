@@ -34,6 +34,7 @@ colorama==0.4.6
     #   click
     #   colorlog
     #   deptry
+    #   pyqtgraph
     #   tqdm
 colorlog==6.10.1
     # via vidgear
@@ -91,6 +92,7 @@ numpy==2.3.4
     # via
     #   -r requirements.in
     #   opencv-python-headless
+    #   pyqtgraph
     #   vidgear
 opencv-python-headless==4.11.0.86
     # via -r requirements.in
@@ -119,6 +121,8 @@ pyqt6-qt6==6.10.0
     # via pyqt6
 pyqt6-sip==13.10.2
     # via pyqt6
+pyqtgraph==0.14.0
+    # via -r requirements.in
 pytokens==0.2.0
     # via black
 pywin32==311 ; sys_platform == "win32"

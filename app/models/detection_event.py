@@ -7,11 +7,20 @@ object_class: Клас об'єкта -> "drone", "bird", "mavic_3" тощо.
 from dataclasses import dataclass
 import uuid
 from datetime import datetime
+from typing import Optional
+import numpy as np
+
+from app.models.source_type import SourceType
 
 
-class DetectionType:
-    RF = "RF"
-    SOUND = "Sound"
+@dataclass
+class SpectralData:
+    """Важкі дані для спектрального аналізу"""
+
+    center_freq_hz: float
+    bandwidth_hz: float
+    duration_sec: float
+    data_uint8: np.ndarray
 
 
 @dataclass
@@ -26,14 +35,15 @@ class DetectionEvent:
     distance_km: float
     angle: float
     frequency_hz: float
+    spectral_data: Optional[SpectralData] = None
 
     @staticmethod
     def from_dict(data: dict) -> "DetectionEvent":
         """Парсинг вхідного словника JSON у об'єкт."""
 
-        raw_type = data.get("type", DetectionType.RF)
-        if raw_type not in [DetectionType.RF, DetectionType.SOUND]:
-            raw_type = DetectionType.RF
+        raw_type = data.get("type", SourceType.RF)
+        if raw_type not in [SourceType.RF, SourceType.SOUND]:
+            raw_type = SourceType.RF
 
         obj_class = data.get("object_class", data.get("class", "unknown"))
 

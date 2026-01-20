@@ -6,10 +6,12 @@ from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot, QByteArray, QTimer
 from PyQt6.QtNetwork import QTcpServer, QTcpSocket, QHostAddress
 
 from app.protocols import NetworkServiceSettings
+from app.models.source_type import SourceType
 from app.models.detection_event import DetectionEvent
 from app.models.detection_object import DetectionObject
 from app.models.object_class import ObjectClass
 from app.models.gps_data import GPSData
+from app.models.stream_data import StreamDataChunk
 
 
 class PiNetworkService(QObject):
@@ -24,8 +26,8 @@ class PiNetworkService(QObject):
     detection_received = pyqtSignal(DetectionEvent)  # Об'єкт детекції
 
     # --- Сигнали для потокових даних ---
-    rf_data_received = pyqtSignal(dict)
-    sound_data_received = pyqtSignal(dict)
+    rf_data_received = pyqtSignal(StreamDataChunk)
+    sound_data_received = pyqtSignal(StreamDataChunk)
 
     # --- Сигнали для роботи з БД  ---
     # (objects_list, page, total_items)
@@ -172,10 +174,12 @@ class PiNetworkService(QObject):
                     self.gps_received.emit(obj)
 
                 elif action == "rf_stream":
-                    self.rf_data_received.emit(data)
+                    obj = StreamDataChunk.from_dict(data, SourceType.RF)
+                    self.rf_data_received.emit(obj)
 
                 elif action == "sound_stream":
-                    self.sound_data_received.emit(data)
+                    obj = StreamDataChunk.from_dict(data, SourceType.SOUND)
+                    self.sound_data_received.emit(obj)
 
                 elif action == "db_response_page":
                     items_raw = data.get("items", [])

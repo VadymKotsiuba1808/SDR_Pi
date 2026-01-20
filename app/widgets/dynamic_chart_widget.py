@@ -143,8 +143,8 @@ class DynamicChartWidget(QWidget):
     def _calculate_frequencies(self, chunk: StreamDataChunk, size: int) -> np.ndarray:
         """Розрахунок масиву частот залежно від типу джерела (RF/Audio)."""
         if chunk.stream_type == SourceType.RF:
-            start = (chunk.center_freq - chunk.sample_rate / 2) / 1e6
-            end = (chunk.center_freq + chunk.sample_rate / 2) / 1e6
+            start = (chunk.center_freq_hz - chunk.sample_rate_hz / 2) / 1e6
+            end = (chunk.center_freq_hz + chunk.sample_rate_hz / 2) / 1e6
 
             if self.current_source_type != SourceType.RF or self.freqs_cache is None:
                 self._update_axis_labels("MHz")
@@ -152,7 +152,7 @@ class DynamicChartWidget(QWidget):
 
             return np.linspace(start, end, size)
         else:
-            start, end = 0, chunk.sample_rate / 2
+            start, end = 0, chunk.sample_rate_hz / 2
 
             if self.current_source_type != SourceType.SOUND or self.freqs_cache is None:
                 self._update_axis_labels("Hz")

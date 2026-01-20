@@ -11,10 +11,10 @@ class StreamDataChunk:
     Пакет даних, що приходить від SDR або мікрофона в реальному часі.
     """
 
-    stream_type: str
+    stream_type: str  # з SourceType
     data_magnitude: np.ndarray  # 1D масив амплітуд (FFT)
-    center_freq: float  # Центральна частота (для RF)
-    sample_rate: float  # Частота дискретизації
+    center_freq_hz: float  # Центральна частота (для RF)
+    sample_rate_hz: float  # Частота дискретизації. Визначає ширину смуги огляду.
     timestamp: float  # Час отримання пакету
 
     @staticmethod
@@ -27,8 +27,8 @@ class StreamDataChunk:
         return StreamDataChunk(
             stream_type=data.get("stream_type", type),
             data_magnitude=magnitude_array,
-            center_freq=float(data.get("center_freq", 0)),
-            sample_rate=float(data.get("sample_rate", 0)),
+            center_freq_hz=float(data.get("center_freq", 0)),
+            sample_rate_hz=float(data.get("sample_rate", 0)),
             timestamp=float(data.get("timestamp", time.time())),
         )
 
@@ -36,7 +36,7 @@ class StreamDataChunk:
         return {
             "stream_type": self.stream_type,
             "data_magnitude": self.data_magnitude.tolist(),
-            "center_freq": self.center_freq,
-            "sample_rate": self.sample_rate,
+            "center_freq": self.center_freq_hz,
+            "sample_rate": self.sample_rate_hz,
             "timestamp": self.timestamp,
         }

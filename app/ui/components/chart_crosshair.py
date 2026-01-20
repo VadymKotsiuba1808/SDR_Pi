@@ -1,0 +1,116 @@
+import pyqtgraph as pg
+from PyQt6.QtGui import QPainter, QPen, QBrush
+from PyQt6.QtCore import Qt, QRect
+
+from app.core.chart_theme import ChartTheme
+from app.models.chart_models import CursorState
+
+
+class QPainterCrosshair:
+    """Компонент, що відповідає виключно за малювання курсору."""
+
+    def __init__(self):
+        self.pen = QPen(ChartTheme.HIGHLIGHT, 1, Qt.PenStyle.DashLine)
+        self.text_pen = QPen(ChartTheme.HIGHLIGHT)
+        self.bg_brush = QBrush(ChartTheme.HIGHLIGHT_BG)
+        self.state = CursorState()
+
+    def update_state(self, state: CursorState) -> None:
+        self.state = state
+
+    def draw(self, p: QPainter, bounds: QRect) -> None:
+        if not self.state.visible or not bounds.contains(self.state.pos):
+            return
+
+        x = self.state.pos.x()
+        y = self.state.pos.y()
+
+        p.setPen(self.pen)
+        p.drawLine(int(x), bounds.top(), int(x), bounds.bottom())
+
+        if self.state.show_horizontal:
+            p.drawLine(bounds.left(), int(y), bounds.right(), int(y))
+
+        if self.state.highlight_point:
+            p.setBrush(self.pen.color())
+            p.setPen(Qt.PenStyle.NoPen)
+            p.drawEllipse(self.state.highlight_point, 4, 4)
+
+        if self.state.text:
+            self._draw_tooltip_box(p, x, y, bounds)
+
+    def _draw_tooltip_box(self, p: QPainter, x: float, y: float, bounds: QRect) -> None:
+        fm = p.fontMetrics()
+        text = self.state.text
+        tw = fm.horizontalAdvance(text)
+        th = fm.height()
+
+        box_x = x + 10
+        box_y = y - 25
+        box_w = tw + 10
+        box_h = th + 4
+
+        if box_x + box_w > bounds.right():
+            box_x = x - box_w - 10
+        if box_y < bounds.top():
+            box_y = y + 10
+
+        bg_rect = QRect(int(box_x), int(box_y), int(box_w), int(box_h))
+
+        p.setPen(Qt.PenStyle.NoPen)
+        p.setBrush(self.bg_brush)
+        p.drawRect(bg_rect)
+
+        p.setPen(self.text_pen)
+
+        p.drawText(int(bg_rect.left() + 5), int(bg_rect.bottom() - 4), text)
+
+
+class PyGraphCrosshair:
+    """
+    Курсор спеціально для pyqtgraph (DynamicChartWidget).
+    Керує pg.InfiniteLine та pg.TextItem.
+    """
+
+    def __init__(self, plot_item: pg.PlotItem):
+        self._plot_item = plot_item
+
+        pen = pg.mkPen(
+            ChartTheme.DYN_CROSSHAIR_PEN, width=1, style=Qt.PenStyle.DashLine
+        )
+        self.v_line = pg.InfiniteLine(angle=90, movable=False, pen=pen)
+        self.h_line = pg.InfiniteLine(angle=0, movable=False, pen=pen)
+
+        bg_color = ChartTheme.HIGHLIGHT_BG
+        self.label = pg.TextItem(
+            anchor=(0, 1),
+            color=ChartTheme.DYN_CROSSHAIR_PEN,
+            fill=pg.mkBrush(
+                bg_color.red(), bg_color.green(), bg_color.blue(), bg_color.alpha()
+            ),
+        )
+
+        self._plot_item.addItem(self.v_line, ignoreBounds=True)
+        self._plot_item.addItem(self.h_line, ignoreBounds=True)
+        self._plot_item.addItem(self.label, ignoreBounds=True)
+        self.hide()
+
+    def update_position(self, x: float, y: float, text: str) -> None:
+        """Оновлює позицію ліній та текст мітки."""
+        self.v_line.setPos(x)
+        self.h_line.setPos(y)
+        self.label.setText(text)
+        self.label.setPos(x, y)
+
+        if not self.v_line.isVisible():
+            self.show()
+
+    def show(self) -> None:
+        self.v_line.show()
+        self.h_line.show()
+        self.label.show()
+
+    def hide(self) -> None:
+        self.v_line.hide()
+        self.h_line.hide()
+        self.label.hide()

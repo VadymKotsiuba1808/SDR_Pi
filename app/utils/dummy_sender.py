@@ -4,6 +4,7 @@ import math
 import random
 import uuid
 import time
+import numpy as np  # Додано для генерації спектру
 from datetime import datetime
 from typing import Optional, Dict, Any, List, Set
 
@@ -17,6 +18,7 @@ from PyQt6.QtCore import (
 from PyQt6.QtNetwork import QTcpServer, QTcpSocket, QHostAddress
 
 
+# --- MOCK IMPORTS (Якщо у вас вони в інших шляхах, змініть) ---
 from temp.database_service import DatabaseService
 from app.models.detection_event import DetectionEvent
 from app.models.detection_object import DetectionObject
@@ -26,7 +28,8 @@ from app.models.gps_data import GPSData
 # --- КОНФІГУРАЦІЯ СИМУЛЯЦІЇ ---
 SIMULATION_RADIUS_METERS = 85000  # 85 км
 MAX_SIMULTANEOUS_TARGETS = 15  # Кількість цілей
-UPDATE_INTERVAL_MS = 300  # Швидкість оновлення (3.3 Гц)
+UPDATE_INTERVAL_MS = 300  # Швидкість оновлення цілей (3.3 Гц)
+STREAM_INTERVAL_MS = 50  # Швидкість оновлення графіків (20 Гц)
 
 # Множник швидкості
 SPEED_MULTIPLIER = 2.0
@@ -173,8 +176,7 @@ class SimulatedTarget:
         # 2. Конвертація в словник
         payload = event.to_dict()
 
-        # 3. Додаємо поле is_dangerous, яке може не входити в стандартний Event,
-        # але корисне для UI (щоб підсвічувати червоним)
+        # 3. Додаємо поле is_dangerous
         payload["is_dangerous"] = self.is_dangerous
 
         return payload
@@ -201,10 +203,19 @@ class AdvancedNetworkUtility(QObject):
         self.session_blacklist: Set[str] = set()
 
         # --- TIMERS ---
-        # Тільки таймер симуляції руху
+        # 1. Таймер руху цілей (повільніший)
         self.sim_timer = QTimer(self)
         self.sim_timer.timeout.connect(self._on_sim_tick)
         self.sim_timer.setInterval(UPDATE_INTERVAL_MS)
+
+        # 2. Таймер потокових даних (швидкий - для графіків)
+        self.stream_timer = QTimer(self)
+        self.stream_timer.timeout.connect(self._on_stream_tick)
+        self.stream_timer.setInterval(STREAM_INTERVAL_MS)
+
+        # --- STREAM FLAGS ---
+        self.is_rf_streaming = False
+        self.is_sound_streaming = False
 
         # GPS Base coords (Shepetivka area approx)
         self.gps_lat = 50.18
@@ -286,10 +297,18 @@ class AdvancedNetworkUtility(QObject):
         print("[NetService] New session started. Clearing False Alarm blacklist.")
         self.session_blacklist.clear()
 
+        # Скидаємо стрімінг при новому підключенні
+        self.is_rf_streaming = False
+        self.is_sound_streaming = False
+        self._check_stream_timer()
+
     @pyqtSlot()
     def _on_client_disconnected(self):
         print("[NetService] Client disconnected.")
         self.client_socket = None
+        self.is_rf_streaming = False
+        self.is_sound_streaming = False
+        self._check_stream_timer()
 
     @pyqtSlot()
     def _read_socket_data(self):
@@ -335,9 +354,34 @@ class AdvancedNetworkUtility(QObject):
                 ]
             return
 
-        # --- HARDWARE CONTROL MOCKS ---
+        # --- STREAMING CONTROL ---
         if action == "start_rf_stream":
-            pass  # Mock
+            print("[NetService] STARTING RF STREAM")
+            self.is_rf_streaming = True
+            self.is_sound_streaming = False  # Зазвичай лише один режим активний
+            self._check_stream_timer()
+            return
+
+        if action == "stop_rf_stream":
+            print("[NetService] STOPPING RF STREAM")
+            self.is_rf_streaming = False
+            self._check_stream_timer()
+            return
+
+        if action == "start_sound_stream":
+            print("[NetService] STARTING SOUND STREAM")
+            self.is_sound_streaming = True
+            self.is_rf_streaming = False
+            self._check_stream_timer()
+            return
+
+        if action == "stop_sound_stream":
+            print("[NetService] STOPPING SOUND STREAM")
+            self.is_sound_streaming = False
+            self._check_stream_timer()
+            return
+
+        # --- HARDWARE CONTROL ---
         if action == "start_alarm":
             print(f"[NetService] HARDWARE: Relays ON")
             return
@@ -366,6 +410,14 @@ class AdvancedNetworkUtility(QObject):
             self.db.update_class(cls)
         elif action == "db_request_delete_class":
             self.db.delete_class(data.get("id"))
+
+    def _check_stream_timer(self):
+        """Вмикає або вимикає швидкий таймер залежно від потреби."""
+        should_run = self.is_rf_streaming or self.is_sound_streaming
+        if should_run and not self.stream_timer.isActive():
+            self.stream_timer.start()
+        elif not should_run and self.stream_timer.isActive():
+            self.stream_timer.stop()
 
     # --- SIMULATION LOGIC ---
     def _on_sim_tick(self):
@@ -401,13 +453,68 @@ class AdvancedNetworkUtility(QObject):
 
         self.active_targets = next_targets
 
+    # --- STREAM GENERATION LOGIC ---
+    def _on_stream_tick(self):
+        """Генерує та відправляє пакет потокових даних для графіків."""
+        if self.is_rf_streaming:
+            data = self._generate_mock_rf_data()
+            self._send_packet("rf_stream", data)
+
+        elif self.is_sound_streaming:
+            data = self._generate_mock_sound_data()
+            self._send_packet("sound_stream", data)
+
+    def _generate_mock_rf_data(self) -> Dict[str, Any]:
+        """Генерує фейковий спектр для RF (наприклад 915 MHz)."""
+        fft_size = 512
+        # Базовий шум
+        noise = np.random.normal(0, 1, fft_size) * 5.0
+
+        # Рухомий сигнал
+        t = time.time()
+        shift = np.sin(t) * 50
+        x = np.arange(fft_size)
+        center = fft_size // 2 + shift
+        # Гаусова крива
+        peak = np.exp(-((x - center) ** 2) / 30) * 60
+
+        # Результуючий сигнал (в dBm або умовних одиницях)
+        spectrum = np.abs(noise + peak + 20)  # +20 щоб підняти над підлогою
+
+        return {
+            "data_magnitude": spectrum.tolist(),
+            "center_freq": 915_000_000.0,  # 915 MHz
+            "sample_rate": 10_000_000.0,  # 10 MHz
+            "timestamp": t,
+        }
+
+    def _generate_mock_sound_data(self) -> Dict[str, Any]:
+        """Генерує фейковий спектр для звуку."""
+        fft_size = 512
+        x = np.linspace(0, 100, fft_size)
+        noise = np.random.random(fft_size) * 10
+
+        # Кілька гармонік (імітація мотору)
+        t = time.time()
+        tone1 = np.sin(x * 2 + t) * 40
+        tone2 = np.sin(x * 5) * 20
+
+        spectrum = np.abs(tone1 + tone2 + noise)
+
+        return {
+            "data_magnitude": spectrum.tolist(),
+            "center_freq": 0,
+            "sample_rate": 44100.0,
+            "timestamp": t,
+        }
+
     def _send_single_gps_response(self):
         """
         Генерує та відправляє пакет GPS тільки на запит.
         """
         # Імітуємо невеликий рух/дрейф
-        self.gps_lat += random.uniform(-0.00005, 0.00005)
-        self.gps_lon += random.uniform(-0.00005, 0.00005)
+        self.gps_lat += random.uniform(-0.0000005, 0.0000005)
+        self.gps_lon += random.uniform(-0.0000005, 0.0000005)
 
         strength = random.randint(70, 100)
 

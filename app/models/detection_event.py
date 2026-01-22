@@ -17,10 +17,24 @@ from app.models.source_type import SourceType
 class SpectralData:
     """Важкі дані для спектрального аналізу"""
 
+    # Центральна частота прийому в Герцах.
     center_freq_hz: float
-    bandwidth_hz: float
+
+    # Смуга пропускання (ширина огляду) в Герцах.
+    sample_rate_hz: float
+
+    # Тривалість запису у секундах.
     duration_sec: float
-    data_uint8: np.ndarray
+
+    # Матриця амплітуд (спектрограма).
+    # Shape: (Rows, Cols) -> (Time, Frequency).
+    #   - Rows (висота): кількість пакетів у часі.
+    #   - Cols (ширина): кількість бінів FFT (наприклад, 1024).
+    #
+    # Тип: uint8 (0...255).
+    # Чому uint8? Щоб економити пам'ять.
+    # 0 = мінімальний сигнал (-100 dB), 255 = максимальний (0 dB).
+    data_magnitude: np.ndarray
 
 
 @dataclass

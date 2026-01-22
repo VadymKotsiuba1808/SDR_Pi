@@ -12,7 +12,10 @@ class StreamDataChunk:
     """
 
     stream_type: str  # з SourceType
-    data_magnitude: np.ndarray  # 1D масив амплітуд (FFT)
+    # Тепер тут uint8.
+    # Значення 0 = -127 dB (шум), Значення 255 = +128 dB (теоретичний максимум).
+    # Тобто: dB = value - 127
+    data_magnitude: np.ndarray
     center_freq_hz: float  # Центральна частота (для RF)
     sample_rate_hz: float  # Частота дискретизації. Визначає ширину смуги огляду.
     timestamp: float  # Час отримання пакету
@@ -21,8 +24,8 @@ class StreamDataChunk:
     def from_dict(data: dict, type: str) -> "StreamDataChunk":
         """Парсинг вхідного словника JSON у об'єкт."""
 
-        raw_magnitude = data.get("data_magnitude", [])
-        magnitude_array = np.array(raw_magnitude, dtype=np.float32)
+        raw_list = data.get("data_magnitude", [])
+        magnitude_array = np.array(raw_list, dtype=np.uint8)
 
         return StreamDataChunk(
             stream_type=data.get("stream_type", type),

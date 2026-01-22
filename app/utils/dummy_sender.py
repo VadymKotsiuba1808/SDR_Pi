@@ -19,6 +19,7 @@ from PyQt6.QtNetwork import QTcpServer, QTcpSocket, QHostAddress
 
 
 # --- MOCK IMPORTS (Якщо у вас вони в інших шляхах, змініть) ---
+from app.core.constants import DB_OFFSET, UINT8_MIN, UINT8_MAX
 from temp.database_service import DatabaseService
 from app.models.detection_event import DetectionEvent
 from app.models.detection_object import DetectionObject
@@ -454,6 +455,10 @@ class AdvancedNetworkUtility(QObject):
         self.active_targets = next_targets
 
     # --- STREAM GENERATION LOGIC ---
+    # Спочатку додай імпорт констант зверху файлу
+    from app.core.constants import DB_OFFSET, UINT8_MIN, UINT8_MAX
+
+    # --- STREAM GENERATION LOGIC ---
     def _on_stream_tick(self):
         """Генерує та відправляє пакет потокових даних для графіків."""
         if self.is_rf_streaming:
@@ -465,44 +470,73 @@ class AdvancedNetworkUtility(QObject):
             self._send_packet("sound_stream", data)
 
     def _generate_mock_rf_data(self) -> Dict[str, Any]:
-        """Генерує фейковий спектр для RF (наприклад 915 MHz)."""
+        """Генерує фейковий спектр для RF (uint8)."""
         fft_size = 512
-        # Базовий шум
-        noise = np.random.normal(0, 1, fft_size) * 5.0
 
-        # Рухомий сигнал
+        # 1. Генерація базового шуму (Gaussian noise)
+        # Умовно: середній шум -100 dB, відхилення 5 dB
+        noise_level_db = -100
+        noise_variation = np.random.normal(0, 3, fft_size)
+        spectrum_db = noise_level_db + noise_variation
+
+        # 2. Симуляція сигналу (Рухомий пік)
         t = time.time()
-        shift = np.sin(t) * 50
+        # Сигнал "гуляє" вліво-вправо по синусоїді
+        shift = np.sin(t * 1.5) * (fft_size * 0.3)
         x = np.arange(fft_size)
         center = fft_size // 2 + shift
-        # Гаусова крива
-        peak = np.exp(-((x - center) ** 2) / 30) * 60
 
-        # Результуючий сигнал (в dBm або умовних одиницях)
-        spectrum = np.abs(noise + peak + 20)  # +20 щоб підняти над підлогою
+        # Формуємо пік (Гаусіана). Висота піку ~40 dB над шумом (до -60 dB)
+        peak_height = 40
+        peak_width = 10  # Ширина сигналу
+        peak = np.exp(-((x - center) ** 2) / (2 * peak_width**2)) * peak_height
+
+        # Додаємо сигнал до шуму
+        spectrum_db += peak
+
+        # 3. Конвертація dB -> uint8 (ключовий момент!)
+        # Формула: uint8 = (db + DB_OFFSET)
+        # clip(0, 255) обов'язковий, щоб не вийшло переповнення
+        data_uint8 = (
+            (spectrum_db + DB_OFFSET).clip(UINT8_MIN, UINT8_MAX).astype(np.uint8)
+        )
 
         return {
-            "data_magnitude": spectrum.tolist(),
+            # tolist() для uint8 перетворює в звичайний список int [20, 25, 200...]
+            "data_magnitude": data_uint8.tolist(),
             "center_freq_hz": 915_000_000.0,  # 915 MHz
             "sample_rate_hz": 10_000_000.0,  # 10 MHz
             "timestamp": t,
         }
 
     def _generate_mock_sound_data(self) -> Dict[str, Any]:
-        """Генерує фейковий спектр для звуку."""
+        """Генерує фейковий спектр для звуку (uint8)."""
         fft_size = 512
         x = np.linspace(0, 100, fft_size)
-        noise = np.random.random(fft_size) * 10
 
-        # Кілька гармонік (імітація мотору)
+        # 1. Шум (тихіший для аудіо)
+        noise_db = -80 + np.random.normal(0, 2, fft_size)
+
+        # 2. Гармоніки (імітація дрона/мотора)
         t = time.time()
-        tone1 = np.sin(x * 2 + t) * 40
-        tone2 = np.sin(x * 5) * 20
 
-        spectrum = np.abs(tone1 + tone2 + noise)
+        # Основний тон (низька частота)
+        tone1_pos = 50 + np.sin(t * 5) * 5
+        tone1 = np.exp(-((np.arange(fft_size) - tone1_pos) ** 2) / 10) * 50  # +50dB
+
+        # Обертон (вища частота)
+        tone2_pos = 150 + np.sin(t * 5) * 5
+        tone2 = np.exp(-((np.arange(fft_size) - tone2_pos) ** 2) / 10) * 30  # +30dB
+
+        spectrum_db = noise_db + tone1 + tone2
+
+        # 3. Конвертація dB -> uint8
+        data_uint8 = (
+            (spectrum_db + DB_OFFSET).clip(UINT8_MIN, UINT8_MAX).astype(np.uint8)
+        )
 
         return {
-            "data_magnitude": spectrum.tolist(),
+            "data_magnitude": data_uint8.tolist(),
             "center_freq_hz": 0,
             "sample_rate_hz": 44100.0,
             "timestamp": t,

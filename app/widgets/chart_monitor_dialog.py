@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QDialog, QWidget, QVBoxLayout
 from PyQt6.QtCore import Qt, QCoreApplication, QEvent, QTranslator, pyqtSlot
 from PyQt6 import uic
 
-from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
+from app.core.constants import DEV_COMPILED_UI_USING_ENABLED, VISUAL_NOISE_FLOOR_UINT8
 from app.protocols import LangSettings
 from app.ui.ui_chart_monitor_dialog import Ui_ChartMonitorDialog
 from app.models.source_type import SourceType
@@ -115,6 +115,12 @@ class ChartMonitorDialog(QDialog):
 
         if not self.is_paused:
             self._start_stream_for_current_source()
+            self._handle_clear_charts()
+            self._handle_reset_zoom()
+
+    def _handle_clear_charts(self):
+        if self.chart_widget:
+            self.chart_widget.clear_charts()
 
     def _handle_reset_zoom(self):
         if self.chart_widget:

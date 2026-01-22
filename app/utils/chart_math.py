@@ -1,11 +1,18 @@
 import math
 import numpy as np
-from typing import Tuple, Dict
-from PyQt6.QtGui import QImage, QColor
+from typing import Tuple, Dict, List, Optional
+from PyQt6.QtGui import QImage, QColor, QLinearGradient, QPainter, QBrush
+from PyQt6.QtCore import Qt
+
+from app.core.chart_theme import ChartTheme
+from app.core.constants import UINT8_MAX, VISUAL_NOISE_FLOOR_UINT8
 
 
 class ChartMath:
     """Чиста математика та утиліти для графіків."""
+
+    # Кеш для палітри водоспаду (щоб не рахувати цикл 256 разів при кожному виклику)
+    _cached_color_table: Optional[List[int]] = None
 
     @staticmethod
     def calculate_nice_axis(
@@ -41,34 +48,70 @@ class ChartMath:
 
         return nice_max, nice_step, actual_ticks
 
-    @staticmethod
-    def create_heatmap(data: np.ndarray) -> QImage:
-        """Створення QImage з numpy масиву (для водоспаду)."""
+    @classmethod
+    def create_heatmap(cls, data: np.ndarray) -> QImage:
+        """
+        Створення QImage з numpy масиву (для водоспаду).
+        """
         h, w = data.shape
+        # Format_Indexed8 означає, що значення пікселя (uint8) - це індекс у таблиці кольорів
         img = QImage(data.data, w, h, w, QImage.Format.Format_Indexed8)
-
-        colors = []
-        for i in range(256):
-            t = i / 255.0
-            r, g, b = 0, 0, 0
-
-            if t < 0.35:
-                b = int(t * 300)
-            elif t < 0.5:
-                b = max(0, int(100 - (t - 0.35) * 600))
-
-            if t >= 0.35 and t < 0.6:
-                r = int((t - 0.35) * 4 * 255)
-            elif t >= 0.6:
-                r = 255
-
-            if t >= 0.6:
-                g = int((t - 0.6) * 2.5 * 255)
-
-            colors.append(QColor(r, g, b).rgb())
-
-        img.setColorTable(colors)
+        img.setColorTable(cls._get_color_table())
         return img.copy()
+
+    @classmethod
+    def _get_color_table(cls):
+        """
+        Генерує палітру на основі ChartTheme.WATERFALL_COLORS,
+        враховуючи VISUAL_NOISE_FLOOR_UINT8.
+        """
+        if cls._cached_color_table:
+            return cls._cached_color_table
+
+        # Створюємо градієнт
+        gradient = QLinearGradient(0, 0, UINT8_MAX, 0)
+
+        stops = ChartTheme.WATERFALL_POS
+        colors = ChartTheme.WATERFALL_COLORS
+
+        # 1. РОЗРАХУНОК ПОРОГУ
+        noise_threshold_norm = VISUAL_NOISE_FLOOR_UINT8 / float(UINT8_MAX)
+
+        noise_threshold_norm = min(noise_threshold_norm, 0.9)
+
+        # 2. МАЛЮЄМО (ШУМ)
+        bg_color = QColor(*colors[0])
+
+        gradient.setColorAt(0.0, bg_color)
+        gradient.setColorAt(noise_threshold_norm, bg_color)
+
+        # 3. МАШТАБУВАННЯ КОРИСНОГО СИГНАЛУ
+        remaining_space = 1.0 - noise_threshold_norm
+
+        for theme_pos, color_tuple in zip(stops, colors):
+            if theme_pos == 0.0:
+                continue
+
+            real_pos = noise_threshold_norm + (theme_pos * remaining_space)
+
+            real_pos = min(real_pos, 1.0)
+
+            gradient.setColorAt(real_pos, QColor(*color_tuple))
+
+        # 4. РЕНДЕРИНГ ТАБЛИЦІ (LUT)
+        image = QImage(256, 1, QImage.Format.Format_ARGB32)
+        image.fill(Qt.GlobalColor.transparent)  # Очистка
+
+        painter = QPainter(image)
+        painter.fillRect(image.rect(), QBrush(gradient))
+        painter.end()
+
+        table = []
+        for i in range(256):
+            table.append(image.pixel(i, 0))
+
+        cls._cached_color_table = table
+        return table
 
     @staticmethod
     def get_color_for_id(obj_id: str, cache: Dict[str, QColor]) -> QColor:
@@ -77,7 +120,9 @@ class ChartMath:
             return cache[obj_id]
 
         idx = len(cache)
+        # Золотий кут для гарного розподілу кольорів
         hue = int((idx * 137.508) % 360)
-        color = QColor.fromHsv(hue, 200, 255)
+
+        color = QColor.fromHsv(hue, 200, UINT8_MAX)
         cache[obj_id] = color
         return color

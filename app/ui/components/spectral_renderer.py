@@ -5,6 +5,13 @@ from typing import Optional
 from PyQt6.QtGui import QPainter, QPen, QBrush, QPolygonF, QLinearGradient, QFont
 from PyQt6.QtCore import QRect, Qt, QPointF
 
+from app.core.constants import (
+    DB_OFFSET,
+    UINT8_MAX,
+    VISUAL_MIN_DB,
+    VISUAL_MAX_DB,
+    VISUAL_RANGE_DB,
+)
 from app.models.detection_event import DetectionEvent, SpectralData
 from app.models.source_type import SourceType
 from app.models.chart_models import CursorState
@@ -13,7 +20,7 @@ from app.utils.chart_math import ChartMath
 
 
 class SpectralChartRenderer:
-    """Рендерер для графіків Spectrum та Waterfall."""
+    """Рендерер для графіків Spectrum та Waterfall (Static)."""
 
     def __init__(self):
         self.cached_heatmap = None
@@ -27,8 +34,9 @@ class SpectralChartRenderer:
         if self._last_event_id == event.id:
             return
 
-        matrix = event.spectral_data.data_uint8
+        matrix = event.spectral_data.data_magnitude
         self.cached_heatmap = ChartMath.create_heatmap(matrix)
+
         self.cached_spectrum_max = np.max(matrix, axis=0)
         self.cached_spectrum_avg = np.mean(matrix, axis=0)
         self._last_event_id = event.id
@@ -36,7 +44,9 @@ class SpectralChartRenderer:
     def render_spectrum(self, p: QPainter, rect: QRect, event: DetectionEvent) -> None:
         if not event.spectral_data:
             return
+        # Малюємо сітку з урахуванням нових меж
         self._draw_grid(p, rect, event.spectral_data, event.type, mode="dbm")
+
         if self.cached_spectrum_avg is not None:
             self._draw_curve(p, rect, self.cached_spectrum_avg, is_fill=True)
         if self.cached_spectrum_max is not None:
@@ -46,6 +56,7 @@ class SpectralChartRenderer:
         if not event.spectral_data:
             return
         if self.cached_heatmap:
+
             p.drawImage(rect, self.cached_heatmap)
         self._draw_grid(p, rect, event.spectral_data, event.type, mode="time")
 
@@ -61,8 +72,8 @@ class SpectralChartRenderer:
         x_px = pos.x()
 
         rx = (x_px - rect.left()) / rect.width()
-        freq_hz = (spec_data.center_freq_hz - spec_data.bandwidth_hz / 2) + (
-            rx * spec_data.bandwidth_hz
+        freq_hz = (spec_data.center_freq_hz - spec_data.sample_rate_hz / 2) + (
+            rx * spec_data.sample_rate_hz
         )
 
         label = (
@@ -76,12 +87,18 @@ class SpectralChartRenderer:
         if mode == "spectrum" and self.cached_spectrum_max is not None:
             col_idx = int(rx * (len(self.cached_spectrum_max) - 1))
             col_idx = max(0, min(col_idx, len(self.cached_spectrum_max) - 1))
-            val = self.cached_spectrum_max[col_idx]
-            dbm = -110 + (val / 255 * 80)
 
-            y_pos = rect.bottom() - (val / 255.0 * rect.height())
+            val_uint8 = self.cached_spectrum_max[col_idx]
+            db_val = float(val_uint8) - DB_OFFSET
+
+            # === РОЗРАХУНОК Y (SCALING) ===
+            display_db = max(min(db_val, VISUAL_MAX_DB), VISUAL_MIN_DB)
+
+            ratio = (display_db - VISUAL_MIN_DB) / VISUAL_RANGE_DB
+            y_pos = rect.bottom() - (ratio * rect.height())
+
             highlight_pt = QPointF(x_px, y_pos)
-            label += f" | Peak: {dbm:.1f} dBm"
+            label += f" | Peak: {db_val:.1f} dB"
 
         elif mode == "waterfall":
             ry = (pos.y() - rect.top()) / rect.height()
@@ -102,12 +119,21 @@ class SpectralChartRenderer:
             return
         width_step = rect.width() / (num_points - 1)
         poly = QPolygonF()
+
         if is_fill:
             poly.append(QPointF(float(rect.left()), float(rect.bottom())))
-        for i, val in enumerate(data):
+
+        for i, val_uint8 in enumerate(data):
             x = rect.left() + (i * width_step)
-            y = rect.bottom() - (val / 255.0 * rect.height())
+
+            # === SCALING Y  ===
+            db_val = float(val_uint8) - DB_OFFSET
+            display_db = max(min(db_val, VISUAL_MAX_DB), VISUAL_MIN_DB)
+            ratio = (display_db - VISUAL_MIN_DB) / VISUAL_RANGE_DB
+
+            y = rect.bottom() - (ratio * rect.height())
             poly.append(QPointF(x, y))
+
         if is_fill:
             poly.append(QPointF(float(rect.right()), float(rect.bottom())))
             grad = QLinearGradient(0, rect.top(), 0, rect.bottom())
@@ -130,13 +156,14 @@ class SpectralChartRenderer:
         grid_pen = QPen(ChartTheme.GRID_FAINT, 1, Qt.PenStyle.DashLine)
         text_pen = QPen(ChartTheme.TEXT)
 
+        # (вісь X )
         if type == SourceType.RF:
             divisor, unit, dec = 1e6, "MHz", 2
         else:
             divisor, unit, dec = 1.0, "Hz", 0
 
         center = data.center_freq_hz / divisor
-        bw = data.bandwidth_hz / divisor
+        bw = data.sample_rate_hz / divisor
         start_f = center - (bw / 2)
         end_f = center + (bw / 2)
 
@@ -146,7 +173,6 @@ class SpectralChartRenderer:
 
         first_tick = math.ceil(start_f / nice_step) * nice_step
         current = first_tick
-
         while current <= end_f:
             ratio = (current - start_f) / bw
             x = rect.left() + (ratio * rect.width())
@@ -160,23 +186,29 @@ class SpectralChartRenderer:
             current += nice_step
         p.drawText(rect.right() - 20, rect.bottom() + 35, unit)
 
+        # === ВІСЬ Y  ===
         steps_y = 6
         for i in range(steps_y):
             ratio = i / (steps_y - 1)
             y = 0
             label = ""
+
             if mode == "dbm":
                 y = rect.bottom() - (rect.height() * ratio)
-                val = -110 + (ratio * 80)
-                label = f"{val:.0f} dBm"
+                # Лінійна інтерполяція від MIN до MAX
+                val = VISUAL_MIN_DB + (ratio * VISUAL_RANGE_DB)
+                label = f"{val:.0f} dB"
+
             elif mode == "time":
                 y = rect.top() + (rect.height() * ratio)
                 val = -data.duration_sec + (data.duration_sec * ratio)
                 label = f"{val:.2f}s"
+
             p.setPen(grid_pen)
             p.drawLine(rect.left(), int(y), rect.right(), int(y))
             p.setPen(text_pen)
             p.drawText(rect.left() - 45, int(y + 4), label)
+
         p.setPen(QPen(ChartTheme.GRID, 1))
         p.setBrush(Qt.BrushStyle.NoBrush)
         p.drawRect(rect)

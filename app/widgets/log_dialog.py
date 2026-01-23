@@ -15,13 +15,15 @@ from PyQt6.QtGui import QFont, QColor
 from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
 from app.protocols import LangSettings
 from app.ui.ui_log_dialog import Ui_LogDialog
-from app.widgets.chart_widget import ChartWidget
+from app.widgets.static_chart_widget import StaticChartWidget
 from app.models.log_entries import LogEntry
-from app.models.detection_event import DetectionEvent, DetectionType
+from app.models.source_type import SourceType
+from app.models.detection_event import DetectionEvent
 from app.models.object_class import ObjectClass
 from app.services.log_service import LogService
 from app.utils.ui_utils import update_element_styles
 from app.utils.convert_measurement_unit import convert_hz_to_ghz
+from app.utils.spectral_data_generator import generate_fake_spectral_data
 
 
 class LogDialog(QDialog):
@@ -111,18 +113,13 @@ class LogDialog(QDialog):
 
     def _init_charts(self) -> None:
         """Ініціалізація віджетів графіків для кожної вкладки."""
-        self.chart_gen = ChartWidget(self.settings_service)
+        self.chart_gen = StaticChartWidget(self.settings_service)
         self.ui.layoutChartGen.addWidget(self.chart_gen)
 
-        self.chart_path = ChartWidget(self.settings_service)
-        self.chart_path.set_chart_type("path")
-        self.ui.layoutChartPath.addWidget(self.chart_path)
+        self.chart_target = StaticChartWidget(self.settings_service)
+        self.ui.layoutChartTarget.addWidget(self.chart_target)
 
-        self.chart_signal = ChartWidget(self.settings_service)
-        self.chart_signal.set_chart_type("signal")
-        self.ui.layoutChartSignal.addWidget(self.chart_signal)
-
-        self.chart_sit = ChartWidget(self.settings_service)
+        self.chart_sit = StaticChartWidget(self.settings_service)
         self.chart_sit.set_chart_type("radar_snapshot")
         self.ui.layoutChartRadarSit.addWidget(self.chart_sit)
 
@@ -149,6 +146,7 @@ class LogDialog(QDialog):
         )
 
         self.ui.cmbTargetObject.currentIndexChanged.connect(self._update_object_tab)
+        self.ui.cmbTargetType.currentIndexChanged.connect(self._update_object_tab)
         self.ui.cmbSituationTime.currentIndexChanged.connect(self._update_situation_tab)
         self.ui.btnSituationPrev.clicked.connect(self._prev_situation)
         self.ui.btnSituationNext.clicked.connect(self._next_situation)
@@ -323,7 +321,7 @@ class LogDialog(QDialog):
 
                 t.setItem(row_idx, 3, QTableWidgetItem(data.object_class))
                 formatted_frequency: str
-                if data.type == DetectionType.RF:
+                if data.type == SourceType.RF:
                     formatted_frequency = (
                         f"{convert_hz_to_ghz(data.frequency_hz):.3f} GHz"
                     )
@@ -428,11 +426,28 @@ class LogDialog(QDialog):
         self.chart_gen.set_data(detections, false_ids)
 
     def _update_object_tab(self) -> None:
+
         target_id = self.ui.cmbTargetObject.currentData()
         if not target_id:
-            self.chart_path.set_data([])
-            self.chart_signal.set_data([])
+            self.chart_target.set_data([])
+            # self.chart_signal.set_data([])
             return
+
+        types = {
+            0: "path",
+            1: "signal",
+            2: "spectrum",
+            3: "waterfall",
+        }
+
+        idx = self.ui.cmbTargetType.currentIndex()
+        t = types.get(idx, "path")
+
+        self.chart_target.set_chart_type(t)
+
+        for e in self.all_entries:
+            if e.is_detection and e.payload.id == target_id:
+                e.payload.spectral_data = generate_fake_spectral_data()
 
         obj_data = [
             e.payload
@@ -441,9 +456,7 @@ class LogDialog(QDialog):
         ]
 
         false_ids = self._get_false_ids()
-
-        self.chart_path.set_data(obj_data, false_ids)
-        self.chart_signal.set_data(obj_data, false_ids)
+        self.chart_target.set_data(obj_data, false_ids)
 
     def _update_situation_tab(self) -> None:
         cmb = self.ui.cmbSituationTime

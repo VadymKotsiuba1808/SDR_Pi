@@ -2,8 +2,6 @@ from dataclasses import dataclass
 import numpy as np
 import time
 
-from app.models.source_type import SourceType
-
 
 @dataclass
 class StreamDataChunk:
@@ -12,9 +10,8 @@ class StreamDataChunk:
     """
 
     stream_type: str  # з SourceType
-    # Тепер тут uint8.
-    # Значення 0 = -127 dB (шум), Значення 255 = +128 dB (теоретичний максимум).
-    # Тобто: dB = value - 127
+    # Переводиться у db за формулою dB=value_uint8−DB_OFFSET(у constants)
+    # Містить лише дані про силу сигналу
     data_magnitude: np.ndarray
     center_freq_hz: float  # Центральна частота (для RF)
     sample_rate_hz: float  # Частота дискретизації. Визначає ширину смуги огляду.

@@ -32,8 +32,7 @@ class SpectralData:
     #   - Cols (ширина): кількість бінів FFT (наприклад, 1024).
     #
     # Тип: uint8 (0...255).
-    # Чому uint8? Щоб економити пам'ять.
-    # 0 = мінімальний сигнал (-100 dB), 255 = максимальний (0 dB).
+    # Переводиться у db за формулою dB=value_uint8−DB_OFFSET(у constants)
     data_magnitude: np.ndarray
 
 

@@ -6,12 +6,13 @@ from collections import Counter
 from PyQt6.QtGui import QPainter, QPen, QBrush, QFont, QColor
 from PyQt6.QtCore import QPointF, Qt, QRect
 
+from app.core.mixins import TranslatorMixin
 from app.models.detection_event import DetectionEvent
 from app.core.chart_theme import ChartTheme
 from app.utils.chart_math import ChartMath
 
 
-class StandardChartRenderer:
+class StandardChartRenderer(TranslatorMixin):
     """
     Рендерер для Timeline, Radar (Polar) та Bar chart.
     Логіка відображення ідентична оригінальному StaticChartWidget.
@@ -127,13 +128,13 @@ class StandardChartRenderer:
             )
             num_ticks = actual_ticks
             if nice_step < 1:
-                label_formatter = lambda v: f"{v:.1f}km"
+                label_formatter = lambda v: self.tr("{:.1f}km").format(v)
             else:
-                label_formatter = lambda v: f"{int(v)}km"
+                label_formatter = lambda v: self.tr("{}km").format(int(v))
         else:
             y_max = 1.0
             num_ticks = 10
-            label_formatter = lambda v: f"{int(v*100)}%"
+            label_formatter = lambda v: self.tr("{}%").format(int(v * 100))
 
         self._draw_cartesian_grid(
             p, plot_rect, y_max, t_start, t_end, duration, num_ticks, label_formatter
@@ -360,7 +361,11 @@ class StandardChartRenderer:
                 p.drawText(
                     int(center.x() + 5),
                     int(center.y() - r_current + 10),
-                    f"{val:.1f}km" if step < 1 else f"{int(val)}km",
+                    (
+                        self.tr("{:.1f}km").format(val)
+                        if step < 1
+                        else self.tr("{}km").format(int(val))
+                    ),
                 )
             else:
                 p.setPen(sub_pen)
@@ -459,5 +464,5 @@ class StandardChartRenderer:
         p.setBrush(Qt.BrushStyle.NoBrush)
         p.drawRect(int(px), int(py), int(pw), int(ph))
         p.setPen(ChartTheme.TEXT)
-        title = "Distance ▲" if "km" in fmt(0) else "Confidence ▲"
+        title = self.tr("Distance ▲") if "km" in fmt(0) else self.tr("Confidence ▲")
         p.drawText(int(px), int(py - 10), title)

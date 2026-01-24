@@ -5,9 +5,9 @@ from typing import Optional
 from PyQt6.QtGui import QPainter, QPen, QBrush, QPolygonF, QLinearGradient, QFont
 from PyQt6.QtCore import QRect, Qt, QPointF
 
+from app.core.mixins import TranslatorMixin
 from app.core.constants import (
     DB_OFFSET,
-    UINT8_MAX,
     VISUAL_MIN_DB,
     VISUAL_MAX_DB,
     VISUAL_RANGE_DB,
@@ -17,9 +17,10 @@ from app.models.source_type import SourceType
 from app.models.chart_models import CursorState
 from app.core.chart_theme import ChartTheme
 from app.utils.chart_math import ChartMath
+from app.utils.convert_measurement_unit import convert_hz_to_mhz
 
 
-class SpectralChartRenderer:
+class SpectralChartRenderer(TranslatorMixin):
     """Рендерер для графіків Spectrum та Waterfall (Static)."""
 
     def __init__(self):
@@ -77,9 +78,9 @@ class SpectralChartRenderer:
         )
 
         label = (
-            f"{freq_hz/1e6:.3f} MHz"
+            (convert_hz_to_mhz(freq_hz) + self.tr("MHz"))
             if event.type == SourceType.RF
-            else f"{int(freq_hz)} Hz"
+            else (int(freq_hz) + self.tr("Hz"))
         )
 
         highlight_pt = None
@@ -98,12 +99,12 @@ class SpectralChartRenderer:
             y_pos = rect.bottom() - (ratio * rect.height())
 
             highlight_pt = QPointF(x_px, y_pos)
-            label += f" | Peak: {db_val:.1f} dB"
+            label += self.tr(" | Peak: {:.1f} dB").format(db_val)
 
         elif mode == "waterfall":
             ry = (pos.y() - rect.top()) / rect.height()
             time_s = -spec_data.duration_sec + (ry * spec_data.duration_sec)
-            label += f" | {time_s:.2f}s"
+            label += self.tr(" | {:.2f}s").format(time_s)
 
         return CursorState(
             visible=True,
@@ -158,9 +159,9 @@ class SpectralChartRenderer:
 
         # (вісь X )
         if type == SourceType.RF:
-            divisor, unit, dec = 1e6, "MHz", 2
+            divisor, unit, dec = 1e6, self.tr("MHz"), 2
         else:
-            divisor, unit, dec = 1.0, "Hz", 0
+            divisor, unit, dec = 1.0, self.tr("Hz"), 0
 
         center = data.center_freq_hz / divisor
         bw = data.sample_rate_hz / divisor
@@ -197,12 +198,12 @@ class SpectralChartRenderer:
                 y = rect.bottom() - (rect.height() * ratio)
                 # Лінійна інтерполяція від MIN до MAX
                 val = VISUAL_MIN_DB + (ratio * VISUAL_RANGE_DB)
-                label = f"{val:.0f} dB"
+                label = self.tr("{:.0f} dB").format(val)
 
             elif mode == "time":
                 y = rect.top() + (rect.height() * ratio)
                 val = -data.duration_sec + (data.duration_sec * ratio)
-                label = f"{val:.2f}s"
+                label = self.tr("{:.2f}s").format(val)
 
             p.setPen(grid_pen)
             p.drawLine(rect.left(), int(y), rect.right(), int(y))

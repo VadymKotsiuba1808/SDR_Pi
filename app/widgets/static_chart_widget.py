@@ -11,7 +11,7 @@ from app.models.source_type import SourceType
 from app.protocols import LangSettings
 from app.core.chart_theme import ChartTheme
 from app.models.chart_models import CursorState
-from app.utils.convert_measurement_unit import convert_hz_to_ghz
+from app.utils.convert_measurement_unit import convert_hz_to_mhz
 
 from app.ui.components.chart_crosshair import QPainterCrosshair
 from app.ui.components.spectral_renderer import SpectralChartRenderer
@@ -81,7 +81,7 @@ class StaticChartWidget(QWidget):
 
         if not self.data:
             p.setPen(ChartTheme.TEXT)
-            p.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, "No Data")
+            p.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, self.tr("No Data"))
             return
 
         if self.chart_type == "spectrum":
@@ -144,23 +144,38 @@ class StaticChartWidget(QWidget):
         dt = datetime.fromisoformat(data.timestamp)
         time_str = dt.strftime("%H:%M:%S")
 
-        type_suffix = "GHz" if data.type == SourceType.RF else "Hz"
+        type_suffix = self.tr("MHz") if data.type == SourceType.RF else self.tr("Hz")
         freq_val = (
-            convert_hz_to_ghz(data.frequency_hz)
+            convert_hz_to_mhz(data.frequency_hz)
             if data.type == SourceType.RF
             else data.frequency_hz
         )
 
-        txt = (
-            f"<b>{data.name}</b> ({data.object_class})<br>"
-            f"Time: {time_str}<br>"
-            f"Dist: {data.distance_km:.3f}km, Angle: {data.angle:.0f}°<br>"
-            f"FREQ: {freq_val:.3f}{type_suffix}<br>"
-            f"Conf: {data.confidence:.2f}<br>"
-            f"Type: {data.type}<br>"
-            f"ID: {data.id[:8]}..."
+        template = self.tr(
+            "<b>{name}</b> ({obj_class})<br>"
+            "Time: {time}<br>"
+            "Dist: {dist:.3f}km, Angle: {angle:.0f}°<br>"
+            "FREQ: {freq:.3f}{unit}<br>"
+            "Conf: {conf:.2f}<br>"
+            "Type: {type}<br>"
+            "ID: {id}..."
         )
+
+        txt = template.format(
+            name=data.name,
+            obj_class=data.object_class,
+            time=time_str,
+            dist=data.distance_km,
+            angle=data.angle,
+            freq=freq_val,
+            unit=type_suffix,
+            conf=data.confidence,
+            type=data.type,
+            id=data.id[:8],
+        )
+
         if data.id in self.highlight_ids:
-            txt += "<br><b style='color:yellow'>HIGHLIGHTED</b>"
+            highlight_msg = self.tr("HIGHLIGHTED")
+            txt += f"<br><b style='color:yellow'>{highlight_msg}</b>"
 
         QToolTip.showText(global_pos, txt, self)

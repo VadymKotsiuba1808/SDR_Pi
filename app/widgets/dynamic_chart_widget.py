@@ -66,9 +66,11 @@ class DynamicChartWidget(QWidget):
         """Ініціалізація графіків Спектру та Водоспаду."""
 
         # 1. Спектр
-        self.plot_spectrum: pg.PlotItem = self.win.addPlot(title="Real-Time Spectrum")
+        self.plot_spectrum: pg.PlotItem = self.win.addPlot(
+            title=self.tr("Real-Time Spectrum")
+        )
         self.plot_spectrum.showGrid(x=True, y=True, alpha=0.3)
-        self.plot_spectrum.setLabel("left", "Amplitude", units="dB")
+        self.plot_spectrum.setLabel("left", self.tr("Amplitude"), units=self.tr("dB"))
         self.plot_spectrum.setYRange(VISUAL_MIN_DB, 0)
 
         self.spectrum_curve = self.plot_spectrum.plot(
@@ -79,8 +81,10 @@ class DynamicChartWidget(QWidget):
         self.win.nextRow()
 
         # 2. Водоспад
-        self.plot_waterfall: pg.PlotItem = self.win.addPlot(title="Waterfall History")
-        self.plot_waterfall.setLabel("left", "Time", units="scans")
+        self.plot_waterfall: pg.PlotItem = self.win.addPlot(
+            title=self.tr("Waterfall History")
+        )
+        self.plot_waterfall.setLabel("left", self.tr("Time"), units=self.tr("scans"))
 
         self.img_item = pg.ImageItem()
         self.plot_waterfall.addItem(self.img_item)
@@ -176,7 +180,7 @@ class DynamicChartWidget(QWidget):
             end = (chunk.center_freq_hz + chunk.sample_rate_hz / 2) / 1e6
 
             if self.current_source_type != SourceType.RF or self.freqs_cache is None:
-                self._update_axis_labels("MHz")
+                self._update_axis_labels(self.tr("MHz"))
                 self.current_source_type = SourceType.RF
 
             return np.linspace(start, end, size)
@@ -184,14 +188,14 @@ class DynamicChartWidget(QWidget):
             start, end = 0, chunk.sample_rate_hz / 2
 
             if self.current_source_type != SourceType.SOUND or self.freqs_cache is None:
-                self._update_axis_labels("Hz")
+                self._update_axis_labels(self.tr("Hz"))
                 self.current_source_type = SourceType.SOUND
 
             return np.linspace(start, end, size)
 
     def _update_axis_labels(self, unit: str) -> None:
-        self.plot_spectrum.setLabel("bottom", "Frequency", units=unit)
-        self.plot_waterfall.setLabel("bottom", "Frequency", units=unit)
+        self.plot_spectrum.setLabel("bottom", self.tr("Frequency"), units=unit)
+        self.plot_waterfall.setLabel("bottom", self.tr("Frequency"), units=unit)
 
     def _on_mouse_moved(self, pos: QPointF) -> None:
         if not self.is_hover_enabled or self.freqs_cache is None:
@@ -237,13 +241,15 @@ class DynamicChartWidget(QWidget):
             row_idx = int(y_val)
             if 0 <= row_idx < self.history_size:
                 real_amp = get_amp_val(row_idx, idx)
-                text = f"Freq: {x_freq:.3f}\nTime: {row_idx}\nAmp: {real_amp:.1f} dB"
+                text = self.tr("Freq: {:.3f}\nTime: {}\nAmp: {:.1f} dB").format(
+                    x_freq, row_idx, real_amp
+                )
                 cursor.update_position(x_freq, y_val, text)
             else:
                 cursor.hide()
         else:
             real_amp = get_amp_val(0, idx)
-            text = f"Freq: {x_freq:.3f}\nAmp: {real_amp:.1f} dB"
+            text = self.tr("Freq: {:.3f}\nAmp: {:.1f} dB").format(x_freq, real_amp)
             cursor.update_position(x_freq, y_val, text)
 
     def _get_freq_index(self, freq_val: float) -> Optional[int]:

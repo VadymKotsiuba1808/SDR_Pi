@@ -64,6 +64,7 @@ from app.services.recording_service import RecordingService
 from app.services.media_player_service import MediaPlayerService
 from app.services.log_service import LogService
 from app.services.jammer_service import JammerService
+from app.services.detection_background_service import DetectionBackgroundService
 
 
 from app.core.detection_manager import DetectionManager
@@ -74,6 +75,7 @@ from app.models.detection_event import DetectionEvent
 from app.models.object_class import ObjectClass
 from app.models.log_entries import LogEntry, LogType, FalseAlarmPayload
 from app.models.gps_data import GPSData
+from app.models.detection_background import DetectionBackground
 
 
 from app.utils.ui_utils import update_element_styles, move_dialog_down
@@ -204,9 +206,12 @@ class MainWindow(QMainWindow):
         self.pi_network.data_received.connect(self.handle_pi_data)
         self.pi_network.gps_received.connect(self.handle_gps)
         self.pi_network.detection_received.connect(self.handle_detection)
+        self.pi_network.background_received.connect(self.handle_detection_background)
         self.pi_network.set_rf_range(self.settings_service.radio_range_ghz)
 
         self.log_service = LogService()
+
+        self.detection_background_service = DetectionBackgroundService()
 
         # Змінні карти
         self.current_map_type_index: int = 0
@@ -417,6 +422,9 @@ class MainWindow(QMainWindow):
         log = LogEntry(LogType.DETECTION, detection)
         self.log_service.add_log(log)
 
+    def handle_detection_background(self, background: DetectionBackground):
+        self.detection_background_service.add_background(background)
+
     def handle_radar_click(self, x, y):
         event_id = self.radar_renderer.get_target_id_at_position(x, y)
 
@@ -626,7 +634,12 @@ class MainWindow(QMainWindow):
 
     def open_logs_dialog(self, classes: List[ObjectClass]):
 
-        logs_dialog = LogDialog(self.log_service, classes, self.settings_service)
+        logs_dialog = LogDialog(
+            self.log_service,
+            self.detection_background_service,
+            classes,
+            self.settings_service,
+        )
         move_dialog_down(logs_dialog, self.geometry())
         logs_dialog.exec()
 

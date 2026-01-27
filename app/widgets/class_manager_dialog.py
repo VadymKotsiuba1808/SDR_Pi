@@ -15,7 +15,6 @@ from app.widgets.keyboard_widget import KeyboardWidget
 from app.services.keyboard_service import KeyboardService
 from app.services.pi_network_service import PiNetworkService
 from app.models.object_class import ObjectClass
-from app.services.database_service import DatabaseService
 from app.protocols import LangSettings
 
 

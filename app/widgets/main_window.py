@@ -61,7 +61,6 @@ from app.services.map_service import MapService, MapTypes
 from app.services.keyboard_service import KeyboardService
 from app.services.recording_service import RecordingService
 from app.services.media_player_service import MediaPlayerService
-from app.services.database_service import DatabaseService
 from app.services.log_service import LogService
 from app.services.jammer_service import JammerService
 
@@ -202,9 +201,6 @@ class MainWindow(QMainWindow):
         self.pi_network.gps_received.connect(self.handle_gps)
         self.pi_network.detection_received.connect(self.handle_detection)
         self.pi_network.set_rf_range(self.settings_service.radio_range_ghz)
-
-        # Сервіс бази даних (через мережу)
-        self.db_service = DatabaseService(self.pi_network)
 
         self.log_service = LogService()
 

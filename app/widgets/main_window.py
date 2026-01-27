@@ -462,23 +462,40 @@ class MainWindow(QMainWindow):
         target_event = self.find_event_by_searched_index()
 
         if target_event:
-            info = (
-                f"INDEX: {self.searched_index}\n"
-                f"----------------------\n"
-                f"TYPE:    {target_event.type}\n"
-                f"NAME:    {target_event.name.upper()}\n"
-                f"CLASS:   {target_event.object_class.upper()}\n"
-                f"FREQ:    {f"{convert_hz_to_ghz(target_event.frequency_hz):.3f} GHz" if(target_event.type==SourceType.RF) else f"{(target_event.frequency_hz):.0f} Hz" } \n"
-                f"DIST:    {target_event.distance_km:.3f} km\n"
-                f"ANGLE:   {target_event.angle:.1f}°\n"
-                f"CONF:    {target_event.confidence * 100:.1f}%\n"
-                f"TIME:    {target_event.timestamp.split('T')[-1][:8]}\n"
+            if target_event.type == DetectionType.RF:
+                freq_line = self.tr("{:.3f} GHz").format(
+                    convert_hz_to_ghz(target_event.frequency_hz)
+                )
+
+            else:
+                freq_line = self.tr("{:.0f} Hz").format(target_event.frequency_hz)
+
+            time_part = target_event.timestamp.split("T")[-1][:8]
+            info = "\n".join(
+                [
+                    self.tr("INDEX: {}").format(self.searched_index),
+                    "----------------------",
+                    self.tr("TYPE: {}").format(target_event.type),
+                    self.tr("NAME: {}").format(target_event.name.upper()),
+                    self.tr("CLASS: {}").format(target_event.object_class.upper()),
+                    self.tr("FREQ: {}").format(freq_line),
+                    self.tr("DIST: {:.3f} km").format(target_event.distance_km),
+                    self.tr("ANGLE: {:.1f}°").format(target_event.angle),
+                    self.tr("CONF: {:.1f}%").format(target_event.confidence * 100),
+                    self.tr("TIME: {}").format(time_part),
+                ]
             )
             self.ui.detection_info_text.setPlainText(info)
         else:
             self.ui.detection_info_text.setPlainText(
-                f"INDEX {self.searched_index}: \n\n[OFFLINE] / [NOT FOUND]\n\n"
-                "Target lost or not yet detected."
+                "\n".join(
+                    [
+                        self.tr("INDEX {}: \n\n[OFFLINE] / [NOT FOUND]\n").format(
+                            self.searched_index
+                        ),
+                        self.tr("Target lost or not yet detected."),
+                    ]
+                )
             )
 
     def find_event_by_searched_index(self) -> Optional[DetectionEvent]:
@@ -784,7 +801,7 @@ class MainWindow(QMainWindow):
     @pyqtSlot(str)
     def show_error_message(self, error_text: str) -> None:
         print(f"[MainWindow] Recording Error: {error_text}")
-        QMessageBox.critical(self, "Recording Error", error_text)
+        QMessageBox.critical(self, self.tr("Recording Error"), error_text)
         self.on_recording_stopped()
 
     def handle_toggle_recording_pause(self, is_paused: bool) -> None:

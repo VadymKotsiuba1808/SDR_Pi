@@ -4,9 +4,10 @@ from datetime import datetime
 
 from PyQt6.QtWidgets import QWidget, QToolTip
 from PyQt6.QtGui import QPainter, QPaintEvent, QMouseEvent
-from PyQt6.QtCore import QRect, Qt, QPointF, QCoreApplication, QEvent, QTranslator
+from PyQt6.QtCore import QRect, Qt, QPointF
 
 from app.models.detection_event import DetectionEvent
+from app.models.detection_background import SpectralData
 from app.models.source_type import SourceType
 from app.protocols import LangSettings
 from app.core.chart_theme import ChartTheme
@@ -33,6 +34,8 @@ class StaticChartWidget(QWidget):
         self.highlight_ids: Set[str] = set()
         self.chart_type: str = "timeline"
 
+        self.current_background: Optional[SpectralData] = None
+
         self.content_rect = QRect()
         self._interactive_points: List[Tuple[QPointF, DetectionEvent]] = []
 
@@ -45,20 +48,27 @@ class StaticChartWidget(QWidget):
     ) -> None:
         self.data = sorted(data, key=lambda x: x.timestamp)
         self.highlight_ids = highlight_ids or set()
+        self.update()
 
-        if self.chart_type in ["spectrum", "waterfall"]:
-            active = self._get_active_event()
-            if active:
-                self.spectral_renderer.prepare_cache(active)
+    def set_background(self, spectral_data: Optional[SpectralData]) -> None:
+        """Встановлює дані фону для відображення на графіках спектру/водоспаду."""
+        self.current_background = spectral_data
+
+        if self.chart_type in ["spectrum", "waterfall"] and self.current_background:
+            self.spectral_renderer.prepare_cache(self.current_background)
 
         self.update()
 
     def set_chart_type(self, t: str) -> None:
         if self.chart_type != t:
             self.chart_type = t
+
+            if t in ["spectrum", "waterfall"] and self.current_background:
+                self.spectral_renderer.prepare_cache(self.current_background)
             self.update()
 
     def _get_active_event(self) -> Optional[DetectionEvent]:
+        """Повертає 'активну' подію (останню або підсвічену) для відображення маркера."""
         if not self.data:
             return None
         if self.highlight_ids:
@@ -79,21 +89,29 @@ class StaticChartWidget(QWidget):
             margin_left, 40, self.width() - (margin_left + 30), self.height() - 80
         )
 
-        if not self.data:
+        if not self.data and not self.current_background:
             p.setPen(ChartTheme.TEXT)
             p.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, self.tr("No Data"))
             return
 
+        # --- ЛОГІКА МАЛЮВАННЯ СПЕКТРАЛЬНИХ ГРАФІКІВ ---
         if self.chart_type == "spectrum":
             active = self._get_active_event()
-            self.spectral_renderer.render_spectrum(p, self.content_rect, active)
+
+            self.spectral_renderer.render_spectrum(
+                p, self.content_rect, background=self.current_background, event=active
+            )
             self.crosshair.draw(p, self.content_rect)
 
         elif self.chart_type == "waterfall":
             active = self._get_active_event()
-            self.spectral_renderer.render_waterfall(p, self.content_rect, active)
+
+            self.spectral_renderer.render_waterfall(
+                p, self.content_rect, background=self.current_background, event=active
+            )
             self.crosshair.draw(p, self.content_rect)
 
+        # --- СТАНДАРТНІ ГРАФІКИ ---
         elif self.chart_type in ["path", "radar_snapshot"]:
             self.standard_renderer.render_polar(
                 p, self.rect(), self.data, self.highlight_ids, self._interactive_points
@@ -116,10 +134,13 @@ class StaticChartWidget(QWidget):
         pos = event.pos()
 
         if self.chart_type in ["spectrum", "waterfall"]:
-            active = self._get_active_event()
-            if active:
+            if self.current_background:
                 state = self.spectral_renderer.calculate_cursor(
-                    pos, self.content_rect, active, self.chart_type
+                    pos,
+                    self.content_rect,
+                    background=self.current_background,
+                    chart_type=self.chart_type,
+                    event=self._get_active_event(),
                 )
                 self.crosshair.update_state(state)
             self.update()

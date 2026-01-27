@@ -4,6 +4,8 @@
 /media/*.mp4
 /logs/*.json
 /logs/*.jsonl
+/logs/backgrounds/*.json
+/logs/backgrounds/*.jsonl
 
 # DB
 *.db

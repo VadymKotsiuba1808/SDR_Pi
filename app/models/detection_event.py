@@ -14,29 +14,6 @@ from app.models.source_type import SourceType
 
 
 @dataclass
-class SpectralData:
-    """Важкі дані для спектрального аналізу"""
-
-    # Центральна частота прийому в Герцах.
-    center_freq_hz: float
-
-    # Смуга пропускання (ширина огляду) в Герцах.
-    sample_rate_hz: float
-
-    # Тривалість запису у секундах.
-    duration_sec: float
-
-    # Матриця амплітуд (спектрограма).
-    # Shape: (Rows, Cols) -> (Time, Frequency).
-    #   - Rows (висота): кількість пакетів у часі.
-    #   - Cols (ширина): кількість бінів FFT (наприклад, 1024).
-    #
-    # Тип: uint8 (0...255).
-    # Переводиться у db за формулою dB=value_uint8−DB_OFFSET(у constants)
-    data_magnitude: np.ndarray
-
-
-@dataclass
 class DetectionEvent:
 
     id: str
@@ -48,7 +25,6 @@ class DetectionEvent:
     distance_km: float
     angle: float
     frequency_hz: float
-    spectral_data: Optional[SpectralData] = None
 
     @staticmethod
     def from_dict(data: dict) -> "DetectionEvent":

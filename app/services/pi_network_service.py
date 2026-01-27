@@ -13,6 +13,7 @@ from app.models.object_class import ObjectClass
 from app.models.gps_data import GPSData
 from app.models.stream_data import StreamDataChunk
 from app.models.detection_background import DetectionBackground
+from app.models.service_response import ServiceResponse
 
 
 class PiNetworkService(QObject):
@@ -32,21 +33,8 @@ class PiNetworkService(QObject):
     rf_data_received = pyqtSignal(StreamDataChunk)
     sound_data_received = pyqtSignal(StreamDataChunk)
 
-    # --- Сигнали для роботи з БД  ---
-    # (objects_list, page, total_items)
-    db_objects_page_received = pyqtSignal(list, int, int)
-    db_object_added = pyqtSignal(DetectionObject)
-    db_object_updated = pyqtSignal(DetectionObject)
-    db_object_deleted = pyqtSignal(int)  # ID
-
-    # (operation_type, success, message)
-    db_operation_status = pyqtSignal(str, bool, str)
-
-    # (classes_list)
-    db_classes_received = pyqtSignal(list)
-    db_class_added = pyqtSignal(ObjectClass)  # Повертає новий клас з ID
-    db_class_renamed = pyqtSignal(ObjectClass)  # Повертає оновлений клас
-    db_class_deleted = pyqtSignal(int)
+    # --- Сигнал для роботи з БД ---
+    request_finished = pyqtSignal(ServiceResponse)
 
     # --- Сигнали стану з'єднання ---
     connection_status_changed = pyqtSignal(bool)
@@ -117,9 +105,6 @@ class PiNetworkService(QObject):
         print(f"[PiNet] Connecting to {ip}:{port}...")
         self.socket.connectToHost(ip, port)
 
-        # if not self.socket.waitForConnected(3000):
-        #     pass
-
     @pyqtSlot()
     def _handle_connected(self) -> None:
         print("[PiNet] Connected to server!")
@@ -168,6 +153,7 @@ class PiNetworkService(QObject):
                 action = packet.get("action")
                 data = packet.get("data", {})
 
+                # --- Hardware / Stream Data ---
                 if action == "detection":
                     event_obj = DetectionEvent.from_dict(data)
                     self.detection_received.emit(event_obj)
@@ -186,60 +172,14 @@ class PiNetworkService(QObject):
                     obj = StreamDataChunk.from_dict(data, SourceType.SOUND)
                     self.sound_data_received.emit(obj)
 
-                elif action == "db_response_page":
-                    items_raw = data.get("items", [])
-                    page = data.get("page", 1)
-                    total = data.get("total", 0)
+                elif action == "db_operation_result":
+                    response_obj = ServiceResponse.from_dict(data)
+                    self.request_finished.emit(response_obj)
 
-                    models = [DetectionObject.from_dict(d) for d in items_raw]
-                    self.db_objects_page_received.emit(models, page, total)
-
-                elif action == "db_response_status":
-                    op_type = data.get("op", "unknown")
-                    success = data.get("success", False)
-                    msg = data.get("msg", "")
-                    self.db_operation_status.emit(op_type, success, msg)
-
-                elif action == "db_response_classes":
-                    classes_raw = data.get("classes", [])
-                    models = [ObjectClass.from_dict(c) for c in classes_raw]
-                    self.db_classes_received.emit(models)
-
-                elif action == "db_event_object_added":
-                    obj_dict = data.get("object")
-                    if obj_dict:
-                        self.db_object_added.emit(DetectionObject.from_dict(obj_dict))
-
-                elif action == "db_event_object_updated":
-                    obj_dict = data.get("object")
-                    if obj_dict:
-                        self.db_object_updated.emit(DetectionObject.from_dict(obj_dict))
-
-                elif action == "db_event_object_deleted":
-                    obj_id = data.get("id")
-                    if obj_id is not None:
-                        self.db_object_deleted.emit(int(obj_id))
-
-                # --- DB CACHE UPDATES (CLASSES) - ТУТ НОВЕ ---
-                elif action == "db_event_class_added":
-                    # Server sends: {"class": {"id": 1, "name": "Drone"}}
-                    cls_dict = data.get("class")
-                    if cls_dict:
-                        self.db_class_added.emit(ObjectClass.from_dict(cls_dict))
-
-                elif action == "db_event_class_renamed":
-                    # Server sends: {"class": {"id": 1, "name": "Super Drone"}}
-                    cls_dict = data.get("class")
-                    if cls_dict:
-                        self.db_class_renamed.emit(ObjectClass.from_dict(cls_dict))
-
-                elif action == "db_event_class_deleted":
-                    # Server sends: {"id": 1}
-                    cls_id = data.get("id")
-                    if cls_id is not None:
-                        self.db_class_deleted.emit(int(cls_id))
+                    print(
+                        f"[PiNet] Operation '{response_obj.operation}' finished with status {response_obj.status.value}"
+                    )
                 else:
-                    # Fallback для невідомих пакетів
                     self.data_received.emit(packet)
 
             except json.JSONDecodeError:
@@ -305,7 +245,6 @@ class PiNetworkService(QObject):
     # --- DATABASE PROXY METHODS ---
 
     def request_db_objects_page(self, page: int, page_size: int) -> None:
-        """Запит сторінки об'єктів з віддаленої БД."""
         print(f"[PiNet] DB Request: Objects Page {page}")
         self.send_packet("db_request_page", {"page": page, "size": page_size})
 

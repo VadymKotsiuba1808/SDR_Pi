@@ -12,6 +12,7 @@ from app.models.detection_object import DetectionObject
 from app.models.object_class import ObjectClass
 from app.models.gps_data import GPSData
 from app.models.stream_data import StreamDataChunk
+from app.models.detection_background import DetectionBackground
 
 
 class PiNetworkService(QObject):
@@ -24,6 +25,8 @@ class PiNetworkService(QObject):
     data_received = pyqtSignal(dict)  # Сирі дані (якщо не розпізнано)
     gps_received = pyqtSignal(GPSData)  # Об'єкт GPS
     detection_received = pyqtSignal(DetectionEvent)  # Об'єкт детекції
+
+    background_received = pyqtSignal(DetectionBackground)
 
     # --- Сигнали для потокових даних ---
     rf_data_received = pyqtSignal(StreamDataChunk)
@@ -168,7 +171,9 @@ class PiNetworkService(QObject):
                 if action == "detection":
                     event_obj = DetectionEvent.from_dict(data)
                     self.detection_received.emit(event_obj)
-
+                elif action == "detection_background":
+                    bg_obj = DetectionBackground.from_dict(data)
+                    self.background_received.emit(bg_obj)
                 elif action == "gps_position":
                     obj = GPSData.from_dict(data)
                     self.gps_received.emit(obj)

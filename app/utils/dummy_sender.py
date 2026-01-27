@@ -4,7 +4,7 @@ import math
 import random
 import uuid
 import time
-import numpy as np  # Додано для генерації спектру
+import numpy as np
 from datetime import datetime
 from typing import Optional, Dict, Any, List, Set
 
@@ -17,44 +17,45 @@ from PyQt6.QtCore import (
 )
 from PyQt6.QtNetwork import QTcpServer, QTcpSocket, QHostAddress
 
-
-# --- MOCK IMPORTS (Якщо у вас вони в інших шляхах, змініть) ---
+# --- MOCK IMPORTS (Адаптуйте під структуру проекту) ---
 from app.core.constants import DB_OFFSET, UINT8_MIN, UINT8_MAX
 from temp.database_service import DatabaseService
-from app.models.detection_event import DetectionEvent
 from app.models.detection_object import DetectionObject
 from app.models.object_class import ObjectClass
 from app.models.gps_data import GPSData
 
 # --- КОНФІГУРАЦІЯ СИМУЛЯЦІЇ ---
 SIMULATION_RADIUS_METERS = 85000  # 85 км
-MAX_SIMULTANEOUS_TARGETS = 15  # Кількість цілей
-UPDATE_INTERVAL_MS = 300  # Швидкість оновлення цілей (3.3 Гц)
-STREAM_INTERVAL_MS = 50  # Швидкість оновлення графіків (20 Гц)
+MAX_SIMULTANEOUS_TARGETS = 15  # Макс цілей
+UPDATE_INTERVAL_MS = 300  # Оновлення фізики (3.3 Гц)
+STREAM_INTERVAL_MS = 50  # Оновлення "живого" потоку (20 Гц)
 
-# Множник швидкості
+# Інтервал відправки фону для КОЖНОГО об'єкта (2 хвилини)
+TARGET_BG_INTERVAL_SEC = 120
+
 SPEED_MULTIPLIER = 2.0
 
 
 class SimulatedTarget:
     """
     Клас фізичної симуляції однієї цілі.
+    Відповідає за свій рух, параметри сигналу та генерацію власного фону.
     """
 
     def __init__(self, template: DetectionObject):
+        # Цей ID буде спільним для DetectionEvent та DetectionBackground цього об'єкта
         self.id = str(uuid.uuid4())
-        self.template = template
 
-        # Основні дані з БД
+        self.template = template
         self.name = template.name
         self.object_class = template.object_class
         self.is_dangerous = template.is_dangerous
 
-        # --- Парсинг частот ---
+        # --- Частоти ---
         self.base_freq = self._parse_frequency(template.rf_params_hz)
         self.current_freq = self.base_freq
 
-        # --- Генерація позиції ---
+        # --- Позиція ---
         angle_deg = random.uniform(0, 360)
         dist_m = random.uniform(
             SIMULATION_RADIUS_METERS * 0.4, SIMULATION_RADIUS_METERS
@@ -63,7 +64,7 @@ class SimulatedTarget:
         self.x = dist_m * math.cos(math.radians(angle_deg))
         self.y = dist_m * math.sin(math.radians(angle_deg))
 
-        # --- Розрахунок швидкості ---
+        # --- Швидкість ---
         base_speed_ms = 25.0
         name_lower = self.name.lower()
         if "mavic" in name_lower or "matrice" in name_lower:
@@ -87,15 +88,21 @@ class SimulatedTarget:
         # --- Поведінка ---
         self.behavior = random.choice(["linear", "linear", "circle", "zigzag"])
 
-        # --- Симуляція сигналу ---
+        # --- Сигнал ---
         self.confidence = random.uniform(0.6, 1.0)
         self.is_hidden = False
         self.hidden_until = 0.0
 
+        # --- ЛОГІКА ФОНУ ---
+        # Час наступної відправки фону.
+        # Ставимо поточний час, щоб відправити перший пакет одразу при створенні.
+        # Але також додаємо флаг force_bg_send для ручного виклику при підключенні клієнта.
+        self.last_bg_time = 0.0
+        self.force_bg_send = True
+
     def _parse_frequency(self, params: List[str]) -> float:
         if not params:
             return random.uniform(400e6, 6000e6)
-
         raw_str = random.choice(params)
         if "-" in raw_str:
             try:
@@ -112,9 +119,10 @@ class SimulatedTarget:
                 return 900e6
 
     def update(self, dt: float) -> bool:
+        """Оновлює фізику. Повертає False, якщо об'єкт вилетів за межі."""
         now = time.time()
 
-        # Логіка зникнення сигналу
+        # Логіка "зникнення" сигналу (імітація перешкод)
         if self.is_hidden:
             if now > self.hidden_until:
                 self.is_hidden = False
@@ -124,10 +132,10 @@ class SimulatedTarget:
                 self.is_hidden = True
                 self.hidden_until = now + random.uniform(1.5, 4.0)
 
+        # Рух
         self.x += self.vx * dt
         self.y += self.vy * dt
 
-        # Поведінка руху
         if self.behavior == "circle":
             turn_rate = 0.3 * dt
             new_vx = self.vx * math.cos(turn_rate) - self.vy * math.sin(turn_rate)
@@ -141,6 +149,7 @@ class SimulatedTarget:
                 new_vy = self.vx * math.sin(change) + self.vy * math.cos(change)
                 self.vx, self.vy = new_vx, new_vy
 
+        # Дрейф частоти (імітація Доплера або нестабільності передавача)
         self.current_freq = self.base_freq + random.uniform(-150, 150)
 
         dist_sq = self.x**2 + self.y**2
@@ -161,26 +170,65 @@ class SimulatedTarget:
         angle_deg = (math.degrees(angle_rad) + 360) % 360
         det_type = "Sound" if self.current_freq < 20000 else "RF"
 
-        # 1. Створення об'єкта події (Validation layer)
-        event = DetectionEvent(
-            id=self.id,
-            type=det_type,
-            name=self.name,
-            object_class=self.object_class,
-            confidence=round(self.confidence, 3),
-            timestamp=datetime.now().isoformat(),
-            distance_km=round(dist_m / 1000.0, 4),
-            angle=round(angle_deg, 2),
-            frequency_hz=int(self.current_freq),
-        )
+        # Формуємо словник вручну
+        return {
+            "id": self.id,  # Спільний ID для треку
+            "type": det_type,
+            "name": self.name,
+            "object_class": self.object_class,
+            "confidence": round(self.confidence, 3),
+            "timestamp": datetime.now().isoformat(),
+            "distance_km": round(dist_m / 1000.0, 4),
+            "angle": round(angle_deg, 2),
+            "frequency_hz": int(self.current_freq),
+            "is_dangerous": self.is_dangerous,
+        }
 
-        # 2. Конвертація в словник
-        payload = event.to_dict()
+    def check_and_get_background(self) -> Optional[Dict[str, Any]]:
+        """
+        Перевіряє, чи настав час відправити фон для цього об'єкта.
+        Якщо так - повертає словник DetectionBackground з тим самим ID.
+        """
+        now = time.time()
 
-        # 3. Додаємо поле is_dangerous
-        payload["is_dangerous"] = self.is_dangerous
+        # Перевірка: чи минув інтервал АБО чи стоїть прапорець примусової відправки
+        if self.force_bg_send or (now - self.last_bg_time > TARGET_BG_INTERVAL_SEC):
+            self.last_bg_time = now
+            self.force_bg_send = False
 
-        return payload
+            # Генеруємо "фон" навколо частоти об'єкта (імітація спектру)
+            fft_size = 512
+            rows = 100  # Генеруємо 2D матрицю (Waterfall), щоб все було красиво
+
+            # 1. Базовий шум (2D матриця)
+            noise_level = -105.0
+            noise = np.random.normal(0, 2.0, (rows, fft_size)) + noise_level
+
+            # 2. Можна додати "слід" цілі на водоспаді
+            # Наприклад, вертикальна смуга посередині (якщо центр = частота цілі)
+            center_col = fft_size // 2
+            # Симулюємо невелике "гуляння" частоти (дрейф)
+            for r in range(rows):
+                drift = int(np.sin(r * 0.1) * 3)
+                c = center_col + drift
+                if 0 <= c < fft_size:
+                    # Додаємо сигнал (~20 dB над шумом)
+                    noise[r, max(0, c - 2) : min(fft_size, c + 3)] += 20.0
+
+            # Конвертація в uint8
+            data_uint8 = (noise + DB_OFFSET).clip(UINT8_MIN, UINT8_MAX).astype(np.uint8)
+
+            return {
+                "id": self.id,  # <--- ВАЖЛИВО: ID збігається з об'єктом
+                "timestamp": datetime.now().isoformat(),
+                "spectral_data": {
+                    "center_freq_hz": self.base_freq,  # Центр на частоті об'єкта
+                    "sample_rate_hz": 20_000_000.0,  # 20 MHz огляд
+                    "duration_sec": 5.0,  # Історія за 5 секунд (100 рядків по 50мс)
+                    "data_magnitude": data_uint8.tolist(),  # Список списків (2D)
+                },
+            }
+        return None
 
 
 class AdvancedNetworkUtility(QObject):
@@ -204,12 +252,12 @@ class AdvancedNetworkUtility(QObject):
         self.session_blacklist: Set[str] = set()
 
         # --- TIMERS ---
-        # 1. Таймер руху цілей (повільніший)
+        # 1. Таймер симуляції (рух + генерація подій + генерація фону)
         self.sim_timer = QTimer(self)
         self.sim_timer.timeout.connect(self._on_sim_tick)
         self.sim_timer.setInterval(UPDATE_INTERVAL_MS)
 
-        # 2. Таймер потокових даних (швидкий - для графіків)
+        # 2. Таймер потокових даних (швидкий - для графіків "Active View")
         self.stream_timer = QTimer(self)
         self.stream_timer.timeout.connect(self._on_stream_tick)
         self.stream_timer.setInterval(STREAM_INTERVAL_MS)
@@ -297,6 +345,11 @@ class AdvancedNetworkUtility(QObject):
 
         print("[NetService] New session started. Clearing False Alarm blacklist.")
         self.session_blacklist.clear()
+
+        # === ВАЖЛИВО: ПРИ НОВОМУ ПІДКЛЮЧЕННІ ЗМУШУЄМО ВСІ ЦІЛІ ВІДПРАВИТИ ФОН ===
+        print("[NetService] Resetting background timers for all active targets.")
+        for target in self.active_targets:
+            target.force_bg_send = True
 
         # Скидаємо стрімінг при новому підключенні
         self.is_rf_streaming = False
@@ -428,6 +481,7 @@ class AdvancedNetworkUtility(QObject):
 
         dt = UPDATE_INTERVAL_MS / 1000.0
 
+        # 1. Спавн
         if len(self.active_targets) < MAX_SIMULTANEOUS_TARGETS:
             spawn_chance = 0.05 + (
                 0.1 * (1 - len(self.active_targets) / MAX_SIMULTANEOUS_TARGETS)
@@ -436,8 +490,9 @@ class AdvancedNetworkUtility(QObject):
                 template = random.choice(self.detection_templates)
                 new_target = SimulatedTarget(template)
                 self.active_targets.append(new_target)
-                print(f"[Sim] Spawned: {new_target.name}")
+                print(f"[Sim] Spawned: {new_target.name} (ID: {new_target.id})")
 
+        # 2. Оновлення всіх цілей
         next_targets = []
         for target in self.active_targets:
             if target.id in self.session_blacklist:
@@ -445,20 +500,27 @@ class AdvancedNetworkUtility(QObject):
 
             alive = target.update(dt)
             if alive:
+                # А) Перевірка та відправка ФОНУ (якщо час прийшов)
+                bg_packet = target.check_and_get_background()
+                if bg_packet:
+                    print(
+                        f"[NetService] Sending BACKGROUND for {target.name} ({target.id})"
+                    )
+                    # ВАЖЛИВО: action має співпадати з обробником у PiNet (background_spectrum)
+                    self._send_packet("detection_background", bg_packet)
+
+                # Б) Відправка ДЕТЕКЦІЇ (кожен тік)
                 event_dict = target.get_event_data()
                 if event_dict:
                     self._send_packet("detection", event_dict)
+
                 next_targets.append(target)
             else:
                 print(f"[Sim] Despawned: {target.name}")
 
         self.active_targets = next_targets
 
-    # --- STREAM GENERATION LOGIC ---
-    # Спочатку додай імпорт констант зверху файлу
-    from app.core.constants import DB_OFFSET, UINT8_MIN, UINT8_MAX
-
-    # --- STREAM GENERATION LOGIC ---
+    # --- STREAM GENERATION LOGIC (Для вкладки Stream) ---
     def _on_stream_tick(self):
         """Генерує та відправляє пакет потокових даних для графіків."""
         if self.is_rf_streaming:
@@ -473,39 +535,31 @@ class AdvancedNetworkUtility(QObject):
         """Генерує фейковий спектр для RF (uint8)."""
         fft_size = 512
 
-        # 1. Генерація базового шуму (Gaussian noise)
-        # Умовно: середній шум -100 dB, відхилення 5 dB
+        # 1. Генерація базового шуму
         noise_level_db = -100
         noise_variation = np.random.normal(0, 3, fft_size)
         spectrum_db = noise_level_db + noise_variation
 
-        # 2. Симуляція сигналу (Рухомий пік)
+        # 2. Симуляція сигналу
         t = time.time()
-        # Сигнал "гуляє" вліво-вправо по синусоїді
         shift = np.sin(t * 1.5) * (fft_size * 0.3)
         x = np.arange(fft_size)
         center = fft_size // 2 + shift
 
-        # Формуємо пік (Гаусіана). Висота піку ~40 dB над шумом (до -60 dB)
         peak_height = 40
-        peak_width = 10  # Ширина сигналу
+        peak_width = 10
         peak = np.exp(-((x - center) ** 2) / (2 * peak_width**2)) * peak_height
 
-        # Додаємо сигнал до шуму
         spectrum_db += peak
 
-        # 3. Конвертація dB -> uint8 (ключовий момент!)
-        # Формула: uint8 = (db + DB_OFFSET)
-        # clip(0, 255) обов'язковий, щоб не вийшло переповнення
         data_uint8 = (
             (spectrum_db + DB_OFFSET).clip(UINT8_MIN, UINT8_MAX).astype(np.uint8)
         )
 
         return {
-            # tolist() для uint8 перетворює в звичайний список int [20, 25, 200...]
             "data_magnitude": data_uint8.tolist(),
-            "center_freq_hz": 915_000_000.0,  # 915 MHz
-            "sample_rate_hz": 10_000_000.0,  # 10 MHz
+            "center_freq_hz": 915_000_000.0,
+            "sample_rate_hz": 10_000_000.0,
             "timestamp": t,
         }
 
@@ -514,23 +568,16 @@ class AdvancedNetworkUtility(QObject):
         fft_size = 512
         x = np.linspace(0, 100, fft_size)
 
-        # 1. Шум (тихіший для аудіо)
         noise_db = -80 + np.random.normal(0, 2, fft_size)
 
-        # 2. Гармоніки (імітація дрона/мотора)
         t = time.time()
-
-        # Основний тон (низька частота)
         tone1_pos = 50 + np.sin(t * 5) * 5
-        tone1 = np.exp(-((np.arange(fft_size) - tone1_pos) ** 2) / 10) * 50  # +50dB
-
-        # Обертон (вища частота)
+        tone1 = np.exp(-((np.arange(fft_size) - tone1_pos) ** 2) / 10) * 50
         tone2_pos = 150 + np.sin(t * 5) * 5
-        tone2 = np.exp(-((np.arange(fft_size) - tone2_pos) ** 2) / 10) * 30  # +30dB
+        tone2 = np.exp(-((np.arange(fft_size) - tone2_pos) ** 2) / 10) * 30
 
         spectrum_db = noise_db + tone1 + tone2
 
-        # 3. Конвертація dB -> uint8
         data_uint8 = (
             (spectrum_db + DB_OFFSET).clip(UINT8_MIN, UINT8_MAX).astype(np.uint8)
         )
@@ -543,17 +590,10 @@ class AdvancedNetworkUtility(QObject):
         }
 
     def _send_single_gps_response(self):
-        """
-        Генерує та відправляє пакет GPS тільки на запит.
-        """
-        # Імітуємо невеликий рух/дрейф
         self.gps_lat += random.uniform(-0.0000005, 0.0000005)
         self.gps_lon += random.uniform(-0.0000005, 0.0000005)
-
         strength = random.randint(70, 100)
-
         gps_data = GPSData(lat=self.gps_lat, lon=self.gps_lon, strength=strength)
-
         print("[NetService] Sending GPS Response.")
         self._send_packet("gps_position", gps_data.to_dict())
 
@@ -606,10 +646,7 @@ class AdvancedNetworkUtility(QObject):
 
 if __name__ == "__main__":
     app = QCoreApplication(sys.argv)
-
     service = AdvancedNetworkUtility(port=6000)
     service.start()
-
     print("=== ADVANCED SIMULATION SERVER RUNNING ===")
-
     sys.exit(app.exec())

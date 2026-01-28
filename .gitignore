@@ -12,6 +12,8 @@
 *.db-shm
 *.db-wal
 
+requirements.txt
+
 .vscode/
 # Byte-compiled / optimized / DLL files
 __pycache__/

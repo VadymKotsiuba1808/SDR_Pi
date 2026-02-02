@@ -3,7 +3,8 @@
 Визначає абстрактні контракти для сервісів та компонентів переважно саме для налаштувань. Дозволяє використовувати Dependency Injection.
 """
 
-from typing import Protocol
+from typing import Protocol, Dict
+from app.services.settings_service import CleanRule
 
 
 class LangSettings(Protocol):
@@ -54,6 +55,11 @@ class SettingsDialogSettings(Protocol):
     is_jammer_auto_stop_enabled: bool
     jammer_auto_stop_interval_s: int
     remember_me: bool
+    clean_settings: Dict[str, CleanRule]
+
+
+class CleanerServiceSettings(Protocol):
+    clean_settings: Dict[str, CleanRule]
 
 
 class OSService(Protocol):

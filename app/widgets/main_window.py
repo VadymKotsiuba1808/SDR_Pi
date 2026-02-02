@@ -23,6 +23,7 @@ from PyQt6.QtCore import (
     QTranslator,
     pyqtSlot,
     QUrl,
+    QStorageInfo,
 )
 from PyQt6.QtGui import (
     QPixmap,
@@ -40,7 +41,10 @@ from app.assets import resources_rc
 
 
 from app.protocols import OSService
-from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
+from app.core.constants import (
+    DEV_COMPILED_UI_USING_ENABLED,
+    MEDIA_DIR_PATH,
+)
 
 
 from app.widgets.set_map_dialog import SetMapDialog
@@ -131,6 +135,8 @@ class MainWindow(QMainWindow):
         )
         self.ui.Radar.installEventFilter(self)
 
+        self.check_free_memory(800)
+
         # FIXME -
         # TODO - Видалити рефреш
         self.refresh_map()
@@ -199,8 +205,6 @@ class MainWindow(QMainWindow):
 
         # Сервіс бази даних (через мережу)
         self.db_service = DatabaseService(self.pi_network)
-
-        self.log_service = LogService()
 
         self.log_service = LogService()
 
@@ -374,6 +378,32 @@ class MainWindow(QMainWindow):
     # endregion
 
     # region --- Data Handlers ---
+
+    def check_free_memory(self, mb_space: int = 500) -> bool:
+        storage = QStorageInfo("/")
+
+        min_video_space = mb_space * 1024 * 1024
+        available_bytes = storage.bytesAvailable()
+        available_mb = round(available_bytes / 1024 / 1024, 0)
+
+        if available_bytes < min_video_space:
+
+            QMessageBox.warning(
+                self,
+                self.tr("Not enough disk space"),
+                self.tr(
+                    "Available only: "
+                    + str(available_mb)
+                    + self.tr("MB.")
+                    + "\n"
+                    + self.tr(
+                        "To use media functions and logging, please free up disk space."
+                    )
+                ),
+            )
+            return False
+
+        return True
 
     def handle_detection(self, detection: DetectionEvent):
         self.detection_manager.add_detection(detection)
@@ -628,11 +658,11 @@ class MainWindow(QMainWindow):
 
         new_radius = new_settings.radar_max_radius_km
         new_interval = new_settings.gps_interval_s
-        new_main_relay = new_settings.main_relays
+        new_main_relays = new_settings.main_relays
         new_auto_start_enabled = new_settings.is_jammer_auto_start_enabled
         new_auto_stop_enabled = new_settings.is_jammer_auto_stop_enabled
-
         new_auto_stop_interval_s = new_settings.jammer_auto_stop_interval_s
+        new_clean_settings = new_settings.clean_settings
 
         if self.settings_service.radar_max_radius_km != new_radius:
             self.settings_service.radar_max_radius_km = new_radius
@@ -648,8 +678,8 @@ class MainWindow(QMainWindow):
             self.settings_service.gps_interval_s = new_interval
             self.timer_gps.setInterval(new_interval * 1000)
 
-        if self.settings_service.main_relays != new_main_relay:
-            self.settings_service.main_relays = new_main_relay
+        if self.settings_service.main_relays != new_main_relays:
+            self.settings_service.main_relays = new_main_relays
 
         if self.settings_service.is_jammer_auto_start_enabled != new_auto_start_enabled:
             self.settings_service.is_jammer_auto_start_enabled = new_auto_start_enabled
@@ -668,6 +698,9 @@ class MainWindow(QMainWindow):
 
         if is_jammer_timer_changed:
             self.jammer_service.update_auto_stop()
+
+        if self.settings_service.clean_settings != new_clean_settings:
+            self.settings_service.clean_settings = new_clean_settings
 
     def calculate_optimal_zoom(self, radius_km: float) -> int:
         BASE_RADIUS_KM = 0.5
@@ -695,14 +728,24 @@ class MainWindow(QMainWindow):
 
     # region --- Screen Recording ---
 
+    def disabled_media_btns(self):
+        self.ui.screenRecordButton.setEnabled(False)
+        self.ui.screenSaveButton.setEnabled(False)
+
     @pyqtSlot(bool)
     def handle_toggle_recording(self) -> None:
         button = cast(QPushButton, self.sender())
 
         if button.isChecked():
-            filename = f"./screen_records/record_{QDateTime.currentDateTime().toString('yyyy-MM-dd_hh-mm-ss')}.mp4"
-            os.makedirs(os.path.dirname(filename), exist_ok=True)
-            self.recorder.start_recording(filename)
+            is_space_enough = self.check_free_memory()
+            if is_space_enough:
+                filename = f"{MEDIA_DIR_PATH}/record_{QDateTime.currentDateTime().toString('yyyy-MM-dd_hh-mm-ss')}.mp4"
+                os.makedirs(os.path.dirname(filename), exist_ok=True)
+                self.recorder.start_recording(filename)
+            else:
+                button.setChecked(False)
+                self.disabled_media_btns()
+
         else:
             self.recorder.stop_recording()
 
@@ -744,10 +787,15 @@ class MainWindow(QMainWindow):
             f"{self.tr('Media Files (*.png *.jpg *.jpeg *.bmp *.mp4 *.avi *.mkv)')};;"
         )
 
+        directory_to_open = os.path.abspath(MEDIA_DIR_PATH)
+
+        if not os.path.exists(directory_to_open):
+            os.makedirs(directory_to_open, exist_ok=True)
+
         file_path, _ = QFileDialog.getOpenFileName(
             self,
             self.tr("Select file to view"),
-            "",
+            directory_to_open,
             file_filters,
         )
 
@@ -954,12 +1002,16 @@ class MainWindow(QMainWindow):
         await self.refresh_map()
 
     def take_screenshot(self) -> None:
-        screenshot = self.grab()
-        filename = f"./screenshots/screenshot_{QDateTime.currentDateTime().toString('yyyy-MM-dd_hh-mm-ss')}.png"
-        os.makedirs(os.path.dirname(filename), exist_ok=True)
+        is_space_enough = self.check_free_memory()
+        if is_space_enough:
+            screenshot = self.grab()
+            filename = f"{MEDIA_DIR_PATH}/screenshot_{QDateTime.currentDateTime().toString('yyyy-MM-dd_hh-mm-ss')}.png"
+            os.makedirs(os.path.dirname(filename), exist_ok=True)
 
-        screenshot.save(filename, "png")
-        print(f"[MainWindow] Screenshot saved to: {filename}")
+            screenshot.save(filename, "png")
+            print(f"[Success] Скріншот збережено: {filename}")
+        else:
+            self.disabled_media_btns()
 
     def update_gps_and_map(self) -> None:
         self.force_gps_update = True

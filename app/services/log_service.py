@@ -8,6 +8,7 @@ from dataclasses import dataclass, asdict
 from typing import List, Optional
 
 from app.models.log_entries import LogEntry
+from app.core.constants import LOGS_DIR_PATH
 
 
 @dataclass
@@ -22,9 +23,8 @@ class LogService:
     Це вирішує проблему пошкоджених файлів та втрати даних при крашах.
     """
 
-    def __init__(self, logs_dir: str = "logs", flush_interval: int = 10) -> None:
+    def __init__(self, flush_interval: int = 10) -> None:
 
-        self.logs_dir = logs_dir
         self.flush_interval = flush_interval
 
         self._buffer: List[dict] = []
@@ -34,8 +34,8 @@ class LogService:
         self._current_log_filename: Optional[str] = None
         self._current_session_date: Optional[str] = None
 
-        if not os.path.exists(self.logs_dir):
-            os.makedirs(self.logs_dir, exist_ok=True)
+        if not os.path.exists(LOGS_DIR_PATH):
+            os.makedirs(LOGS_DIR_PATH, exist_ok=True)
 
         self._rotate_session_to_date(datetime.now().strftime("%Y-%m-%d"))
         self._start_background_worker()
@@ -50,7 +50,7 @@ class LogService:
 
         self._current_log_filename = f"session_{timestamp}.jsonl"
 
-        full_path = os.path.join(self.logs_dir, self._current_log_filename)
+        full_path = os.path.join(LOGS_DIR_PATH, self._current_log_filename)
 
         print(f"[LogService] Session rotated: {self._current_log_filename}")
 
@@ -96,7 +96,7 @@ class LogService:
         if not batch:
             return True
 
-        path = os.path.join(self.logs_dir, filename)
+        path = os.path.join(LOGS_DIR_PATH, filename)
         try:
             with open(path, "a", encoding="utf-8") as f:
                 for entry in batch:
@@ -108,7 +108,7 @@ class LogService:
             return False
 
     def load_session_data(self, filename: str) -> List[LogEntry]:
-        path = os.path.join(self.logs_dir, filename)
+        path = os.path.join(LOGS_DIR_PATH, filename)
         if not os.path.exists(path):
             return []
 
@@ -157,16 +157,16 @@ class LogService:
 
     def get_available_sessions(self) -> List[LogSession]:
         sessions = []
-        if not os.path.exists(self.logs_dir):
+        if not os.path.exists(LOGS_DIR_PATH):
             return sessions
 
         files = [
             f
-            for f in os.listdir(self.logs_dir)
+            for f in os.listdir(LOGS_DIR_PATH)
             if f.endswith(".json") or f.endswith(".jsonl")
         ]
         files.sort(
-            key=lambda x: os.path.getmtime(os.path.join(self.logs_dir, x)), reverse=True
+            key=lambda x: os.path.getmtime(os.path.join(LOGS_DIR_PATH, x)), reverse=True
         )
 
         for f in files:

@@ -1,7 +1,7 @@
 
 /temp_data/*.png
-/screenshots/*.png
-/screen_records/*.mp4
+/media/*.png
+/media/*.mp4
 /logs/*.json
 /logs/*.jsonl
 

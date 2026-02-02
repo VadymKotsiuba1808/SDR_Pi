@@ -132,7 +132,7 @@ class PiNetworkService(QObject):
             self.reconnect_timer.start(5000)
 
     @pyqtSlot()
-    def _handle_error(self, socket_error) -> None:
+    def _handle_error(self) -> None:
         print(f"[PiNet] Socket Error: {self.socket.errorString()}")
         self.connection_status_changed.emit(False)
         self._schedule_reconnect()

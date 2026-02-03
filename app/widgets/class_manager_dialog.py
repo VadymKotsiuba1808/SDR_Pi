@@ -15,7 +15,16 @@ from app.widgets.keyboard_widget import KeyboardWidget
 from app.services.keyboard_service import KeyboardService
 from app.services.pi_network_service import PiNetworkService
 from app.models.object_class import ObjectClass
+from app.models.service_response import ServiceResponse, DbOperation
 from app.protocols import LangSettings
+
+
+ALLOW_DB_OPERATIONS = [
+    DbOperation.ADD_CLASS,
+    DbOperation.UPDATE_CLASS,
+    DbOperation.DELETE_CLASS,
+    DbOperation.GET_CLASSES,
+]
 
 
 class ClassManagerDialog(QDialog):
@@ -61,6 +70,7 @@ class ClassManagerDialog(QDialog):
         self.lang_widget = KeyboardWidget(
             self.settings_service, self.keyboard_service, parent=self
         )
+        self._waiting_classes = False
         self.cached_classes: List[ObjectClass] = []
 
     def _adjust_fields(self) -> None:
@@ -73,10 +83,7 @@ class ClassManagerDialog(QDialog):
         self.ui.btnClose.clicked.connect(self.accept)
         self.ui.lstClasses.itemClicked.connect(self._on_item_clicked)
 
-        self.network_service.db_operation_status.connect(self._handle_db_status)
-        self.network_service.db_class_added.connect(self.add_cache_class)
-        self.network_service.db_class_renamed.connect(self.update_cache_class)
-        self.network_service.db_class_deleted.connect(self.delete_cache_class)
+        self.network_service.request_finished.connect(self._handle_db_status)
 
         if hasattr(self.ui, "btnClearSelection"):
             self.ui.btnClearSelection.clicked.connect(self._clear_selection)
@@ -92,6 +99,7 @@ class ClassManagerDialog(QDialog):
             self.cached_classes = classes
 
         self.ui.lstClasses.clear()
+        self.cached_classes.sort(key=lambda x: x.name)
 
         for c in self.cached_classes:
             item = QListWidgetItem(c.name)
@@ -100,60 +108,55 @@ class ClassManagerDialog(QDialog):
 
         self._clear_selection()
 
-    def _on_classes_received_for_list(self, classes: List[ObjectClass]):
-        try:
-            self.network_service.db_classes_received.disconnect(
-                self._on_classes_received_for_list
-            )
-        except TypeError:
-            pass
-
-        self._populate_list(classes)
-
-    def request_classes(self):
-        self.network_service.db_classes_received.connect(
-            self._on_classes_received_for_list
-        )
-        self.network_service.request_db_classes()
-
     def _refresh_list(self) -> None:
-
-        self.request_classes()
+        self._waiting_classes = True
+        self.network_service.request_db_classes()
         print(f"[ClassManager] Loaded classes.")
 
-    def _handle_db_status(self, op_type: str, success: bool, msg: str) -> None:
-        if success:
+    def _handle_db_status(self, response: ServiceResponse) -> None:
+
+        if not (response.operation in ALLOW_DB_OPERATIONS):
             return
 
-        relevant_ops = ["add_class", "rename_class", "delete_class", "get_classes"]
+        if response.is_error:
+            if response.operation == DbOperation.GET_CLASSES:
+                if not self._waiting_classes:
+                    return
+                self._waiting_classes = False
 
-        if op_type not in relevant_ops and op_type != "unknown":
+            title = response.get_title()
+            msg = response.get_message_or_default()
+
+            QMessageBox.critical(self, title, msg)
             return
 
-        # TODO - Додати переклад
-        titles = {
-            "add_class": "Помилка створення класу",
-            "rename_class": "Помилка перейменування",
-            "delete_class": "Помилка видалення",
-            "get_classes": "Помилка завантаження списку",
-            "unknown": "Системна помилка",
-        }
+        match response.operation:
+            case DbOperation.ADD_CLASS:
+                self.add_cache_class(ObjectClass.from_dict(response.data))
+            case DbOperation.UPDATE_CLASS | DbOperation.RENAME_CLASS:
+                self.update_cache_class(ObjectClass.from_dict(response.data))
+            case DbOperation.DELETE_CLASS:
+                id = response.data.get("id")
+                if id:
+                    self.delete_cache_class(id)
+            case DbOperation.GET_CLASSES:
+                classes_raw = response.data.get("classes", [])
+                classes_list = [ObjectClass.from_dict(c) for c in classes_raw]
 
-        # TODO - Додати переклад
-        title = titles.get(op_type, "Помилка операції")
+                if self._waiting_classes:
+                    self._waiting_classes = False
+                    self._populate_list(classes_list)
 
-        QMessageBox.critical(self, title, msg)
+        print(f"[ObjectManager] DB Operation '{response.operation}': ...")
 
     def _on_item_clicked(self, item: QListWidgetItem) -> None:
         self.ui.inpClassName.setText(item.text())
-        # TODO - Додати переклад
-        self.ui.btnAdd.setText("Зберегти")
+        self.ui.btnAdd.setText(self.tr("Save"))
 
     def _clear_selection(self) -> None:
         self.ui.lstClasses.clearSelection()
         self.ui.inpClassName.clear()
-        # TODO - Додати переклад
-        self.ui.btnAdd.setText("Додати")
+        self.ui.btnAdd.setText(self.tr("Add"))
 
     def _handle_save(self) -> None:
         text = self.ui.inpClassName.text().strip()
@@ -177,7 +180,7 @@ class ClassManagerDialog(QDialog):
             )
             if index is not None:
                 old_class = self.cached_classes[index]
-                new_class = ObjectClass(id=None, name=text)
+                new_class = ObjectClass(id=old_class.id, name=text)
 
                 self.network_service.request_db_rename_class(old_class, new_class)
 
@@ -187,8 +190,11 @@ class ClassManagerDialog(QDialog):
             is_repeat = any(x.name == text for x in self.cached_classes)
 
             if is_repeat:
-                # TODO - Додати переклад
-                QMessageBox.critical(self, "Увага", "Клас з такою назвою вже існує.")
+                QMessageBox.critical(
+                    self,
+                    self.tr("Warning"),
+                    self.tr("Class with this name already exists."),
+                )
                 return
 
             new_class = ObjectClass(id=None, name=text)
@@ -197,19 +203,19 @@ class ClassManagerDialog(QDialog):
     def _delete_class(self) -> None:
         item = self.ui.lstClasses.currentItem()
         if not item:
-            # TODO - Додати переклад
-            QMessageBox.warning(self, "Увага", "Виберіть клас для видалення.")
+            QMessageBox.warning(
+                self, self.tr("Warning"), self.tr("Select a class to delete.")
+            )
             return
 
         class_name = item.text()
         class_id_data = item.data(Qt.ItemDataRole.UserRole)
         class_id = int(class_id_data) if class_id_data is not None else -1
 
-        # TODO - Додати переклад
         res = QMessageBox.question(
             self,
-            "Видалення",
-            f"Видалити клас '{class_name}'?",
+            self.tr("Delete"),
+            self.tr("Delete class '{}'?").format(class_name),
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
 

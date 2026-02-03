@@ -2,7 +2,6 @@ import math
 from typing import List, Any, Optional, Callable
 
 from PyQt6.QtCore import QObject, pyqtSignal, QRunnable, QThreadPool, pyqtSlot
-
 from sqlalchemy import (
     create_engine,
     Column,
@@ -26,6 +25,7 @@ from sqlalchemy.event import listen
 
 from app.models.detection_object import DetectionObject
 from app.models.object_class import ObjectClass
+from app.models.service_response import ServiceResponse, StatusCode, DbOperation
 
 DB_CONNECTION_STRING: str = "sqlite:///./temp/sdr_pi.db"
 
@@ -68,20 +68,8 @@ class DBWorker(QRunnable):
 
 
 class DatabaseService(QObject):
-    # Основні сигнали для списків
-    objects_all_loaded = pyqtSignal(list, int)
-    objects_page_loaded = pyqtSignal(list, int, int)
-    classes_loaded = pyqtSignal(list)
-    operation_status = pyqtSignal(str, bool, str)
-
-    # Сигнали подій (Event-Driven)
-    object_added = pyqtSignal(DetectionObject)
-    object_updated = pyqtSignal(DetectionObject)
-    object_deleted = pyqtSignal(int)
-
-    class_added = pyqtSignal(ObjectClass)
-    class_updated = pyqtSignal(ObjectClass)
-    class_deleted = pyqtSignal(int)
+    # Єдиний сигнал для результату операцій
+    request_finished = pyqtSignal(ServiceResponse)
 
     def __init__(self, parent: Optional[QObject] = None) -> None:
         super().__init__(parent)
@@ -155,6 +143,13 @@ class DatabaseService(QObject):
 
     def _fetch_all_task(self) -> None:
         session: Session = self.Session()
+
+        resp = ServiceResponse(
+            operation=DbOperation.GET_ALL_OBJECTS,
+            status=StatusCode.INTERNAL_ERROR,
+            message="Init",
+        )
+
         try:
             signatures = (
                 session.query(Signature)
@@ -163,22 +158,33 @@ class DatabaseService(QObject):
                 .all()
             )
 
-            data = [self._signature_to_dto(s) for s in signatures]
+            items_data = [self._signature_to_dto(s).to_dict() for s in signatures]
+            count = len(items_data)
 
-            self.objects_all_loaded.emit(data, len(data))
+            resp.status = StatusCode.OK
+            resp.message = f"Successfully loaded {count} objects"
+
+            resp.data = {"items": items_data, "count": count}
 
         except Exception as e:
             print(f"[DB Error Fetch All] {e}")
-            self.objects_all_loaded.emit([], 0)
+            resp.message = f"Error fetching all objects: {str(e)}"
+
         finally:
             session.close()
+            self.request_finished.emit(resp)
 
     def _fetch_page_task(self, page: int, page_size: int) -> None:
         session: Session = self.Session()
+        resp = ServiceResponse(
+            operation=DbOperation.GET_OBJECTS_PAGE,
+            status=StatusCode.INTERNAL_ERROR,
+            message="Init",
+        )
+
         try:
             total_items: int = session.query(func.count(Signature.id)).scalar() or 0
             total_pages: int = math.ceil(total_items / page_size) if page_size else 0
-
             page = max(1, min(page, total_pages)) if total_pages > 0 else 1
             offset: int = (page - 1) * page_size
 
@@ -191,22 +197,66 @@ class DatabaseService(QObject):
                 .all()
             )
 
-            data = [self._signature_to_dto(s) for s in signatures]
+            items_data = [self._signature_to_dto(s).to_dict() for s in signatures]
 
-            self.objects_page_loaded.emit(data, page, total_items)
+            resp.status = StatusCode.OK
+            resp.message = "Page loaded"
+
+            resp.data = {
+                "items": items_data,
+                "page": page,
+                "total": total_items,
+                "total_pages": total_pages,
+            }
 
         except Exception as e:
-            print(f"[DB Error Fetch Page] {e}")
-            self.objects_page_loaded.emit([], 1, 0)
+            resp.message = str(e)
         finally:
             session.close()
+            self.request_finished.emit(resp)
+
+    def _fetch_classes_task(self) -> None:
+        session: Session = self.Session()
+        resp = ServiceResponse(
+            operation=DbOperation.GET_CLASSES,
+            status=StatusCode.INTERNAL_ERROR,
+            message="Init",
+        )
+
+        try:
+            results = session.query(ObjectClassEntity).all()
+            classes_dicts = [
+                ObjectClass(id=row.id, name=str(row.name)).to_dict() for row in results
+            ]
+
+            resp.status = StatusCode.OK
+            resp.message = "Classes loaded"
+            resp.data = {"classes": classes_dicts}
+
+        except Exception as e:
+            resp.message = str(e)
+        finally:
+            session.close()
+            self.request_finished.emit(resp)
+
+    # --- UPDATED CRUD TASKS (Logic with Status Codes) ---
 
     def _add_object_task(self, obj_data: DetectionObject) -> None:
         session: Session = self.Session()
+        resp = ServiceResponse(
+            operation=DbOperation.ADD_OBJECT,
+            status=StatusCode.INTERNAL_ERROR,
+            message="Init",
+        )
+
         try:
+            if not obj_data.name:
+                raise ValueError("Object name is required")
+
             target_class_id = obj_data.class_id
             target_class_name = obj_data.object_class
 
+            # Логіка пошуку класу...
             if not target_class_id:
                 obj_class = (
                     session.query(ObjectClassEntity)
@@ -214,7 +264,9 @@ class DatabaseService(QObject):
                     .first()
                 )
                 if not obj_class:
-                    raise ValueError(f"Class '{obj_data.object_class}' not found")
+                    resp.status = StatusCode.BAD_REQUEST
+                    resp.message = f"Class '{obj_data.object_class}' not found"
+                    return
                 target_class_id = obj_class.id
                 target_class_name = obj_class.name
             else:
@@ -244,43 +296,45 @@ class DatabaseService(QObject):
                 sound_params_hz=new_sig.sound_params,
             )
 
-            self.operation_status.emit("add_object", True, "Object successfully added")
+            resp.status = StatusCode.CREATED
+            resp.message = "Object successfully added"
+            resp.data = created_dto.to_dict()
 
-            self.object_added.emit(created_dto)
-
+        except ValueError as e:
+            session.rollback()
+            resp.status = StatusCode.BAD_REQUEST
+            resp.message = str(e)
+        except IntegrityError:
+            session.rollback()
+            resp.status = StatusCode.CONFLICT
+            resp.message = "Database integrity error (duplicate?)"
         except Exception as e:
             session.rollback()
-            self.operation_status.emit("add_object", False, str(e))
+            resp.status = StatusCode.INTERNAL_ERROR
+            resp.message = f"DB Error: {str(e)}"
         finally:
             session.close()
+            self.request_finished.emit(resp)
 
     def _update_object_task(self, obj_data: DetectionObject) -> None:
         session: Session = self.Session()
+        resp = ServiceResponse(
+            operation=DbOperation.UPDATE_OBJECT,
+            status=StatusCode.INTERNAL_ERROR,
+            message="Init",
+        )
+
         try:
             if obj_data.id is None:
-                raise ValueError("Object ID is required for update")
+                raise ValueError("ID required")
 
             sig = session.query(Signature).get(obj_data.id)
             if not sig:
-                raise ValueError("Object not found")
+                resp.status = StatusCode.NOT_FOUND
+                resp.message = f"Object with ID {obj_data.id} not found"
+                return
 
-            target_class_id = obj_data.class_id
-            target_class_name = obj_data.object_class
-
-            if not target_class_id:
-                obj_class = (
-                    session.query(ObjectClassEntity)
-                    .filter_by(name=obj_data.object_class)
-                    .first()
-                )
-                if not obj_class:
-                    raise ValueError(f"Class '{obj_data.object_class}' not found")
-                target_class_id = obj_class.id
-                target_class_name = obj_class.name
-            else:
-                obj_class = session.query(ObjectClassEntity).get(target_class_id)
-                if obj_class:
-                    target_class_name = obj_class.name
+            target_class_id = obj_data.class_id or sig.class_id
 
             sig.name = obj_data.name
             sig.class_id = target_class_id
@@ -291,96 +345,107 @@ class DatabaseService(QObject):
             session.commit()
             session.refresh(sig)
 
-            updated_dto = DetectionObject(
-                id=sig.id,
-                name=sig.name,
-                class_id=sig.class_id,
-                object_class=target_class_name,
-                is_dangerous=sig.is_dangerous,
-                rf_params_hz=sig.rf_params,
-                sound_params_hz=sig.sound_params,
-            )
+            updated_dto = self._signature_to_dto(sig)
 
-            self.operation_status.emit(
-                "update_object", True, "Object successfully updated"
-            )
-
-            self.object_updated.emit(updated_dto)
+            resp.status = StatusCode.OK
+            resp.message = "Object updated"
+            resp.data = updated_dto.to_dict()
 
         except Exception as e:
             session.rollback()
-            self.operation_status.emit("update_object", False, str(e))
+            resp.status = StatusCode.INTERNAL_ERROR
+            resp.message = str(e)
         finally:
             session.close()
+            self.request_finished.emit(resp)
 
     def _delete_object_task(self, object_id: int) -> None:
         session: Session = self.Session()
+        resp = ServiceResponse(
+            operation=DbOperation.DELETE_OBJECT,
+            status=StatusCode.INTERNAL_ERROR,
+            message="Init",
+        )
+
         try:
             rows = session.query(Signature).filter(Signature.id == object_id).delete()
-            if rows == 0:
-                raise ValueError("Object not found or already deleted")
-
             session.commit()
 
-            self.operation_status.emit(
-                "delete_object", True, "Object successfully deleted"
-            )
-            self.object_deleted.emit(object_id)
+            if rows == 0:
+                resp.status = StatusCode.NOT_FOUND
+                resp.message = "Object not found"
+            else:
+                resp.status = StatusCode.OK
+                resp.message = "Object deleted"
+                resp.data = {"id": object_id}
 
         except Exception as e:
             session.rollback()
-            self.operation_status.emit("delete_object", False, str(e))
+            resp.status = StatusCode.INTERNAL_ERROR
+            resp.message = str(e)
         finally:
             session.close()
-
-    def _fetch_classes_task(self) -> None:
-        session: Session = self.Session()
-        try:
-            results = session.query(ObjectClassEntity).all()
-            classes_dtos = [
-                ObjectClass(id=row.id, name=str(row.name)) for row in results
-            ]
-            self.classes_loaded.emit(classes_dtos)
-        except Exception as e:
-            print(f"[DB Error Fetch Classes] {e}")
-        finally:
-            session.close()
+            self.request_finished.emit(resp)
 
     def _add_class_task(self, class_data: ObjectClass) -> None:
         session: Session = self.Session()
+        resp = ServiceResponse(
+            operation=DbOperation.ADD_CLASS,
+            status=StatusCode.INTERNAL_ERROR,
+            message="Init",
+        )
+
         try:
+            if not class_data.name:
+                raise ValueError("Class name required")
+
             existing = (
                 session.query(ObjectClassEntity).filter_by(name=class_data.name).first()
             )
             if existing:
-                raise ValueError(f"Class '{class_data.name}' already exists.")
+                resp.status = StatusCode.CONFLICT
+                resp.message = f"Class '{class_data.name}' already exists"
+                return
 
             new_class = ObjectClassEntity(name=class_data.name)
             session.add(new_class)
             session.commit()
             session.refresh(new_class)
 
-            created_dto = ObjectClass(id=new_class.id, name=new_class.name)
+            resp.status = StatusCode.CREATED
+            resp.message = "Class added"
+            resp.data = ObjectClass(id=new_class.id, name=new_class.name).to_dict()
 
-            self.operation_status.emit("add_class", True, "Class successfully added")
-            self.class_added.emit(created_dto)
-
+        except ValueError as e:
+            resp.status = StatusCode.BAD_REQUEST
+            resp.message = str(e)
         except Exception as e:
             session.rollback()
-            self.operation_status.emit("add_class", False, str(e))
+            resp.status = StatusCode.INTERNAL_ERROR
+            resp.message = str(e)
         finally:
             session.close()
+            self.request_finished.emit(resp)
 
     def _update_class_task(self, class_data: ObjectClass) -> None:
         session: Session = self.Session()
+        resp = ServiceResponse(
+            operation=DbOperation.UPDATE_CLASS,
+            status=StatusCode.INTERNAL_ERROR,
+            message="Init",
+        )
+
         try:
             if not class_data.id:
-                raise ValueError("Class ID is required")
+                raise ValueError("Class ID required")
 
             entity = session.query(ObjectClassEntity).get(class_data.id)
             if not entity:
-                raise ValueError("Class not found")
+                resp.status = StatusCode.NOT_FOUND
+                resp.message = "Class not found"
+                return
 
+            # Check duplication if name changed
             if entity.name != class_data.name:
                 existing = (
                     session.query(ObjectClassEntity)
@@ -388,49 +453,67 @@ class DatabaseService(QObject):
                     .first()
                 )
                 if existing:
-                    raise ValueError(f"Name '{class_data.name}' is taken")
+                    resp.status = StatusCode.CONFLICT
+                    resp.message = "Class name already taken"
+                    return
 
             entity.name = class_data.name
             session.commit()
             session.refresh(entity)
 
-            updated_dto = ObjectClass(id=entity.id, name=entity.name)
+            resp.status = StatusCode.OK
+            resp.message = "Class updated"
+            resp.data = ObjectClass(id=entity.id, name=entity.name).to_dict()
 
-            self.operation_status.emit("update_class", True, "Class updated")
-            self.class_updated.emit(updated_dto)
-
+        except ValueError as e:
+            resp.status = StatusCode.BAD_REQUEST
+            resp.message = str(e)
         except Exception as e:
             session.rollback()
-            self.operation_status.emit("update_class", False, str(e))
+            resp.status = StatusCode.INTERNAL_ERROR
+            resp.message = str(e)
         finally:
             session.close()
+            self.request_finished.emit(resp)
 
     def _delete_class_task(self, class_id: int) -> None:
         session: Session = self.Session()
+        resp = ServiceResponse(
+            operation=DbOperation.DELETE_CLASS,
+            status=StatusCode.INTERNAL_ERROR,
+            message="Init",
+        )
+
         try:
-            usage_count = (
+            usage = (
                 session.query(func.count(Signature.id))
                 .filter(Signature.class_id == class_id)
                 .scalar()
             )
-            if usage_count > 0:
-                raise ValueError(f"Cannot delete class. Used by {usage_count} objects.")
+            if usage > 0:
+                resp.status = StatusCode.CONFLICT
+                resp.message = f"Cannot delete: Class used by {usage} objects"
+                return
 
             rows = (
                 session.query(ObjectClassEntity)
                 .filter(ObjectClassEntity.id == class_id)
                 .delete()
             )
-            if rows == 0:
-                raise ValueError("Class not found")
-
             session.commit()
 
-            self.operation_status.emit("delete_class", True, "Class deleted")
-            self.class_deleted.emit(class_id)
+            if rows == 0:
+                resp.status = StatusCode.NOT_FOUND
+                resp.message = "Class not found"
+            else:
+                resp.status = StatusCode.OK
+                resp.message = "Class deleted"
+                resp.data = {"id": class_id}
 
         except Exception as e:
             session.rollback()
-            self.operation_status.emit("delete_class", False, str(e))
+            resp.status = StatusCode.INTERNAL_ERROR
+            resp.message = str(e)
         finally:
             session.close()
+            self.request_finished.emit(resp)

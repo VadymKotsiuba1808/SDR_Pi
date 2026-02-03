@@ -23,6 +23,7 @@ from temp.database_service import DatabaseService
 from app.models.detection_object import DetectionObject
 from app.models.object_class import ObjectClass
 from app.models.gps_data import GPSData
+from app.models.service_response import ServiceResponse, DbOperation
 
 # --- КОНФІГУРАЦІЯ СИМУЛЯЦІЇ ---
 SIMULATION_RADIUS_METERS = 85000  # 85 км
@@ -274,8 +275,9 @@ class AdvancedNetworkUtility(QObject):
         """Ініціалізація та запуск."""
         print("[NetService] Initializing...")
 
-        # 1. Завантаження шаблонів
-        self.db.objects_all_loaded.connect(self._on_templates_loaded)
+        # 1. Завантаження шаблонів (через новий механізм)
+        # request_all_objects тепер повертає ServiceResponse з data={"items": [...]}
+        # Тому ми підписуємось на request_finished, а не на old signal
         self.db.request_all_objects()
 
         # 2. Запуск сервера
@@ -290,42 +292,42 @@ class AdvancedNetworkUtility(QObject):
 
     # --- DB SIGNAL CONNECTIONS ---
     def _setup_db_signals(self):
-        self.db.objects_page_loaded.connect(self._send_db_page)
-        self.db.classes_loaded.connect(self._send_db_classes)
-        self.db.operation_status.connect(self._send_db_status)
+        # ЗАМІНЕНО: Підключаємось тільки до одного сигналу
+        self.db.request_finished.connect(self._send_db_generic_response)
 
-        self.db.object_added.connect(
-            lambda obj: self._send_event(
-                "db_event_object_added", {"object": obj.to_dict()}
-            )
-        )
-        self.db.object_updated.connect(
-            lambda obj: self._send_event(
-                "db_event_object_updated", {"object": obj.to_dict()}
-            )
-        )
-        self.db.object_deleted.connect(
-            lambda oid: self._send_event("db_event_object_deleted", {"id": oid})
-        )
-        self.db.class_added.connect(
-            lambda cls: self._send_event(
-                "db_event_class_added", {"class": cls.to_dict()}
-            )
-        )
-        self.db.class_updated.connect(
-            lambda cls: self._send_event(
-                "db_event_class_renamed", {"class": cls.to_dict()}
-            )
-        )
-        self.db.class_deleted.connect(
-            lambda cid: self._send_event("db_event_class_deleted", {"id": cid})
-        )
+    @pyqtSlot(object)
+    def _send_db_generic_response(self, response: ServiceResponse):
+        """
+        Універсальний обробник відповідей від БД.
+        Відправляє результат клієнту і оновлює симуляцію, якщо треба.
+        """
+        # 1. Відправка клієнту
+        packet_data = response.to_dict()
+        self._send_packet("db_operation_result", packet_data)
 
-    @pyqtSlot(list, int)
-    def _on_templates_loaded(self, objects: List[DetectionObject], count: int):
-        self.detection_templates = objects
-        print(f"[NetService] Simulation loaded {len(objects)} templates from DB.")
-        if not self.detection_templates:
+        # 2. Оновлення симуляції (якщо це успішна зміна об'єктів або перше завантаження)
+        if response.is_success:
+            if response.operation == DbOperation.GET_ALL_OBJECTS:
+                self._on_templates_loaded(response.data)
+
+            elif response.operation in [
+                DbOperation.ADD_OBJECT,
+                DbOperation.UPDATE_OBJECT,
+            ]:
+                print(
+                    "[NetService] DB Object changed. Refreshing simulation templates..."
+                )
+                self.db.request_all_objects()
+
+    def _on_templates_loaded(self, data: Dict[str, Any]):
+        """Callback для початкового завантаження шаблонів."""
+        items_raw = data.get("items", [])
+        if items_raw:
+            self.detection_templates = [DetectionObject.from_dict(d) for d in items_raw]
+            print(
+                f"[NetService] Simulation loaded {len(self.detection_templates)} templates."
+            )
+        else:
             print("[NetService] WARNING: No objects in DB. Simulation will be empty.")
 
     # --- NETWORK HANDLING ---
@@ -443,25 +445,48 @@ class AdvancedNetworkUtility(QObject):
             print(f"[NetService] HARDWARE: Relays OFF")
             return
 
-        # --- DB PROXY COMMANDS ---
+        # --- DB PROXY COMMANDS (Updated for new Logic) ---
+
+        # Обробляємо команди і викликаємо відповідні методи БД сервісу
+        # DatabaseService тепер повертає результат через request_finished -> _send_db_generic_response
+
         if action == "db_request_page":
             self.db.request_objects_page(data.get("page", 1), data.get("size", 10))
+
         elif action == "db_request_add":
-            self.db.add_object(DetectionObject.from_dict(data.get("object")))
+            obj_data = data.get("object")
+            if obj_data:
+                self.db.add_object(DetectionObject.from_dict(obj_data))
+
         elif action == "db_request_update":
-            self.db.update_object(DetectionObject.from_dict(data.get("object")))
+            obj_data = data.get("object")
+            if obj_data:
+                self.db.update_object(DetectionObject.from_dict(obj_data))
+
         elif action == "db_request_delete":
             self.db.delete_object(data.get("id"))
+
         elif action == "db_request_classes":
             self.db.request_classes()
+
         elif action == "db_request_add_class":
-            self.db.add_class(ObjectClass.from_dict(data.get("class")))
+            cls_data = data.get("class")
+            if cls_data:
+                self.db.add_class(ObjectClass.from_dict(cls_data))
+
         elif action == "db_request_rename_class":
-            cls = ObjectClass(
-                id=data.get("old_class", {}).get("id"),
-                name=data.get("new_class", {}).get("name"),
-            )
-            self.db.update_class(cls)
+            # Уніфікуємо логіку Update Class
+            # Клієнт шле old_class/new_class, але для update_class нам треба об'єкт з ID
+            old_cls_dict = data.get("old_class")
+            new_cls_dict = data.get("new_class")
+
+            if old_cls_dict and new_cls_dict:
+                cls_id = old_cls_dict.get("id")
+                new_name = new_cls_dict.get("name")
+                if cls_id and new_name:
+                    cls_obj = ObjectClass(id=cls_id, name=new_name)
+                    self.db.update_class(cls_obj)
+
         elif action == "db_request_delete_class":
             self.db.delete_class(data.get("id"))
 
@@ -617,31 +642,6 @@ class AdvancedNetworkUtility(QObject):
             self.client_socket.flush()
         except Exception as e:
             print(f"[NetService] Send Error: {e}")
-
-    def _send_event(self, action: str, data: Any):
-        self._send_packet(action, data)
-
-    # --- DB SLOTS HANDLERS ---
-    @pyqtSlot(list, int, int)
-    def _send_db_page(self, items, page, total):
-        data_list = [obj.to_dict() for obj in items]
-        self._send_packet(
-            "db_response_page", {"items": data_list, "page": page, "total": total}
-        )
-
-    @pyqtSlot(list)
-    def _send_db_classes(self, classes):
-        data_list = [c.to_dict() for c in classes]
-        self._send_packet("db_response_classes", {"classes": data_list})
-
-    @pyqtSlot(str, bool, str)
-    def _send_db_status(self, op, success, msg):
-        self._send_packet(
-            "db_response_status", {"op": op, "success": success, "msg": msg}
-        )
-        if success and ("object" in op):
-            print("[NetService] DB Objects changed. Refreshing simulation templates...")
-            self.db.request_all_objects()
 
 
 if __name__ == "__main__":

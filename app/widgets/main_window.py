@@ -76,6 +76,7 @@ from app.models.object_class import ObjectClass
 from app.models.log_entries import LogEntry, LogType, FalseAlarmPayload
 from app.models.gps_data import GPSData
 from app.models.detection_background import DetectionBackground
+from app.models.service_response import ServiceResponse, DbOperation
 
 
 from app.utils.ui_utils import update_element_styles, move_dialog_down
@@ -643,18 +644,23 @@ class MainWindow(QMainWindow):
         move_dialog_down(logs_dialog, self.geometry())
         logs_dialog.exec()
 
-    def _on_classes_received_for_logs(self, classes: List[ObjectClass]):
-        try:
-            self.pi_network.db_classes_received.disconnect(
+    def _on_classes_received_for_logs(self, response: ServiceResponse):
+
+        if response.operation == DbOperation.GET_CLASSES:
+            self.pi_network.request_finished.disconnect(
                 self._on_classes_received_for_logs
             )
-        except TypeError:
-            pass
+
+        if response.is_error:
+            return
+
+        classes_raw = response.data.get("classes", [])
+        classes = [ObjectClass.from_dict(c) for c in classes_raw]
 
         self.open_logs_dialog(classes)
 
     def request_classes_and_open_logs_dialog(self):
-        self.pi_network.db_classes_received.connect(self._on_classes_received_for_logs)
+        self.pi_network.request_finished.connect(self._on_classes_received_for_logs)
         self.pi_network.request_db_classes()
 
     def open_chart_monitor_dialog(self):

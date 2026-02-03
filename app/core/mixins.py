@@ -11,3 +11,7 @@ class TranslatorMixin:
         return QCoreApplication.translate(
             self.__class__.__name__, text, disambiguation, n
         )
+
+    @classmethod
+    def tr_s(cls, text: str, disambiguation: str = None, n: int = -1) -> str:
+        return QCoreApplication.translate(cls.__name__, text, disambiguation, n)

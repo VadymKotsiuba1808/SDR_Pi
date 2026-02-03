@@ -8,8 +8,10 @@ SOURCES +=  main.py \
             services/*.py \
             core/*.py \
             ui/*.py \
+            ui/components/*.py \
             utils/*.py \
-            validators/*.py
+            validators/*.py \
+            models/*.py
 
 # UI-файли (Qt Designer)
 FORMS +=    ui/*.ui

@@ -397,14 +397,9 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(
                 self,
                 self.tr("Not enough disk space"),
-                self.tr(
-                    "Available only: "
-                    + str(available_mb)
-                    + self.tr("MB.")
-                    + "\n"
-                    + self.tr(
-                        "To use media functions and logging, please free up disk space."
-                    )
+                self.tr("Available only: {} MB.\n").format(str(available_mb))
+                + self.tr(
+                    "To use media functions and logging, please free up disk space."
                 ),
             )
             return False
@@ -462,7 +457,7 @@ class MainWindow(QMainWindow):
         target_event = self.find_event_by_searched_index()
 
         if target_event:
-            if target_event.type == DetectionType.RF:
+            if target_event.type == SourceType.RF:
                 freq_line = self.tr("{:.3f} GHz").format(
                     convert_hz_to_ghz(target_event.frequency_hz)
                 )

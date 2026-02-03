@@ -10,7 +10,7 @@ from PyQt6.QtWidgets import (
     QFileDialog,
     QWidget,
     QPushButton,
-    QDoubleSpinBox,
+    QSpinBox,
     QApplication,
 )
 from PyQt6.QtCore import (
@@ -85,7 +85,7 @@ from app.utils.system_utils import (
     restart_process,
 )
 from app.utils.geo_utils import calculate_distance
-from app.utils.convert_measurement_unit import convert_hz_to_ghz
+from app.utils.convert_measurement_unit import convert_hz_to_mhz
 
 STATIONARY_SECONDS = 10
 
@@ -208,7 +208,7 @@ class MainWindow(QMainWindow):
         self.pi_network.gps_received.connect(self.handle_gps)
         self.pi_network.detection_received.connect(self.handle_detection)
         self.pi_network.background_received.connect(self.handle_detection_background)
-        self.pi_network.set_rf_range(self.settings_service.radio_range_ghz)
+        self.pi_network.set_rf_range(self.settings_service.radio_range_mhz)
 
         self.log_service = LogService()
 
@@ -259,9 +259,9 @@ class MainWindow(QMainWindow):
         radar_radius = self.settings_service.radar_radius_km
         self.ui.radarRadiusSpinbox.setValue(radar_radius)
 
-        radio_range = self.settings_service.radio_range_ghz
-        self.ui.radioStartDoubleSpinBox.setValue(float(radio_range[0]))
-        self.ui.radioEndDoubleSpinBox.setValue(float(radio_range[1]))
+        radio_range = self.settings_service.radio_range_mhz
+        self.ui.radioStartSpinBox.setValue(int(radio_range[0]))
+        self.ui.radioEndSpinBox.setValue(int(radio_range[1]))
 
         current_lang = self.settings_service.lang_code
         self.ui.langComboBox.setCurrentIndex(1 if current_lang == "en" else 0)
@@ -301,12 +301,8 @@ class MainWindow(QMainWindow):
         self.ui.clearRadioRangePushButton.clicked.connect(self.clear_radio_range_values)
         self.ui.chartRangePushButton.clicked.connect(self.open_chart_monitor_dialog)
 
-        self.ui.radioStartDoubleSpinBox.valueChanged.connect(
-            self.handle_signal_range_change
-        )
-        self.ui.radioEndDoubleSpinBox.valueChanged.connect(
-            self.handle_signal_range_change
-        )
+        self.ui.radioStartSpinBox.valueChanged.connect(self.handle_signal_range_change)
+        self.ui.radioEndSpinBox.valueChanged.connect(self.handle_signal_range_change)
 
         self.ui.langComboBox.currentIndexChanged.connect(self.change_language)
 
@@ -458,8 +454,8 @@ class MainWindow(QMainWindow):
 
         if target_event:
             if target_event.type == SourceType.RF:
-                freq_line = self.tr("{:.3f} GHz").format(
-                    convert_hz_to_ghz(target_event.frequency_hz)
+                freq_line = self.tr("{:.1f} MHz").format(
+                    convert_hz_to_mhz(target_event.frequency_hz)
                 )
 
             else:
@@ -468,14 +464,14 @@ class MainWindow(QMainWindow):
             time_part = target_event.timestamp.split("T")[-1][:8]
             info = "\n".join(
                 [
-                    self.tr("INDEX: {}").format(self.searched_index),
-                    "----------------------",
+                    self.tr("INDEX:{}").format(self.searched_index),
+                    "---------------------",
                     self.tr("TYPE: {}").format(target_event.type),
                     self.tr("NAME: {}").format(target_event.name.upper()),
-                    self.tr("CLASS: {}").format(target_event.object_class.upper()),
+                    self.tr("CLASS:{}").format(target_event.object_class.upper()),
                     self.tr("FREQ: {}").format(freq_line),
                     self.tr("DIST: {:.3f} km").format(target_event.distance_km),
-                    self.tr("ANGLE: {:.1f}°").format(target_event.angle),
+                    self.tr("ANGLE:{:.1f}°").format(target_event.angle),
                     self.tr("CONF: {:.1f}%").format(target_event.confidence * 100),
                     self.tr("TIME: {}").format(time_part),
                 ]
@@ -863,46 +859,46 @@ class MainWindow(QMainWindow):
         self.scale_map()
 
     def set_radio_range(self) -> None:
-        start_value = self.ui.radioStartDoubleSpinBox.value()
-        end_value = self.ui.radioEndDoubleSpinBox.value()
+        start_value = self.ui.radioStartSpinBox.value()
+        end_value = self.ui.radioEndSpinBox.value()
 
-        self.settings_service.radio_range_ghz = [start_value, end_value]
+        self.settings_service.radio_range_mhz = [start_value, end_value]
         self.reset_radio_range_status()
 
         self.pi_network.set_rf_range([start_value, end_value])
 
     def clear_radio_range_values(self) -> None:
-        radio_range = self.settings_service.radio_range_ghz
+        radio_range = self.settings_service.radio_range_mhz
 
-        self.ui.radioStartDoubleSpinBox.setValue(float(radio_range[0]))
-        self.ui.radioEndDoubleSpinBox.setValue(float(radio_range[1]))
+        self.ui.radioStartSpinBox.setValue(int(radio_range[0]))
+        self.ui.radioEndSpinBox.setValue(int(radio_range[1]))
 
         self.reset_radio_range_status()
 
     def reset_radio_range_status(self) -> None:
-        self.ui.radioStartDoubleSpinBox.setProperty("status", "saved")
-        self.ui.radioEndDoubleSpinBox.setProperty("status", "saved")
+        self.ui.radioStartSpinBox.setProperty("status", "saved")
+        self.ui.radioEndSpinBox.setProperty("status", "saved")
 
-        update_element_styles(self.ui.radioStartDoubleSpinBox)
-        update_element_styles(self.ui.radioEndDoubleSpinBox)
+        update_element_styles(self.ui.radioStartSpinBox)
+        update_element_styles(self.ui.radioEndSpinBox)
 
         self.ui.saveRadioRangePushButton.setEnabled(False)
         update_element_styles(self.ui.saveRadioRangePushButton)
         self.ui.clearRadioRangePushButton.setEnabled(False)
         update_element_styles(self.ui.clearRadioRangePushButton)
 
-    def handle_signal_range_change(self, value: float) -> None:
-        current_spin_box = cast(QDoubleSpinBox, self.sender())
+    def handle_signal_range_change(self, value: int) -> None:
+        current_spin_box = cast(QSpinBox, self.sender())
 
-        start_spin_box: Optional[QDoubleSpinBox] = None
-        end_spin_box: Optional[QDoubleSpinBox] = None
+        start_spin_box: Optional[QSpinBox] = None
+        end_spin_box: Optional[QSpinBox] = None
 
         name = current_spin_box.objectName()
-        if name == "radioStartDoubleSpinBox":
+        if name == "radioStartSpinBox":
             start_spin_box = current_spin_box
-            end_spin_box = self.ui.radioEndDoubleSpinBox
-        elif name == "radioEndDoubleSpinBox":
-            start_spin_box = self.ui.radioStartDoubleSpinBox
+            end_spin_box = self.ui.radioEndSpinBox
+        elif name == "radioEndSpinBox":
+            start_spin_box = self.ui.radioStartSpinBox
             end_spin_box = current_spin_box
 
         if start_spin_box is None or end_spin_box is None:

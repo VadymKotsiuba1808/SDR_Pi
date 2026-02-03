@@ -11,7 +11,7 @@ from app.services.keyboard_service import KeyboardService
 from app.models.detection_object import DetectionObject
 from app.models.object_class import ObjectClass
 from app.ui.ui_object_editor_dialog import Ui_ObjectEditorDialog
-from app.utils.convert_measurement_unit import convert_ghz_to_hz, convert_hz_to_ghz
+from app.utils.convert_measurement_unit import convert_mhz_to_hz, convert_hz_to_mhz
 
 
 class ObjectEditorDialog(QDialog):
@@ -154,12 +154,12 @@ class ObjectEditorDialog(QDialog):
                 if isinstance(rf_str, str):
                     try:
                         parts = rf_str.split(RF_PARAMS__DIVIDER)
-                        f_min = convert_hz_to_ghz(float(parts[0]))
-                        f_max = convert_hz_to_ghz(float(parts[1]))
+                        f_min = convert_hz_to_mhz(float(parts[0]))
+                        f_max = convert_hz_to_mhz(float(parts[1]))
                         display_text = (
-                            self.tr("{} GHz").format(f_min)
+                            self.tr("{} MHz").format(f_min)
                             if f_min == f_max
-                            else self.tr("{} - {} GHz").format(f_min, f_max)
+                            else self.tr("{} - {} MHz").format(f_min, f_max)
                         )
                         item = QListWidgetItem(display_text)
                         item.setData(Qt.ItemDataRole.UserRole, rf_str)
@@ -291,11 +291,11 @@ class ObjectEditorDialog(QDialog):
             self.ui.inpRFMin.setValue(f_min)
             self.ui.inpRFMax.setValue(f_max)
 
-        raw_string = f"{convert_ghz_to_hz(f_min)}-{convert_ghz_to_hz(f_max)}"
+        raw_string = f"{convert_mhz_to_hz(f_min)}-{convert_mhz_to_hz(f_max)}"
         display_text = (
-            self.tr("{} GHz").format(f_min)
+            self.tr("{} MHz").format(f_min)
             if f_min == f_max
-            else self.tr("{} - {} GHz").format(f_min, f_max)
+            else self.tr("{} - {} MHz").format(f_min, f_max)
         )
 
         item = QListWidgetItem(display_text)

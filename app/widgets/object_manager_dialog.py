@@ -22,7 +22,7 @@ from app.models.object_class import ObjectClass
 from app.models.service_response import ServiceResponse, DbOperation, StatusCode
 from app.ui.ui_object_manager_dialog import Ui_ObjectManager
 from app.utils.ui_utils import move_dialog_down
-from app.utils.convert_measurement_unit import convert_hz_to_ghz
+from app.utils.convert_measurement_unit import convert_hz_to_mhz
 
 ALLOW_DB_OPERATIONS = [
     DbOperation.ADD_OBJECT,
@@ -273,9 +273,9 @@ class ObjectManagerDialog(QDialog):
         if rf_list:
             if len(rf_list) == 1:
                 rf_arr = rf_list[0].split(RF_PARAMS__DIVIDER)
-                min = round(convert_hz_to_ghz(int(rf_arr[0])), 2)
-                max = round(convert_hz_to_ghz(int(rf_arr[1])), 2)
-                rf_str = self.tr("{}-{} GHz").format(min, max)
+                min = round(convert_hz_to_mhz(rf_arr[0]), 1)
+                max = round(convert_hz_to_mhz(rf_arr[1]), 1)
+                rf_str = self.tr("{}-{} MHz").format(min, max)
             else:
                 rf_str = self.tr("{} freq(s)").format(len(rf_list))
 
@@ -324,7 +324,7 @@ class ObjectManagerDialog(QDialog):
             parent=self,
             object_data=self.edit_obj,
         )
-        move_dialog_down(dialog, self.geometry(), -90)
+        move_dialog_down(dialog, self.geometry(), -70)
 
         if dialog.exec() == QDialog.DialogCode.Accepted:
             new_object = dialog.get_new_object()

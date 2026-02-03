@@ -10,11 +10,12 @@ mss
 opencv-python-headless
 bcrypt==4.0.1
 keyboard
-numpy
 pywin32; sys_platform == "win32"
 pynput
 psutil
 sqlalchemy
+
+pyqtgraph
 
 #Dev
 deptry

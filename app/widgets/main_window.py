@@ -53,6 +53,7 @@ from app.widgets.log_dialog import LogDialog
 from app.widgets.record_status_widget import RecordingStatusWidget
 from app.widgets.object_manager_dialog import ObjectManagerDialog
 from app.widgets.settings_dialog import SettingsDialog
+from app.widgets.chart_monitor_dialog import ChartMonitorDialog
 
 
 from app.services.pi_network_service import PiNetworkService
@@ -63,15 +64,18 @@ from app.services.recording_service import RecordingService
 from app.services.media_player_service import MediaPlayerService
 from app.services.log_service import LogService
 from app.services.jammer_service import JammerService
+from app.services.detection_background_service import DetectionBackgroundService
 
 
 from app.core.detection_manager import DetectionManager
 from app.core.map_view_logic import MapViewLogic
 
-from app.models.detection_event import DetectionEvent, DetectionType
+from app.models.source_type import SourceType
+from app.models.detection_event import DetectionEvent
 from app.models.object_class import ObjectClass
 from app.models.log_entries import LogEntry, LogType, FalseAlarmPayload
 from app.models.gps_data import GPSData
+from app.models.detection_background import DetectionBackground
 
 
 from app.utils.ui_utils import update_element_styles, move_dialog_down
@@ -126,7 +130,9 @@ class MainWindow(QMainWindow):
         self.update_wifi_signal_info()
         self.change_language()
 
-        self.update_gps_and_map()
+        # FIXME -
+        # TODO - розкоментувати
+        # self.update_gps_and_map()
         self._start_async_tasks()
 
         self.ui.Radar_Section.setAttribute(
@@ -138,7 +144,7 @@ class MainWindow(QMainWindow):
 
         # FIXME -
         # TODO - Видалити рефреш
-        self.refresh_map()
+        # self.refresh_map()
 
         print("[MainWindow] Initialization complete.")
 
@@ -200,9 +206,12 @@ class MainWindow(QMainWindow):
         self.pi_network.data_received.connect(self.handle_pi_data)
         self.pi_network.gps_received.connect(self.handle_gps)
         self.pi_network.detection_received.connect(self.handle_detection)
+        self.pi_network.background_received.connect(self.handle_detection_background)
         self.pi_network.set_rf_range(self.settings_service.radio_range_ghz)
 
         self.log_service = LogService()
+
+        self.detection_background_service = DetectionBackgroundService()
 
         # Змінні карти
         self.current_map_type_index: int = 0
@@ -289,7 +298,7 @@ class MainWindow(QMainWindow):
 
         self.ui.saveRadioRangePushButton.clicked.connect(self.set_radio_range)
         self.ui.clearRadioRangePushButton.clicked.connect(self.clear_radio_range_values)
-        self.ui.chartRangePushButton.clicked.connect(self.open_range_chart_dialog)
+        self.ui.chartRangePushButton.clicked.connect(self.open_chart_monitor_dialog)
 
         self.ui.radioStartDoubleSpinBox.valueChanged.connect(
             self.handle_signal_range_change
@@ -413,6 +422,9 @@ class MainWindow(QMainWindow):
         log = LogEntry(LogType.DETECTION, detection)
         self.log_service.add_log(log)
 
+    def handle_detection_background(self, background: DetectionBackground):
+        self.detection_background_service.add_background(background)
+
     def handle_radar_click(self, x, y):
         event_id = self.radar_renderer.get_target_id_at_position(x, y)
 
@@ -455,7 +467,7 @@ class MainWindow(QMainWindow):
                 f"TYPE:    {target_event.type}\n"
                 f"NAME:    {target_event.name.upper()}\n"
                 f"CLASS:   {target_event.object_class.upper()}\n"
-                f"FREQ:    {f"{convert_hz_to_ghz(target_event.frequency_hz):.3f} GHz" if(target_event.type==DetectionType.RF) else f"{(target_event.frequency_hz):.0f} Hz" } \n"
+                f"FREQ:    {f"{convert_hz_to_ghz(target_event.frequency_hz):.3f} GHz" if(target_event.type==SourceType.RF) else f"{(target_event.frequency_hz):.0f} Hz" } \n"
                 f"DIST:    {target_event.distance_km:.3f} km\n"
                 f"ANGLE:   {target_event.angle:.1f}°\n"
                 f"CONF:    {target_event.confidence * 100:.1f}%\n"
@@ -500,8 +512,8 @@ class MainWindow(QMainWindow):
     def update_alert_status(self) -> None:
         targets = self.detection_manager.get_targets()
 
-        has_rf = any(t.event.type == DetectionType.RF for t in targets)
-        has_sound = any(t.event.type == DetectionType.SOUND for t in targets)
+        has_rf = any(t.event.type == SourceType.RF for t in targets)
+        has_sound = any(t.event.type == SourceType.SOUND for t in targets)
 
         self.ui.RF_alert.setProperty("alert", has_rf)
         self.ui.Sound_alert.setProperty("alert", has_sound)
@@ -622,7 +634,12 @@ class MainWindow(QMainWindow):
 
     def open_logs_dialog(self, classes: List[ObjectClass]):
 
-        logs_dialog = LogDialog(self.log_service, classes, self.settings_service)
+        logs_dialog = LogDialog(
+            self.log_service,
+            self.detection_background_service,
+            classes,
+            self.settings_service,
+        )
         move_dialog_down(logs_dialog, self.geometry())
         logs_dialog.exec()
 
@@ -639,6 +656,11 @@ class MainWindow(QMainWindow):
     def request_classes_and_open_logs_dialog(self):
         self.pi_network.db_classes_received.connect(self._on_classes_received_for_logs)
         self.pi_network.request_db_classes()
+
+    def open_chart_monitor_dialog(self):
+        monitor_dialog = ChartMonitorDialog(self.pi_network, self.settings_service)
+        move_dialog_down(monitor_dialog, self.geometry())
+        monitor_dialog.exec()
 
     def open_settings_dialog(self) -> None:
         settings_dialog = SettingsDialog(self.settings_service)
@@ -715,10 +737,6 @@ class MainWindow(QMainWindow):
         final_zoom = math.floor(optimal_zoom)
 
         return max(0, min(19, final_zoom))
-
-    def open_range_chart_dialog(self) -> None:
-        # TODO: Implement chart dialog
-        pass
 
     # endregion
 

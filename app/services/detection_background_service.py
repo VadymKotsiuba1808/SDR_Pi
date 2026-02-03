@@ -1,0 +1,73 @@
+import os
+import json
+import threading
+from datetime import datetime
+from typing import List
+
+from app.models.detection_background import DetectionBackground
+
+
+class DetectionBackgroundService:
+    def __init__(self, base_dir: str = "logs/backgrounds"):
+        self.base_dir = base_dir
+        if not os.path.exists(self.base_dir):
+            os.makedirs(self.base_dir, exist_ok=True)
+        self._lock = threading.Lock()
+
+        self._current_date = datetime.now().strftime("%Y-%m-%d")
+        self._current_file = os.path.join(
+            self.base_dir, f"backgrounds_{self._current_date}.jsonl"
+        )
+
+    def add_background(self, bg: DetectionBackground) -> None:
+        """Зберігає новий фон у файл."""
+        today = datetime.now().strftime("%Y-%m-%d")
+        if today != self._current_date:
+            self._current_date = today
+            self._current_file = os.path.join(
+                self.base_dir, f"backgrounds_{self._current_date}.jsonl"
+            )
+
+        try:
+            with self._lock:
+                with open(self._current_file, "a", encoding="utf-8") as f:
+                    f.write(json.dumps(bg.to_dict(), ensure_ascii=False) + "\n")
+        except Exception as e:
+            print(f"[BackgroundService] Write Error: {e}")
+
+    def get_backgrounds_by_target_id(self, target_id: str) -> List[DetectionBackground]:
+        """
+        Знаходить всі фони, які мають вказаний ID (ID треку/детекції).
+        Це використовується в LogDialog для відображення історії фону конкретного об'єкта.
+        """
+        results = []
+
+        if not os.path.exists(self.base_dir):
+            return []
+
+        files = [f for f in os.listdir(self.base_dir) if f.endswith(".jsonl")]
+
+        files.sort()
+
+        for filename in files:
+            path = os.path.join(self.base_dir, filename)
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if not line:
+                            continue
+
+                        try:
+                            data = json.loads(line)
+
+                            if data.get("id") == target_id:
+                                results.append(DetectionBackground.from_dict(data))
+
+                        except (json.JSONDecodeError, ValueError):
+                            continue
+            except Exception as e:
+                print(f"[BackgroundService] Read Error ({filename}): {e}")
+
+        results.sort(key=lambda x: x.timestamp)
+        return results

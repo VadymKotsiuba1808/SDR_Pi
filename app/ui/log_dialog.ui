@@ -7,8 +7,14 @@
     <x>0</x>
     <y>0</y>
     <width>1500</width>
-    <height>762</height>
+    <height>770</height>
    </rect>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>16777215</width>
+    <height>780</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>Аналіз історії подій</string>
@@ -659,7 +665,60 @@ QPushButton#btnClose:pressed {
              </widget>
             </item>
             <item>
-             <spacer name="horizontalSpacer_Obj">
+             <spacer name="horizontalSpacer_Obj_1">
+              <property name="orientation">
+               <enum>Qt::Orientation::Horizontal</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Policy::Minimum</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>50</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QLabel" name="lblSelType">
+              <property name="text">
+               <string>Обрати тип:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="cmbTargetType">
+              <property name="minimumSize">
+               <size>
+                <width>300</width>
+                <height>0</height>
+               </size>
+              </property>
+              <item>
+               <property name="text">
+                <string>Траєкторія руху (Path)</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Рівень сигналу (Signal)</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Спектр (Spectrum)</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Waterfall</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_Obj_2">
               <property name="orientation">
                <enum>Qt::Orientation::Horizontal</enum>
               </property>
@@ -674,54 +733,88 @@ QPushButton#btnClose:pressed {
            </layout>
           </item>
           <item>
+           <widget class="QGroupBox" name="grpBackgroundControl">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>110</height>
+             </size>
+            </property>
+            <property name="title">
+             <string>Контроль фону детекції</string>
+            </property>
+            <layout class="QHBoxLayout" name="layoutBgControl">
+             <item>
+              <widget class="QPushButton" name="btnBgPrev">
+               <property name="maximumSize">
+                <size>
+                 <width>40</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>&lt;</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="lblBgInfo">
+               <property name="styleSheet">
+                <string>font-weight: bold; color: #88ff88;</string>
+               </property>
+               <property name="text">
+                <string>Фон відсутній</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignmentFlag::AlignCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="btnBgNext">
+               <property name="maximumSize">
+                <size>
+                 <width>40</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>&gt;</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
            <layout class="QHBoxLayout" name="layoutObjCharts">
             <item>
-             <widget class="QFrame" name="chartContainerPath">
+             <widget class="QFrame" name="chartContainerTarget">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>400</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>600</height>
+               </size>
+              </property>
               <property name="frameShape">
                <enum>QFrame::Shape::StyledPanel</enum>
               </property>
-              <layout class="QVBoxLayout" name="layoutChartPath">
-               <item>
-                <widget class="QLabel" name="lblPathTitle">
-                 <property name="maximumSize">
-                  <size>
-                   <width>16777215</width>
-                   <height>40</height>
-                  </size>
-                 </property>
-                 <property name="text">
-                  <string>Траєкторія руху (Polar Path)</string>
-                 </property>
-                 <property name="alignment">
-                  <set>Qt::AlignmentFlag::AlignCenter</set>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </widget>
-            </item>
-            <item>
-             <widget class="QFrame" name="chartContainerSignal">
-              <property name="frameShape">
-               <enum>QFrame::Shape::StyledPanel</enum>
-              </property>
-              <layout class="QVBoxLayout" name="layoutChartSignal">
-               <item>
-                <widget class="QLabel" name="lblSignalTitle">
-                 <property name="maximumSize">
-                  <size>
-                   <width>16777215</width>
-                   <height>40</height>
-                  </size>
-                 </property>
-                 <property name="text">
-                  <string>Рівень сигналу / Впевненість</string>
-                 </property>
-                 <property name="alignment">
-                  <set>Qt::AlignmentFlag::AlignCenter</set>
-                 </property>
-                </widget>
-               </item>
+              <layout class="QVBoxLayout" name="layoutChartTarget">
+               <property name="sizeConstraint">
+                <enum>QLayout::SizeConstraint::SetMaximumSize</enum>
+               </property>
               </layout>
              </widget>
             </item>

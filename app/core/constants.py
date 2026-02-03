@@ -33,3 +33,23 @@ class CLEAN_TARGET_NAME(Enum):
     LOGS = "logs"
     SCREENSHOTS = "screenshots"
     SCREEN_RECORDS = "screen_records"
+
+
+# Константи системи
+
+# Зміщення для конвертації uint8 <-> dB
+DB_OFFSET = 255.0
+
+UINT8_MIN = 0
+UINT8_MAX = 255
+
+# === ВІЗУАЛЬНІ МЕЖІ ГРАФІКІВ ===
+VISUAL_MIN_DB = -130.0
+VISUAL_MAX_DB = 0.0
+
+# Розрахунок діапазону (130 dB)
+VISUAL_RANGE_DB = VISUAL_MAX_DB - VISUAL_MIN_DB
+
+# Розрахунок порогу для водоспаду (Visual Noise Floor)
+# Все, що нижче -130 dB, буде вважатися "нулем" на графіку.
+VISUAL_NOISE_FLOOR_UINT8 = int(VISUAL_MIN_DB + DB_OFFSET)

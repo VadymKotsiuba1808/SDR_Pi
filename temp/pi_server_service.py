@@ -10,6 +10,7 @@ from app.models.detection_event import DetectionEvent
 from app.models.detection_object import DetectionObject
 from app.models.object_class import ObjectClass
 from app.models.gps_data import GPSData
+from app.models.detection_background import DetectionBackground
 
 
 class PiServerService(QObject):
@@ -267,6 +268,10 @@ class PiServerService(QObject):
     def send_detection_event(self, event: DetectionEvent) -> None:
         print(f"[PiProxy] Sending Detection: {event.name}")
         self.send_packet("detection", event.to_dict())
+
+    def send_detection_background(self, back: DetectionBackground) -> None:
+        print(f"[PiProxy] Sending Detection background")
+        self.send_packet("detection_background", back.to_dict())
 
     def send_gps_data(self, gps_data: GPSData) -> None:
         """Відправляє координати {lat, lon, alt}."""

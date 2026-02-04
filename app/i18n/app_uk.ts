@@ -744,7 +744,14 @@ li.unchecked::marker { content: &quot;\2610&quot;; }
 li.checked::marker { content: &quot;\2612&quot;; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Consolas&apos;; font-size:22px; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;meta charset=&quot;utf-8&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+hr { height: 1px; border-width: 0; }
+li.unchecked::marker { content: &quot;\2610&quot;; }
+li.checked::marker { content: &quot;\2612&quot;; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Consolas&apos;; font-size:22px; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../ui/main_window.ui" line="1927"/>
@@ -815,28 +822,28 @@ li.checked::marker { content: &quot;\2612&quot;; }
         <translation type="vanished">Не вдалося завантажити карту.</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="395"/>
+        <location filename="../widgets/main_window.py" line="400"/>
         <source>Not enough disk space</source>
         <translation>Недостатньо місця на диску</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="396"/>
+        <location filename="../widgets/main_window.py" line="401"/>
         <source>Available only: {} MB.
 </source>
         <translation>Доступно лише: {} МБ.</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="399"/>
+        <location filename="../widgets/main_window.py" line="404"/>
         <source>To use media functions and logging, please free up disk space.</source>
         <translation>Щоб використовувати журнал та медіа, звільніть місце на диску.</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="457"/>
+        <location filename="../widgets/main_window.py" line="462"/>
         <source>{:.1f} MHz</source>
         <translation>{:.1f} МГц</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="462"/>
+        <location filename="../widgets/main_window.py" line="467"/>
         <source>{:.0f} Hz</source>
         <translation>{:.0f} Гц</translation>
     </message>
@@ -869,12 +876,12 @@ li.checked::marker { content: &quot;\2612&quot;; }
         <translation type="vanished">ЧАС:    {}</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="469"/>
+        <location filename="../widgets/main_window.py" line="474"/>
         <source>TYPE: {}</source>
         <translation>ТИП:  {}</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="470"/>
+        <location filename="../widgets/main_window.py" line="475"/>
         <source>NAME: {}</source>
         <translation>НАЗВА:{}</translation>
     </message>
@@ -883,12 +890,12 @@ li.checked::marker { content: &quot;\2612&quot;; }
         <translation type="vanished">КЛАС: {}</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="472"/>
+        <location filename="../widgets/main_window.py" line="477"/>
         <source>FREQ: {}</source>
         <translation>ЧАСТ: {}</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="473"/>
+        <location filename="../widgets/main_window.py" line="478"/>
         <source>DIST: {:.3f} km</source>
         <translation>ДИСТ: {:.3f} км</translation>
     </message>
@@ -897,32 +904,32 @@ li.checked::marker { content: &quot;\2612&quot;; }
         <translation type="vanished">КУТ: {:.1f}°</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="467"/>
+        <location filename="../widgets/main_window.py" line="472"/>
         <source>INDEX:{}</source>
         <translation>ІНДЕКС:{}</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="471"/>
+        <location filename="../widgets/main_window.py" line="476"/>
         <source>CLASS:{}</source>
         <translation>КЛАС: {}</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="474"/>
+        <location filename="../widgets/main_window.py" line="479"/>
         <source>ANGLE:{:.1f}°</source>
         <translation>КУТ:  {:.1f}°</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="475"/>
+        <location filename="../widgets/main_window.py" line="480"/>
         <source>CONF: {:.1f}%</source>
         <translation>ТОЧН: {:.1f}%</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="476"/>
+        <location filename="../widgets/main_window.py" line="481"/>
         <source>TIME: {}</source>
         <translation>ЧАС:  {}</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="484"/>
+        <location filename="../widgets/main_window.py" line="489"/>
         <source>INDEX {}: 
 
 [OFFLINE] / [NOT FOUND]
@@ -932,27 +939,27 @@ li.checked::marker { content: &quot;\2612&quot;; }
 [ВТРАЧЕНО] / [НЕ ЗНАЙДЕНО]</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="487"/>
+        <location filename="../widgets/main_window.py" line="492"/>
         <source>Target lost or not yet detected.</source>
         <translation>Ціль втрачено або ще не виявлено.</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="795"/>
+        <location filename="../widgets/main_window.py" line="802"/>
         <source>Recording Error</source>
         <translation>Помилка запису</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="825"/>
+        <location filename="../widgets/main_window.py" line="832"/>
         <source>Select file to view</source>
         <translation>Оберіть файл для перегляду</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="989"/>
+        <location filename="../widgets/main_window.py" line="997"/>
         <source>Error</source>
         <translation>Помилка</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="989"/>
+        <location filename="../widgets/main_window.py" line="997"/>
         <source>Failed to load map.</source>
         <translation>Не вдалося завантажити карту.</translation>
     </message>
@@ -1272,32 +1279,32 @@ li.checked::marker { content: &quot;\2612&quot;; }
         <translation>Налаштування власної карти</translation>
     </message>
     <message>
-        <location filename="../ui/set_map_dialog.ui" line="131"/>
+        <location filename="../ui/set_map_dialog.ui" line="214"/>
         <source>Обрати зображення</source>
         <translation>Обрати зображення</translation>
     </message>
     <message>
-        <location filename="../ui/set_map_dialog.ui" line="160"/>
+        <location filename="../ui/set_map_dialog.ui" line="227"/>
         <source>Встановити центр</source>
         <translation>Встановити центр</translation>
     </message>
     <message>
-        <location filename="../ui/set_map_dialog.ui" line="181"/>
+        <location filename="../ui/set_map_dialog.ui" line="234"/>
         <source>Масштаб (%)</source>
         <translation>Масштаб (%)</translation>
     </message>
     <message>
-        <location filename="../ui/set_map_dialog.ui" line="220"/>
+        <location filename="../ui/set_map_dialog.ui" line="258"/>
         <source>-</source>
         <translation>-</translation>
     </message>
     <message>
-        <location filename="../ui/set_map_dialog.ui" line="292"/>
+        <location filename="../ui/set_map_dialog.ui" line="302"/>
         <source>+</source>
         <translation>+</translation>
     </message>
     <message>
-        <location filename="../ui/set_map_dialog.ui" line="315"/>
+        <location filename="../ui/set_map_dialog.ui" line="311"/>
         <source>Радіус кола (км)</source>
         <translation>Радіус кола (км)</translation>
     </message>
@@ -1306,61 +1313,93 @@ li.checked::marker { content: &quot;\2612&quot;; }
         <translation type="vanished">Радіус кола (м)</translation>
     </message>
     <message>
-        <location filename="../ui/set_map_dialog.ui" line="377"/>
+        <location filename="../ui/set_map_dialog.ui" line="346"/>
         <source>Кут повороту</source>
         <translation>Кут повороту</translation>
     </message>
     <message>
-        <location filename="../ui/set_map_dialog.ui" line="500"/>
+        <location filename="../ui/set_map_dialog.ui" line="432"/>
         <source>Зберегти</source>
         <translation>Зберегти</translation>
     </message>
     <message>
-        <location filename="../ui/set_map_dialog.ui" line="529"/>
+        <location filename="../ui/set_map_dialog.ui" line="445"/>
         <source>Скасувати</source>
         <translation>Скасувати</translation>
     </message>
     <message>
-        <location filename="../widgets/set_map_dialog.py" line="126"/>
         <source>Виберіть зображення карти</source>
-        <translation>Виберіть зображення карти</translation>
+        <translation type="vanished">Виберіть зображення карти</translation>
     </message>
     <message>
-        <location filename="../widgets/set_map_dialog.py" line="128"/>
         <source>Зображення (*.png *.jpg *.bmp *.jpeg)</source>
-        <translation>Зображення (*.png *.jpg *.bmp *.jpeg)</translation>
+        <translation type="vanished">Зображення (*.png *.jpg *.bmp *.jpeg)</translation>
     </message>
     <message>
-        <location filename="../widgets/set_map_dialog.py" line="142"/>
-        <location filename="../widgets/set_map_dialog.py" line="295"/>
-        <location filename="../widgets/set_map_dialog.py" line="312"/>
         <source>Помилка</source>
+        <translation type="vanished">Помилка</translation>
+    </message>
+    <message>
+        <source>Не вдалося завантажити зображення.</source>
+        <translation type="vanished">Не вдалося завантажити зображення.</translation>
+    </message>
+    <message>
+        <source>Увага</source>
+        <translation type="vanished">Увага</translation>
+    </message>
+    <message>
+        <source>Спочатку завантажте зображення карти.</source>
+        <translation type="vanished">Спочатку завантажте зображення карти.</translation>
+    </message>
+    <message>
+        <source>Зображення не вибрано!</source>
+        <translation type="vanished">Зображення не вибрано!</translation>
+    </message>
+    <message>
+        <source>Радіус в метрах та масштаб мають бути &gt; 0.</source>
+        <translation type="vanished">Радіус в метрах та масштаб мають бути &gt; 0.</translation>
+    </message>
+    <message>
+        <location filename="../widgets/set_map_dialog.py" line="194"/>
+        <source>Оберіть карту</source>
+        <translation>Оберіть карту</translation>
+    </message>
+    <message>
+        <location filename="../widgets/set_map_dialog.py" line="196"/>
+        <source>Image Files (*.png *.jpg *.jpeg *.bmp)</source>
+        <translation>Image Files (*.png *.jpg *.jpeg *.bmp)</translation>
+    </message>
+    <message>
+        <location filename="../widgets/set_map_dialog.py" line="205"/>
+        <location filename="../widgets/set_map_dialog.py" line="263"/>
+        <location filename="../widgets/set_map_dialog.py" line="274"/>
+        <source>Error</source>
         <translation>Помилка</translation>
     </message>
     <message>
-        <location filename="../widgets/set_map_dialog.py" line="143"/>
-        <source>Не вдалося завантажити зображення.</source>
-        <translation>Не вдалося завантажити зображення.</translation>
+        <location filename="../widgets/set_map_dialog.py" line="205"/>
+        <source>Failed to load image</source>
+        <translation>Не вдалося завантажити зображення</translation>
     </message>
     <message>
-        <location filename="../widgets/set_map_dialog.py" line="164"/>
-        <source>Увага</source>
+        <location filename="../widgets/set_map_dialog.py" line="217"/>
+        <source>Warning</source>
         <translation>Увага</translation>
     </message>
     <message>
-        <location filename="../widgets/set_map_dialog.py" line="165"/>
-        <source>Спочатку завантажте зображення карти.</source>
-        <translation>Спочатку завантажте зображення карти.</translation>
+        <location filename="../widgets/set_map_dialog.py" line="218"/>
+        <source>Please load an image first</source>
+        <translation>Будь ласка, спочатку завантажте зображення</translation>
     </message>
     <message>
-        <location filename="../widgets/set_map_dialog.py" line="296"/>
-        <source>Зображення не вибрано!</source>
-        <translation>Зображення не вибрано!</translation>
+        <location filename="../widgets/set_map_dialog.py" line="264"/>
+        <source>Invalid radius or scale</source>
+        <translation>Невірний радіус або масштаб</translation>
     </message>
     <message>
-        <location filename="../widgets/set_map_dialog.py" line="313"/>
-        <source>Радіус в метрах та масштаб мають бути &gt; 0.</source>
-        <translation>Радіус в метрах та масштаб мають бути &gt; 0.</translation>
+        <location filename="../widgets/set_map_dialog.py" line="274"/>
+        <source>Image too large</source>
+        <translation>Зображення завелике</translation>
     </message>
 </context>
 <context>

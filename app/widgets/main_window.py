@@ -46,6 +46,11 @@ from app.protocols import OSService
 from app.core.constants import (
     DEV_COMPILED_UI_USING_ENABLED,
     MEDIA_DIR_PATH,
+    TIMER_INTERVAL_RADAR_ANIM,
+    TIMER_INTERVAL_TIME_UPDATE,
+    TIMER_INTERVAL_WIFI_UPDATE,
+    STATIONARY_SECONDS,
+    MIN_DISTANCE_THRESHOLD,
 )
 
 
@@ -67,6 +72,7 @@ from app.services.media_player_service import MediaPlayerService
 from app.services.log_service import LogService
 from app.services.jammer_service import JammerService
 from app.services.detection_background_service import DetectionBackgroundService
+from app.services.network_signal_service import NetworkSignalService
 
 
 from app.core.detection_manager import DetectionManager
@@ -83,23 +89,13 @@ from app.models.map_settings import CustomMapSettings
 
 
 from app.utils.ui_utils import update_element_styles, move_dialog_down
-from app.utils.system_utils import (
-    get_wifi_signal_strength,
-    restart_process,
-)
+from app.utils.system_utils import restart_process
 from app.utils.geo_utils import calculate_distance
 from app.utils.convert_measurement_unit import convert_hz_to_mhz
 
-STATIONARY_SECONDS = 10
 
-MIN_DISTANCE_THRESHOLD = 2.0  # Мінімальна зміна позиції в метрах для оновлення мапи
 DEFAULT_START_COORDS = [49.43440, 27.00543]
-
-TIMER_INTERVAL_TIME_UPDATE = 1 * 1000
-TIMER_INTERVAL_RADAR_ANIM = 60
-TIMER_INTERVAL_WIFI_UPDATE = 30 * 1000
-
-SIGNAL_LEVEL_COUNT = 4
+SIGNAL_LEVELS_COUNT = 4
 
 
 class MainWindow(QMainWindow):
@@ -212,6 +208,8 @@ class MainWindow(QMainWindow):
         self.pi_network.detection_received.connect(self.handle_detection)
         self.pi_network.background_received.connect(self.handle_detection_background)
         self.pi_network.set_rf_range(self.settings_service.radio_range_mhz)
+
+        self.network_signal_service = NetworkSignalService(self.system_service)
 
         self.log_service = LogService()
 
@@ -580,7 +578,7 @@ class MainWindow(QMainWindow):
 
         gps_level = 0
         if strength:
-            gps_level = math.ceil(strength / (100 / SIGNAL_LEVEL_COUNT))
+            gps_level = math.ceil(strength / (100 / SIGNAL_LEVELS_COUNT))
 
         self.set_gps_ui_level(gps_level)
 
@@ -1144,11 +1142,11 @@ class MainWindow(QMainWindow):
         print(f"[MainWindow] Received generic data from Pi: {data}")
 
     def update_wifi_signal_info(self) -> None:
-        wifi_strength = get_wifi_signal_strength(self.system_service.is_windows)
+        wifi_strength = self.network_signal_service.get_signal_strength()
 
         wifi_level = 0
         if wifi_strength:
-            wifi_level = math.ceil(wifi_strength / (100 / SIGNAL_LEVEL_COUNT))
+            wifi_level = math.ceil(wifi_strength / (100 / SIGNAL_LEVELS_COUNT))
 
         self.ui.WiFi_level.setProperty("level", wifi_level)
         update_element_styles(self.ui.WiFi_level)

@@ -16,7 +16,7 @@ from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
 from app.protocols import LangSettings
 from app.ui.ui_log_dialog import Ui_LogDialog
 from app.widgets.static_chart_widget import StaticChartWidget
-from app.models.log_entries import LogEntry
+from app.models.log_entries import LogEntry, FalseAlarmPayload
 from app.models.source_type import SourceType
 from app.models.detection_event import DetectionEvent
 from app.models.detection_background import DetectionBackground
@@ -275,18 +275,20 @@ class LogDialog(QDialog):
             except ValueError:
                 time_str = entry.timestamp
 
+            time_item = QTableWidgetItem(time_str)
+
             if entry.is_detection:
                 d1 = datetime.fromisoformat(entry.payload.timestamp)
                 d2 = datetime.fromisoformat(entry.timestamp)
                 latency_ms = int((d2 - d1).total_seconds() * 1000)
-                time_str += self.tr("({}мс)").format(latency_ms)
+                time_item.setToolTip(self.tr("Latency: {}ms").format(latency_ms))
 
-            t.setItem(row_idx, 0, QTableWidgetItem(time_str))
+            t.setItem(row_idx, 0, time_item)
 
             if entry.is_detection:
                 data: DetectionEvent = entry.payload
                 t.setItem(row_idx, 1, QTableWidgetItem(data.type))
-                short_id = data.id[:8]
+                short_id = data.id[:25]
                 name_item = QTableWidgetItem(
                     self.tr("{}\nID: {}...").format(data.name, short_id)
                 )
@@ -317,7 +319,7 @@ class LogDialog(QDialog):
                     ),
                 )
 
-                status_text = self.tr("YES") if data.id in false_ids else self.tr("NO")
+                status_text = self.tr("NO") if data.id in false_ids else self.tr("YES")
                 item_status = QTableWidgetItem(status_text)
                 item_status.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
                 if data.id in false_ids:
@@ -325,14 +327,18 @@ class LogDialog(QDialog):
                 t.setItem(row_idx, 6, item_status)
 
             elif entry.is_false_alarm:
-                data = entry.payload
+                data: FalseAlarmPayload = entry.payload
+                short_id = data.detection_id[:25]
                 type_item = QTableWidgetItem(self.tr("FALSE ALARM"))
                 type_item.setForeground(Qt.GlobalColor.red)
                 type_item.setFont(QFont("Roboto", 10, QFont.Weight.Bold))
                 t.setItem(row_idx, 1, type_item)
-                t.setItem(
-                    row_idx, 2, QTableWidgetItem(self.tr("Ref: {}").format(data.name))
+                ref_item = QTableWidgetItem(
+                    self.tr("Ref: {}\nID: {}...").format(data.name, short_id)
                 )
+
+                ref_item.setToolTip(self.tr("Full ID: {}").format(data.detection_id))
+                t.setItem(row_idx, 2, ref_item)
                 for c in range(3, 7):
                     t.setItem(row_idx, c, QTableWidgetItem("-"))
 

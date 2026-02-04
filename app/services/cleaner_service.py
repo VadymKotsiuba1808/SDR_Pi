@@ -7,6 +7,7 @@ from app.protocols import CleanerServiceSettings
 from app.core.constants import (
     LOGS_DIR_PATH,
     MEDIA_DIR_PATH,
+    BACKGROUND_LOGS_DIR_PATH,
     CLEAN_TARGET_NAME,
 )
 
@@ -36,6 +37,9 @@ class CleanerService:
                 days = target_settings.days
                 self.targets.append(
                     CleanTarget(LOGS_DIR_PATH, days, [".json", ".jsonl"])
+                )
+                self.targets.append(
+                    CleanTarget(BACKGROUND_LOGS_DIR_PATH, days, [".json", ".jsonl"])
                 )
 
         if CLEAN_TARGET_NAME.SCREENSHOTS in clean_settings:

@@ -4,19 +4,19 @@ import threading
 from datetime import datetime
 from typing import List
 
+from app.core.constants import BACKGROUND_LOGS_DIR_PATH
 from app.models.detection_background import DetectionBackground
 
 
 class DetectionBackgroundService:
-    def __init__(self, base_dir: str = "logs/backgrounds"):
-        self.base_dir = base_dir
-        if not os.path.exists(self.base_dir):
-            os.makedirs(self.base_dir, exist_ok=True)
+    def __init__(self):
+        if not os.path.exists(BACKGROUND_LOGS_DIR_PATH):
+            os.makedirs(BACKGROUND_LOGS_DIR_PATH, exist_ok=True)
         self._lock = threading.Lock()
 
         self._current_date = datetime.now().strftime("%Y-%m-%d")
         self._current_file = os.path.join(
-            self.base_dir, f"backgrounds_{self._current_date}.jsonl"
+            BACKGROUND_LOGS_DIR_PATH, f"backgrounds_{self._current_date}.jsonl"
         )
 
     def add_background(self, bg: DetectionBackground) -> None:
@@ -25,7 +25,7 @@ class DetectionBackgroundService:
         if today != self._current_date:
             self._current_date = today
             self._current_file = os.path.join(
-                self.base_dir, f"backgrounds_{self._current_date}.jsonl"
+                BACKGROUND_LOGS_DIR_PATH, f"backgrounds_{self._current_date}.jsonl"
             )
 
         try:
@@ -42,15 +42,17 @@ class DetectionBackgroundService:
         """
         results = []
 
-        if not os.path.exists(self.base_dir):
+        if not os.path.exists(BACKGROUND_LOGS_DIR_PATH):
             return []
 
-        files = [f for f in os.listdir(self.base_dir) if f.endswith(".jsonl")]
+        files = [
+            f for f in os.listdir(BACKGROUND_LOGS_DIR_PATH) if f.endswith(".jsonl")
+        ]
 
         files.sort()
 
         for filename in files:
-            path = os.path.join(self.base_dir, filename)
+            path = os.path.join(BACKGROUND_LOGS_DIR_PATH, filename)
             try:
                 with open(path, "r", encoding="utf-8") as f:
                     for line in f:

@@ -3,18 +3,27 @@
 Дозволяє користувачу вибрати та налаштувати власне зображення мапи.
 """
 
-from typing import List
+from typing import List, Optional
 from PyQt6.QtWidgets import (
     QDialog,
     QFileDialog,
     QMessageBox,
 )
-from PyQt6.QtGui import QPixmap, QPainter, QTransform
-from PyQt6.QtCore import Qt, QEvent, QPointF, QCoreApplication, QTranslator
+from PyQt6.QtGui import QPixmap, QPainter, QTransform, QMouseEvent
+from PyQt6.QtCore import (
+    Qt,
+    QEvent,
+    QPointF,
+    QCoreApplication,
+    QTranslator,
+    QObject,
+    QPoint,
+)
 
 from PyQt6 import uic
 
 from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
+from app.models.map_settings import CustomMapSettings
 from app.protocols import SetMapDialogSettings
 from app.ui.ui_set_map_dialog import Ui_SetMapDialog
 
@@ -28,6 +37,7 @@ class SetMapDialog(QDialog):
         parent=None,
     ):
         super().__init__(parent)
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
         print("[Init] Ініціалізація SetMapDialog...")
 
         self.settings_service = settings
@@ -36,24 +46,29 @@ class SetMapDialog(QDialog):
         self._load_ui()
         print("[Init] UI завантажено")
 
-        self._setup_state_variables()
-        print(
-            f"[Init] Розмір екрану карти: {self.ui.mapDisplayLabel.width()}x{self.ui.mapDisplayLabel.height()}"
-        )
-        print(f"[Init] Центр екрана карти: {self.screen_center_f}")
+        self._setup_variables()
+        self._calculate_screen_center()
 
         self._adjust_fields()
         self._connect_handlers()
-        print("[Init] Сигнали підключено")
-
         self._load_language()
 
-        print("[Init] Ініціалізацію завершено\n")
+    def _calculate_screen_center(self):
+        """
+        Знаходить точні координати центру радара (червоного кола) відносно мапи.
+        """
+        # Геометрія кола відносно батьківського вікна
+        circle_geo = self.ui.centerCircleLabel.geometry()
+
+        # Центр кола
+        cx = circle_geo.x() + (circle_geo.width() / 2)
+        cy = circle_geo.y() + (circle_geo.height() / 2)
+
+        self.screen_center_f = QPointF(cx, cy)
 
     def changeEvent(self, event):
         if event.type() == QEvent.Type.LanguageChange:
             if DEV_COMPILED_UI_USING_ENABLED:
-                print("Зміна мови, оновлюю UI...")
                 self.ui.retranslateUi(self)
         else:
             super().changeEvent(event)
@@ -66,24 +81,14 @@ class SetMapDialog(QDialog):
             uic.loadUi("app/ui/set_map_dialog.ui", self)
             self.ui = self
 
-    def _setup_state_variables(self):
-        self.original_pixmap = None
-        self.image_path = ""
-        self.current_scale = 1.0
-        self.current_rotation = 0.0
-
+    def _setup_variables(self):
+        self.original_pixmap: Optional[QPixmap] = None
+        self.image_path: str = ""
+        self.current_scale: float = 1.0
+        self.current_rotation: float = 0.0
         self.center_point_f = QPointF()
-        self.current_offset_f = QPointF()
-
-        self.is_centering_mode = False
-        circle_radius = self.ui.centerCircleLabel.width() / 2
-
-        self.screen_center_f = QPointF(
-            self.ui.centerCircleLabel.x() + circle_radius,
-            self.ui.centerCircleLabel.y() + circle_radius,
-        )
-
-        self.result_settings = {}
+        self.is_centering_mode: bool = False
+        self.result_settings: Optional[CustomMapSettings] = None
         self.translator = QTranslator()
 
     def _adjust_fields(self):
@@ -100,68 +105,116 @@ class SetMapDialog(QDialog):
         self.ui.rotateHorizontalSlider.valueChanged.connect(
             self.handle_rotation_changed
         )
-
         self.ui.saveButton.clicked.connect(self.handle_save)
         self.ui.cancelButton.clicked.connect(self.handle_cancel)
 
     def _load_language(self):
-        # Видаляємо старий перекладач
         lang_code = self.settings_service.lang_code
+        if not lang_code:
+            return
+        QCoreApplication.removeTranslator(self.translator)
+        if self.translator.load(f"app/i18n/qm/app_{lang_code}.qm"):
+            QCoreApplication.installTranslator(self.translator)
 
-        if lang_code == None:
+    # --- ЛОГІКА МАТРИЦЬ ---
+
+    def _get_transform_matrix(self) -> QTransform:
+        """
+        Єдина матриця трансформації.
+        """
+        t = QTransform()
+        t.translate(self.screen_center_f.x(), self.screen_center_f.y())
+        t.rotate(self.current_rotation)
+        t.scale(self.current_scale, self.current_scale)
+        t.translate(-self.center_point_f.x(), -self.center_point_f.y())
+        return t
+
+    def update_map_display(self):
+        if not self.original_pixmap:
+            self.ui.mapDisplayLabel.clear()
             return
 
-        QCoreApplication.removeTranslator(self.translator)
+        self.current_scale = self.ui.scaleSpinBox.value() / 100.0
 
-        path = f"app/i18n/qm/app_{lang_code}.qm"
-        if self.translator.load(path):
-            QCoreApplication.installTranslator(self.translator)
-        else:
-            print(f"Помилка: не вдалося завантажити {path}")
+        canvas = QPixmap(self.ui.mapDisplayLabel.size())
+        canvas.fill(Qt.GlobalColor.transparent)
+
+        painter = QPainter(canvas)
+        painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+
+        painter.setTransform(self._get_transform_matrix())
+        painter.drawPixmap(0, 0, self.original_pixmap)
+        painter.end()
+
+        self.ui.mapDisplayLabel.setPixmap(canvas)
+
+    def eventFilter(self, source: QObject, event: QEvent):
+        """
+        Обробляє клік по карті або колу.
+        Використовує ГЛОБАЛЬНІ координати для уникнення помилок зміщення.
+        """
+        if (
+            (source is self.ui.mapDisplayLabel or source is self.ui.centerCircleLabel)
+            and event.type() == QEvent.Type.MouseButtonPress
+            and self.is_centering_mode
+        ):
+
+            if event.button() == Qt.MouseButton.LeftButton:
+                if self.current_scale == 0:
+                    return True
+
+                global_pos = event.globalPosition().toPoint()
+
+                local_pos_point = self.ui.mapDisplayLabel.mapFromGlobal(global_pos)
+                screen_click_point = QPointF(local_pos_point)
+
+                matrix = self._get_transform_matrix()
+                inverted_matrix, invertible = matrix.inverted()
+
+                if invertible:
+                    image_click_point = inverted_matrix.map(screen_click_point)
+
+                    print(
+                        f"[Click Global] {global_pos} -> [Local] {local_pos_point} -> [Image] {image_click_point}"
+                    )
+
+                    self.center_point_f = image_click_point
+
+                    self.is_centering_mode = False
+                    self.clear_cross_cursor()
+                    self.update_map_display()
+                    return True
+
+        return super().eventFilter(source, event)
 
     def handle_select_image(self):
-        print("[on_select_image] Відкривається діалог вибору зображення...")
         file_path, _ = QFileDialog.getOpenFileName(
             None,
-            self.tr("Виберіть зображення карти"),
+            self.tr("Оберіть карту"),
             "",
-            self.tr("Зображення (*.png *.jpg *.bmp *.jpeg)"),
+            self.tr("Image Files (*.png *.jpg *.jpeg *.bmp)"),
         )
-
         if not file_path:
-            print("[on_select_image] Файл не вибрано")
             return
 
-        print(f"[on_select_image] Обрано файл: {file_path}")
         self.image_path = file_path
         self.original_pixmap = QPixmap(self.image_path)
 
         if self.original_pixmap.isNull():
-            print("[on_select_image] ПОМИЛКА: не вдалося завантажити зображення")
-            QMessageBox.warning(
-                None, self.tr("Помилка"), self.tr("Не вдалося завантажити зображення.")
-            )
-            self.original_pixmap = None
-            self.image_path = ""
+            QMessageBox.warning(None, self.tr("Error"), self.tr("Failed to load image"))
             return
 
-        print(
-            f"[on_select_image] Зображення завантажено, розмір: {self.original_pixmap.width()}x{self.original_pixmap.height()}"
-        )
-
         self.center_point_f = QPointF(self.original_pixmap.rect().center())
-        print(f"[on_select_image] Початковий центр зображення: {self.center_point_f}")
 
         self.ui.scaleSpinBox.setValue(100)
         self.ui.rotateSpinBox.setValue(0)
-
         self.update_map_display()
 
     def handle_set_center(self):
-        print("[on_set_center] Активовано режим вибору центру")
         if not self.original_pixmap:
             QMessageBox.warning(
-                None, self.tr("Увага"), self.tr("Спочатку завантажте зображення карти.")
+                None, self.tr("Warning"), self.tr("Please load an image first")
             )
             return
         self.is_centering_mode = True
@@ -176,24 +229,16 @@ class SetMapDialog(QDialog):
         self.ui.centerCircleLabel.setCursor(Qt.CursorShape.ArrowCursor)
 
     def handle_zoom_in(self):
-        print("[on_zoom_in] Збільшення масштабу")
         self.ui.scaleSpinBox.setValue(self.ui.scaleSpinBox.value() + 1)
 
     def handle_zoom_out(self):
-        print("[on_zoom_out] Зменшення масштабу")
         self.ui.scaleSpinBox.setValue(self.ui.scaleSpinBox.value() - 1)
 
     def handle_scale_changed(self, value):
-        print(f"[on_scale_changed] Масштаб змінено: {value}%")
         self.update_map_display()
 
     def handle_rotation_changed(self, value):
-        print(f"[on_rotation_changed] Кут змінено: {value}°")
-
-        # Визначаємо, хто викликав зміну (спінбокс чи слайдер)
         sender = self.sender()
-
-        # Синхронізуємо значення, не викликаючи повторних сигналів
         if sender == self.ui.rotateSpinBox:
             self.ui.rotateHorizontalSlider.blockSignals(True)
             self.ui.rotateHorizontalSlider.setValue(value)
@@ -203,182 +248,65 @@ class SetMapDialog(QDialog):
             self.ui.rotateSpinBox.setValue(value)
             self.ui.rotateSpinBox.blockSignals(False)
 
-        # Зберігаємо поточний кут
         self.current_rotation = float(value)
-
-        # Оновлюємо карту
         self.update_map_display()
 
-    def update_map_display(self):
-        print("[update_map_display] Оновлення відображення (Optimized)...")
+    def handle_save(self):
         if not self.original_pixmap:
-            bg_pixmap = QPixmap(self.ui.mapDisplayLabel.size())
-            bg_pixmap.fill(Qt.GlobalColor.transparent)
-            self.ui.mapDisplayLabel.setPixmap(bg_pixmap)
             return
 
-        self.current_scale = self.ui.scaleSpinBox.value() / 100.0
+        screen_radius = self.ui.centerCircleLabel.width() / 2
+        real_radius_km = self.ui.radiusKmDoubleSpinBox.value()
 
-        display_pixmap = QPixmap(self.ui.mapDisplayLabel.size())
-        display_pixmap.fill(Qt.GlobalColor.transparent)
+        if real_radius_km <= 0 or self.current_scale <= 0:
+            QMessageBox.warning(
+                None, self.tr("Error"), self.tr("Invalid radius or scale")
+            )
+            return
 
-        painter = QPainter(display_pixmap)
+        px_per_km_screen = screen_radius / real_radius_km
+        px_per_km_original = px_per_km_screen / self.current_scale
 
+        target_diameter_km = self.settings_service.radar_max_radius_km * 2
+        target_size_px = int(round(target_diameter_km * px_per_km_original))
+
+        if target_size_px > 12000:
+            QMessageBox.critical(None, self.tr("Error"), self.tr("Image too large"))
+            return
+
+        final_w = int(target_size_px * self.add_sizes_map_k[0])
+        final_h = int(target_size_px * self.add_sizes_map_k[1])
+        final_pixmap = QPixmap(final_w, final_h)
+        final_pixmap.fill(Qt.GlobalColor.transparent)
+
+        painter = QPainter(final_pixmap)
         painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
-        painter.translate(self.screen_center_f)
+        final_center = QPointF(final_w / 2, final_h / 2)
 
-        painter.rotate(self.current_rotation)
+        t = QTransform()
+        t.translate(final_center.x(), final_center.y())
+        t.rotate(self.current_rotation)
+        t.translate(-self.center_point_f.x(), -self.center_point_f.y())
 
-        painter.scale(self.current_scale, self.current_scale)
-
-        painter.translate(-self.center_point_f)
-
+        painter.setTransform(t)
         painter.drawPixmap(0, 0, self.original_pixmap)
-
         painter.end()
 
-        self.ui.mapDisplayLabel.setPixmap(display_pixmap)
-
-    def eventFilter(self, source, event):
-        if source is self.ui.mapDisplayLabel or source is self.ui.centerCircleLabel:
-            if event.type() == QEvent.Type.MouseButtonPress and self.is_centering_mode:
-                if event.button() == Qt.MouseButton.LeftButton:
-
-                    click_pos = source.mapTo(self.ui.mapDisplayLabel, event.pos())
-                    click_point = QPointF(click_pos)
-
-                    if self.current_scale == 0:
-                        return True
-
-                    transform = QTransform()
-                    transform.translate(
-                        self.screen_center_f.x(), self.screen_center_f.y()
-                    )
-                    transform.rotate(self.current_rotation)
-                    transform.scale(self.current_scale, self.current_scale)
-
-                    full_transform = QTransform()
-                    full_transform.translate(
-                        self.screen_center_f.x(), self.screen_center_f.y()
-                    )
-                    full_transform.rotate(self.current_rotation)
-                    full_transform.scale(self.current_scale, self.current_scale)
-                    full_transform.translate(
-                        -self.center_point_f.x(), -self.center_point_f.y()
-                    )
-
-                    inverted_transform, invertible = full_transform.inverted()
-
-                    if invertible:
-                        image_point_clicked = inverted_transform.map(click_point)
-
-                        self.center_point_f = image_point_clicked
-                        print(f"[eventFilter] Новий центр: {self.center_point_f}")
-
-                        self.is_centering_mode = False
-                        self.clear_cross_cursor()
-                        self.update_map_display()
-                        return True
-
-        return super().eventFilter(source, event)
-
-    def handle_save(self):
-        """
-        Цей метод тепер автоматично викликається при натисканні 'saveButton'.
-        """
-        print("[accept] Підтвердження та збереження налаштувань...")
-        if not self.original_pixmap or not self.image_path:
-            print("[accept] ПОМИЛКА: зображення не вибрано")
-            QMessageBox.warning(
-                None, self.tr("Помилка"), self.tr("Зображення не вибрано!")
-            )
-            return  # Важливо: не викликаємо super().accept()
-
-        screen_circle_radius_px = self.ui.centerCircleLabel.width() / 2
-        user_defined_radius_km = self.ui.radiusKmDoubleSpinBox.value()
-        current_view_scale = self.ui.scaleSpinBox.value() / 100.0
-
-        print(
-            f"[accept] Радіус на екрані: {screen_circle_radius_px}px = {user_defined_radius_km}км"
+        self.result_settings = CustomMapSettings(
+            pixmap=final_pixmap,
+            px_per_km=px_per_km_original,
+            rotation=self.current_rotation,
+            total_diameter_km=target_diameter_km,
+            center_px_point=final_center.toPoint(),
         )
-        print(f"[accept] Поточний масштаб перегляду: {current_view_scale}")
-
-        if user_defined_radius_km <= 0 or current_view_scale <= 0:
-            print("[accept] ПОМИЛКА: некоректні значення радіуса або масштабу")
-            QMessageBox.warning(
-                None,
-                self.tr("Помилка"),
-                self.tr("Радіус в метрах та масштаб мають бути > 0."),
-            )
-            return  # Не викликаємо super().accept()
-
-        displayed_px_per_km = screen_circle_radius_px / user_defined_radius_km
-        original_px_per_km = displayed_px_per_km / current_view_scale
-        print(f"[accept] Пікселів на км (оригінал): {original_px_per_km}")
-
-        target_diameter_km = self.settings_service.radar_max_radius_km * 2
-        target_size_px = int(round(target_diameter_km * original_px_per_km))
-        print(
-            f"[accept] Цільовий розмір карти: {target_size_px}px ({target_diameter_km}км)"
-        )
-
-        if target_size_px > 10000:
-            QMessageBox.critical(
-                "Помилка",
-                "Завантажене зображення занадто велике, спробуйте використати іншу картинку",
-            )
-            return
-
-        final_pixmap = QPixmap(
-            int(target_size_px * self.add_sizes_map_k[0]),
-            int(target_size_px * self.add_sizes_map_k[1]),
-        )
-        final_pixmap.fill(Qt.GlobalColor.transparent)
-        print("[accept] Створено фінальну карту")
-
-        final_center_f = QPointF(
-            final_pixmap.width() / 2.0, final_pixmap.height() / 2.0
-        )
-
-        painter = QPainter(final_pixmap)
-
-        painter.translate(final_center_f)
-
-        painter.rotate(self.current_rotation)
-
-        painter.drawPixmap(-self.center_point_f, self.original_pixmap)
-
-        painter.end()
-        print("[accept] Малювання завершено")
-
-        # Зберігаємо налаштування у змінну класу
-        self.result_settings = {
-            "pixmap": final_pixmap,
-            "px_per_meter": original_px_per_km,
-            "rotation": self.current_rotation,
-            "total_diameter_km": target_diameter_km,
-            "center_px_point": final_center_f.toPoint(),
-        }
-
-        print(f"[accept] Збережено налаштування\n")
 
         self.accept()
 
     def handle_cancel(self):
-        """
-        Цей метод автоматично викликається при натисканні 'cancelButton'.
-        """
-        print("[reject] Налаштування скасовано")
-
-        # Очищуємо результат на випадок, якщо щось було
-        self.result_settings = {}
-
+        self.result_settings = None
         self.reject()
 
-    def get_settings(self):
-        """
-        Новий метод: Головне вікно викликає це, щоб отримати результат.
-        """
+    def get_settings(self) -> Optional[CustomMapSettings]:
         return self.result_settings

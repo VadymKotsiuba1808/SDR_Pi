@@ -30,6 +30,8 @@ from PyQt6.QtGui import (
     QDesktopServices,
     QShowEvent,
     QCloseEvent,
+    QTransform,
+    QPainter,
 )
 from PyQt6 import uic
 from qasync import asyncSlot
@@ -77,6 +79,7 @@ from app.models.log_entries import LogEntry, LogType, FalseAlarmPayload
 from app.models.gps_data import GPSData
 from app.models.detection_background import DetectionBackground
 from app.models.service_response import ServiceResponse, DbOperation
+from app.models.map_settings import CustomMapSettings
 
 
 from app.utils.ui_utils import update_element_styles, move_dialog_down
@@ -221,6 +224,8 @@ class MainWindow(QMainWindow):
         self.current_map: Optional[QPixmap] = None
         self.add_sizes_map_k: List[float] = [1.0, 1.0]
         self.current_map_resolution: float = 1.0
+
+        self.custom_map_settings: Optional[CustomMapSettings] = None
 
         # UI Стани
         self.is_radar_mode: bool = False
@@ -609,16 +614,18 @@ class MainWindow(QMainWindow):
             settings=self.settings_service, add_sizes_map_k=self.add_sizes_map_k
         )
 
-        ScalableDialog = make_scalable(QDialog)
-        scalable_dialog = ScalableDialog(widget_to_scale=map_dialog)
-
-        result = scalable_dialog.exec()
+        # ScalableDialog = make_scalable(QDialog)
+        # scalable_dialog = ScalableDialog(widget_to_scale=map_dialog)
+        move_dialog_down(map_dialog, self.geometry())
+        result = map_dialog.exec()
 
         if result == QDialog.DialogCode.Accepted:
-            settings_data = scalable_dialog.get_settings()
+            settings_data = map_dialog.get_settings()
 
-            if settings_data.get("pixmap"):
-                self.current_map = settings_data["pixmap"]
+            if settings_data and settings_data.pixmap:
+                self.custom_map_settings = settings_data
+                self.current_map = settings_data.pixmap
+
                 print(f"[MainWindow] Custom map set. Width: {self.current_map.width()}")
 
                 self.scale_map()
@@ -975,6 +982,7 @@ class MainWindow(QMainWindow):
 
         if result:
             pixmap, resolution = result
+            self.custom_map_settings = None
             print(f"[MainWindow] Map loaded. Res: {resolution:.4f} m/px")
 
             self.current_map = pixmap
@@ -993,27 +1001,89 @@ class MainWindow(QMainWindow):
         if self.is_radar_mode or not self.current_map:
             return
 
-        scale_factor = self._calculate_scale_factor()
+        # --- ГІЛКА 1: Кастомна карта (Ручне налаштування) ---
+        if self.custom_map_settings:
+            # 1. Отримуємо параметри
+            pixmap = self.custom_map_settings.pixmap
+            original_px_per_km = self.custom_map_settings.px_per_km
+            center_point = self.custom_map_settings.center_px_point
+            rotation = self.custom_map_settings.rotation
 
-        view_size = self.ui.map_background_label.size()
-        radar_geo = self.ui.RadarFrame.geometry()
+            # 2. Розраховуємо необхідний масштаб для поточного радіуса радара
+            # Радіус радара на екрані (половина ширини віджета RadarFrame)
+            radar_radius_px = self.ui.RadarFrame.width() / 2
+            real_radius_km = self.settings_service.radar_radius_km
 
-        rel_x = radar_geo.center().x() - self.ui.map_background_label.x()
-        rel_y = radar_geo.center().y() - self.ui.map_background_label.y()
-        radar_center_relative = QPointF(rel_x, rel_y)
+            if real_radius_km <= 0:
+                return
 
-        final_pixmap = MapViewLogic.generate_view_pixmap(
-            source_map=self.current_map,
-            view_size=view_size,
-            radar_center_relative=radar_center_relative,
-            scale_factor=scale_factor,
-        )
+            # Скільки пікселів на км нам треба зараз на екрані
+            needed_px_per_km = radar_radius_px / real_radius_km
 
-        if not final_pixmap.isNull():
+            # Коефіцієнт масштабування відносно оригінальної картинки
+            scale_factor = needed_px_per_km / original_px_per_km
+
+            # 3. Готуємо канвас
+            view_size = self.ui.map_background_label.size()
+            final_pixmap = QPixmap(view_size)
+            final_pixmap.fill(Qt.GlobalColor.transparent)
+
+            painter = QPainter(final_pixmap)
+            painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
+            painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+
+            # 4. Знаходимо центр радара відносно map_background_label
+            # Оскільки RadarFrame може бути не рівно по центру вікна
+            radar_geo = self.ui.RadarFrame.geometry()
+            bg_geo = self.ui.map_background_label.geometry()
+
+            # Координати центру радара всередині map_background_label
+            target_x = radar_geo.center().x() - bg_geo.x()
+            target_y = radar_geo.center().y() - bg_geo.y()
+
+            # 5. Матриця трансформації (аналогічно як в діалозі)
+            t = QTransform()
+
+            # А. Переміщуємо пензлик в центр РАДАРА на Main Window
+            t.translate(target_x, target_y)
+
+            # Б. Повертаємо (якщо було задано в діалозі)
+            t.rotate(rotation)
+
+            # В. Масштабуємо під поточний зум
+            t.scale(scale_factor, scale_factor)
+
+            # Г. Зміщуємо назад на точку ЦЕНТРУ КАРТИНКИ (яку ви вибрали кліком)
+            t.translate(-center_point.x(), -center_point.y())
+
+            painter.setTransform(t)
+            painter.drawPixmap(0, 0, pixmap)
+            painter.end()
+
             self.ui.map_background_label.setPixmap(final_pixmap)
 
-            self.ui.map_background_label.resize(final_pixmap.size())
-            self.ui.map_background_label.move(0, 0)
+        # --- ГІЛКА 2: Звичайна карта (API/Generated) ---
+        else:
+            scale_factor = self._calculate_scale_factor()
+
+            view_size = self.ui.map_background_label.size()
+            radar_geo = self.ui.RadarFrame.geometry()
+
+            rel_x = radar_geo.center().x() - self.ui.map_background_label.x()
+            rel_y = radar_geo.center().y() - self.ui.map_background_label.y()
+            radar_center_relative = QPointF(rel_x, rel_y)
+
+            final_pixmap = MapViewLogic.generate_view_pixmap(
+                source_map=self.current_map,
+                view_size=view_size,
+                radar_center_relative=radar_center_relative,
+                scale_factor=scale_factor,
+            )
+
+            if not final_pixmap.isNull():
+                self.ui.map_background_label.setPixmap(final_pixmap)
+                self.ui.map_background_label.resize(final_pixmap.size())
+                self.ui.map_background_label.move(0, 0)
 
     def _calculate_scale_factor(self) -> float:
         return MapViewLogic.calculate_scale_factor(

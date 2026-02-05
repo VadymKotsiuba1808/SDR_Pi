@@ -61,6 +61,8 @@
     <file alias="images/openChartBtn_on.png">assets/images/openChartBtn_on.png</file>
     <file alias="images/openChartBtn_off.png">assets/images/openChartBtn_off.png</file>
     <file alias="images/openChartBtn_disabled.png">assets/images/openChartBtn_disabled.png</file>
+    <file alias="images/indicator_off.png">assets/images/indicator_off.png</file>
+    <file alias="images/indicator_on.png">assets/images/indicator_on.png</file>
 </qresource>
 </RCC>
 

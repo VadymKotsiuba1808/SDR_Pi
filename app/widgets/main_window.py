@@ -207,6 +207,9 @@ class MainWindow(QMainWindow):
         self.pi_network.gps_received.connect(self.handle_gps)
         self.pi_network.detection_received.connect(self.handle_detection)
         self.pi_network.background_received.connect(self.handle_detection_background)
+        self.pi_network.connection_status_changed.connect(
+            self.handle_pi_connection_status
+        )
         self.pi_network.set_rf_range(self.settings_service.radio_range_mhz)
 
         self.network_signal_service = NetworkSignalService(self.system_service)
@@ -848,6 +851,9 @@ class MainWindow(QMainWindow):
     # endregion
 
     # region --- Modes & Settings ---
+    def handle_pi_connection_status(self, active: bool) -> None:
+        self.ui.sensor_indicator.setProperty("isActive", active)
+        update_element_styles(self.ui.sensor_indicator)
 
     def set_radar_mode(self) -> None:
         if self.is_radar_mode:

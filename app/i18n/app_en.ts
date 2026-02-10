@@ -524,64 +524,75 @@ Amp: {:.1f} dB</translation>
         <translation>All</translation>
     </message>
     <message>
-        <location filename="../widgets/log_dialog.py" line="282"/>
         <source>({}мс)</source>
-        <translation>({}ms)</translation>
+        <translation type="vanished">({}ms)</translation>
     </message>
     <message>
-        <location filename="../widgets/log_dialog.py" line="291"/>
+        <location filename="../widgets/log_dialog.py" line="293"/>
         <source>{}
 ID: {}...</source>
         <translation>{}
 ID: {}...</translation>
     </message>
     <message>
-        <location filename="../widgets/log_dialog.py" line="293"/>
+        <location filename="../widgets/log_dialog.py" line="295"/>
+        <location filename="../widgets/log_dialog.py" line="340"/>
         <source>Full ID: {}</source>
         <translation>Full ID: {}</translation>
     </message>
     <message>
-        <location filename="../widgets/log_dialog.py" line="299"/>
+        <location filename="../widgets/log_dialog.py" line="301"/>
         <source>{:.1f} MHz</source>
         <translation>{:.1f} MHz</translation>
     </message>
     <message>
-        <location filename="../widgets/log_dialog.py" line="303"/>
+        <location filename="../widgets/log_dialog.py" line="305"/>
         <source>{:.0f} Hz</source>
         <translation>{:.0f} Hz</translation>
     </message>
     <message>
-        <location filename="../widgets/log_dialog.py" line="314"/>
+        <location filename="../widgets/log_dialog.py" line="316"/>
         <source>{:.3f}km / {:.0f}°</source>
         <translation>{:.3f}km / {:.0f}°</translation>
     </message>
     <message>
-        <location filename="../widgets/log_dialog.py" line="320"/>
+        <location filename="../widgets/log_dialog.py" line="323"/>
         <source>YES</source>
         <translation>YES</translation>
     </message>
     <message>
-        <location filename="../widgets/log_dialog.py" line="321"/>
+        <location filename="../widgets/log_dialog.py" line="337"/>
+        <source>Ref: {}
+ID: {}...</source>
+        <translation>Ref: {}
+ID: {}...</translation>
+    </message>
+    <message>
+        <location filename="../widgets/log_dialog.py" line="322"/>
         <source>NO</source>
         <translation>NO</translation>
     </message>
     <message>
-        <location filename="../widgets/log_dialog.py" line="329"/>
+        <location filename="../widgets/log_dialog.py" line="284"/>
+        <source>Latency: {}ms</source>
+        <translation>Latency: {}ms</translation>
+    </message>
+    <message>
+        <location filename="../widgets/log_dialog.py" line="332"/>
         <source>FALSE ALARM</source>
         <translation>FALSE ALARM</translation>
     </message>
     <message>
-        <location filename="../widgets/log_dialog.py" line="334"/>
         <source>Ref: {}</source>
-        <translation>Ref: {}</translation>
+        <translation type="vanished">Ref: {}</translation>
     </message>
     <message>
-        <location filename="../widgets/log_dialog.py" line="439"/>
+        <location filename="../widgets/log_dialog.py" line="445"/>
         <source>There is no background</source>
         <translation>There is no background</translation>
     </message>
     <message>
-        <location filename="../widgets/log_dialog.py" line="460"/>
+        <location filename="../widgets/log_dialog.py" line="466"/>
         <source>Background {} of {} ({})</source>
         <translation>Background {} of {} ({})</translation>
     </message>
@@ -666,7 +677,7 @@ ID: {}...</translation>
         <translation type="vanished">saved</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="240"/>
+        <location filename="../ui/main_window.ui" line="228"/>
         <source>-</source>
         <translation>-</translation>
     </message>
@@ -679,62 +690,72 @@ ID: {}...</translation>
         <translation type="vanished">Sound, GHz</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="397"/>
+        <location filename="../ui/main_window.ui" line="252"/>
+        <source>RF, MHz</source>
+        <translation>RF, MHz</translation>
+    </message>
+    <message>
+        <location filename="../ui/main_window.ui" line="385"/>
         <source>Тривога RF</source>
         <translation>RF Alarm</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="443"/>
+        <location filename="../ui/main_window.ui" line="431"/>
         <source>Тривога Sound</source>
         <translation>Sound Alarm</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="494"/>
+        <location filename="../ui/main_window.ui" line="482"/>
         <source>GPS</source>
         <translation>GPS</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="561"/>
+        <location filename="../ui/main_window.ui" line="549"/>
         <source>Wi Fi</source>
         <translation>Wi-Fi</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="1299"/>
+        <location filename="../ui/main_window.ui" line="666"/>
+        <source>Sensor</source>
+        <translation>Sensor</translation>
+    </message>
+    <message>
+        <location filename="../ui/main_window.ui" line="1381"/>
         <source>uk</source>
         <translation>uk</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="1304"/>
+        <location filename="../ui/main_window.ui" line="1386"/>
         <source>en</source>
         <translation>en</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="1326"/>
+        <location filename="../ui/main_window.ui" line="1408"/>
         <source>Мова:</source>
         <translation>Lang:</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="1440"/>
+        <location filename="../ui/main_window.ui" line="1522"/>
         <source>Хибна тривога</source>
         <translation>False Alarm</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="1536"/>
+        <location filename="../ui/main_window.ui" line="1618"/>
         <source>Реавторизація</source>
         <translation>Reauthorization</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="1584"/>
+        <location filename="../ui/main_window.ui" line="1666"/>
         <source>Режим радару</source>
         <translation>Radar Mode</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="1638"/>
+        <location filename="../ui/main_window.ui" line="1720"/>
         <source>Режим карти</source>
         <translation>Map Mode</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="1899"/>
+        <location filename="../ui/main_window.ui" line="1981"/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;meta charset=&quot;utf-8&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
@@ -753,62 +774,61 @@ li.checked::marker { content: &quot;\2612&quot;; }
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="1927"/>
+        <location filename="../ui/main_window.ui" line="2009"/>
         <source>Інформація:</source>
         <translation>Information:</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="1951"/>
+        <location filename="../ui/main_window.ui" line="2033"/>
         <source>Індекс:</source>
         <translation>Index:</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="1488"/>
+        <location filename="../ui/main_window.ui" line="1570"/>
         <source>Меню</source>
         <translation>Menu</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="264"/>
         <source>Radio, MHz</source>
-        <translation>Radio, MHz</translation>
+        <translation type="vanished">Radio, MHz</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="771"/>
+        <location filename="../ui/main_window.ui" line="853"/>
         <source>Jammer</source>
         <translation>Jammer</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="840"/>
+        <location filename="../ui/main_window.ui" line="922"/>
         <source>ON</source>
         <translation>ON</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="884"/>
+        <location filename="../ui/main_window.ui" line="966"/>
         <source>OFF</source>
         <translation>OFF</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="919"/>
+        <location filename="../ui/main_window.ui" line="1001"/>
         <source>K1</source>
         <translation>K1</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="956"/>
+        <location filename="../ui/main_window.ui" line="1038"/>
         <source>K2</source>
         <translation>K2</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="993"/>
+        <location filename="../ui/main_window.ui" line="1075"/>
         <source>K3</source>
         <translation>K3</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="1130"/>
+        <location filename="../ui/main_window.ui" line="1212"/>
         <source>Радіус дії радару</source>
         <translation>Radar Range</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="1204"/>
+        <location filename="../ui/main_window.ui" line="1286"/>
         <source>Зберегти</source>
         <translation>Save</translation>
     </message>
@@ -821,29 +841,29 @@ li.checked::marker { content: &quot;\2612&quot;; }
         <translation type="vanished">Failed to load map.</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="400"/>
+        <location filename="../widgets/main_window.py" line="401"/>
         <source>Not enough disk space</source>
         <translation>Not enough disk space</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="401"/>
+        <location filename="../widgets/main_window.py" line="402"/>
         <source>Available only: {} MB.
 </source>
         <translation>Available only: {} MB.
 </translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="404"/>
+        <location filename="../widgets/main_window.py" line="405"/>
         <source>To use media functions and logging, please free up disk space.</source>
         <translation>To use media functions and logging, please free up disk space.</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="462"/>
+        <location filename="../widgets/main_window.py" line="463"/>
         <source>{:.1f} MHz</source>
         <translation>{:.1f} MHz</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="467"/>
+        <location filename="../widgets/main_window.py" line="468"/>
         <source>{:.0f} Hz</source>
         <translation>{:.0f} Hz</translation>
     </message>
@@ -876,12 +896,12 @@ li.checked::marker { content: &quot;\2612&quot;; }
         <translation type="vanished">TIME:  {}</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="474"/>
+        <location filename="../widgets/main_window.py" line="475"/>
         <source>TYPE: {}</source>
         <translation>TYPE: {}</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="475"/>
+        <location filename="../widgets/main_window.py" line="476"/>
         <source>NAME: {}</source>
         <translation>NAME: {}</translation>
     </message>
@@ -890,12 +910,12 @@ li.checked::marker { content: &quot;\2612&quot;; }
         <translation type="vanished">CLASS: {}</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="477"/>
+        <location filename="../widgets/main_window.py" line="478"/>
         <source>FREQ: {}</source>
         <translation>FREQ: {}</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="478"/>
+        <location filename="../widgets/main_window.py" line="479"/>
         <source>DIST: {:.3f} km</source>
         <translation>DIST: {:.3f} km</translation>
     </message>
@@ -904,32 +924,32 @@ li.checked::marker { content: &quot;\2612&quot;; }
         <translation type="vanished">ANGLE: {:.1f}°</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="472"/>
+        <location filename="../widgets/main_window.py" line="473"/>
         <source>INDEX:{}</source>
         <translation>INDEX:{}</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="476"/>
+        <location filename="../widgets/main_window.py" line="477"/>
         <source>CLASS:{}</source>
         <translation>CLASS:{}</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="479"/>
+        <location filename="../widgets/main_window.py" line="480"/>
         <source>ANGLE:{:.1f}°</source>
         <translation>ANGLE:{:.1f}°</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="480"/>
+        <location filename="../widgets/main_window.py" line="481"/>
         <source>CONF: {:.1f}%</source>
         <translation>CONF: {:.1f}%</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="481"/>
+        <location filename="../widgets/main_window.py" line="482"/>
         <source>TIME: {}</source>
         <translation>TIME: {}</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="489"/>
+        <location filename="../widgets/main_window.py" line="490"/>
         <source>INDEX {}: 
 
 [OFFLINE] / [NOT FOUND]
@@ -940,27 +960,27 @@ li.checked::marker { content: &quot;\2612&quot;; }
 </translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="492"/>
+        <location filename="../widgets/main_window.py" line="493"/>
         <source>Target lost or not yet detected.</source>
         <translation>Target lost or not yet detected.</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="802"/>
+        <location filename="../widgets/main_window.py" line="807"/>
         <source>Recording Error</source>
         <translation>Recording Error</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="832"/>
+        <location filename="../widgets/main_window.py" line="837"/>
         <source>Select file to view</source>
         <translation>Select file to view</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="997"/>
+        <location filename="../widgets/main_window.py" line="1005"/>
         <source>Error</source>
         <translation>Error</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="997"/>
+        <location filename="../widgets/main_window.py" line="1005"/>
         <source>Failed to load map.</source>
         <translation>Failed to load map.</translation>
     </message>
@@ -1062,19 +1082,21 @@ li.checked::marker { content: &quot;\2612&quot;; }
     </message>
     <message>
         <location filename="../widgets/object_editor_dialog.py" line="160"/>
-        <location filename="../widgets/object_editor_dialog.py" line="296"/>
+        <location filename="../widgets/object_editor_dialog.py" line="350"/>
         <source>{} MHz</source>
         <translation>{} MHz</translation>
     </message>
     <message>
         <location filename="../widgets/object_editor_dialog.py" line="162"/>
-        <location filename="../widgets/object_editor_dialog.py" line="298"/>
+        <location filename="../widgets/object_editor_dialog.py" line="352"/>
         <source>{} - {} MHz</source>
         <translation>{} - {} MHz</translation>
     </message>
     <message>
         <location filename="../widgets/object_editor_dialog.py" line="191"/>
         <location filename="../widgets/object_editor_dialog.py" line="200"/>
+        <location filename="../widgets/object_editor_dialog.py" line="302"/>
+        <location filename="../widgets/object_editor_dialog.py" line="318"/>
         <source>Error</source>
         <translation>Error</translation>
     </message>
@@ -1089,7 +1111,17 @@ li.checked::marker { content: &quot;\2612&quot;; }
         <translation>Choose class.</translation>
     </message>
     <message>
-        <location filename="../widgets/object_editor_dialog.py" line="315"/>
+        <location filename="../widgets/object_editor_dialog.py" line="303"/>
+        <source>This value has already been added to the list!</source>
+        <translation>This value has already been added to the list!</translation>
+    </message>
+    <message>
+        <location filename="../widgets/object_editor_dialog.py" line="319"/>
+        <source>Range overlaps with existing: {}-{} MHz</source>
+        <translation>Range overlaps with existing: {}-{} MHz</translation>
+    </message>
+    <message>
+        <location filename="../widgets/object_editor_dialog.py" line="369"/>
         <source>{} Hz</source>
         <translation>{} Hz</translation>
     </message>
@@ -1428,77 +1460,82 @@ li.checked::marker { content: &quot;\2612&quot;; }
     </message>
     <message>
         <location filename="../ui/settings_dialog.ui" line="227"/>
+        <source>Автовидалення цілі (с):</source>
+        <translation>Auto-delete target (s):</translation>
+    </message>
+    <message>
+        <location filename="../ui/settings_dialog.ui" line="253"/>
         <source>Набір реле:</source>
         <translation>Relays set:</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.ui" line="237"/>
+        <location filename="../ui/settings_dialog.ui" line="263"/>
         <source>Авто-старт глушилки:</source>
         <translation>Autostart of jammer:</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.ui" line="244"/>
-        <location filename="../ui/settings_dialog.ui" line="258"/>
+        <location filename="../ui/settings_dialog.ui" line="270"/>
+        <location filename="../ui/settings_dialog.ui" line="284"/>
         <source>Активувати</source>
         <translation>Activate</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.ui" line="251"/>
+        <location filename="../ui/settings_dialog.ui" line="277"/>
         <source>Авто-стоп глушилки:</source>
         <translation>Autostop of jammer:</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.ui" line="265"/>
+        <location filename="../ui/settings_dialog.ui" line="291"/>
         <source>Інтервал стопу (с):</source>
         <translation>Stop interval (s):</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.ui" line="291"/>
+        <location filename="../ui/settings_dialog.ui" line="317"/>
         <source>Налаштування очистки</source>
         <translation>Cleaning settings</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.ui" line="300"/>
+        <location filename="../ui/settings_dialog.ui" line="326"/>
         <source>Що чистити:</source>
         <translation>Cleaning target:</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.ui" line="310"/>
+        <location filename="../ui/settings_dialog.ui" line="336"/>
         <source>Зберігати днів:</source>
         <translation>Save days:</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.ui" line="333"/>
+        <location filename="../ui/settings_dialog.ui" line="359"/>
         <source>Увімкнути автоматичну очистку</source>
         <translation>Enable automatic cleaning</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.ui" line="363"/>
+        <location filename="../ui/settings_dialog.ui" line="389"/>
         <source>Вийти з акаунту</source>
         <translation>Log out</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.ui" line="383"/>
+        <location filename="../ui/settings_dialog.ui" line="409"/>
         <source>Скасувати</source>
         <translation>Cancel</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.ui" line="390"/>
+        <location filename="../ui/settings_dialog.ui" line="416"/>
         <source>Зберегти</source>
         <translation>Save</translation>
     </message>
     <message>
-        <location filename="../widgets/settings_dialog.py" line="129"/>
+        <location filename="../widgets/settings_dialog.py" line="131"/>
         <source>Logs</source>
         <translation>Logs</translation>
     </message>
     <message>
-        <location filename="../widgets/settings_dialog.py" line="130"/>
+        <location filename="../widgets/settings_dialog.py" line="132"/>
         <source>Screenshots</source>
         <translation>Screenshots</translation>
     </message>
     <message>
-        <location filename="../widgets/settings_dialog.py" line="131"/>
+        <location filename="../widgets/settings_dialog.py" line="133"/>
         <source>Screen records</source>
         <translation>Screen records</translation>
     </message>

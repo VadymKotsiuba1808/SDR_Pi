@@ -13,6 +13,7 @@ class NetworkSignalService(QObject):
     - Без з'єднання: 0%
     """
 
+    # TODO - Перевірити пінгування при підключеній распберрі по Ethernet
     def __init__(self, system_service: SystemService):
         super().__init__()
         self.system_service = system_service

@@ -198,7 +198,7 @@ class MainWindow(QMainWindow):
         self.radar_renderer = RadarRenderer()
 
         # Менеджер детекцій
-        self.detection_manager = DetectionManager(self, self.settings_service)
+        self.detection_manager = DetectionManager(self.settings_service, self)
         self.detection_manager.detections_changed.connect(self._update_detection_ui)
 
         # Мережевий сервіс (Pi)

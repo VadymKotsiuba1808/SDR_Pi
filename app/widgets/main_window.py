@@ -198,7 +198,7 @@ class MainWindow(QMainWindow):
         self.radar_renderer = RadarRenderer()
 
         # Менеджер детекцій
-        self.detection_manager = DetectionManager(self)
+        self.detection_manager = DetectionManager(self, self.settings_service)
         self.detection_manager.detections_changed.connect(self._update_detection_ui)
 
         # Мережевий сервіс (Pi)
@@ -698,6 +698,7 @@ class MainWindow(QMainWindow):
 
         new_radius = new_settings.radar_max_radius_km
         new_interval = new_settings.gps_interval_s
+        new_detection_ttl = new_settings.detection_ttl_s
         new_main_relays = new_settings.main_relays
         new_auto_start_enabled = new_settings.is_jammer_auto_start_enabled
         new_auto_stop_enabled = new_settings.is_jammer_auto_stop_enabled
@@ -717,6 +718,9 @@ class MainWindow(QMainWindow):
         if self.settings_service.gps_interval_s != new_interval:
             self.settings_service.gps_interval_s = new_interval
             self.timer_gps.setInterval(new_interval * 1000)
+
+        if self.settings_service.detection_ttl_s != new_detection_ttl:
+            self.settings_service.detection_ttl_s = new_detection_ttl
 
         if self.settings_service.main_relays != new_main_relays:
             self.settings_service.main_relays = new_main_relays

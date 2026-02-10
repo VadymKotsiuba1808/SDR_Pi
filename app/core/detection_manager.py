@@ -2,6 +2,8 @@ from typing import Dict, List, Optional
 from datetime import datetime, timedelta
 
 from PyQt6.QtCore import QObject, pyqtSignal, QTimer
+
+from app.protocols import DetectionManagerSettings
 from app.models.detection_event import DetectionEvent
 from app.models.radar_target import RadarTarget
 
@@ -13,9 +15,19 @@ class DetectionManager(QObject):
 
     detections_changed = pyqtSignal()
 
-    def __init__(self, parent: Optional[QObject] = None) -> None:
+    def __init__(
+        self,
+        settings_service: DetectionManagerSettings,
+        parent: Optional[QObject] = None,
+    ) -> None:
         super().__init__(parent)
 
+        self.settings_service = settings_service
+
+        self._setup_variables()
+        self._setup_timers()
+
+    def _setup_variables(self):
         self.active_targets: Dict[str, RadarTarget] = {}
 
         self.index_history: Dict[str, int] = {}
@@ -25,10 +37,11 @@ class DetectionManager(QObject):
         self.next_index: int = 1
 
         self.update_requested: bool = False
+
+    def _setup_timers(self):
         self.ttl_timer: QTimer = QTimer(self)
         self.ttl_timer.timeout.connect(self._check_ttl)
         self.ttl_timer.start(1000)
-        self.ttl_seconds: int = 30
 
     def add_detection(self, event: DetectionEvent) -> None:
         """Головний метод додавання або оновлення цілі."""
@@ -80,7 +93,7 @@ class DetectionManager(QObject):
         ids_to_remove: List[str] = [
             tid
             for tid, target in self.active_targets.items()
-            if target.is_expired(self.ttl_seconds)
+            if target.is_expired(self.settings_service.detection_ttl_s)
         ]
 
         tid: str

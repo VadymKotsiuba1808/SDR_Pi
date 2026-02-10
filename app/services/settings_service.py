@@ -38,6 +38,8 @@ class SettingsService(QObject):
     remember_me: bool
     # Signal
     radio_range_mhz: list[int]
+    # Detection
+    detection_ttl_s: int
     # Timers
     gps_interval_s: int
     # Jammer
@@ -67,6 +69,8 @@ class SettingsService(QObject):
         "remember_me": Setting("auth", bool, False),
         # Signal
         "radio_range_mhz": ("signal", list, [100, 999]),
+        # Detection
+        "detection_ttl_s": ("detection", int, 3),
         # Timers
         "gps_interval_s": ("timers", int, 2),
         # Jammer

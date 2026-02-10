@@ -37,7 +37,7 @@ class SettingsService(QObject):
     owner_password_hash: str
     remember_me: bool
     # Signal
-    radio_range_ghz: list[float]
+    radio_range_mhz: list[int]
     # Timers
     gps_interval_s: int
     # Jammer
@@ -66,7 +66,7 @@ class SettingsService(QObject):
         "owner_password_hash": Setting("auth", str, ""),
         "remember_me": Setting("auth", bool, False),
         # Signal
-        "radio_range_ghz": ("signal", list, [0.0, 9.9]),
+        "radio_range_mhz": ("signal", list, [100, 999]),
         # Timers
         "gps_interval_s": ("timers", int, 2),
         # Jammer

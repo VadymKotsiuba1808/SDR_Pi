@@ -6,27 +6,129 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1920</width>
-    <height>1080</height>
+    <width>1500</width>
+    <height>770</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>1920</width>
-    <height>1080</height>
+    <width>1500</width>
+    <height>770</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>1920</width>
-    <height>1080</height>
+    <width>1500</width>
+    <height>770</height>
    </size>
   </property>
   <property name="windowTitle">
    <string>Налаштування власної карти</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">background-color:rgba(0, 47, 0, 139);</string>
+   <string notr="true">/* Глобальний стиль вікна */
+QDialog {
+	background-color: #002f00;
+	border: 2px solid #4CAF50;
+	border-radius: 6px;
+}
+
+QWidget {
+	font-family: 'Roboto';
+	color: #ffffff;
+}
+
+/* Стиль панелі управління */
+QFrame#controlPanelFrame {
+	background-color: rgba(0, 10, 0, 0.6);
+	border: 1px solid #328844;
+	border-radius: 4px;
+}
+
+/* Стилі написів */
+QLabel {
+	font-size: 20px;
+	background-color: transparent;
+	border: none;
+}
+
+/* Стилі кнопок (як у ObjectManager) */
+QPushButton {
+	background-color: rgba(0, 20, 0, 0.8);
+	border: 2px solid #328844;
+	color: #ffffff;
+	font-size: 20px;
+	padding: 8px 15px;
+	border-radius: 4px;
+}
+
+QPushButton:hover {
+	background-color: #328844;
+	color: #000;
+}
+
+QPushButton:pressed {
+	background-color: #4CAF50;
+}
+
+QPushButton:disabled {
+	background-color: rgba(50, 50, 50, 0.5);
+	border-color: #555;
+	color: #888;
+}
+
+/* Кнопка скасування (червона) */
+QPushButton#cancelButton {
+	border-color: #aa3333;
+}
+
+QPushButton#cancelButton:hover {
+	background-color: #aa3333;
+}
+
+/* Стилі полів вводу (SpinBox) */
+QSpinBox, QDoubleSpinBox {
+	background-color: rgba(0, 10, 0, 0.6);
+	border: 1px solid #328844;
+	color: #ffffff;
+	font-size: 20px;
+	padding: 5px;
+	selection-background-color: #328844;
+}
+
+QSpinBox::up-button, QDoubleSpinBox::up-button,
+QSpinBox::down-button, QDoubleSpinBox::down-button {
+	width: 25px;
+	
+}
+
+QSpinBox::up-button:hover, QDoubleSpinBox::up-button:hover,
+QSpinBox::down-button:hover, QDoubleSpinBox::down-button:hover {
+	background-color: #328844;
+}
+
+/* Слайдер */
+QSlider::groove:horizontal {
+	border: 1px solid #328844;
+	height: 8px;
+	background: rgba(0, 10, 0, 0.6);
+	margin: 2px 0;
+	border-radius: 4px;
+}
+
+QSlider::handle:horizontal {
+	background: #4CAF50;
+	border: 1px solid #4CAF50;
+	width: 18px;
+	height: 18px;
+	margin: -7px 0;
+	border-radius: 9px;
+}
+
+QSlider::handle:horizontal:hover {
+	background: #328844;
+}
+</string>
   </property>
   <property name="modal">
    <bool>true</bool>
@@ -36,12 +138,12 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1920</width>
-     <height>1080</height>
+     <width>1500</width>
+     <height>770</height>
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">background-color:rgba(0, 47, 0, 139);</string>
+    <string notr="true">background-color: transparent; border: none;</string>
    </property>
    <property name="text">
     <string/>
@@ -53,19 +155,17 @@
   <widget class="QLabel" name="centerCircleLabel">
    <property name="geometry">
     <rect>
-     <x>277</x>
-     <y>40</y>
-     <width>1000</width>
-     <height>1000</height>
+     <x>200</x>
+     <y>35</y>
+     <width>700</width>
+     <height>700</height>
     </rect>
    </property>
    <property name="styleSheet">
     <string notr="true">background-color: transparent;
-border: 4px dashed #882222; 
-border:none;
-border-radius: 500px; 
-font-size:48px;
-border-image:url(:/images/radar.png) stretch stretch;</string>
+border: none;
+border-radius: 350px;
+border-image: url(:/images/radar.png) stretch stretch;</string>
    </property>
    <property name="text">
     <string/>
@@ -74,15 +174,11 @@ border-image:url(:/images/radar.png) stretch stretch;</string>
   <widget class="QFrame" name="controlPanelFrame">
    <property name="geometry">
     <rect>
-     <x>1550</x>
-     <y>100</y>
-     <width>367</width>
-     <height>870</height>
+     <x>1100</x>
+     <y>20</y>
+     <width>380</width>
+     <height>730</height>
     </rect>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">background: rgba(0, 10, 0, 0.8);
-border: 2px solid #328844;</string>
    </property>
    <property name="frameShape">
     <enum>QFrame::Shape::StyledPanel</enum>
@@ -91,14 +187,17 @@ border: 2px solid #328844;</string>
     <enum>QFrame::Shadow::Raised</enum>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="spacing">
+     <number>15</number>
+    </property>
     <property name="leftMargin">
-     <number>20</number>
+     <number>15</number>
     </property>
     <property name="topMargin">
      <number>20</number>
     </property>
     <property name="rightMargin">
-     <number>20</number>
+     <number>15</number>
     </property>
     <property name="bottomMargin">
      <number>20</number>
@@ -108,24 +207,8 @@ border: 2px solid #328844;</string>
       <property name="minimumSize">
        <size>
         <width>0</width>
-        <height>105</height>
+        <height>50</height>
        </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QPushButton{
-	border: none;
-	background-image: url(:/images/Btn_MainMenu_off.png);
-	font-family: 'Roboto';
-	font-weight: 500;
-	font-size: 28px;
-	color: #FFFFFF;
-}
-
-QPushButton:pressed{
-	border: none;
-	background-image: url(:/images/Btn_MainMenu_on.png);
-	color: #002509;
-}</string>
       </property>
       <property name="text">
        <string>Обрати зображення</string>
@@ -137,24 +220,8 @@ QPushButton:pressed{
       <property name="minimumSize">
        <size>
         <width>0</width>
-        <height>105</height>
+        <height>50</height>
        </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QPushButton{
-	border: none;
-	background-image: url(:/images/Btn_MainMenu_off.png);
-	font-family: 'Roboto';
-	font-weight: 500;
-	font-size: 28px;
-	color: #FFFFFF;
-}
-
-QPushButton:pressed{
-	border: none;
-	background-image: url(:/images/Btn_MainMenu_on.png);
-	color: #002509;
-}</string>
       </property>
       <property name="text">
        <string>Встановити центр</string>
@@ -163,20 +230,6 @@ QPushButton:pressed{
     </item>
     <item>
      <widget class="QLabel" name="scaleLabel">
-      <property name="maximumSize">
-       <size>
-        <width>16777215</width>
-        <height>30</height>
-       </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">font-family: 'Roboto';
-font-weight: 500;
-font-size: 24px;
-color: #FFFFFF;
-border:none;
-background-color:transparent;</string>
-      </property>
       <property name="text">
        <string>Масштаб (%)</string>
       </property>
@@ -191,30 +244,15 @@ background-color:transparent;</string>
        <widget class="QPushButton" name="zoomOutButton">
         <property name="minimumSize">
          <size>
-          <width>70</width>
-          <height>70</height>
+          <width>50</width>
+          <height>50</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>70</width>
-          <height>70</height>
+          <width>50</width>
+          <height>50</height>
          </size>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">QPushButton{
-	font-family: 'Roboto';
-	font-weight: 500;
-	font-size: 36px;
-	color: #FFFFFF;
-	border: none;
-	border-image: url(:/images/Btn_Square_off.png) 0 0 0 0 stretch stretch;
-}
-QPushButton:pressed{
-	border: none;
-	border-image: url(:/images/Btn_Square_on.png) 0 0 0 0 stretch stretch;
-	color: #002509;
-}</string>
         </property>
         <property name="text">
          <string>-</string>
@@ -226,21 +264,8 @@ QPushButton:pressed{
         <property name="minimumSize">
          <size>
           <width>0</width>
-          <height>70</height>
+          <height>50</height>
          </size>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">QSpinBox {
-	font-family: 'Roboto';
-	font-weight: 500;
-	font-size: 26px;
-	color: #FFFFFF;
-	background-color: rgba(0, 0, 0, 0.7);
-	border: 1px solid #328844;
-	padding: 5px;
-	text-align: center;
-}
-</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -263,30 +288,15 @@ QPushButton:pressed{
        <widget class="QPushButton" name="zoomInButton">
         <property name="minimumSize">
          <size>
-          <width>70</width>
-          <height>70</height>
+          <width>50</width>
+          <height>50</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>70</width>
-          <height>70</height>
+          <width>50</width>
+          <height>50</height>
          </size>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">QPushButton{
-	font-family: 'Roboto';
-	font-weight: 500;
-	font-size: 36px;
-	color: #FFFFFF;
-	border: none;
-	border-image: url(:/images/Btn_Square_off.png) 0 0 0 0 stretch stretch;
-}
-QPushButton:pressed{
-	border: none;
-	border-image: url(:/images/Btn_Square_on.png) 0 0 0 0 stretch stretch;
-	color: #002509;
-}</string>
         </property>
         <property name="text">
          <string>+</string>
@@ -297,20 +307,6 @@ QPushButton:pressed{
     </item>
     <item>
      <widget class="QLabel" name="radiusLabel">
-      <property name="maximumSize">
-       <size>
-        <width>16777215</width>
-        <height>30</height>
-       </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">font-family: 'Roboto';
-font-weight: 500;
-font-size: 24px;
-color: #FFFFFF;
-border:none;
-background-color:transparent;</string>
-      </property>
       <property name="text">
        <string>Радіус кола (км)</string>
       </property>
@@ -324,27 +320,14 @@ background-color:transparent;</string>
       <property name="minimumSize">
        <size>
         <width>0</width>
-        <height>60</height>
+        <height>50</height>
        </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QDoubleSpinBox {
-	font-family: 'Roboto';
-	font-weight: 500;
-	font-size: 26px;
-	color: #FFFFFF;
-	background-color: rgba(0, 0, 0, 0.7);
-	border: 1px solid #328844;
-	padding: 5px;
-	text-align: center;
-}
-</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignmentFlag::AlignCenter</set>
       </property>
       <property name="buttonSymbols">
-       <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
+       <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
       </property>
       <property name="minimum">
        <double>0.100000000000000</double>
@@ -359,20 +342,6 @@ background-color:transparent;</string>
     </item>
     <item>
      <widget class="QLabel" name="rotateLabel">
-      <property name="maximumSize">
-       <size>
-        <width>16777215</width>
-        <height>30</height>
-       </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">font-family: 'Roboto';
-font-weight: 500;
-font-size: 24px;
-color: #FFFFFF;
-border:none;
-background-color:transparent;</string>
-      </property>
       <property name="text">
        <string>Кут повороту</string>
       </property>
@@ -388,36 +357,20 @@ background-color:transparent;</string>
         <property name="minimumSize">
          <size>
           <width>0</width>
-          <height>60</height>
+          <height>50</height>
          </size>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">QSpinBox {
-	font-family: 'Roboto';
-	font-weight: 500;
-	font-size: 26px;
-	color: #FFFFFF;
-	background-color: rgba(0, 0, 0, 0.7);
-	border: 1px solid #328844;
-	padding: 5px;
-	text-align: center;
-}
-</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignmentFlag::AlignCenter</set>
         </property>
         <property name="buttonSymbols">
-         <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
+         <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
         </property>
         <property name="minimum">
-         <number>0</number>
+         <number>-180</number>
         </property>
         <property name="maximum">
-         <number>359</number>
-        </property>
-        <property name="value">
-         <number>0</number>
+         <number>180</number>
         </property>
        </widget>
       </item>
@@ -428,31 +381,26 @@ background-color:transparent;</string>
       <property name="minimumSize">
        <size>
         <width>0</width>
-        <height>35</height>
+        <height>30</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>321</width>
+        <width>322</width>
         <height>16777215</height>
        </size>
       </property>
-      <property name="styleSheet">
-       <string notr="true">background-color:transparent;
-border:none;
-</string>
+      <property name="minimum">
+       <number>-180</number>
       </property>
       <property name="maximum">
-       <number>359</number>
+       <number>180</number>
+      </property>
+      <property name="value">
+       <number>0</number>
       </property>
       <property name="orientation">
        <enum>Qt::Orientation::Horizontal</enum>
-      </property>
-      <property name="invertedAppearance">
-       <bool>false</bool>
-      </property>
-      <property name="invertedControls">
-       <bool>false</bool>
       </property>
       <property name="tickPosition">
        <enum>QSlider::TickPosition::NoTicks</enum>
@@ -477,24 +425,8 @@ border:none;
       <property name="minimumSize">
        <size>
         <width>0</width>
-        <height>103</height>
+        <height>60</height>
        </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QPushButton{
-	border: none;
-	background-image: url(:/images/Btn_MainMenu_off.png);
-	font-family: 'Roboto';
-	font-weight: 500;
-	font-size: 30px;
-	color: #FFFFFF;
-}
-
-QPushButton:pressed{
-	border: none;
-	background-image: url(:/images/Btn_MainMenu_on.png);
-	color: #002509;
-}</string>
       </property>
       <property name="text">
        <string>Зберегти</string>
@@ -506,24 +438,8 @@ QPushButton:pressed{
       <property name="minimumSize">
        <size>
         <width>0</width>
-        <height>103</height>
+        <height>60</height>
        </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QPushButton{
-	border: none;
-	background-image: url(:/images/Btn_MainMenu_red.png); /* Червоний стиль для скасування */
-	font-family: 'Roboto';
-	font-weight: 500;
-	font-size: 30px;
-	color: #FFFFFF;
-}
-
-QPushButton:pressed{
-	border: none;
-	background-image: url(:/images/Btn_MainMenu_on.png);
-	color: #002509;
-}</string>
       </property>
       <property name="text">
        <string>Скасувати</string>
@@ -531,15 +447,6 @@ QPushButton:pressed{
      </widget>
     </item>
    </layout>
-   <zorder>radiusKmDoubleSpinBox</zorder>
-   <zorder>selectImageButton</zorder>
-   <zorder>setCenterButton</zorder>
-   <zorder>scaleLabel</zorder>
-   <zorder>radiusLabel</zorder>
-   <zorder>rotateLabel</zorder>
-   <zorder>rotateHorizontalSlider</zorder>
-   <zorder>saveButton</zorder>
-   <zorder>cancelButton</zorder>
   </widget>
  </widget>
  <resources>
@@ -553,12 +460,12 @@ QPushButton:pressed{
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1733</x>
-     <y>712</y>
+     <x>20</x>
+     <y>20</y>
     </hint>
     <hint type="destinationlabel">
-     <x>959</x>
-     <y>539</y>
+     <x>20</x>
+     <y>20</y>
     </hint>
    </hints>
   </connection>
@@ -569,12 +476,12 @@ QPushButton:pressed{
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1733</x>
-     <y>818</y>
+     <x>20</x>
+     <y>20</y>
     </hint>
     <hint type="destinationlabel">
-     <x>959</x>
-     <y>539</y>
+     <x>20</x>
+     <y>20</y>
     </hint>
    </hints>
   </connection>

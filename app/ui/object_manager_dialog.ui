@@ -168,12 +168,12 @@ QPushButton#btnClose {
      </column>
      <column>
       <property name="text">
-       <string>RF (GHz)</string>
+       <string>RF (МГц)</string>
       </property>
      </column>
      <column>
       <property name="text">
-       <string>Sound (Hz)</string>
+       <string>Sound (Гц)</string>
       </property>
      </column>
     </widget>

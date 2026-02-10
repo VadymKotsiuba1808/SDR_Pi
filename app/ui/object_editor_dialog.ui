@@ -385,7 +385,10 @@ QPushButton#btnDelete:pressed {
             <item>
              <widget class="QLabel" name="lblFreqMin">
               <property name="text">
-               <string>Від (ГГц):</string>
+               <string>Від (МГц):</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
               </property>
              </widget>
             </item>
@@ -397,15 +400,21 @@ QPushButton#btnDelete:pressed {
               <property name="keyboardTracking">
                <bool>true</bool>
               </property>
+              <property name="decimals">
+               <number>1</number>
+              </property>
               <property name="maximum">
-               <double>6000.000000000000000</double>
+               <double>10000.000000000000000</double>
               </property>
              </widget>
             </item>
             <item>
              <widget class="QLabel" name="lblFreqMax">
               <property name="text">
-               <string>До (ГГц):</string>
+               <string>До (МГц):</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
               </property>
              </widget>
             </item>
@@ -414,8 +423,11 @@ QPushButton#btnDelete:pressed {
               <property name="buttonSymbols">
                <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
               </property>
+              <property name="decimals">
+               <number>1</number>
+              </property>
               <property name="maximum">
-               <double>6000.000000000000000</double>
+               <double>10000.000000000000000</double>
               </property>
              </widget>
             </item>

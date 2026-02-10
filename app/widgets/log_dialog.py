@@ -24,7 +24,7 @@ from app.models.object_class import ObjectClass
 from app.services.log_service import LogService
 from app.services.detection_background_service import DetectionBackgroundService
 from app.utils.ui_utils import update_element_styles
-from app.utils.convert_measurement_unit import convert_hz_to_ghz
+from app.utils.convert_measurement_unit import convert_hz_to_mhz
 
 
 class LogDialog(QDialog):
@@ -296,8 +296,8 @@ class LogDialog(QDialog):
 
                 formatted_frequency: str
                 if data.type == SourceType.RF:
-                    formatted_frequency = self.tr("{:.3f} GHz").format(
-                        convert_hz_to_ghz(data.frequency_hz)
+                    formatted_frequency = self.tr("{:.1f} MHz").format(
+                        convert_hz_to_mhz(data.frequency_hz)
                     )
                 else:
                     formatted_frequency = self.tr("{:.0f} Hz").format(data.frequency_hz)

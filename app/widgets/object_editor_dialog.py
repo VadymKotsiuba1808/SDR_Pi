@@ -11,7 +11,7 @@ from app.services.keyboard_service import KeyboardService
 from app.models.detection_object import DetectionObject
 from app.models.object_class import ObjectClass
 from app.ui.ui_object_editor_dialog import Ui_ObjectEditorDialog
-from app.utils.convert_measurement_unit import convert_ghz_to_hz, convert_hz_to_ghz
+from app.utils.convert_measurement_unit import convert_mhz_to_hz, convert_hz_to_mhz
 
 
 class ObjectEditorDialog(QDialog):
@@ -82,12 +82,10 @@ class ObjectEditorDialog(QDialog):
         self.update_classes_list(self.object_classes)
 
         if self.is_edit_mode and self.object_data:
-            # TODO - Додати переклад
-            self.setWindowTitle("Редагування об'єкта")
+            self.setWindowTitle(self.tr("Editing an object"))
             self._load_data_into_fields()
         else:
-            # TODO - Додати переклад
-            self.setWindowTitle("Додавання нового об'єкта")
+            self.setWindowTitle(self.tr("Adding a new object"))
             if self.ui.comboClass.count() > 0:
                 self.ui.comboClass.setCurrentIndex(0)
 
@@ -156,12 +154,12 @@ class ObjectEditorDialog(QDialog):
                 if isinstance(rf_str, str):
                     try:
                         parts = rf_str.split(RF_PARAMS__DIVIDER)
-                        f_min = convert_hz_to_ghz(float(parts[0]))
-                        f_max = convert_hz_to_ghz(float(parts[1]))
+                        f_min = convert_hz_to_mhz(float(parts[0]))
+                        f_max = convert_hz_to_mhz(float(parts[1]))
                         display_text = (
-                            f"{f_min} ГГц"
+                            self.tr("{} MHz").format(f_min)
                             if f_min == f_max
-                            else f"{f_min} - {f_max} ГГц"
+                            else self.tr("{} - {} MHz").format(f_min, f_max)
                         )
                         item = QListWidgetItem(display_text)
                         item.setData(Qt.ItemDataRole.UserRole, rf_str)
@@ -189,8 +187,9 @@ class ObjectEditorDialog(QDialog):
         name = self.ui.inpName.text().strip()
         if not name:
             print("[ObjectEditor] Save failed: Name is empty.")
-            # TODO - Додати переклад
-            QMessageBox.warning(self, "Помилка", "Введіть назву об'єкта.")
+            QMessageBox.warning(
+                self, self.tr("Error"), self.tr("Enter the name of the object.")
+            )
             return
 
         selected_class_id = self.ui.comboClass.currentData()
@@ -198,8 +197,7 @@ class ObjectEditorDialog(QDialog):
 
         if selected_class_id is None:
             print("[ObjectEditor] Save failed: Class not selected.")
-            # TODO - Додати переклад
-            QMessageBox.warning(self, "Помилка", "Виберіть клас.")
+            QMessageBox.warning(self, self.tr("Error"), self.tr("Choose class."))
             return
 
         rf_data = self._collect_rf_data()
@@ -293,8 +291,12 @@ class ObjectEditorDialog(QDialog):
             self.ui.inpRFMin.setValue(f_min)
             self.ui.inpRFMax.setValue(f_max)
 
-        raw_string = f"{convert_ghz_to_hz(f_min)}-{convert_ghz_to_hz(f_max)}"
-        display_text = f"{f_min} ГГц" if f_min == f_max else f"{f_min} - {f_max} ГГц"
+        raw_string = f"{convert_mhz_to_hz(f_min)}-{convert_mhz_to_hz(f_max)}"
+        display_text = (
+            self.tr("{} MHz").format(f_min)
+            if f_min == f_max
+            else self.tr("{} - {} MHz").format(f_min, f_max)
+        )
 
         item = QListWidgetItem(display_text)
         item.setData(Qt.ItemDataRole.UserRole, raw_string)
@@ -310,7 +312,7 @@ class ObjectEditorDialog(QDialog):
         if freq <= 0:
             return
 
-        text = f"{freq} Гц"
+        text = self.tr("{} Hz").format(freq)
         existing = [
             self.ui.lstSoundFreqs.item(i).text()
             for i in range(self.ui.lstSoundFreqs.count())

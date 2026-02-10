@@ -157,7 +157,7 @@ class PiServerService(QObject):
         elif action == "set_rf_range":
             r_range = data.get("range", [])
             print(f"[PiProxy] Set follow rf range {r_range}")
-            # TODO: Set range for detecting
+            # TODO: Set range for detecting, range is in mhz
             pass
 
         else:

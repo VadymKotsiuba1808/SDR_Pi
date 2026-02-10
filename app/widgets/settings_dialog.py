@@ -126,9 +126,9 @@ class SettingsDialog(QDialog):
         self.ui.cmbCleanTarget.clear()
 
         TARGET_DISPLAY_NAMES = {
-            CLEAN_TARGET_NAME.LOGS: self.tr("Логи системи"),
-            CLEAN_TARGET_NAME.SCREENSHOTS: self.tr("Скріншоти"),
-            CLEAN_TARGET_NAME.SCREEN_RECORDS: self.tr("Відео записи"),
+            CLEAN_TARGET_NAME.LOGS: self.tr("Logs"),
+            CLEAN_TARGET_NAME.SCREENSHOTS: self.tr("Screenshots"),
+            CLEAN_TARGET_NAME.SCREEN_RECORDS: self.tr("Screen records"),
         }
 
         for target in CLEAN_TARGET_NAME:

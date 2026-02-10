@@ -10,7 +10,7 @@ from PyQt6.QtWidgets import (
     QFileDialog,
     QWidget,
     QPushButton,
-    QDoubleSpinBox,
+    QSpinBox,
     QApplication,
 )
 from PyQt6.QtCore import (
@@ -30,6 +30,8 @@ from PyQt6.QtGui import (
     QDesktopServices,
     QShowEvent,
     QCloseEvent,
+    QTransform,
+    QPainter,
 )
 from PyQt6 import uic
 from qasync import asyncSlot
@@ -77,6 +79,7 @@ from app.models.log_entries import LogEntry, LogType, FalseAlarmPayload
 from app.models.gps_data import GPSData
 from app.models.detection_background import DetectionBackground
 from app.models.service_response import ServiceResponse, DbOperation
+from app.models.map_settings import CustomMapSettings
 
 
 from app.utils.ui_utils import update_element_styles, move_dialog_down
@@ -85,7 +88,7 @@ from app.utils.system_utils import (
     restart_process,
 )
 from app.utils.geo_utils import calculate_distance
-from app.utils.convert_measurement_unit import convert_hz_to_ghz
+from app.utils.convert_measurement_unit import convert_hz_to_mhz
 
 STATIONARY_SECONDS = 10
 
@@ -208,7 +211,7 @@ class MainWindow(QMainWindow):
         self.pi_network.gps_received.connect(self.handle_gps)
         self.pi_network.detection_received.connect(self.handle_detection)
         self.pi_network.background_received.connect(self.handle_detection_background)
-        self.pi_network.set_rf_range(self.settings_service.radio_range_ghz)
+        self.pi_network.set_rf_range(self.settings_service.radio_range_mhz)
 
         self.log_service = LogService()
 
@@ -221,6 +224,8 @@ class MainWindow(QMainWindow):
         self.current_map: Optional[QPixmap] = None
         self.add_sizes_map_k: List[float] = [1.0, 1.0]
         self.current_map_resolution: float = 1.0
+
+        self.custom_map_settings: Optional[CustomMapSettings] = None
 
         # UI Стани
         self.is_radar_mode: bool = False
@@ -259,9 +264,9 @@ class MainWindow(QMainWindow):
         radar_radius = self.settings_service.radar_radius_km
         self.ui.radarRadiusSpinbox.setValue(radar_radius)
 
-        radio_range = self.settings_service.radio_range_ghz
-        self.ui.radioStartDoubleSpinBox.setValue(float(radio_range[0]))
-        self.ui.radioEndDoubleSpinBox.setValue(float(radio_range[1]))
+        radio_range = self.settings_service.radio_range_mhz
+        self.ui.radioStartSpinBox.setValue(int(radio_range[0]))
+        self.ui.radioEndSpinBox.setValue(int(radio_range[1]))
 
         current_lang = self.settings_service.lang_code
         self.ui.langComboBox.setCurrentIndex(1 if current_lang == "en" else 0)
@@ -301,12 +306,8 @@ class MainWindow(QMainWindow):
         self.ui.clearRadioRangePushButton.clicked.connect(self.clear_radio_range_values)
         self.ui.chartRangePushButton.clicked.connect(self.open_chart_monitor_dialog)
 
-        self.ui.radioStartDoubleSpinBox.valueChanged.connect(
-            self.handle_signal_range_change
-        )
-        self.ui.radioEndDoubleSpinBox.valueChanged.connect(
-            self.handle_signal_range_change
-        )
+        self.ui.radioStartSpinBox.valueChanged.connect(self.handle_signal_range_change)
+        self.ui.radioEndSpinBox.valueChanged.connect(self.handle_signal_range_change)
 
         self.ui.langComboBox.currentIndexChanged.connect(self.change_language)
 
@@ -397,14 +398,9 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(
                 self,
                 self.tr("Not enough disk space"),
-                self.tr(
-                    "Available only: "
-                    + str(available_mb)
-                    + self.tr("MB.")
-                    + "\n"
-                    + self.tr(
-                        "To use media functions and logging, please free up disk space."
-                    )
+                self.tr("Available only: {} MB.\n").format(str(available_mb))
+                + self.tr(
+                    "To use media functions and logging, please free up disk space."
                 ),
             )
             return False
@@ -462,23 +458,40 @@ class MainWindow(QMainWindow):
         target_event = self.find_event_by_searched_index()
 
         if target_event:
-            info = (
-                f"INDEX: {self.searched_index}\n"
-                f"----------------------\n"
-                f"TYPE:    {target_event.type}\n"
-                f"NAME:    {target_event.name.upper()}\n"
-                f"CLASS:   {target_event.object_class.upper()}\n"
-                f"FREQ:    {f"{convert_hz_to_ghz(target_event.frequency_hz):.3f} GHz" if(target_event.type==SourceType.RF) else f"{(target_event.frequency_hz):.0f} Hz" } \n"
-                f"DIST:    {target_event.distance_km:.3f} km\n"
-                f"ANGLE:   {target_event.angle:.1f}°\n"
-                f"CONF:    {target_event.confidence * 100:.1f}%\n"
-                f"TIME:    {target_event.timestamp.split('T')[-1][:8]}\n"
+            if target_event.type == SourceType.RF:
+                freq_line = self.tr("{:.1f} MHz").format(
+                    convert_hz_to_mhz(target_event.frequency_hz)
+                )
+
+            else:
+                freq_line = self.tr("{:.0f} Hz").format(target_event.frequency_hz)
+
+            time_part = target_event.timestamp.split("T")[-1][:8]
+            info = "\n".join(
+                [
+                    self.tr("INDEX:{}").format(self.searched_index),
+                    "---------------------",
+                    self.tr("TYPE: {}").format(target_event.type),
+                    self.tr("NAME: {}").format(target_event.name.upper()),
+                    self.tr("CLASS:{}").format(target_event.object_class.upper()),
+                    self.tr("FREQ: {}").format(freq_line),
+                    self.tr("DIST: {:.3f} km").format(target_event.distance_km),
+                    self.tr("ANGLE:{:.1f}°").format(target_event.angle),
+                    self.tr("CONF: {:.1f}%").format(target_event.confidence * 100),
+                    self.tr("TIME: {}").format(time_part),
+                ]
             )
             self.ui.detection_info_text.setPlainText(info)
         else:
             self.ui.detection_info_text.setPlainText(
-                f"INDEX {self.searched_index}: \n\n[OFFLINE] / [NOT FOUND]\n\n"
-                "Target lost or not yet detected."
+                "\n".join(
+                    [
+                        self.tr("INDEX {}: \n\n[OFFLINE] / [NOT FOUND]\n").format(
+                            self.searched_index
+                        ),
+                        self.tr("Target lost or not yet detected."),
+                    ]
+                )
             )
 
     def find_event_by_searched_index(self) -> Optional[DetectionEvent]:
@@ -601,16 +614,18 @@ class MainWindow(QMainWindow):
             settings=self.settings_service, add_sizes_map_k=self.add_sizes_map_k
         )
 
-        ScalableDialog = make_scalable(QDialog)
-        scalable_dialog = ScalableDialog(widget_to_scale=map_dialog)
-
-        result = scalable_dialog.exec()
+        # ScalableDialog = make_scalable(QDialog)
+        # scalable_dialog = ScalableDialog(widget_to_scale=map_dialog)
+        move_dialog_down(map_dialog, self.geometry())
+        result = map_dialog.exec()
 
         if result == QDialog.DialogCode.Accepted:
-            settings_data = scalable_dialog.get_settings()
+            settings_data = map_dialog.get_settings()
 
-            if settings_data.get("pixmap"):
-                self.current_map = settings_data["pixmap"]
+            if settings_data and settings_data.pixmap:
+                self.custom_map_settings = settings_data
+                self.current_map = settings_data.pixmap
+
                 print(f"[MainWindow] Custom map set. Width: {self.current_map.width()}")
 
                 self.scale_map()
@@ -784,7 +799,7 @@ class MainWindow(QMainWindow):
     @pyqtSlot(str)
     def show_error_message(self, error_text: str) -> None:
         print(f"[MainWindow] Recording Error: {error_text}")
-        QMessageBox.critical(self, "Recording Error", error_text)
+        QMessageBox.critical(self, self.tr("Recording Error"), error_text)
         self.on_recording_stopped()
 
     def handle_toggle_recording_pause(self, is_paused: bool) -> None:
@@ -851,46 +866,46 @@ class MainWindow(QMainWindow):
         self.scale_map()
 
     def set_radio_range(self) -> None:
-        start_value = self.ui.radioStartDoubleSpinBox.value()
-        end_value = self.ui.radioEndDoubleSpinBox.value()
+        start_value = self.ui.radioStartSpinBox.value()
+        end_value = self.ui.radioEndSpinBox.value()
 
-        self.settings_service.radio_range_ghz = [start_value, end_value]
+        self.settings_service.radio_range_mhz = [start_value, end_value]
         self.reset_radio_range_status()
 
         self.pi_network.set_rf_range([start_value, end_value])
 
     def clear_radio_range_values(self) -> None:
-        radio_range = self.settings_service.radio_range_ghz
+        radio_range = self.settings_service.radio_range_mhz
 
-        self.ui.radioStartDoubleSpinBox.setValue(float(radio_range[0]))
-        self.ui.radioEndDoubleSpinBox.setValue(float(radio_range[1]))
+        self.ui.radioStartSpinBox.setValue(int(radio_range[0]))
+        self.ui.radioEndSpinBox.setValue(int(radio_range[1]))
 
         self.reset_radio_range_status()
 
     def reset_radio_range_status(self) -> None:
-        self.ui.radioStartDoubleSpinBox.setProperty("status", "saved")
-        self.ui.radioEndDoubleSpinBox.setProperty("status", "saved")
+        self.ui.radioStartSpinBox.setProperty("status", "saved")
+        self.ui.radioEndSpinBox.setProperty("status", "saved")
 
-        update_element_styles(self.ui.radioStartDoubleSpinBox)
-        update_element_styles(self.ui.radioEndDoubleSpinBox)
+        update_element_styles(self.ui.radioStartSpinBox)
+        update_element_styles(self.ui.radioEndSpinBox)
 
         self.ui.saveRadioRangePushButton.setEnabled(False)
         update_element_styles(self.ui.saveRadioRangePushButton)
         self.ui.clearRadioRangePushButton.setEnabled(False)
         update_element_styles(self.ui.clearRadioRangePushButton)
 
-    def handle_signal_range_change(self, value: float) -> None:
-        current_spin_box = cast(QDoubleSpinBox, self.sender())
+    def handle_signal_range_change(self, value: int) -> None:
+        current_spin_box = cast(QSpinBox, self.sender())
 
-        start_spin_box: Optional[QDoubleSpinBox] = None
-        end_spin_box: Optional[QDoubleSpinBox] = None
+        start_spin_box: Optional[QSpinBox] = None
+        end_spin_box: Optional[QSpinBox] = None
 
         name = current_spin_box.objectName()
-        if name == "radioStartDoubleSpinBox":
+        if name == "radioStartSpinBox":
             start_spin_box = current_spin_box
-            end_spin_box = self.ui.radioEndDoubleSpinBox
-        elif name == "radioEndDoubleSpinBox":
-            start_spin_box = self.ui.radioStartDoubleSpinBox
+            end_spin_box = self.ui.radioEndSpinBox
+        elif name == "radioEndSpinBox":
+            start_spin_box = self.ui.radioStartSpinBox
             end_spin_box = current_spin_box
 
         if start_spin_box is None or end_spin_box is None:
@@ -967,6 +982,7 @@ class MainWindow(QMainWindow):
 
         if result:
             pixmap, resolution = result
+            self.custom_map_settings = None
             print(f"[MainWindow] Map loaded. Res: {resolution:.4f} m/px")
 
             self.current_map = pixmap
@@ -985,27 +1001,89 @@ class MainWindow(QMainWindow):
         if self.is_radar_mode or not self.current_map:
             return
 
-        scale_factor = self._calculate_scale_factor()
+        # --- ГІЛКА 1: Кастомна карта (Ручне налаштування) ---
+        if self.custom_map_settings:
+            # 1. Отримуємо параметри
+            pixmap = self.custom_map_settings.pixmap
+            original_px_per_km = self.custom_map_settings.px_per_km
+            center_point = self.custom_map_settings.center_px_point
+            rotation = self.custom_map_settings.rotation
 
-        view_size = self.ui.map_background_label.size()
-        radar_geo = self.ui.RadarFrame.geometry()
+            # 2. Розраховуємо необхідний масштаб для поточного радіуса радара
+            # Радіус радара на екрані (половина ширини віджета RadarFrame)
+            radar_radius_px = self.ui.RadarFrame.width() / 2
+            real_radius_km = self.settings_service.radar_radius_km
 
-        rel_x = radar_geo.center().x() - self.ui.map_background_label.x()
-        rel_y = radar_geo.center().y() - self.ui.map_background_label.y()
-        radar_center_relative = QPointF(rel_x, rel_y)
+            if real_radius_km <= 0:
+                return
 
-        final_pixmap = MapViewLogic.generate_view_pixmap(
-            source_map=self.current_map,
-            view_size=view_size,
-            radar_center_relative=radar_center_relative,
-            scale_factor=scale_factor,
-        )
+            # Скільки пікселів на км нам треба зараз на екрані
+            needed_px_per_km = radar_radius_px / real_radius_km
 
-        if not final_pixmap.isNull():
+            # Коефіцієнт масштабування відносно оригінальної картинки
+            scale_factor = needed_px_per_km / original_px_per_km
+
+            # 3. Готуємо канвас
+            view_size = self.ui.map_background_label.size()
+            final_pixmap = QPixmap(view_size)
+            final_pixmap.fill(Qt.GlobalColor.transparent)
+
+            painter = QPainter(final_pixmap)
+            painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
+            painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+
+            # 4. Знаходимо центр радара відносно map_background_label
+            # Оскільки RadarFrame може бути не рівно по центру вікна
+            radar_geo = self.ui.RadarFrame.geometry()
+            bg_geo = self.ui.map_background_label.geometry()
+
+            # Координати центру радара всередині map_background_label
+            target_x = radar_geo.center().x() - bg_geo.x()
+            target_y = radar_geo.center().y() - bg_geo.y()
+
+            # 5. Матриця трансформації (аналогічно як в діалозі)
+            t = QTransform()
+
+            # А. Переміщуємо пензлик в центр РАДАРА на Main Window
+            t.translate(target_x, target_y)
+
+            # Б. Повертаємо (якщо було задано в діалозі)
+            t.rotate(rotation)
+
+            # В. Масштабуємо під поточний зум
+            t.scale(scale_factor, scale_factor)
+
+            # Г. Зміщуємо назад на точку ЦЕНТРУ КАРТИНКИ (яку ви вибрали кліком)
+            t.translate(-center_point.x(), -center_point.y())
+
+            painter.setTransform(t)
+            painter.drawPixmap(0, 0, pixmap)
+            painter.end()
+
             self.ui.map_background_label.setPixmap(final_pixmap)
 
-            self.ui.map_background_label.resize(final_pixmap.size())
-            self.ui.map_background_label.move(0, 0)
+        # --- ГІЛКА 2: Звичайна карта (API/Generated) ---
+        else:
+            scale_factor = self._calculate_scale_factor()
+
+            view_size = self.ui.map_background_label.size()
+            radar_geo = self.ui.RadarFrame.geometry()
+
+            rel_x = radar_geo.center().x() - self.ui.map_background_label.x()
+            rel_y = radar_geo.center().y() - self.ui.map_background_label.y()
+            radar_center_relative = QPointF(rel_x, rel_y)
+
+            final_pixmap = MapViewLogic.generate_view_pixmap(
+                source_map=self.current_map,
+                view_size=view_size,
+                radar_center_relative=radar_center_relative,
+                scale_factor=scale_factor,
+            )
+
+            if not final_pixmap.isNull():
+                self.ui.map_background_label.setPixmap(final_pixmap)
+                self.ui.map_background_label.resize(final_pixmap.size())
+                self.ui.map_background_label.move(0, 0)
 
     def _calculate_scale_factor(self) -> float:
         return MapViewLogic.calculate_scale_factor(

@@ -51,53 +51,69 @@ class Ui_MainWindow(object):
         self.signals_range = QtWidgets.QFrame(parent=self.Header)
         self.signals_range.setGeometry(QtCore.QRect(640, -4, 621, 101))
         self.signals_range.setStyleSheet("border: 2px solid #328843;\n"
-"background: rgba(0, 10, 0, 0.1);")
+"background: rgba(0, 10, 0, 0.1);\n"
+"\n"
+"QSpinBox{\n"
+"    font-size:28px;\n"
+"    padding:2px;\n"
+"color:#fff;\n"
+"}\n"
+"\n"
+"QSpinBox[status=\"unsaved\"]{\n"
+"    border:5px solid darkred; \n"
+"}\n"
+"\n"
+"QSpinBox::up-button, QSpinBox::down-button {\n"
+"    width: 22px;\n"
+"    height: 18px;\n"
+"}")
         self.signals_range.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
         self.signals_range.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
         self.signals_range.setObjectName("signals_range")
-        self.radioStartDoubleSpinBox = QtWidgets.QDoubleSpinBox(parent=self.signals_range)
-        self.radioStartDoubleSpinBox.setGeometry(QtCore.QRect(100, 30, 145, 50))
-        self.radioStartDoubleSpinBox.setStyleSheet("QDoubleSpinBox{\n"
+        self.radioStartSpinBox = QtWidgets.QSpinBox(parent=self.signals_range)
+        self.radioStartSpinBox.setGeometry(QtCore.QRect(100, 30, 145, 50))
+        self.radioStartSpinBox.setStyleSheet("QSpinBox{\n"
 "    font-size:28px;\n"
 "    padding:2px;\n"
 "color:#fff;\n"
 "}\n"
 "\n"
-"QDoubleSpinBox[status=\"unsaved\"]{\n"
+"QSpinBox[status=\"unsaved\"]{\n"
 "    border:5px solid darkred; \n"
 "}\n"
 "\n"
-"QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {\n"
+"QSpinBox::up-button, QSpinBox::down-button {\n"
 "    width: 22px;\n"
 "    height: 18px;\n"
 "}")
-        self.radioStartDoubleSpinBox.setButtonSymbols(QtWidgets.QAbstractSpinBox.ButtonSymbols.PlusMinus)
-        self.radioStartDoubleSpinBox.setProperty("showGroupSeparator", False)
-        self.radioStartDoubleSpinBox.setSingleStep(0.1)
-        self.radioStartDoubleSpinBox.setObjectName("radioStartDoubleSpinBox")
-        self.radioEndDoubleSpinBox = QtWidgets.QDoubleSpinBox(parent=self.signals_range)
-        self.radioEndDoubleSpinBox.setGeometry(QtCore.QRect(290, 30, 145, 50))
-        self.radioEndDoubleSpinBox.setStyleSheet("QDoubleSpinBox{\n"
+        self.radioStartSpinBox.setButtonSymbols(QtWidgets.QAbstractSpinBox.ButtonSymbols.PlusMinus)
+        self.radioStartSpinBox.setProperty("showGroupSeparator", False)
+        self.radioStartSpinBox.setMaximum(9999)
+        self.radioStartSpinBox.setObjectName("radioStartSpinBox")
+        self.radioEndSpinBox = QtWidgets.QSpinBox(parent=self.signals_range)
+        self.radioEndSpinBox.setGeometry(QtCore.QRect(290, 30, 145, 50))
+        self.radioEndSpinBox.setStyleSheet("QSpinBox{\n"
 "    font-size:28px;\n"
 "    padding:2px;\n"
 "color:#fff;\n"
 "}\n"
 "\n"
-"QDoubleSpinBox[status=\"unsaved\"]{\n"
+"QSpinBox[status=\"unsaved\"]{\n"
 "    border:5px solid darkred; \n"
 "}\n"
 "\n"
-"QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {\n"
+"QSpinBox::up-button, QSpinBox::down-button {\n"
 "    width: 22px;\n"
 "    height: 18px;\n"
 "}")
-        self.radioEndDoubleSpinBox.setWrapping(False)
-        self.radioEndDoubleSpinBox.setButtonSymbols(QtWidgets.QAbstractSpinBox.ButtonSymbols.PlusMinus)
-        self.radioEndDoubleSpinBox.setAccelerated(False)
-        self.radioEndDoubleSpinBox.setKeyboardTracking(True)
-        self.radioEndDoubleSpinBox.setProperty("showGroupSeparator", False)
-        self.radioEndDoubleSpinBox.setSingleStep(0.1)
-        self.radioEndDoubleSpinBox.setObjectName("radioEndDoubleSpinBox")
+        self.radioEndSpinBox.setWrapping(False)
+        self.radioEndSpinBox.setButtonSymbols(QtWidgets.QAbstractSpinBox.ButtonSymbols.PlusMinus)
+        self.radioEndSpinBox.setAccelerated(False)
+        self.radioEndSpinBox.setKeyboardTracking(True)
+        self.radioEndSpinBox.setProperty("showGroupSeparator", False)
+        self.radioEndSpinBox.setMinimum(1)
+        self.radioEndSpinBox.setMaximum(9999)
+        self.radioEndSpinBox.setObjectName("radioEndSpinBox")
         self.rangeDivideLabel = QtWidgets.QLabel(parent=self.signals_range)
         self.rangeDivideLabel.setGeometry(QtCore.QRect(250, 31, 30, 31))
         self.rangeDivideLabel.setStyleSheet("QLabel{\n"
@@ -928,9 +944,14 @@ class Ui_MainWindow(object):
         self.index_search_edit.setObjectName("index_search_edit")
         self.detection_info_text = QtWidgets.QTextEdit(parent=self.detection_info_box)
         self.detection_info_text.setGeometry(QtCore.QRect(10, 120, 271, 391))
+        font = QtGui.QFont()
+        font.setFamily("Consolas")
+        font.setPointSize(-1)
+        self.detection_info_text.setFont(font)
         self.detection_info_text.setStyleSheet("background: rgba(30, 30, 30, 0.8);\n"
 "border: 1px solid #328844;\n"
-"font-size:24px;\n"
+"font-size:22px;\n"
+"font-family:Consolas;\n"
 "padding:2px;\n"
 "color:#fff;\n"
 "")
@@ -1001,10 +1022,8 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "SDR Drone Detector"))
-        self.radioStartDoubleSpinBox.setProperty("status", _translate("MainWindow", "saved"))
-        self.radioEndDoubleSpinBox.setProperty("status", _translate("MainWindow", "saved"))
         self.rangeDivideLabel.setText(_translate("MainWindow", "-"))
-        self.radioRangeLabel.setText(_translate("MainWindow", "<html><head/><body><p>Radio, GHz</p></body></html>"))
+        self.radioRangeLabel.setText(_translate("MainWindow", "Radio, MHz"))
         self.RF_alert.setText(_translate("MainWindow", "Тривога RF"))
         self.Sound_alert.setText(_translate("MainWindow", "Тривога Sound"))
         self.label.setText(_translate("MainWindow", "GPS"))
@@ -1025,5 +1044,13 @@ class Ui_MainWindow(object):
         self.backToLoginButton.setText(_translate("MainWindow", "Реавторизація"))
         self.radarButton.setText(_translate("MainWindow", "Режим радару"))
         self.mapButton.setText(_translate("MainWindow", "Режим карти"))
+        self.detection_info_text.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"hr { height: 1px; border-width: 0; }\n"
+"li.unchecked::marker { content: \"\\2610\"; }\n"
+"li.checked::marker { content: \"\\2612\"; }\n"
+"</style></head><body style=\" font-family:\'Consolas\'; font-size:22px; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
         self.detection_info_label.setText(_translate("MainWindow", "Інформація:"))
         self.langLabel_3.setText(_translate("MainWindow", "Індекс:"))

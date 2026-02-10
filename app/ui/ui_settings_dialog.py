@@ -12,7 +12,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 class Ui_SettingsDialog(object):
     def setupUi(self, SettingsDialog):
         SettingsDialog.setObjectName("SettingsDialog")
-        SettingsDialog.resize(500, 685)
+        SettingsDialog.resize(504, 695)
         SettingsDialog.setStyleSheet("QDialog {\n"
 "  background-color: #002f00;\n"
 "  color: #ffffff;\n"
@@ -120,6 +120,7 @@ class Ui_SettingsDialog(object):
         self.verticalLayoutFrame.setSpacing(10)
         self.verticalLayoutFrame.setObjectName("verticalLayoutFrame")
         self.formLayout = QtWidgets.QFormLayout()
+        self.formLayout.setContentsMargins(10, 10, 10, 6)
         self.formLayout.setVerticalSpacing(20)
         self.formLayout.setObjectName("formLayout")
         self.labelRadius = QtWidgets.QLabel(parent=self.frameContent)

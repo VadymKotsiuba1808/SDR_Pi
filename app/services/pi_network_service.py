@@ -90,8 +90,17 @@ class PiNetworkService(QObject):
 
     @pyqtSlot()
     def _try_connect(self) -> None:
-        if self.socket and self.socket.state() == QTcpSocket.SocketState.ConnectedState:
-            return
+        if self.socket:
+            state = self.socket.state()
+            if (
+                state == QTcpSocket.SocketState.ConnectedState
+                or state == QTcpSocket.SocketState.ConnectingState
+            ):
+                return
+
+            self.socket.close()
+            self.socket.deleteLater()
+            self.socket = None
 
         self.socket = QTcpSocket(self)
         self.socket.connected.connect(self._handle_connected)
@@ -123,19 +132,22 @@ class PiNetworkService(QObject):
 
     @pyqtSlot()
     def _handle_error(self) -> None:
-        print(f"[PiNet] Socket Error: {self.socket.errorString()}")
+        if self.socket:
+            print(f"[PiNet] Socket Error: {self.socket.errorString()}")
         self.connection_status_changed.emit(False)
         self._schedule_reconnect()
 
     def _schedule_reconnect(self):
         if not self.settings.pi_is_receiver:
-            if not self.reconnect_timer.isActive():
-                print("[PiNet] Scheduling reconnect in 3s...")
-                self.reconnect_timer.start(3000)
-
             if self.socket:
+                self.socket.abort()
                 self.socket.deleteLater()
                 self.socket = None
+
+            if not self.reconnect_timer.isActive():
+                print("[PiNet] Scheduling reconnect in 3s...")
+                self.reconnect_timer.setSingleShot(True)
+                self.reconnect_timer.start(3000)
 
     @pyqtSlot()
     def _read_data(self) -> None:

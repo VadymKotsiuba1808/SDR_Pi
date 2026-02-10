@@ -14,10 +14,7 @@ class Ui_MainWindow(object):
         MainWindow.setObjectName("MainWindow")
         MainWindow.setEnabled(True)
         MainWindow.resize(1920, 1080)
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Policy.Preferred,
-            QtWidgets.QSizePolicy.Policy.Preferred,
-        )
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(MainWindow.sizePolicy().hasHeightForWidth())
@@ -36,198 +33,160 @@ class Ui_MainWindow(object):
         self.Header.setObjectName("Header")
         self.HeaderBack = QtWidgets.QLabel(parent=self.Header)
         self.HeaderBack.setGeometry(QtCore.QRect(0, 0, 1920, 94))
-        self.HeaderBack.setStyleSheet(
-            "background: rgba(0, 10, 0, 0.8);\n" "border: 3px solid #328844;"
-        )
+        self.HeaderBack.setStyleSheet("background: rgba(0, 10, 0, 0.8);\n"
+"border: 3px solid #328844;")
         self.HeaderBack.setText("")
         self.HeaderBack.setObjectName("HeaderBack")
         self.DateLabel = QtWidgets.QLabel(parent=self.Header)
-        self.DateLabel.setGeometry(QtCore.QRect(30, 14, 141, 29))
-        self.DateLabel.setStyleSheet(
-            "font-family: 'Roboto';\n"
-            "font-style: normal;\n"
-            "font-weight: 400;\n"
-            "font-size: 24px;\n"
-            "color: #FFFFFF;\n"
-            "background-color:transparent;"
-        )
+        self.DateLabel.setGeometry(QtCore.QRect(10, 14, 141, 29))
+        self.DateLabel.setStyleSheet("font-family: \'Roboto\';\n"
+"font-style: normal;\n"
+"font-weight: 400;\n"
+"font-size: 24px;\n"
+"color: #FFFFFF;\n"
+"background-color:transparent;")
         self.DateLabel.setText("00.00.0000")
         self.DateLabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.DateLabel.setObjectName("DateLabel")
         self.signals_range = QtWidgets.QFrame(parent=self.Header)
-        self.signals_range.setGeometry(QtCore.QRect(640, -4, 621, 101))
-        self.signals_range.setStyleSheet(
-            "border: 2px solid #328843;\n"
-            "background: rgba(0, 10, 0, 0.1);\n"
-            "\n"
-            "QSpinBox{\n"
-            "    font-size:28px;\n"
-            "    padding:2px;\n"
-            "color:#fff;\n"
-            "}\n"
-            "\n"
-            'QSpinBox[status="unsaved"]{\n'
-            "    border:5px solid darkred; \n"
-            "}\n"
-            "\n"
-            "QSpinBox::up-button, QSpinBox::down-button {\n"
-            "    width: 22px;\n"
-            "    height: 18px;\n"
-            "}"
-        )
+        self.signals_range.setGeometry(QtCore.QRect(670, -4, 601, 101))
+        self.signals_range.setStyleSheet("border: 2px solid #328843;\n"
+"background: rgba(0, 10, 0, 0.1);")
         self.signals_range.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
         self.signals_range.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
         self.signals_range.setObjectName("signals_range")
         self.radioStartSpinBox = QtWidgets.QSpinBox(parent=self.signals_range)
-        self.radioStartSpinBox.setGeometry(QtCore.QRect(100, 30, 145, 50))
-        self.radioStartSpinBox.setStyleSheet(
-            "QSpinBox{\n"
-            "    font-size:28px;\n"
-            "    padding:2px;\n"
-            "color:#fff;\n"
-            "}\n"
-            "\n"
-            'QSpinBox[status="unsaved"]{\n'
-            "    border:5px solid darkred; \n"
-            "}\n"
-            "\n"
-            "QSpinBox::up-button, QSpinBox::down-button {\n"
-            "    width: 22px;\n"
-            "    height: 18px;\n"
-            "}"
-        )
-        self.radioStartSpinBox.setButtonSymbols(
-            QtWidgets.QAbstractSpinBox.ButtonSymbols.PlusMinus
-        )
+        self.radioStartSpinBox.setGeometry(QtCore.QRect(75, 30, 145, 50))
+        self.radioStartSpinBox.setStyleSheet("QSpinBox{\n"
+"    font-size:28px;\n"
+"    padding:2px;\n"
+"color:#fff;\n"
+"}\n"
+"\n"
+"QSpinBox[status=\"unsaved\"]{\n"
+"    border:5px solid darkred; \n"
+"}\n"
+"\n"
+"QSpinBox::up-button, QSpinBox::down-button {\n"
+"    width: 22px;\n"
+"    height: 18px;\n"
+"}")
+        self.radioStartSpinBox.setButtonSymbols(QtWidgets.QAbstractSpinBox.ButtonSymbols.PlusMinus)
         self.radioStartSpinBox.setProperty("showGroupSeparator", False)
         self.radioStartSpinBox.setMaximum(9999)
         self.radioStartSpinBox.setObjectName("radioStartSpinBox")
         self.radioEndSpinBox = QtWidgets.QSpinBox(parent=self.signals_range)
-        self.radioEndSpinBox.setGeometry(QtCore.QRect(290, 30, 145, 50))
-        self.radioEndSpinBox.setStyleSheet(
-            "QSpinBox{\n"
-            "    font-size:28px;\n"
-            "    padding:2px;\n"
-            "color:#fff;\n"
-            "}\n"
-            "\n"
-            'QSpinBox[status="unsaved"]{\n'
-            "    border:5px solid darkred; \n"
-            "}\n"
-            "\n"
-            "QSpinBox::up-button, QSpinBox::down-button {\n"
-            "    width: 22px;\n"
-            "    height: 18px;\n"
-            "}"
-        )
+        self.radioEndSpinBox.setGeometry(QtCore.QRect(260, 30, 145, 50))
+        self.radioEndSpinBox.setStyleSheet("QSpinBox{\n"
+"    font-size:28px;\n"
+"    padding:2px;\n"
+"color:#fff;\n"
+"}\n"
+"\n"
+"QSpinBox[status=\"unsaved\"]{\n"
+"    border:5px solid darkred; \n"
+"}\n"
+"\n"
+"QSpinBox::up-button, QSpinBox::down-button {\n"
+"    width: 22px;\n"
+"    height: 18px;\n"
+"}")
         self.radioEndSpinBox.setWrapping(False)
-        self.radioEndSpinBox.setButtonSymbols(
-            QtWidgets.QAbstractSpinBox.ButtonSymbols.PlusMinus
-        )
+        self.radioEndSpinBox.setButtonSymbols(QtWidgets.QAbstractSpinBox.ButtonSymbols.PlusMinus)
         self.radioEndSpinBox.setAccelerated(False)
         self.radioEndSpinBox.setKeyboardTracking(True)
         self.radioEndSpinBox.setProperty("showGroupSeparator", False)
         self.radioEndSpinBox.setMinimum(1)
         self.radioEndSpinBox.setMaximum(9999)
+        self.radioEndSpinBox.setProperty("value", 900)
         self.radioEndSpinBox.setObjectName("radioEndSpinBox")
         self.rangeDivideLabel = QtWidgets.QLabel(parent=self.signals_range)
-        self.rangeDivideLabel.setGeometry(QtCore.QRect(250, 31, 30, 31))
-        self.rangeDivideLabel.setStyleSheet(
-            "QLabel{\n" "border:none;\n" "font-size:64px;\n" "color:#fff;\n" "\n" "}"
-        )
+        self.rangeDivideLabel.setGeometry(QtCore.QRect(225, 31, 30, 31))
+        self.rangeDivideLabel.setStyleSheet("QLabel{\n"
+"border:none;\n"
+"font-size:64px;\n"
+"color:#fff;\n"
+"\n"
+"}")
         self.rangeDivideLabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.rangeDivideLabel.setIndent(-1)
         self.rangeDivideLabel.setObjectName("rangeDivideLabel")
         self.radioRangeLabel = QtWidgets.QLabel(parent=self.signals_range)
-        self.radioRangeLabel.setGeometry(QtCore.QRect(10, 11, 81, 71))
-        self.radioRangeLabel.setStyleSheet(
-            "border:none;\n" "font-size:28px;\n" "color:#fff;"
-        )
+        self.radioRangeLabel.setGeometry(QtCore.QRect(10, 11, 61, 71))
+        self.radioRangeLabel.setStyleSheet("border:none;\n"
+"font-size:28px;\n"
+"color:#fff;")
         self.radioRangeLabel.setWordWrap(True)
         self.radioRangeLabel.setObjectName("radioRangeLabel")
         self.saveRadioRangePushButton = QtWidgets.QPushButton(parent=self.signals_range)
         self.saveRadioRangePushButton.setEnabled(False)
-        self.saveRadioRangePushButton.setGeometry(QtCore.QRect(500, 30, 50, 50))
-        self.saveRadioRangePushButton.setStyleSheet(
-            "QPushButton{\n"
-            "border-image: url(:/images/saveBtn_off.png)  stretch stretch;\n"
-            "}\n"
-            "\n"
-            "QPushButton:pressed, QPushButton:checked{\n"
-            "border-image: url(:/images/saveBtn_on.png)  stretch stretch;\n"
-            "}\n"
-            "\n"
-            "QPushButton:disabled{\n"
-            "border-image: url(:/images/saveBtn_disabled.png)  stretch stretch;\n"
-            "}"
-        )
+        self.saveRadioRangePushButton.setGeometry(QtCore.QRect(480, 30, 50, 50))
+        self.saveRadioRangePushButton.setStyleSheet("QPushButton{\n"
+"border-image: url(:/images/saveBtn_off.png)  stretch stretch;\n"
+"}\n"
+"\n"
+"QPushButton:pressed, QPushButton:checked{\n"
+"border-image: url(:/images/saveBtn_on.png)  stretch stretch;\n"
+"}\n"
+"\n"
+"QPushButton:disabled{\n"
+"border-image: url(:/images/saveBtn_disabled.png)  stretch stretch;\n"
+"}")
         self.saveRadioRangePushButton.setText("")
         self.saveRadioRangePushButton.setCheckable(False)
         self.saveRadioRangePushButton.setObjectName("saveRadioRangePushButton")
         self.chartRangePushButton = QtWidgets.QPushButton(parent=self.signals_range)
-        self.chartRangePushButton.setGeometry(QtCore.QRect(560, 30, 50, 50))
-        self.chartRangePushButton.setStyleSheet(
-            "QPushButton{\n"
-            "border-image: url(:/images/openChartBtn_off.png)  stretch stretch;\n"
-            "}\n"
-            "\n"
-            "QPushButton:pressed, QPushButton:checked{\n"
-            "border-image: url(:/images/openChartBtn_on.png)  stretch stretch;\n"
-            "}\n"
-            "\n"
-            "QPushButton:disabled{\n"
-            "border-image: url(:/images/openChartBtn_disabled.png)  stretch stretch;\n"
-            "}"
-        )
+        self.chartRangePushButton.setGeometry(QtCore.QRect(540, 30, 50, 50))
+        self.chartRangePushButton.setStyleSheet("QPushButton{\n"
+"border-image: url(:/images/openChartBtn_off.png)  stretch stretch;\n"
+"}\n"
+"\n"
+"QPushButton:pressed, QPushButton:checked{\n"
+"border-image: url(:/images/openChartBtn_on.png)  stretch stretch;\n"
+"}\n"
+"\n"
+"QPushButton:disabled{\n"
+"border-image: url(:/images/openChartBtn_disabled.png)  stretch stretch;\n"
+"}")
         self.chartRangePushButton.setText("")
         self.chartRangePushButton.setCheckable(False)
         self.chartRangePushButton.setObjectName("chartRangePushButton")
-        self.clearRadioRangePushButton = QtWidgets.QPushButton(
-            parent=self.signals_range
-        )
+        self.clearRadioRangePushButton = QtWidgets.QPushButton(parent=self.signals_range)
         self.clearRadioRangePushButton.setEnabled(False)
-        self.clearRadioRangePushButton.setGeometry(QtCore.QRect(440, 30, 50, 50))
-        self.clearRadioRangePushButton.setStyleSheet(
-            "QPushButton{\n"
-            "border-image: url(:/images/clearBtn_off.png)  stretch stretch;\n"
-            "}\n"
-            "\n"
-            "QPushButton:pressed, QPushButton:checked{\n"
-            "border-image: url(:/images/clearBtn_on.png)  stretch stretch;\n"
-            "}\n"
-            "\n"
-            "QPushButton:disabled{\n"
-            "border-image: url(:/images/clearBtn_disabled.png)  stretch stretch;\n"
-            "}"
-        )
+        self.clearRadioRangePushButton.setGeometry(QtCore.QRect(420, 30, 50, 50))
+        self.clearRadioRangePushButton.setStyleSheet("QPushButton{\n"
+"border-image: url(:/images/clearBtn_off.png)  stretch stretch;\n"
+"}\n"
+"\n"
+"QPushButton:pressed, QPushButton:checked{\n"
+"border-image: url(:/images/clearBtn_on.png)  stretch stretch;\n"
+"}\n"
+"\n"
+"QPushButton:disabled{\n"
+"border-image: url(:/images/clearBtn_disabled.png)  stretch stretch;\n"
+"}")
         self.clearRadioRangePushButton.setText("")
         self.clearRadioRangePushButton.setIconSize(QtCore.QSize(56, 56))
         self.clearRadioRangePushButton.setCheckable(False)
         self.clearRadioRangePushButton.setObjectName("clearRadioRangePushButton")
         self.RF_alert = QtWidgets.QLabel(parent=self.Header)
         self.RF_alert.setGeometry(QtCore.QRect(1280, 9, 267, 76))
-        self.RF_alert.setStyleSheet(
-            "*{font-family: 'Roboto';\n"
-            "font-weight: 600;\n"
-            "font-size: 28px;\n"
-            "color: #FFFFFF;\n"
-            "background-color: transparent;\n"
-            "padding-left:60px;\n"
-            "}\n"
-            "\n"
-            '*[alert="true"]{\n'
-            "border-image: url(:/images/sound_alert_on.png) stretch stretch;\n"
-            "}\n"
-            "\n"
-            '*[alert="false"]{\n'
-            "border-image: url(:/images/sound_alert_off.png) stretch stretch;\n"
-            "}"
-        )
-        self.RF_alert.setAlignment(
-            QtCore.Qt.AlignmentFlag.AlignLeading
-            | QtCore.Qt.AlignmentFlag.AlignLeft
-            | QtCore.Qt.AlignmentFlag.AlignVCenter
-        )
+        self.RF_alert.setStyleSheet("*{font-family: \'Roboto\';\n"
+"font-weight: 600;\n"
+"font-size: 28px;\n"
+"color: #FFFFFF;\n"
+"background-color: transparent;\n"
+"padding-left:60px;\n"
+"}\n"
+"\n"
+"*[alert=\"true\"]{\n"
+"border-image: url(:/images/sound_alert_on.png) stretch stretch;\n"
+"}\n"
+"\n"
+"*[alert=\"false\"]{\n"
+"border-image: url(:/images/sound_alert_off.png) stretch stretch;\n"
+"}")
+        self.RF_alert.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeading|QtCore.Qt.AlignmentFlag.AlignLeft|QtCore.Qt.AlignmentFlag.AlignVCenter)
         self.RF_alert.setProperty("alert", False)
         self.RF_alert.setObjectName("RF_alert")
         self.Sound_alert = QtWidgets.QLabel(parent=self.Header)
@@ -236,88 +195,76 @@ class Ui_MainWindow(object):
         font.setFamily("Roboto")
         font.setPointSize(-1)
         self.Sound_alert.setFont(font)
-        self.Sound_alert.setStyleSheet(
-            "*{font-family: 'Roboto';\n"
-            "font-weight: 600;\n"
-            "font-size: 28px;\n"
-            "color: #FFFFFF;\n"
-            "background-color: transparent;\n"
-            "padding-left:60px;\n"
-            "}\n"
-            "\n"
-            '*[alert="true"]{\n'
-            "border-image: url(:/images/sound_alert_on.png) stretch stretch;\n"
-            "}\n"
-            "\n"
-            '*[alert="false"]{\n'
-            "border-image: url(:/images/sound_alert_off.png) stretch stretch;\n"
-            "}"
-        )
-        self.Sound_alert.setAlignment(
-            QtCore.Qt.AlignmentFlag.AlignLeading
-            | QtCore.Qt.AlignmentFlag.AlignLeft
-            | QtCore.Qt.AlignmentFlag.AlignVCenter
-        )
+        self.Sound_alert.setStyleSheet("*{font-family: \'Roboto\';\n"
+"font-weight: 600;\n"
+"font-size: 28px;\n"
+"color: #FFFFFF;\n"
+"background-color: transparent;\n"
+"padding-left:60px;\n"
+"}\n"
+"\n"
+"*[alert=\"true\"]{\n"
+"border-image: url(:/images/sound_alert_on.png) stretch stretch;\n"
+"}\n"
+"\n"
+"*[alert=\"false\"]{\n"
+"border-image: url(:/images/sound_alert_off.png) stretch stretch;\n"
+"}")
+        self.Sound_alert.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeading|QtCore.Qt.AlignmentFlag.AlignLeft|QtCore.Qt.AlignmentFlag.AlignVCenter)
         self.Sound_alert.setIndent(-1)
         self.Sound_alert.setProperty("alert", False)
         self.Sound_alert.setObjectName("Sound_alert")
         self.GPS = QtWidgets.QFrame(parent=self.Header)
-        self.GPS.setGeometry(QtCore.QRect(200, 17, 198, 60))
-        self.GPS.setStyleSheet("border: none;\n" "background: rgba(0, 10, 0, 0.1);")
+        self.GPS.setGeometry(QtCore.QRect(145, 17, 171, 60))
+        self.GPS.setStyleSheet("border: none;\n"
+"background: rgba(0, 10, 0, 0.1);")
         self.GPS.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
         self.GPS.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
         self.GPS.setObjectName("GPS")
         self.label = QtWidgets.QLabel(parent=self.GPS)
-        self.label.setGeometry(QtCore.QRect(0, 0, 99, 60))
-        self.label.setStyleSheet(
-            "font-family: 'Roboto';\n"
-            "font-weight: 500;\n"
-            "font-size: 48px;\n"
-            "color: #FFFFFF;\n"
-            "background-color:transparent;"
-        )
+        self.label.setGeometry(QtCore.QRect(6, 0, 71, 60))
+        self.label.setStyleSheet("font-family: \'Roboto\';\n"
+"font-weight: 500;\n"
+"font-size: 40px;\n"
+"color: #FFFFFF;\n"
+"background-color:transparent;")
         self.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.label.setObjectName("label")
         self.GPS_level = QtWidgets.QLabel(parent=self.GPS)
-        self.GPS_level.setGeometry(QtCore.QRect(122, 10, 76, 39))
-        self.GPS_level.setStyleSheet(
-            '*[level="0"] { background-image: url(:/images/level_0.png); }\n'
-            '*[level="1"] { background-image: url(:/images/level_1.png); }\n'
-            '*[level="2"] { background-image: url(:/images/level_2.png); }\n'
-            '*[level="3"] { background-image: url(:/images/level_3.png); }\n'
-            '*[level="4"] { background-image: url(:/images/level_4.png); }\n'
-            "*{background-color:transparent;}"
-        )
+        self.GPS_level.setGeometry(QtCore.QRect(90, 10, 76, 39))
+        self.GPS_level.setStyleSheet("*[level=\"0\"] { background-image: url(:/images/level_0.png); }\n"
+"*[level=\"1\"] { background-image: url(:/images/level_1.png); }\n"
+"*[level=\"2\"] { background-image: url(:/images/level_2.png); }\n"
+"*[level=\"3\"] { background-image: url(:/images/level_3.png); }\n"
+"*[level=\"4\"] { background-image: url(:/images/level_4.png); }\n"
+"*{background-color:transparent;}")
         self.GPS_level.setText("")
         self.GPS_level.setProperty("level", 0)
         self.GPS_level.setObjectName("GPS_level")
         self.WiFi = QtWidgets.QFrame(parent=self.Header)
-        self.WiFi.setGeometry(QtCore.QRect(420, 17, 198, 60))
-        self.WiFi.setStyleSheet("border: none;\n" "background: rgba(0, 10, 0, 0.1);")
+        self.WiFi.setGeometry(QtCore.QRect(336, 17, 181, 60))
+        self.WiFi.setStyleSheet("border: none;\n"
+"background: rgba(0, 10, 0, 0.1);")
         self.WiFi.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
         self.WiFi.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
         self.WiFi.setObjectName("WiFi")
         self.label_2 = QtWidgets.QLabel(parent=self.WiFi)
-        self.label_2.setGeometry(QtCore.QRect(0, 0, 111, 60))
-        self.label_2.setStyleSheet(
-            "font-family: 'Roboto';\n"
-            "font-weight: 500;\n"
-            "font-size: 48px;\n"
-            "color: #FFFFFF;\n"
-            "background-color:transparent;"
-        )
+        self.label_2.setGeometry(QtCore.QRect(-2, 0, 91, 60))
+        self.label_2.setStyleSheet("font-family: \'Roboto\';\n"
+"font-weight: 500;\n"
+"font-size: 40px;\n"
+"color: #FFFFFF;\n"
+"background-color:transparent;")
         self.label_2.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.label_2.setObjectName("label_2")
         self.WiFi_level = QtWidgets.QLabel(parent=self.WiFi)
-        self.WiFi_level.setGeometry(QtCore.QRect(122, 10, 76, 39))
-        self.WiFi_level.setStyleSheet(
-            '*[level="0"] { background-image: url(:/images/level_0.png); }\n'
-            '*[level="1"] { background-image: url(:/images/level_1.png); }\n'
-            '*[level="2"] { background-image: url(:/images/level_2.png); }\n'
-            '*[level="3"] { background-image: url(:/images/level_3.png); }\n'
-            '*[level="4"] { background-image: url(:/images/level_4.png); }\n'
-            "*{background-color:transparent;}"
-        )
+        self.WiFi_level.setGeometry(QtCore.QRect(100, 10, 76, 39))
+        self.WiFi_level.setStyleSheet("*[level=\"0\"] { background-image: url(:/images/level_0.png); }\n"
+"*[level=\"1\"] { background-image: url(:/images/level_1.png); }\n"
+"*[level=\"2\"] { background-image: url(:/images/level_2.png); }\n"
+"*[level=\"3\"] { background-image: url(:/images/level_3.png); }\n"
+"*[level=\"4\"] { background-image: url(:/images/level_4.png); }\n"
+"*{background-color:transparent;}")
         self.WiFi_level.setText("")
         self.WiFi_level.setProperty("level", 0)
         self.WiFi_level.setObjectName("WiFi_level")
@@ -329,242 +276,256 @@ class Ui_MainWindow(object):
         font.setBold(False)
         font.setItalic(False)
         self.TimeLabel.setFont(font)
-        self.TimeLabel.setStyleSheet(
-            "font-family: 'Roboto';\n"
-            "font-style: normal;\n"
-            "font-weight: 400;\n"
-            "font-size: 24px;\n"
-            "color: #FFFFFF;\n"
-            "background-color:transparent;"
-        )
+        self.TimeLabel.setStyleSheet("font-family: \'Roboto\';\n"
+"font-style: normal;\n"
+"font-weight: 400;\n"
+"font-size: 24px;\n"
+"color: #FFFFFF;\n"
+"background-color:transparent;")
         self.TimeLabel.setText("00:00")
         self.TimeLabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.TimeLabel.setObjectName("TimeLabel")
+        self.sensor = QtWidgets.QFrame(parent=self.Header)
+        self.sensor.setGeometry(QtCore.QRect(535, -2, 114, 91))
+        self.sensor.setStyleSheet("border: none;\n"
+"background: rgba(0, 10, 0, 0.1);")
+        self.sensor.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
+        self.sensor.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
+        self.sensor.setObjectName("sensor")
+        self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.sensor)
+        self.verticalLayout_4.setContentsMargins(0, 3, 0, 3)
+        self.verticalLayout_4.setSpacing(0)
+        self.verticalLayout_4.setObjectName("verticalLayout_4")
+        self.label_4 = QtWidgets.QLabel(parent=self.sensor)
+        self.label_4.setMaximumSize(QtCore.QSize(16777215, 36))
+        self.label_4.setStyleSheet("font-family: \'Roboto\';\n"
+"font-weight: 500;\n"
+"font-size: 32px;\n"
+"color: #FFFFFF;\n"
+"background-color:transparent;")
+        self.label_4.setLineWidth(0)
+        self.label_4.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.label_4.setObjectName("label_4")
+        self.verticalLayout_4.addWidget(self.label_4)
+        self.sensor_indicator = QtWidgets.QLabel(parent=self.sensor)
+        self.sensor_indicator.setMinimumSize(QtCore.QSize(44, 44))
+        self.sensor_indicator.setMaximumSize(QtCore.QSize(36, 36))
+        self.sensor_indicator.setStyleSheet("QLabel#sensor_indicator{\n"
+"border-image: url(:/images/indicator_off.png) 0 0 0 0;\n"
+"}\n"
+"\n"
+"QLabel#sensor_indicator[isActive=\"true\"]{\n"
+"border-image: url(:/images/indicator_on.png) 0 0 0 0;\n"
+"}")
+        self.sensor_indicator.setText("")
+        self.sensor_indicator.setProperty("isActive", False)
+        self.sensor_indicator.setObjectName("sensor_indicator")
+        self.verticalLayout_4.addWidget(self.sensor_indicator, 0, QtCore.Qt.AlignmentFlag.AlignHCenter)
         self.Body = QtWidgets.QFrame(parent=self.centralwidget)
         self.Body.setEnabled(True)
         self.Body.setGeometry(QtCore.QRect(0, 95, 1920, 985))
-        self.Body.setStyleSheet("border: none;\n" "background: none;")
+        self.Body.setStyleSheet("border: none;\n"
+"background: none;")
         self.Body.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
         self.Body.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
         self.Body.setObjectName("Body")
         self.homeButton = QtWidgets.QPushButton(parent=self.Body)
         self.homeButton.setEnabled(True)
         self.homeButton.setGeometry(QtCore.QRect(30, 437, 110, 110))
-        self.homeButton.setStyleSheet(
-            "QPushButton#homeButton{\n"
-            "    background-image: url(:/images/homeBtn_off.png);\n"
-            "}\n"
-            "\n"
-            "QPushButton#homeButton:pressed{\n"
-            "    background-image: url(:/images/homeBtn_on.png);\n"
-            "}\n"
-            "\n"
-            'QPushButton#homeButton[enabled="false"]{\n'
-            "    background-image: url(:/images/homeBtn_disabled.png);\n"
-            "}"
-        )
+        self.homeButton.setStyleSheet("QPushButton#homeButton{\n"
+"    background-image: url(:/images/homeBtn_off.png);\n"
+"}\n"
+"\n"
+"QPushButton#homeButton:pressed{\n"
+"    background-image: url(:/images/homeBtn_on.png);\n"
+"}\n"
+"\n"
+"QPushButton#homeButton[enabled=\"false\"]{\n"
+"    background-image: url(:/images/homeBtn_disabled.png);\n"
+"}")
         self.homeButton.setText("")
         self.homeButton.setObjectName("homeButton")
         self.mapLayoutButton = QtWidgets.QPushButton(parent=self.Body)
         self.mapLayoutButton.setEnabled(True)
         self.mapLayoutButton.setGeometry(QtCore.QRect(30, 709, 110, 110))
-        self.mapLayoutButton.setStyleSheet(
-            "QPushButton#mapLayoutButton{\n"
-            "    background-image: url(:/images/map_layout_off.png);\n"
-            "}\n"
-            "\n"
-            "QPushButton#mapLayoutButton:pressed{\n"
-            "    background-image: url(:/images/map_layout_on.png);\n"
-            "}\n"
-            "\n"
-            'QPushButton#mapLayoutButton[enabled="false"]{\n'
-            "    background-image: url(:/images/map_layout_disabled.png);\n"
-            "}"
-        )
+        self.mapLayoutButton.setStyleSheet("QPushButton#mapLayoutButton{\n"
+"    background-image: url(:/images/map_layout_off.png);\n"
+"}\n"
+"\n"
+"QPushButton#mapLayoutButton:pressed{\n"
+"    background-image: url(:/images/map_layout_on.png);\n"
+"}\n"
+"\n"
+"QPushButton#mapLayoutButton[enabled=\"false\"]{\n"
+"    background-image: url(:/images/map_layout_disabled.png);\n"
+"}")
         self.mapLayoutButton.setText("")
         self.mapLayoutButton.setObjectName("mapLayoutButton")
         self.screenSaveButton = QtWidgets.QPushButton(parent=self.Body)
         self.screenSaveButton.setEnabled(True)
         self.screenSaveButton.setGeometry(QtCore.QRect(30, 845, 110, 110))
-        self.screenSaveButton.setStyleSheet(
-            "QPushButton#screenSaveButton{\n"
-            "    background-image: url(:/images/screen_save_off.png);\n"
-            "}\n"
-            "\n"
-            "QPushButton#screenSaveButton:pressed{\n"
-            "    background-image: url(:/images/screen_save_on.png);\n"
-            "}\n"
-            "\n"
-            'QPushButton#screenSaveButton[enabled="false"]{\n'
-            "    background-image: url(:/images/screen_save_disabled.png);\n"
-            "}"
-        )
+        self.screenSaveButton.setStyleSheet("QPushButton#screenSaveButton{\n"
+"    background-image: url(:/images/screen_save_off.png);\n"
+"}\n"
+"\n"
+"QPushButton#screenSaveButton:pressed{\n"
+"    background-image: url(:/images/screen_save_on.png);\n"
+"}\n"
+"\n"
+"QPushButton#screenSaveButton[enabled=\"false\"]{\n"
+"    background-image: url(:/images/screen_save_disabled.png);\n"
+"}")
         self.screenSaveButton.setText("")
         self.screenSaveButton.setObjectName("screenSaveButton")
         self.TimerFrame = QtWidgets.QFrame(parent=self.Body)
         self.TimerFrame.setGeometry(QtCore.QRect(1538, 614, 382, 371))
-        self.TimerFrame.setStyleSheet(
-            "background: rgba(0, 10, 0, 0.8);\n" "border: 2px solid #328844;"
-        )
+        self.TimerFrame.setStyleSheet("background: rgba(0, 10, 0, 0.8);\n"
+"border: 2px solid #328844;")
         self.TimerFrame.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
         self.TimerFrame.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
         self.TimerFrame.setObjectName("TimerFrame")
         self.label_3 = QtWidgets.QLabel(parent=self.TimerFrame)
         self.label_3.setGeometry(QtCore.QRect(127, 10, 127, 40))
-        self.label_3.setStyleSheet(
-            "background: none;\n"
-            "border: none;\n"
-            "font-family: 'Roboto';\n"
-            "font-weight: 500;\n"
-            "font-size: 34px;\n"
-            "color: #FFF500;"
-        )
+        self.label_3.setStyleSheet("background: none;\n"
+"border: none;\n"
+"font-family: \'Roboto\';\n"
+"font-weight: 500;\n"
+"font-size: 34px;\n"
+"color: #FFF500;")
         self.label_3.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.label_3.setObjectName("label_3")
         self.jammerTimerTime = QtWidgets.QLabel(parent=self.TimerFrame)
         self.jammerTimerTime.setGeometry(QtCore.QRect(76, 54, 229, 68))
-        self.jammerTimerTime.setStyleSheet(
-            "background: none;\n"
-            "border: none;\n"
-            "font-family: 'Roboto';\n"
-            "font-weight: 500;\n"
-            "font-size: 52px;\n"
-            "color: #E4E7E4;\n"
-            ""
-        )
+        self.jammerTimerTime.setStyleSheet("background: none;\n"
+"border: none;\n"
+"font-family: \'Roboto\';\n"
+"font-weight: 500;\n"
+"font-size: 52px;\n"
+"color: #E4E7E4;\n"
+"")
         self.jammerTimerTime.setText("00:00:00")
         self.jammerTimerTime.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.jammerTimerTime.setObjectName("jammerTimerTime")
         self.jammerOnTimerButton = QtWidgets.QPushButton(parent=self.TimerFrame)
         self.jammerOnTimerButton.setGeometry(QtCore.QRect(30, 250, 322, 100))
-        self.jammerOnTimerButton.setStyleSheet(
-            "QPushButton{\n"
-            "    border: none;\n"
-            "    border-image: url(:/images/Btn_MainMenu_off.png);\n"
-            "    font-family: 'Roboto';\n"
-            "    font-weight: 500;\n"
-            "    font-size: 36px;\n"
-            "    color: #FFFFFF;\n"
-            "}\n"
-            "\n"
-            "QPushButton:pressed{\n"
-            "    border: none;\n"
-            "    border-image: url(:/images/Btn_MainMenu_on.png);\n"
-            "    font-family: 'Roboto';\n"
-            "    font-weight: 500;\n"
-            "    font-size: 36px;\n"
-            "    color: #002509;\n"
-            "}\n"
-            "\n"
-            'QPushButton[enabled="false"]{\n'
-            "    border: none;\n"
-            "    border-image: url(:/images/Btn_MainMenu_disabled.png);\n"
-            "    font-family: 'Roboto';\n"
-            "    font-weight: 500;\n"
-            "    font-size: 36px;\n"
-            "    color: #FFFFFF;\n"
-            "}"
-        )
+        self.jammerOnTimerButton.setStyleSheet("QPushButton{\n"
+"    border: none;\n"
+"    border-image: url(:/images/Btn_MainMenu_off.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 36px;\n"
+"    color: #FFFFFF;\n"
+"}\n"
+"\n"
+"QPushButton:pressed{\n"
+"    border: none;\n"
+"    border-image: url(:/images/Btn_MainMenu_on.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 36px;\n"
+"    color: #002509;\n"
+"}\n"
+"\n"
+"QPushButton[enabled=\"false\"]{\n"
+"    border: none;\n"
+"    border-image: url(:/images/Btn_MainMenu_disabled.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 36px;\n"
+"    color: #FFFFFF;\n"
+"}")
         self.jammerOnTimerButton.setObjectName("jammerOnTimerButton")
         self.jammerOffTimerButton = QtWidgets.QPushButton(parent=self.TimerFrame)
         self.jammerOffTimerButton.setEnabled(False)
         self.jammerOffTimerButton.setGeometry(QtCore.QRect(30, 130, 322, 100))
-        self.jammerOffTimerButton.setStyleSheet(
-            "QPushButton{\n"
-            "    border: none;\n"
-            "    border-image: url(:/images/Btn_MainMenu_red.png);\n"
-            "    font-family: 'Roboto';\n"
-            "    font-weight: 500;\n"
-            "    font-size: 52px;\n"
-            "    color: #FFFFFF;\n"
-            "}\n"
-            "\n"
-            "QPushButton:pressed{\n"
-            "    border: none;\n"
-            "    border-image: url(:/images/Btn_MainMenu_on.png);\n"
-            "    font-family: 'Roboto';\n"
-            "    font-weight: 500;\n"
-            "    font-size: 52px;\n"
-            "    color: #002509;\n"
-            "}\n"
-            "\n"
-            'QPushButton[enabled="false"]{\n'
-            "    border: none;\n"
-            "    border-image: url(:/images/Btn_MainMenu_disabled.png);\n"
-            "    font-family: 'Roboto';\n"
-            "    font-weight: 500;\n"
-            "    font-size: 52px;\n"
-            "    color: #FFFFFF;\n"
-            "}"
-        )
+        self.jammerOffTimerButton.setStyleSheet("QPushButton{\n"
+"    border: none;\n"
+"    border-image: url(:/images/Btn_MainMenu_red.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 52px;\n"
+"    color: #FFFFFF;\n"
+"}\n"
+"\n"
+"QPushButton:pressed{\n"
+"    border: none;\n"
+"    border-image: url(:/images/Btn_MainMenu_on.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 52px;\n"
+"    color: #002509;\n"
+"}\n"
+"\n"
+"QPushButton[enabled=\"false\"]{\n"
+"    border: none;\n"
+"    border-image: url(:/images/Btn_MainMenu_disabled.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 52px;\n"
+"    color: #FFFFFF;\n"
+"}")
         self.jammerOffTimerButton.setObjectName("jammerOffTimerButton")
         self.k1_label = QtWidgets.QLabel(parent=self.Body)
         self.k1_label.setEnabled(False)
         self.k1_label.setGeometry(QtCore.QRect(1550, 513, 102, 101))
-        self.k1_label.setStyleSheet(
-            "*{\n"
-            "    font-family: 'Roboto';\n"
-            "    font-weight: 500;\n"
-            "    font-size: 38px;\n"
-            "    color: #FFFFFF;\n"
-            "}\n"
-            "\n"
-            '*[enabled="true"]\n'
-            "{\n"
-            "    background-image: url(:/images/k_relay_on.png);\n"
-            "}\n"
-            "\n"
-            '*[enabled="false"]\n'
-            "{\n"
-            "    background-image: url(:/images/k_relay_off.png);\n"
-            "}"
-        )
+        self.k1_label.setStyleSheet("*{\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 38px;\n"
+"    color: #FFFFFF;\n"
+"}\n"
+"\n"
+"*[enabled=\"true\"]\n"
+"{\n"
+"    background-image: url(:/images/k_relay_on.png);\n"
+"}\n"
+"\n"
+"*[enabled=\"false\"]\n"
+"{\n"
+"    background-image: url(:/images/k_relay_off.png);\n"
+"}")
         self.k1_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.k1_label.setObjectName("k1_label")
         self.k2_label = QtWidgets.QLabel(parent=self.Body)
         self.k2_label.setEnabled(False)
         self.k2_label.setGeometry(QtCore.QRect(1678, 513, 102, 101))
-        self.k2_label.setStyleSheet(
-            "*{\n"
-            "    font-family: 'Roboto';\n"
-            "    font-weight: 500;\n"
-            "    font-size: 38px;\n"
-            "    color: #FFFFFF;\n"
-            "}\n"
-            "\n"
-            '*[enabled="true"]\n'
-            "{\n"
-            "    background-image: url(:/images/k_relay_on.png);\n"
-            "}\n"
-            "\n"
-            '*[enabled="false"]\n'
-            "{\n"
-            "    background-image: url(:/images/k_relay_off.png);\n"
-            "}"
-        )
+        self.k2_label.setStyleSheet("*{\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 38px;\n"
+"    color: #FFFFFF;\n"
+"}\n"
+"\n"
+"*[enabled=\"true\"]\n"
+"{\n"
+"    background-image: url(:/images/k_relay_on.png);\n"
+"}\n"
+"\n"
+"*[enabled=\"false\"]\n"
+"{\n"
+"    background-image: url(:/images/k_relay_off.png);\n"
+"}")
         self.k2_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.k2_label.setObjectName("k2_label")
         self.k3_label = QtWidgets.QLabel(parent=self.Body)
         self.k3_label.setEnabled(False)
         self.k3_label.setGeometry(QtCore.QRect(1806, 513, 102, 101))
-        self.k3_label.setStyleSheet(
-            "*{\n"
-            "    font-family: 'Roboto';\n"
-            "    font-weight: 500;\n"
-            "    font-size: 38px;\n"
-            "    color: #FFFFFF;\n"
-            "}\n"
-            "\n"
-            '*[enabled="true"]\n'
-            "{\n"
-            "    background-image: url(:/images/k_relay_on.png);\n"
-            "}\n"
-            "\n"
-            '*[enabled="false"]\n'
-            "{\n"
-            "    background-image: url(:/images/k_relay_off.png);\n"
-            "}"
-        )
+        self.k3_label.setStyleSheet("*{\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 38px;\n"
+"    color: #FFFFFF;\n"
+"}\n"
+"\n"
+"*[enabled=\"true\"]\n"
+"{\n"
+"    background-image: url(:/images/k_relay_on.png);\n"
+"}\n"
+"\n"
+"*[enabled=\"false\"]\n"
+"{\n"
+"    background-image: url(:/images/k_relay_off.png);\n"
+"}")
         self.k3_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.k3_label.setObjectName("k3_label")
         self.RadarFrame = QtWidgets.QFrame(parent=self.Body)
@@ -574,15 +535,13 @@ class Ui_MainWindow(object):
         self.RadarFrame.setObjectName("RadarFrame")
         self.Radar = QtWidgets.QLabel(parent=self.RadarFrame)
         self.Radar.setGeometry(QtCore.QRect(0, 0, 901, 901))
-        self.Radar.setStyleSheet(
-            "background-color:rgba(21,21,21,0.1);\n" "border-radius:450px;"
-        )
+        self.Radar.setStyleSheet("background-color:rgba(21,21,21,0.1);\n"
+"border-radius:450px;")
         self.Radar.setText("")
         self.Radar.setPixmap(QtGui.QPixmap(":/images/radar.png"))
         self.Radar.setObjectName("Radar")
         self.Radar_Section = QtWidgets.QLabel(parent=self.RadarFrame)
         self.Radar_Section.setGeometry(QtCore.QRect(0, 0, 901, 901))
-        self.Radar_Section.setLineWidth(0)
         self.Radar_Section.setText("")
         self.Radar_Section.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.Radar_Section.setObjectName("Radar_Section")
@@ -598,9 +557,8 @@ class Ui_MainWindow(object):
         self.map_background_label.setObjectName("map_background_label")
         self.RadarSettings = QtWidgets.QFrame(parent=self.Body)
         self.RadarSettings.setGeometry(QtCore.QRect(0, 0, 241, 201))
-        self.RadarSettings.setStyleSheet(
-            "background: rgba(0, 10, 0, 0.8);\n" "border: 2px solid #328844;"
-        )
+        self.RadarSettings.setStyleSheet("background: rgba(0, 10, 0, 0.8);\n"
+"border: 2px solid #328844;")
         self.RadarSettings.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
         self.RadarSettings.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
         self.RadarSettings.setObjectName("RadarSettings")
@@ -612,15 +570,13 @@ class Ui_MainWindow(object):
         font.setFamily("Roboto")
         font.setPointSize(-1)
         self.labelRadarSettings.setFont(font)
-        self.labelRadarSettings.setStyleSheet(
-            "font-family: 'Roboto';\n"
-            "font-weight: 500;\n"
-            "font-size: 24px;\n"
-            "color: #FFFFFF;\n"
-            "text-align:left;\n"
-            "border:none;\n"
-            "background-color:transparent;"
-        )
+        self.labelRadarSettings.setStyleSheet("font-family: \'Roboto\';\n"
+"font-weight: 500;\n"
+"font-size: 24px;\n"
+"color: #FFFFFF;\n"
+"text-align:left;\n"
+"border:none;\n"
+"background-color:transparent;")
         self.labelRadarSettings.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.labelRadarSettings.setObjectName("labelRadarSettings")
         self.verticalLayout.addWidget(self.labelRadarSettings)
@@ -629,81 +585,72 @@ class Ui_MainWindow(object):
         font.setFamily("Roboto")
         font.setPointSize(-1)
         self.radarRadiusSpinbox.setFont(font)
-        self.radarRadiusSpinbox.setStyleSheet(
-            "QDoubleSpinBox{\n"
-            "font-family: 'Roboto';\n"
-            "font-weight: 500;\n"
-            "font-size: 28px;\n"
-            "padding:2px;\n"
-            "color:#fff;\n"
-            "}\n"
-            "\n"
-            "QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {\n"
-            "    width: 22px;\n"
-            "    height: 18px;\n"
-            "}"
-        )
+        self.radarRadiusSpinbox.setStyleSheet("QDoubleSpinBox{\n"
+"font-family: \'Roboto\';\n"
+"font-weight: 500;\n"
+"font-size: 28px;\n"
+"padding:2px;\n"
+"color:#fff;\n"
+"}\n"
+"\n"
+"QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {\n"
+"    width: 22px;\n"
+"    height: 18px;\n"
+"}")
         self.radarRadiusSpinbox.setWrapping(False)
-        self.radarRadiusSpinbox.setButtonSymbols(
-            QtWidgets.QAbstractSpinBox.ButtonSymbols.PlusMinus
-        )
+        self.radarRadiusSpinbox.setButtonSymbols(QtWidgets.QAbstractSpinBox.ButtonSymbols.PlusMinus)
         self.radarRadiusSpinbox.setMinimum(0.01)
         self.radarRadiusSpinbox.setObjectName("radarRadiusSpinbox")
         self.verticalLayout.addWidget(self.radarRadiusSpinbox)
         self.saveRadarSettingsBtn = QtWidgets.QPushButton(parent=self.RadarSettings)
         self.saveRadarSettingsBtn.setMinimumSize(QtCore.QSize(0, 55))
-        self.saveRadarSettingsBtn.setStyleSheet(
-            "QPushButton{\n"
-            "    border: none;\n"
-            "    border-image: url(:/images/Btn_MainMenu_off.png);\n"
-            "    font-family: 'Roboto';\n"
-            "    font-weight: 500;\n"
-            "    font-size: 30px;\n"
-            "    color: #FFFFFF;\n"
-            "}\n"
-            "\n"
-            "QPushButton:pressed{\n"
-            "    border: none;\n"
-            "    border-image: url(:/images/Btn_MainMenu_on.png);\n"
-            "    \n"
-            "    color: #002509;\n"
-            "}\n"
-            "\n"
-            'QPushButton[enabled="false"]{\n'
-            "    border: none;\n"
-            "    border-image: url(:/images/Btn_MainMenu_disabled.png);\n"
-            "    color: #FFFFFF;\n"
-            "}\n"
-            ""
-        )
+        self.saveRadarSettingsBtn.setStyleSheet("QPushButton{\n"
+"    border: none;\n"
+"    border-image: url(:/images/Btn_MainMenu_off.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 30px;\n"
+"    color: #FFFFFF;\n"
+"}\n"
+"\n"
+"QPushButton:pressed{\n"
+"    border: none;\n"
+"    border-image: url(:/images/Btn_MainMenu_on.png);\n"
+"    \n"
+"    color: #002509;\n"
+"}\n"
+"\n"
+"QPushButton[enabled=\"false\"]{\n"
+"    border: none;\n"
+"    border-image: url(:/images/Btn_MainMenu_disabled.png);\n"
+"    color: #FFFFFF;\n"
+"}\n"
+"")
         self.saveRadarSettingsBtn.setObjectName("saveRadarSettingsBtn")
         self.verticalLayout.addWidget(self.saveRadarSettingsBtn)
         self.addMapButton = QtWidgets.QPushButton(parent=self.Body)
         self.addMapButton.setEnabled(True)
         self.addMapButton.setGeometry(QtCore.QRect(30, 573, 110, 110))
-        self.addMapButton.setStyleSheet(
-            "QPushButton#addMapButton{\n"
-            "    border-image: url(:/images/addMapBtn_off.png) stretch stretch;\n"
-            "    background-color:rgba(0,0,0,0.8)\n"
-            "}\n"
-            "\n"
-            "QPushButton#addMapButton:pressed,\n"
-            "QPushButton#addMapButton:checked{\n"
-            "    border-image: url(:/images/addMapBtn_on.png) stretch stretch;\n"
-            "}\n"
-            "\n"
-            'QPushButton#addMapButton[enabled="false"]{\n'
-            "    border-image: url(:/images/addMapBtn_disabled.png) stretch stretch;\n"
-            "}"
-        )
+        self.addMapButton.setStyleSheet("QPushButton#addMapButton{\n"
+"    border-image: url(:/images/addMapBtn_off.png) stretch stretch;\n"
+"    background-color:rgba(0,0,0,0.8)\n"
+"}\n"
+"\n"
+"QPushButton#addMapButton:pressed,\n"
+"QPushButton#addMapButton:checked{\n"
+"    border-image: url(:/images/addMapBtn_on.png) stretch stretch;\n"
+"}\n"
+"\n"
+"QPushButton#addMapButton[enabled=\"false\"]{\n"
+"    border-image: url(:/images/addMapBtn_disabled.png) stretch stretch;\n"
+"}")
         self.addMapButton.setText("")
         self.addMapButton.setCheckable(True)
         self.addMapButton.setObjectName("addMapButton")
         self.LangSettings = QtWidgets.QFrame(parent=self.Body)
         self.LangSettings.setGeometry(QtCore.QRect(1397, 0, 141, 111))
-        self.LangSettings.setStyleSheet(
-            "background: rgba(0, 10, 0, 0.8);\n" "border: 2px solid #328844;"
-        )
+        self.LangSettings.setStyleSheet("background: rgba(0, 10, 0, 0.8);\n"
+"border: 2px solid #328844;")
         self.LangSettings.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
         self.LangSettings.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
         self.LangSettings.setObjectName("LangSettings")
@@ -713,45 +660,40 @@ class Ui_MainWindow(object):
         font.setFamily("Roboto")
         font.setPointSize(-1)
         self.langComboBox.setFont(font)
-        self.langComboBox.setStyleSheet(
-            "QComboBox {\n"
-            "    font-family: 'Roboto';\n"
-            "    font-size: 28px;\n"
-            "    color: #FFFFFF;\n"
-            "    background-color: rgba(0, 20, 0, 0.8);\n"
-            "    border: 2px solid #328844;\n"
-            "    padding: 8px;\n"
-            "    border-radius: 4px;\n"
-            "}\n"
-            "\n"
-            "QComboBox QAbstractItemView{\n"
-            "background-color: #002509; \n"
-            "color: #FFFFFF;\n"
-            "selection-background-color: #328844; \n"
-            "selection-color: #FFFFFF;\n"
-            "}\n"
-            ""
-        )
+        self.langComboBox.setStyleSheet("QComboBox {\n"
+"    font-family: \'Roboto\';\n"
+"    font-size: 28px;\n"
+"    color: #FFFFFF;\n"
+"    background-color: rgba(0, 20, 0, 0.8);\n"
+"    border: 2px solid #328844;\n"
+"    padding: 8px;\n"
+"    border-radius: 4px;\n"
+"}\n"
+"\n"
+"QComboBox QAbstractItemView{\n"
+"background-color: #002509; \n"
+"color: #FFFFFF;\n"
+"selection-background-color: #328844; \n"
+"selection-color: #FFFFFF;\n"
+"}\n"
+"")
         self.langComboBox.setObjectName("langComboBox")
         self.langComboBox.addItem("")
         self.langComboBox.addItem("")
         self.langLabel = QtWidgets.QLabel(parent=self.LangSettings)
         self.langLabel.setGeometry(QtCore.QRect(10, 0, 91, 41))
-        self.langLabel.setStyleSheet(
-            "QLabel{\n"
-            "font-size:30px;\n"
-            "border:none;\n"
-            "background-color:none;\n"
-            "color:#fff;\n"
-            "}"
-        )
+        self.langLabel.setStyleSheet("QLabel{\n"
+"font-size:30px;\n"
+"border:none;\n"
+"background-color:none;\n"
+"color:#fff;\n"
+"}")
         self.langLabel.setObjectName("langLabel")
         self.MainButtons_Container = QtWidgets.QFrame(parent=self.Body)
         self.MainButtons_Container.setGeometry(QtCore.QRect(1538, 0, 382, 501))
         self.MainButtons_Container.setMinimumSize(QtCore.QSize(382, 501))
-        self.MainButtons_Container.setStyleSheet(
-            "background-color: transparent;\n" "border: none"
-        )
+        self.MainButtons_Container.setStyleSheet("background-color: transparent;\n"
+"border: none")
         self.MainButtons_Container.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
         self.MainButtons_Container.setFrameShadow(QtWidgets.QFrame.Shadow.Plain)
         self.MainButtons_Container.setObjectName("MainButtons_Container")
@@ -760,17 +702,13 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.setSpacing(0)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.MainButtons = QtWidgets.QFrame(parent=self.MainButtons_Container)
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Policy.Preferred,
-            QtWidgets.QSizePolicy.Policy.Preferred,
-        )
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.MainButtons.sizePolicy().hasHeightForWidth())
         self.MainButtons.setSizePolicy(sizePolicy)
-        self.MainButtons.setStyleSheet(
-            "background: rgba(0, 10, 0, 0.8);\n" "border: 2px solid #328844;"
-        )
+        self.MainButtons.setStyleSheet("background: rgba(0, 10, 0, 0.8);\n"
+"border: 2px solid #328844;")
         self.MainButtons.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
         self.MainButtons.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
         self.MainButtons.setObjectName("MainButtons")
@@ -782,119 +720,111 @@ class Ui_MainWindow(object):
         self.falseAlarmButton.setEnabled(False)
         self.falseAlarmButton.setMinimumSize(QtCore.QSize(322, 103))
         self.falseAlarmButton.setMaximumSize(QtCore.QSize(322, 103))
-        self.falseAlarmButton.setStyleSheet(
-            "QPushButton:enabled{\n"
-            "    border: none;\n"
-            "    border-image: url(:/images/Btn_MainMenu_red.png);\n"
-            "    font-family: 'Roboto';\n"
-            "    font-weight: 500;\n"
-            "    font-size: 36px;\n"
-            "    color: #FFFFFF;\n"
-            "}\n"
-            "QPushButton:pressed{\n"
-            "    border-image: url(:/images/Btn_MainMenu_on.png);\n"
-            "    color: #002509;\n"
-            "}\n"
-            "QPushButton:disabled{\n"
-            "    border-image: url(:/images/Btn_MainMenu_disabled.png);\n"
-            "}"
-        )
+        self.falseAlarmButton.setStyleSheet("QPushButton:enabled{\n"
+"    border: none;\n"
+"    border-image: url(:/images/Btn_MainMenu_red.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 36px;\n"
+"    color: #FFFFFF;\n"
+"}\n"
+"QPushButton:pressed{\n"
+"    border-image: url(:/images/Btn_MainMenu_on.png);\n"
+"    color: #002509;\n"
+"}\n"
+"QPushButton:disabled{\n"
+"    border-image: url(:/images/Btn_MainMenu_disabled.png);\n"
+"}")
         self.falseAlarmButton.setObjectName("falseAlarmButton")
         self.verticalLayout_3.addWidget(self.falseAlarmButton)
         self.menuButton = QtWidgets.QPushButton(parent=self.MainButtons)
         self.menuButton.setEnabled(True)
         self.menuButton.setMinimumSize(QtCore.QSize(322, 103))
         self.menuButton.setMaximumSize(QtCore.QSize(322, 103))
-        self.menuButton.setStyleSheet(
-            "QPushButton{\n"
-            "    border: none;\n"
-            "    background-image: url(:/images/Btn_MainMenu_off.png);\n"
-            "    font-family: 'Roboto';\n"
-            "    font-weight: 500;\n"
-            "    font-size: 36px;\n"
-            "    color: #FFFFFF;\n"
-            "}\n"
-            "QPushButton:pressed{\n"
-            "    border: none;\n"
-            "    background-image: url(:/images/Btn_MainMenu_on.png);\n"
-            "    font-family: 'Roboto';\n"
-            "    font-weight: 500;\n"
-            "    font-size: 36px;\n"
-            "    color: #002509;\n"
-            "}\n"
-            'QPushButton[enabled="false"]{\n'
-            "    border: none;\n"
-            "    background-image: url(:/images/Btn_MainMenu_disabled.png);\n"
-            "    font-family: 'Roboto';\n"
-            "    font-weight: 500;\n"
-            "    font-size: 36px;\n"
-            "    color: #FFFFFF;\n"
-            "}"
-        )
+        self.menuButton.setStyleSheet("QPushButton{\n"
+"    border: none;\n"
+"    background-image: url(:/images/Btn_MainMenu_off.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 36px;\n"
+"    color: #FFFFFF;\n"
+"}\n"
+"QPushButton:pressed{\n"
+"    border: none;\n"
+"    background-image: url(:/images/Btn_MainMenu_on.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 36px;\n"
+"    color: #002509;\n"
+"}\n"
+"QPushButton[enabled=\"false\"]{\n"
+"    border: none;\n"
+"    background-image: url(:/images/Btn_MainMenu_disabled.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 36px;\n"
+"    color: #FFFFFF;\n"
+"}")
         self.menuButton.setObjectName("menuButton")
         self.verticalLayout_3.addWidget(self.menuButton)
         self.backToLoginButton = QtWidgets.QPushButton(parent=self.MainButtons)
         self.backToLoginButton.setEnabled(True)
         self.backToLoginButton.setMinimumSize(QtCore.QSize(322, 103))
         self.backToLoginButton.setMaximumSize(QtCore.QSize(322, 103))
-        self.backToLoginButton.setStyleSheet(
-            "QPushButton{\n"
-            "    border: none;\n"
-            "    background-image: url(:/images/Btn_MainMenu_red.png);\n"
-            "    font-family: 'Roboto';\n"
-            "    font-weight: 500;\n"
-            "    font-size: 36px;\n"
-            "    color: #FFFFFF;\n"
-            "}\n"
-            "QPushButton:pressed{\n"
-            "    border: none;\n"
-            "    background-image: url(:/images/Btn_MainMenu_on.png);\n"
-            "    font-family: 'Roboto';\n"
-            "    font-weight: 500;\n"
-            "    font-size: 36px;\n"
-            "    color: #002509;\n"
-            "}\n"
-            'QPushButton[enabled="false"]{\n'
-            "    border: none;\n"
-            "    background-image: url(:/images/Btn_MainMenu_disabled.png);\n"
-            "    font-family: 'Roboto';\n"
-            "    font-weight: 500;\n"
-            "    font-size: 36px;\n"
-            "    color: #FFFFFF;\n"
-            "}"
-        )
+        self.backToLoginButton.setStyleSheet("QPushButton{\n"
+"    border: none;\n"
+"    background-image: url(:/images/Btn_MainMenu_red.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 36px;\n"
+"    color: #FFFFFF;\n"
+"}\n"
+"QPushButton:pressed{\n"
+"    border: none;\n"
+"    background-image: url(:/images/Btn_MainMenu_on.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 36px;\n"
+"    color: #002509;\n"
+"}\n"
+"QPushButton[enabled=\"false\"]{\n"
+"    border: none;\n"
+"    background-image: url(:/images/Btn_MainMenu_disabled.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 36px;\n"
+"    color: #FFFFFF;\n"
+"}")
         self.backToLoginButton.setObjectName("backToLoginButton")
         self.verticalLayout_3.addWidget(self.backToLoginButton)
         self.radarButton = QtWidgets.QPushButton(parent=self.MainButtons)
         self.radarButton.setEnabled(True)
         self.radarButton.setMinimumSize(QtCore.QSize(322, 103))
         self.radarButton.setMaximumSize(QtCore.QSize(322, 103))
-        self.radarButton.setStyleSheet(
-            "QPushButton{\n"
-            "    border: none;\n"
-            "    background-image: url(:/images/Btn_MainMenu_off.png);\n"
-            "    font-family: 'Roboto';\n"
-            "    font-weight: 500;\n"
-            "    font-size: 36px;\n"
-            "    color: #FFFFFF;\n"
-            "}\n"
-            "QPushButton:pressed, QPushButton:checked{\n"
-            "    border: none;\n"
-            "    background-image: url(:/images/Btn_MainMenu_on.png);\n"
-            "    font-family: 'Roboto';\n"
-            "    font-weight: 500;\n"
-            "    font-size: 36px;\n"
-            "    color: #002509;\n"
-            "}\n"
-            'QPushButton[enabled="false"]{\n'
-            "    border: none;\n"
-            "    background-image: url(:/images/Btn_MainMenu_disabled.png);\n"
-            "    font-family: 'Roboto';\n"
-            "    font-weight: 500;\n"
-            "    font-size: 36px;\n"
-            "    color: #FFFFFF;\n"
-            "}"
-        )
+        self.radarButton.setStyleSheet("QPushButton{\n"
+"    border: none;\n"
+"    background-image: url(:/images/Btn_MainMenu_off.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 36px;\n"
+"    color: #FFFFFF;\n"
+"}\n"
+"QPushButton:pressed, QPushButton:checked{\n"
+"    border: none;\n"
+"    background-image: url(:/images/Btn_MainMenu_on.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 36px;\n"
+"    color: #002509;\n"
+"}\n"
+"QPushButton[enabled=\"false\"]{\n"
+"    border: none;\n"
+"    background-image: url(:/images/Btn_MainMenu_disabled.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 36px;\n"
+"    color: #FFFFFF;\n"
+"}")
         self.radarButton.setCheckable(True)
         self.radarButton.setAutoExclusive(True)
         self.radarButton.setObjectName("radarButton")
@@ -903,114 +833,92 @@ class Ui_MainWindow(object):
         self.mapButton.setEnabled(True)
         self.mapButton.setMinimumSize(QtCore.QSize(322, 103))
         self.mapButton.setMaximumSize(QtCore.QSize(322, 103))
-        self.mapButton.setStyleSheet(
-            "QPushButton{\n"
-            "    border: none;\n"
-            "    background-image: url(:/images/Btn_MainMenu_off.png);\n"
-            "    font-family: 'Roboto';\n"
-            "    font-weight: 500;\n"
-            "    font-size: 36px;\n"
-            "    color: #FFFFFF;\n"
-            "}\n"
-            "QPushButton:pressed, QPushButton:checked{\n"
-            "    border: none;\n"
-            "    background-image: url(:/images/Btn_MainMenu_on.png);\n"
-            "    font-family: 'Roboto';\n"
-            "    font-weight: 500;\n"
-            "    font-size: 36px;\n"
-            "    color: #002509;\n"
-            "}\n"
-            'QPushButton[enabled="false"]{\n'
-            "    border: none;\n"
-            "    background-image: url(:/images/Btn_MainMenu_disabled.png);\n"
-            "    font-family: 'Roboto';\n"
-            "    font-weight: 500;\n"
-            "    font-size: 36px;\n"
-            "    color: #FFFFFF;\n"
-            "}"
-        )
+        self.mapButton.setStyleSheet("QPushButton{\n"
+"    border: none;\n"
+"    background-image: url(:/images/Btn_MainMenu_off.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 36px;\n"
+"    color: #FFFFFF;\n"
+"}\n"
+"QPushButton:pressed, QPushButton:checked{\n"
+"    border: none;\n"
+"    background-image: url(:/images/Btn_MainMenu_on.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 36px;\n"
+"    color: #002509;\n"
+"}\n"
+"QPushButton[enabled=\"false\"]{\n"
+"    border: none;\n"
+"    background-image: url(:/images/Btn_MainMenu_disabled.png);\n"
+"    font-family: \'Roboto\';\n"
+"    font-weight: 500;\n"
+"    font-size: 36px;\n"
+"    color: #FFFFFF;\n"
+"}")
         self.mapButton.setCheckable(True)
         self.mapButton.setChecked(True)
         self.mapButton.setAutoExclusive(True)
         self.mapButton.setObjectName("mapButton")
         self.verticalLayout_3.addWidget(self.mapButton)
-        self.verticalLayout_2.addWidget(
-            self.MainButtons,
-            0,
-            QtCore.Qt.AlignmentFlag.AlignHCenter | QtCore.Qt.AlignmentFlag.AlignTop,
-        )
-        spacerItem = QtWidgets.QSpacerItem(
-            20,
-            40,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-            QtWidgets.QSizePolicy.Policy.Expanding,
-        )
+        self.verticalLayout_2.addWidget(self.MainButtons, 0, QtCore.Qt.AlignmentFlag.AlignHCenter|QtCore.Qt.AlignmentFlag.AlignTop)
+        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
         self.verticalLayout_2.addItem(spacerItem)
         self.screenRecordButton = QtWidgets.QPushButton(parent=self.Body)
         self.screenRecordButton.setEnabled(True)
         self.screenRecordButton.setGeometry(QtCore.QRect(166, 709, 110, 110))
         self.screenRecordButton.setVisible(False)
-        self.screenRecordButton.setStyleSheet(
-            "QPushButton#screenRecordButton{\n"
-            "    background-color:rgba(0,0,0,0.8);\n"
-            "    border-image: url(:/images/toggleRecordBtn_off.png);\n"
-            "}\n"
-            "\n"
-            "QPushButton#screenRecordButton:pressed,\n"
-            "QPushButton#screenRecordButton:checked{\n"
-            "    border-image: url(:/images/toggleRecordBtn_on.png);\n"
-            "}\n"
-            "\n"
-            "QPushButton#screenRecordButton:disabled{\n"
-            "    border-image: url(:/images/toggleRecordBtn_disabled.png);\n"
-            "}"
-        )
+        self.screenRecordButton.setStyleSheet("QPushButton#screenRecordButton{\n"
+"    background-color:rgba(0,0,0,0.8);\n"
+"    border-image: url(:/images/toggleRecordBtn_off.png);\n"
+"}\n"
+"\n"
+"QPushButton#screenRecordButton:pressed,\n"
+"QPushButton#screenRecordButton:checked{\n"
+"    border-image: url(:/images/toggleRecordBtn_on.png);\n"
+"}\n"
+"\n"
+"QPushButton#screenRecordButton:disabled{\n"
+"    border-image: url(:/images/toggleRecordBtn_disabled.png);\n"
+"}")
         self.screenRecordButton.setText("")
         self.screenRecordButton.setCheckable(True)
         self.screenRecordButton.setChecked(False)
         self.screenRecordButton.setObjectName("screenRecordButton")
         self.RecordStatusContainer = QtWidgets.QFrame(parent=self.Body)
         self.RecordStatusContainer.setGeometry(QtCore.QRect(290, 905, 200, 50))
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum
-        )
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(
-            self.RecordStatusContainer.sizePolicy().hasHeightForWidth()
-        )
+        sizePolicy.setHeightForWidth(self.RecordStatusContainer.sizePolicy().hasHeightForWidth())
         self.RecordStatusContainer.setSizePolicy(sizePolicy)
-        self.RecordStatusContainer.setStyleSheet(
-            "background-color:transparent;\n" "border: none;"
-        )
+        self.RecordStatusContainer.setStyleSheet("background-color:transparent;\n"
+"border: none;")
         self.RecordStatusContainer.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
         self.RecordStatusContainer.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
         self.RecordStatusContainer.setObjectName("RecordStatusContainer")
         self.screenRecordingLayout = QtWidgets.QHBoxLayout(self.RecordStatusContainer)
-        self.screenRecordingLayout.setSizeConstraint(
-            QtWidgets.QLayout.SizeConstraint.SetMinimumSize
-        )
+        self.screenRecordingLayout.setSizeConstraint(QtWidgets.QLayout.SizeConstraint.SetMinimumSize)
         self.screenRecordingLayout.setContentsMargins(0, 0, 0, 0)
         self.screenRecordingLayout.setSpacing(0)
         self.screenRecordingLayout.setObjectName("screenRecordingLayout")
         self.filesViewButton = QtWidgets.QPushButton(parent=self.Body)
         self.filesViewButton.setEnabled(True)
         self.filesViewButton.setGeometry(QtCore.QRect(166, 845, 110, 110))
-        self.filesViewButton.setStyleSheet(
-            "QPushButton#filesViewButton{\n"
-            "    background-color:rgba(0,0,0,0.8);\n"
-            "    border-image: url(:/images/filesViewBtn_off.png);\n"
-            "}\n"
-            "\n"
-            "QPushButton#filesViewButton:pressed,\n"
-            "QPushButton#filesViewButton:checked{\n"
-            "    border-image: url(:/images/filesViewBtn_on.png);\n"
-            "}\n"
-            "\n"
-            "QPushButton#filesViewButton:disabled{\n"
-            "    border-image: url(:/images/filesViewBtn_disabled.png);\n"
-            "}"
-        )
+        self.filesViewButton.setStyleSheet("QPushButton#filesViewButton{\n"
+"    background-color:rgba(0,0,0,0.8);\n"
+"    border-image: url(:/images/filesViewBtn_off.png);\n"
+"}\n"
+"\n"
+"QPushButton#filesViewButton:pressed,\n"
+"QPushButton#filesViewButton:checked{\n"
+"    border-image: url(:/images/filesViewBtn_on.png);\n"
+"}\n"
+"\n"
+"QPushButton#filesViewButton:disabled{\n"
+"    border-image: url(:/images/filesViewBtn_disabled.png);\n"
+"}")
         self.filesViewButton.setText("")
         self.filesViewButton.setCheckable(True)
         self.filesViewButton.setChecked(False)
@@ -1018,47 +926,42 @@ class Ui_MainWindow(object):
         self.viewObjectButton = QtWidgets.QPushButton(parent=self.Body)
         self.viewObjectButton.setEnabled(True)
         self.viewObjectButton.setGeometry(QtCore.QRect(166, 573, 110, 110))
-        self.viewObjectButton.setStyleSheet(
-            "QPushButton#viewObjectButton{\n"
-            "    border-image: url(:/images/viewObjectsBtn_off.png) stretch stretch;\n"
-            "    background-color:rgba(0,0,0,0.8)\n"
-            "}\n"
-            "\n"
-            "QPushButton#viewObjectButton:pressed{\n"
-            "    border-image: url(:/images/viewObjectsBtn_on.png) stretch stretch;\n"
-            "}\n"
-            "\n"
-            'QPushButton#viewObjectButton[enabled="false"]{\n'
-            "    border-image: url(:/images/viewObjectsBtn_disabled.png) stretch stretch;\n"
-            "}"
-        )
+        self.viewObjectButton.setStyleSheet("QPushButton#viewObjectButton{\n"
+"    border-image: url(:/images/viewObjectsBtn_off.png) stretch stretch;\n"
+"    background-color:rgba(0,0,0,0.8)\n"
+"}\n"
+"\n"
+"QPushButton#viewObjectButton:pressed{\n"
+"    border-image: url(:/images/viewObjectsBtn_on.png) stretch stretch;\n"
+"}\n"
+"\n"
+"QPushButton#viewObjectButton[enabled=\"false\"]{\n"
+"    border-image: url(:/images/viewObjectsBtn_disabled.png) stretch stretch;\n"
+"}")
         self.viewObjectButton.setText("")
         self.viewObjectButton.setCheckable(False)
         self.viewObjectButton.setObjectName("viewObjectButton")
         self.detection_info_box = QtWidgets.QFrame(parent=self.Body)
         self.detection_info_box.setGeometry(QtCore.QRect(1230, 140, 291, 521))
-        self.detection_info_box.setStyleSheet(
-            "background: rgba(0, 10, 0, 0.8);\n" "border: 2px solid #328844;"
-        )
+        self.detection_info_box.setStyleSheet("background: rgba(0, 10, 0, 0.8);\n"
+"border: 2px solid #328844;")
         self.detection_info_box.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
         self.detection_info_box.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
         self.detection_info_box.setObjectName("detection_info_box")
         self.index_search_edit = QtWidgets.QLineEdit(parent=self.detection_info_box)
         self.index_search_edit.setGeometry(QtCore.QRect(110, 70, 161, 41))
-        self.index_search_edit.setStyleSheet(
-            "#index_search_edit{\n"
-            "font-size:26px;\n"
-            "padding:2px;\n"
-            "color:#fff;\n"
-            "}\n"
-            '#index_search_edit[is_valid="true"]{\n'
-            "border: 2px solid #328844;\n"
-            "}\n"
-            '#index_search_edit[is_valid="false"]{\n'
-            "border: 2px solid red;\n"
-            "}\n"
-            ""
-        )
+        self.index_search_edit.setStyleSheet("#index_search_edit{\n"
+"font-size:26px;\n"
+"padding:2px;\n"
+"color:#fff;\n"
+"}\n"
+"#index_search_edit[is_valid=\"true\"]{\n"
+"border: 2px solid #328844;\n"
+"}\n"
+"#index_search_edit[is_valid=\"false\"]{\n"
+"border: 2px solid red;\n"
+"}\n"
+"")
         self.index_search_edit.setProperty("is_valid", True)
         self.index_search_edit.setObjectName("index_search_edit")
         self.detection_info_text = QtWidgets.QTextEdit(parent=self.detection_info_box)
@@ -1067,57 +970,49 @@ class Ui_MainWindow(object):
         font.setFamily("Consolas")
         font.setPointSize(-1)
         self.detection_info_text.setFont(font)
-        self.detection_info_text.setStyleSheet(
-            "background: rgba(30, 30, 30, 0.8);\n"
-            "border: 1px solid #328844;\n"
-            "font-size:22px;\n"
-            "font-family:Consolas;\n"
-            "padding:2px;\n"
-            "color:#fff;\n"
-            ""
-        )
+        self.detection_info_text.setStyleSheet("background: rgba(30, 30, 30, 0.8);\n"
+"border: 1px solid #328844;\n"
+"font-size:22px;\n"
+"font-family:Consolas;\n"
+"padding:2px;\n"
+"color:#fff;\n"
+"")
         self.detection_info_text.setReadOnly(True)
         self.detection_info_text.setObjectName("detection_info_text")
         self.detection_info_label = QtWidgets.QLabel(parent=self.detection_info_box)
         self.detection_info_label.setGeometry(QtCore.QRect(10, 10, 271, 41))
-        self.detection_info_label.setStyleSheet(
-            "QLabel{\n"
-            "font-size:30px;\n"
-            "border:none;\n"
-            "background-color:none;\n"
-            "color:#fff;\n"
-            "}"
-        )
+        self.detection_info_label.setStyleSheet("QLabel{\n"
+"font-size:30px;\n"
+"border:none;\n"
+"background-color:none;\n"
+"color:#fff;\n"
+"}")
         self.detection_info_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.detection_info_label.setObjectName("detection_info_label")
         self.langLabel_3 = QtWidgets.QLabel(parent=self.detection_info_box)
         self.langLabel_3.setGeometry(QtCore.QRect(20, 70, 81, 41))
-        self.langLabel_3.setStyleSheet(
-            "QLabel{\n"
-            "font-size:26px;\n"
-            "border:none;\n"
-            "background-color:none;\n"
-            "color:#fff;\n"
-            "}"
-        )
+        self.langLabel_3.setStyleSheet("QLabel{\n"
+"font-size:26px;\n"
+"border:none;\n"
+"background-color:none;\n"
+"color:#fff;\n"
+"}")
         self.langLabel_3.setObjectName("langLabel_3")
         self.viewLogsButton = QtWidgets.QPushButton(parent=self.Body)
         self.viewLogsButton.setEnabled(True)
         self.viewLogsButton.setGeometry(QtCore.QRect(166, 437, 110, 110))
-        self.viewLogsButton.setStyleSheet(
-            "QPushButton#viewLogsButton{\n"
-            "    background-color:rgba(0,0,0,0.8);\n"
-            "    border-image: url(:/images/viewLogsBtn_off.png);\n"
-            "}\n"
-            "\n"
-            "QPushButton#viewLogsButton:pressed{\n"
-            "    border-image: url(:/images/viewLogsBtn_on.png);\n"
-            "}\n"
-            "\n"
-            "QPushButton#viewLogsButton:disabled{\n"
-            "    border-image: url(:/images/viewLogsBtn_disabled.png);\n"
-            "}"
-        )
+        self.viewLogsButton.setStyleSheet("QPushButton#viewLogsButton{\n"
+"    background-color:rgba(0,0,0,0.8);\n"
+"    border-image: url(:/images/viewLogsBtn_off.png);\n"
+"}\n"
+"\n"
+"QPushButton#viewLogsButton:pressed{\n"
+"    border-image: url(:/images/viewLogsBtn_on.png);\n"
+"}\n"
+"\n"
+"QPushButton#viewLogsButton:disabled{\n"
+"    border-image: url(:/images/viewLogsBtn_disabled.png);\n"
+"}")
         self.viewLogsButton.setText("")
         self.viewLogsButton.setCheckable(False)
         self.viewLogsButton.setChecked(False)
@@ -1150,7 +1045,7 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "SDR Drone Detector"))
         self.rangeDivideLabel.setText(_translate("MainWindow", "-"))
-        self.radioRangeLabel.setText(_translate("MainWindow", "Radio, MHz"))
+        self.radioRangeLabel.setText(_translate("MainWindow", "RF, MHz"))
         self.RF_alert.setText(_translate("MainWindow", "Тривога RF"))
         self.Sound_alert.setText(_translate("MainWindow", "Тривога Sound"))
         self.label.setText(_translate("MainWindow", "GPS"))
@@ -1172,18 +1067,13 @@ class Ui_MainWindow(object):
         self.backToLoginButton.setText(_translate("MainWindow", "Реавторизація"))
         self.radarButton.setText(_translate("MainWindow", "Режим радару"))
         self.mapButton.setText(_translate("MainWindow", "Режим карти"))
-        self.detection_info_text.setHtml(
-            _translate(
-                "MainWindow",
-                '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">\n'
-                '<html><head><meta name="qrichtext" content="1" /><meta charset="utf-8" /><style type="text/css">\n'
-                "p, li { white-space: pre-wrap; }\n"
-                "hr { height: 1px; border-width: 0; }\n"
-                'li.unchecked::marker { content: "\\2610"; }\n'
-                'li.checked::marker { content: "\\2612"; }\n'
-                "</style></head><body style=\" font-family:'Consolas'; font-size:22px; font-weight:400; font-style:normal;\">\n"
-                '<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><br /></p></body></html>',
-            )
-        )
+        self.detection_info_text.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"hr { height: 1px; border-width: 0; }\n"
+"li.unchecked::marker { content: \"\\2610\"; }\n"
+"li.checked::marker { content: \"\\2612\"; }\n"
+"</style></head><body style=\" font-family:\'Consolas\'; font-size:22px; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
         self.detection_info_label.setText(_translate("MainWindow", "Інформація:"))
         self.langLabel_3.setText(_translate("MainWindow", "Індекс:"))

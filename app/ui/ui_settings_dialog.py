@@ -12,99 +12,97 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 class Ui_SettingsDialog(object):
     def setupUi(self, SettingsDialog):
         SettingsDialog.setObjectName("SettingsDialog")
-        SettingsDialog.resize(500, 747)
-        SettingsDialog.setStyleSheet(
-            "QDialog {\n"
-            "  background-color: #002f00;\n"
-            "  color: #ffffff;\n"
-            "  font-family: 'Roboto';\n"
-            "  border: 2px solid #4CAF50;\n"
-            "  border-radius: 6px;\n"
-            "}\n"
-            "\n"
-            "QLabel {\n"
-            "  color: #ffffff;\n"
-            "  font-size: 18px; \n"
-            "  font-weight: 500;\n"
-            "}\n"
-            "\n"
-            "QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox {\n"
-            "  background-color: rgba(0, 10, 0, 0.8);\n"
-            "  border: 1px solid #328844;\n"
-            "  color: #ffffff;\n"
-            "  padding: 6px; /* Збільшив padding для зручності */\n"
-            "  font-size: 18px;\n"
-            "  border-radius: 3px;\n"
-            "}\n"
-            "\n"
-            "QLineEdit:disabled, QComboBox:disabled, QSpinBox:disabled, QDoubleSpinBox:disabled {\n"
-            "  background-color: rgba(0, 0, 0, 0.6);  \n"
-            "  border: 1px solid #1a3a21;            \n"
-            "  color: #557766;                 \n"
-            "}\n"
-            "\n"
-            "QComboBox::drop-down {}\n"
-            "QComboBox::down-arrow { width: 16px; height: 16px; }\n"
-            "\n"
-            "QDoubleSpinBox::up-button, QDoubleSpinBox::down-button, QSpinBox::up-button, QSpinBox::down-button {\n"
-            "    width: 20px; /* Трохи збільшив кнопки */\n"
-            "    padding: 2px;\n"
-            "}\n"
-            "\n"
-            "QCheckBox {\n"
-            "    color: #ffffff;\n"
-            "    font-size: 18px;\n"
-            "    spacing: 10px;\n"
-            "}\n"
-            "QCheckBox::indicator {\n"
-            "    width: 20px; height: 20px;\n"
-            "    background-color: rgba(0, 10, 0, 0.8);\n"
-            "    border: 1px solid #328844;\n"
-            "    border-radius: 3px;\n"
-            "}\n"
-            "QCheckBox::indicator:checked {\n"
-            "    background-color: #4CAF50;\n"
-            "    border: 1px solid #4CAF50;\n"
-            "    image: url();\n"
-            "}\n"
-            "\n"
-            "/* Стиль для групи очистки */\n"
-            "QGroupBox {\n"
-            "    border: 1px solid #328844;\n"
-            "    border-radius: 5px;\n"
-            "    margin-top: 20px;\n"
-            "    font-size: 16px;\n"
-            "    color: #4CAF50;\n"
-            "    font-weight: bold;\n"
-            "    padding-top: 10px; /* Відступ всередині групи */\n"
-            "}\n"
-            "QGroupBox::title {\n"
-            "    subcontrol-origin: margin;\n"
-            "    left: 10px;\n"
-            "    padding: 0 3px;\n"
-            "}\n"
-            "\n"
-            "QPushButton {\n"
-            "  border: none;\n"
-            "  background-color: rgba(0, 10, 0, 0.8);\n"
-            "  border: 1px solid #328844;\n"
-            "  color: #ffffff;\n"
-            "  font-size: 18px;\n"
-            "  padding: 8px 16px; /* Збільшив кнопку */\n"
-            "  border-radius: 4px;\n"
-            "}\n"
-            "QPushButton:pressed { background-color: #328844; color: #002509; }\n"
-            "\n"
-            "QPushButton#btnLogout {\n"
-            "  border: none;\n"
-            "  background-color: rgba(40, 0, 0, 0.85);\n"
-            "  border: 1px solid #C0392B;\n"
-            "  color: #FFFFFF;\n"
-            "}\n"
-            "QPushButton#btnLogout:hover { background-color: rgba(80, 0, 0, 0.9); }\n"
-            "QPushButton#btnLogout:pressed { background-color: #C0392B; color: #2B0000; }\n"
-            ""
-        )
+        SettingsDialog.resize(508, 753)
+        SettingsDialog.setStyleSheet("QDialog {\n"
+"  background-color: #002f00;\n"
+"  color: #ffffff;\n"
+"  font-family: \'Roboto\';\n"
+"  border: 2px solid #4CAF50;\n"
+"  border-radius: 6px;\n"
+"}\n"
+"\n"
+"QLabel {\n"
+"  color: #ffffff;\n"
+"  font-size: 18px; \n"
+"  font-weight: 500;\n"
+"}\n"
+"\n"
+"QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox {\n"
+"  background-color: rgba(0, 10, 0, 0.8);\n"
+"  border: 1px solid #328844;\n"
+"  color: #ffffff;\n"
+"  padding: 6px; /* Збільшив padding для зручності */\n"
+"  font-size: 18px;\n"
+"  border-radius: 3px;\n"
+"}\n"
+"\n"
+"QLineEdit:disabled, QComboBox:disabled, QSpinBox:disabled, QDoubleSpinBox:disabled {\n"
+"  background-color: rgba(0, 0, 0, 0.6);  \n"
+"  border: 1px solid #1a3a21;            \n"
+"  color: #557766;                 \n"
+"}\n"
+"\n"
+"QComboBox::drop-down {}\n"
+"QComboBox::down-arrow { width: 16px; height: 16px; }\n"
+"\n"
+"QDoubleSpinBox::up-button, QDoubleSpinBox::down-button, QSpinBox::up-button, QSpinBox::down-button {\n"
+"    width: 20px; /* Трохи збільшив кнопки */\n"
+"    padding: 2px;\n"
+"}\n"
+"\n"
+"QCheckBox {\n"
+"    color: #ffffff;\n"
+"    font-size: 18px;\n"
+"    spacing: 10px;\n"
+"}\n"
+"QCheckBox::indicator {\n"
+"    width: 20px; height: 20px;\n"
+"    background-color: rgba(0, 10, 0, 0.8);\n"
+"    border: 1px solid #328844;\n"
+"    border-radius: 3px;\n"
+"}\n"
+"QCheckBox::indicator:checked {\n"
+"    background-color: #4CAF50;\n"
+"    border: 1px solid #4CAF50;\n"
+"    image: url();\n"
+"}\n"
+"\n"
+"/* Стиль для групи очистки */\n"
+"QGroupBox {\n"
+"    border: 1px solid #328844;\n"
+"    border-radius: 5px;\n"
+"    margin-top: 20px;\n"
+"    font-size: 16px;\n"
+"    color: #4CAF50;\n"
+"    font-weight: bold;\n"
+"    padding-top: 10px; /* Відступ всередині групи */\n"
+"}\n"
+"QGroupBox::title {\n"
+"    subcontrol-origin: margin;\n"
+"    left: 10px;\n"
+"    padding: 0 3px;\n"
+"}\n"
+"\n"
+"QPushButton {\n"
+"  border: none;\n"
+"  background-color: rgba(0, 10, 0, 0.8);\n"
+"  border: 1px solid #328844;\n"
+"  color: #ffffff;\n"
+"  font-size: 18px;\n"
+"  padding: 8px 16px; /* Збільшив кнопку */\n"
+"  border-radius: 4px;\n"
+"}\n"
+"QPushButton:pressed { background-color: #328844; color: #002509; }\n"
+"\n"
+"QPushButton#btnLogout {\n"
+"  border: none;\n"
+"  background-color: rgba(40, 0, 0, 0.85);\n"
+"  border: 1px solid #C0392B;\n"
+"  color: #FFFFFF;\n"
+"}\n"
+"QPushButton#btnLogout:hover { background-color: rgba(80, 0, 0, 0.9); }\n"
+"QPushButton#btnLogout:pressed { background-color: #C0392B; color: #2B0000; }\n"
+"")
         self.mainLayout = QtWidgets.QVBoxLayout(SettingsDialog)
         self.mainLayout.setContentsMargins(20, 20, 20, 20)
         self.mainLayout.setSpacing(15)
@@ -122,105 +120,69 @@ class Ui_SettingsDialog(object):
         self.verticalLayoutFrame.setSpacing(10)
         self.verticalLayoutFrame.setObjectName("verticalLayoutFrame")
         self.formLayout = QtWidgets.QFormLayout()
-        self.formLayout.setContentsMargins(10, 10, 10, 6)
+        self.formLayout.setContentsMargins(8, 4, 8, 4)
         self.formLayout.setVerticalSpacing(20)
         self.formLayout.setObjectName("formLayout")
         self.labelRadius = QtWidgets.QLabel(parent=self.frameContent)
         self.labelRadius.setObjectName("labelRadius")
-        self.formLayout.setWidget(
-            0, QtWidgets.QFormLayout.ItemRole.LabelRole, self.labelRadius
-        )
+        self.formLayout.setWidget(0, QtWidgets.QFormLayout.ItemRole.LabelRole, self.labelRadius)
         self.inpMaxRadius = QtWidgets.QDoubleSpinBox(parent=self.frameContent)
-        self.inpMaxRadius.setButtonSymbols(
-            QtWidgets.QAbstractSpinBox.ButtonSymbols.PlusMinus
-        )
+        self.inpMaxRadius.setButtonSymbols(QtWidgets.QAbstractSpinBox.ButtonSymbols.PlusMinus)
         self.inpMaxRadius.setMinimum(1.0)
         self.inpMaxRadius.setMaximum(10000.0)
         self.inpMaxRadius.setProperty("value", 50.0)
         self.inpMaxRadius.setObjectName("inpMaxRadius")
-        self.formLayout.setWidget(
-            0, QtWidgets.QFormLayout.ItemRole.FieldRole, self.inpMaxRadius
-        )
+        self.formLayout.setWidget(0, QtWidgets.QFormLayout.ItemRole.FieldRole, self.inpMaxRadius)
         self.labelGps = QtWidgets.QLabel(parent=self.frameContent)
         self.labelGps.setObjectName("labelGps")
-        self.formLayout.setWidget(
-            1, QtWidgets.QFormLayout.ItemRole.LabelRole, self.labelGps
-        )
+        self.formLayout.setWidget(1, QtWidgets.QFormLayout.ItemRole.LabelRole, self.labelGps)
         self.inpGpsInterval = QtWidgets.QSpinBox(parent=self.frameContent)
-        self.inpGpsInterval.setButtonSymbols(
-            QtWidgets.QAbstractSpinBox.ButtonSymbols.PlusMinus
-        )
+        self.inpGpsInterval.setButtonSymbols(QtWidgets.QAbstractSpinBox.ButtonSymbols.PlusMinus)
         self.inpGpsInterval.setMinimum(10)
         self.inpGpsInterval.setMaximum(3600)
         self.inpGpsInterval.setProperty("value", 60)
         self.inpGpsInterval.setObjectName("inpGpsInterval")
-        self.formLayout.setWidget(
-            1, QtWidgets.QFormLayout.ItemRole.FieldRole, self.inpGpsInterval
-        )
+        self.formLayout.setWidget(1, QtWidgets.QFormLayout.ItemRole.FieldRole, self.inpGpsInterval)
         self.labelDetectionTTL = QtWidgets.QLabel(parent=self.frameContent)
         self.labelDetectionTTL.setObjectName("labelDetectionTTL")
-        self.formLayout.setWidget(
-            2, QtWidgets.QFormLayout.ItemRole.LabelRole, self.labelDetectionTTL
-        )
+        self.formLayout.setWidget(2, QtWidgets.QFormLayout.ItemRole.LabelRole, self.labelDetectionTTL)
         self.inpDetectionTTL = QtWidgets.QSpinBox(parent=self.frameContent)
-        self.inpDetectionTTL.setEnabled(False)
-        self.inpDetectionTTL.setButtonSymbols(
-            QtWidgets.QAbstractSpinBox.ButtonSymbols.PlusMinus
-        )
+        self.inpDetectionTTL.setEnabled(True)
+        self.inpDetectionTTL.setButtonSymbols(QtWidgets.QAbstractSpinBox.ButtonSymbols.PlusMinus)
         self.inpDetectionTTL.setMinimum(1)
         self.inpDetectionTTL.setMaximum(360)
         self.inpDetectionTTL.setProperty("value", 3)
         self.inpDetectionTTL.setObjectName("inpDetectionTTL")
-        self.formLayout.setWidget(
-            2, QtWidgets.QFormLayout.ItemRole.FieldRole, self.inpDetectionTTL
-        )
+        self.formLayout.setWidget(2, QtWidgets.QFormLayout.ItemRole.FieldRole, self.inpDetectionTTL)
         self.labelRelay = QtWidgets.QLabel(parent=self.frameContent)
         self.labelRelay.setObjectName("labelRelay")
-        self.formLayout.setWidget(
-            3, QtWidgets.QFormLayout.ItemRole.LabelRole, self.labelRelay
-        )
+        self.formLayout.setWidget(3, QtWidgets.QFormLayout.ItemRole.LabelRole, self.labelRelay)
         self.cmbRelay = QtWidgets.QComboBox(parent=self.frameContent)
         self.cmbRelay.setObjectName("cmbRelay")
-        self.formLayout.setWidget(
-            3, QtWidgets.QFormLayout.ItemRole.FieldRole, self.cmbRelay
-        )
+        self.formLayout.setWidget(3, QtWidgets.QFormLayout.ItemRole.FieldRole, self.cmbRelay)
         self.labelAutoStart = QtWidgets.QLabel(parent=self.frameContent)
         self.labelAutoStart.setObjectName("labelAutoStart")
-        self.formLayout.setWidget(
-            4, QtWidgets.QFormLayout.ItemRole.LabelRole, self.labelAutoStart
-        )
+        self.formLayout.setWidget(4, QtWidgets.QFormLayout.ItemRole.LabelRole, self.labelAutoStart)
         self.chkJammerAutoStart = QtWidgets.QCheckBox(parent=self.frameContent)
         self.chkJammerAutoStart.setObjectName("chkJammerAutoStart")
-        self.formLayout.setWidget(
-            4, QtWidgets.QFormLayout.ItemRole.FieldRole, self.chkJammerAutoStart
-        )
+        self.formLayout.setWidget(4, QtWidgets.QFormLayout.ItemRole.FieldRole, self.chkJammerAutoStart)
         self.labelAutoStop = QtWidgets.QLabel(parent=self.frameContent)
         self.labelAutoStop.setObjectName("labelAutoStop")
-        self.formLayout.setWidget(
-            5, QtWidgets.QFormLayout.ItemRole.LabelRole, self.labelAutoStop
-        )
+        self.formLayout.setWidget(5, QtWidgets.QFormLayout.ItemRole.LabelRole, self.labelAutoStop)
         self.chkJammerAutoStop = QtWidgets.QCheckBox(parent=self.frameContent)
         self.chkJammerAutoStop.setObjectName("chkJammerAutoStop")
-        self.formLayout.setWidget(
-            5, QtWidgets.QFormLayout.ItemRole.FieldRole, self.chkJammerAutoStop
-        )
+        self.formLayout.setWidget(5, QtWidgets.QFormLayout.ItemRole.FieldRole, self.chkJammerAutoStop)
         self.labelStopInterval = QtWidgets.QLabel(parent=self.frameContent)
         self.labelStopInterval.setObjectName("labelStopInterval")
-        self.formLayout.setWidget(
-            6, QtWidgets.QFormLayout.ItemRole.LabelRole, self.labelStopInterval
-        )
+        self.formLayout.setWidget(6, QtWidgets.QFormLayout.ItemRole.LabelRole, self.labelStopInterval)
         self.inpJammerStopInterval = QtWidgets.QSpinBox(parent=self.frameContent)
         self.inpJammerStopInterval.setEnabled(False)
-        self.inpJammerStopInterval.setButtonSymbols(
-            QtWidgets.QAbstractSpinBox.ButtonSymbols.PlusMinus
-        )
+        self.inpJammerStopInterval.setButtonSymbols(QtWidgets.QAbstractSpinBox.ButtonSymbols.PlusMinus)
         self.inpJammerStopInterval.setMinimum(10)
         self.inpJammerStopInterval.setMaximum(36000)
         self.inpJammerStopInterval.setProperty("value", 900)
         self.inpJammerStopInterval.setObjectName("inpJammerStopInterval")
-        self.formLayout.setWidget(
-            6, QtWidgets.QFormLayout.ItemRole.FieldRole, self.inpJammerStopInterval
-        )
+        self.formLayout.setWidget(6, QtWidgets.QFormLayout.ItemRole.FieldRole, self.inpJammerStopInterval)
         self.groupBoxClean = QtWidgets.QGroupBox(parent=self.frameContent)
         self.groupBoxClean.setObjectName("groupBoxClean")
         self.gridLayoutClean = QtWidgets.QGridLayout(self.groupBoxClean)
@@ -245,16 +207,9 @@ class Ui_SettingsDialog(object):
         self.chkCleanEnabled = QtWidgets.QCheckBox(parent=self.groupBoxClean)
         self.chkCleanEnabled.setObjectName("chkCleanEnabled")
         self.gridLayoutClean.addWidget(self.chkCleanEnabled, 2, 0, 1, 2)
-        self.formLayout.setWidget(
-            7, QtWidgets.QFormLayout.ItemRole.SpanningRole, self.groupBoxClean
-        )
+        self.formLayout.setWidget(7, QtWidgets.QFormLayout.ItemRole.SpanningRole, self.groupBoxClean)
         self.verticalLayoutFrame.addLayout(self.formLayout)
-        spacerItem = QtWidgets.QSpacerItem(
-            20,
-            40,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-            QtWidgets.QSizePolicy.Policy.Expanding,
-        )
+        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
         self.verticalLayoutFrame.addItem(spacerItem)
         self.mainLayout.addWidget(self.frameContent)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
@@ -262,12 +217,7 @@ class Ui_SettingsDialog(object):
         self.btnLogout = QtWidgets.QPushButton(parent=SettingsDialog)
         self.btnLogout.setObjectName("btnLogout")
         self.horizontalLayout.addWidget(self.btnLogout)
-        spacerItem1 = QtWidgets.QSpacerItem(
-            40,
-            20,
-            QtWidgets.QSizePolicy.Policy.Expanding,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-        )
+        spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
         self.horizontalLayout.addItem(spacerItem1)
         self.btnCancel = QtWidgets.QPushButton(parent=SettingsDialog)
         self.btnCancel.setObjectName("btnCancel")
@@ -278,43 +228,28 @@ class Ui_SettingsDialog(object):
         self.mainLayout.addLayout(self.horizontalLayout)
 
         self.retranslateUi(SettingsDialog)
-        self.chkJammerAutoStop.toggled["bool"].connect(self.inpJammerStopInterval.setEnabled)  # type: ignore
-        self.chkCleanEnabled.toggled["bool"].connect(self.inpCleanDays.setEnabled)  # type: ignore
+        self.chkJammerAutoStop.toggled['bool'].connect(self.inpJammerStopInterval.setEnabled) # type: ignore
+        self.chkCleanEnabled.toggled['bool'].connect(self.inpCleanDays.setEnabled) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(SettingsDialog)
 
     def retranslateUi(self, SettingsDialog):
         _translate = QtCore.QCoreApplication.translate
         SettingsDialog.setWindowTitle(_translate("SettingsDialog", "Налаштування"))
-        self.lblTitle.setStyleSheet(
-            _translate(
-                "SettingsDialog",
-                "font-size: 24px; font-weight: bold; margin-bottom: 5px;",
-            )
-        )
+        self.lblTitle.setStyleSheet(_translate("SettingsDialog", "font-size: 24px; font-weight: bold; margin-bottom: 5px;"))
         self.lblTitle.setText(_translate("SettingsDialog", "Налаштування"))
         self.labelRadius.setText(_translate("SettingsDialog", "Макс. радіус (км):"))
         self.labelGps.setText(_translate("SettingsDialog", "Інтервал GPS (с):"))
-        self.labelDetectionTTL.setText(
-            _translate("SettingsDialog", "Автовидалення цілі (с):")
-        )
+        self.labelDetectionTTL.setText(_translate("SettingsDialog", "Автовидалення цілі (с):"))
         self.labelRelay.setText(_translate("SettingsDialog", "Набір реле:"))
-        self.labelAutoStart.setText(
-            _translate("SettingsDialog", "Авто-старт глушилки:")
-        )
+        self.labelAutoStart.setText(_translate("SettingsDialog", "Авто-старт глушилки:"))
         self.chkJammerAutoStart.setText(_translate("SettingsDialog", "Активувати"))
         self.labelAutoStop.setText(_translate("SettingsDialog", "Авто-стоп глушилки:"))
         self.chkJammerAutoStop.setText(_translate("SettingsDialog", "Активувати"))
-        self.labelStopInterval.setText(
-            _translate("SettingsDialog", "Інтервал стопу (с):")
-        )
-        self.groupBoxClean.setTitle(
-            _translate("SettingsDialog", "Налаштування очистки")
-        )
+        self.labelStopInterval.setText(_translate("SettingsDialog", "Інтервал стопу (с):"))
+        self.groupBoxClean.setTitle(_translate("SettingsDialog", "Налаштування очистки"))
         self.labelTarget.setText(_translate("SettingsDialog", "Що чистити:"))
         self.labelCleanDays.setText(_translate("SettingsDialog", "Зберігати днів:"))
-        self.chkCleanEnabled.setText(
-            _translate("SettingsDialog", "Увімкнути автоматичну очистку")
-        )
+        self.chkCleanEnabled.setText(_translate("SettingsDialog", "Увімкнути автоматичну очистку"))
         self.btnLogout.setText(_translate("SettingsDialog", "Вийти з акаунту"))
         self.btnCancel.setText(_translate("SettingsDialog", "Скасувати"))
         self.btnSave.setText(_translate("SettingsDialog", "Зберегти"))

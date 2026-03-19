@@ -133,6 +133,9 @@ class SimulatedTarget:
                 self.is_hidden = True
                 self.hidden_until = now + random.uniform(1.5, 4.0)
 
+        if self.name.upper() == "DJI MAVIC 3":
+            return True
+
         # Рух
         self.x += self.vx * dt
         self.y += self.vy * dt

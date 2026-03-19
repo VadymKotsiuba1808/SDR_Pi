@@ -50,12 +50,17 @@ class SettingsDialogSettings(Protocol):
     lang_code: str
     radar_max_radius_km: float
     gps_interval_s: int
+    detection_ttl_s: int
     main_relays: str
     is_jammer_auto_start_enabled: bool
     is_jammer_auto_stop_enabled: bool
     jammer_auto_stop_interval_s: int
     remember_me: bool
     clean_settings: Dict[str, CleanRule]
+
+
+class DetectionManagerSettings(Protocol):
+    detection_ttl_s: int
 
 
 class CleanerServiceSettings(Protocol):

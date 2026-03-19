@@ -82,7 +82,7 @@ border: 3px solid #328844;</string>
     <widget class="QLabel" name="DateLabel">
      <property name="geometry">
       <rect>
-       <x>30</x>
+       <x>10</x>
        <y>14</y>
        <width>141</width>
        <height>29</height>
@@ -106,30 +106,15 @@ background-color:transparent;</string>
     <widget class="QFrame" name="signals_range">
      <property name="geometry">
       <rect>
-       <x>640</x>
+       <x>670</x>
        <y>-4</y>
-       <width>621</width>
+       <width>601</width>
        <height>101</height>
       </rect>
      </property>
      <property name="styleSheet">
       <string notr="true">border: 2px solid #328843;
-background: rgba(0, 10, 0, 0.1);
-
-QSpinBox{
-	font-size:28px;
-	padding:2px;
-color:#fff;
-}
-
-QSpinBox[status=&quot;unsaved&quot;]{
-	border:5px solid darkred; 
-}
-
-QSpinBox::up-button, QSpinBox::down-button {
-    width: 22px;
-    height: 18px;
-}</string>
+background: rgba(0, 10, 0, 0.1);</string>
      </property>
      <property name="frameShape">
       <enum>QFrame::Shape::StyledPanel</enum>
@@ -140,7 +125,7 @@ QSpinBox::up-button, QSpinBox::down-button {
      <widget class="QSpinBox" name="radioStartSpinBox">
       <property name="geometry">
        <rect>
-        <x>100</x>
+        <x>75</x>
         <y>30</y>
         <width>145</width>
         <height>50</height>
@@ -175,7 +160,7 @@ QSpinBox::up-button, QSpinBox::down-button {
      <widget class="QSpinBox" name="radioEndSpinBox">
       <property name="geometry">
        <rect>
-        <x>290</x>
+        <x>260</x>
         <y>30</y>
         <width>145</width>
         <height>50</height>
@@ -218,11 +203,14 @@ QSpinBox::up-button, QSpinBox::down-button {
       <property name="maximum">
        <number>9999</number>
       </property>
+      <property name="value">
+       <number>900</number>
+      </property>
      </widget>
      <widget class="QLabel" name="rangeDivideLabel">
       <property name="geometry">
        <rect>
-        <x>250</x>
+        <x>225</x>
         <y>31</y>
         <width>30</width>
         <height>31</height>
@@ -251,7 +239,7 @@ color:#fff;
        <rect>
         <x>10</x>
         <y>11</y>
-        <width>81</width>
+        <width>61</width>
         <height>71</height>
        </rect>
       </property>
@@ -261,7 +249,7 @@ font-size:28px;
 color:#fff;</string>
       </property>
       <property name="text">
-       <string>Radio, MHz</string>
+       <string>RF, MHz</string>
       </property>
       <property name="wordWrap">
        <bool>true</bool>
@@ -273,7 +261,7 @@ color:#fff;</string>
       </property>
       <property name="geometry">
        <rect>
-        <x>500</x>
+        <x>480</x>
         <y>30</y>
         <width>50</width>
         <height>50</height>
@@ -302,7 +290,7 @@ border-image: url(:/images/saveBtn_disabled.png)  stretch stretch;
      <widget class="QPushButton" name="chartRangePushButton">
       <property name="geometry">
        <rect>
-        <x>560</x>
+        <x>540</x>
         <y>30</y>
         <width>50</width>
         <height>50</height>
@@ -334,7 +322,7 @@ border-image: url(:/images/openChartBtn_disabled.png)  stretch stretch;
       </property>
       <property name="geometry">
        <rect>
-        <x>440</x>
+        <x>420</x>
         <y>30</y>
         <width>50</width>
         <height>50</height>
@@ -458,9 +446,9 @@ border-image: url(:/images/sound_alert_off.png) stretch stretch;
     <widget class="QFrame" name="GPS">
      <property name="geometry">
       <rect>
-       <x>200</x>
+       <x>145</x>
        <y>17</y>
-       <width>198</width>
+       <width>171</width>
        <height>60</height>
       </rect>
      </property>
@@ -477,16 +465,16 @@ background: rgba(0, 10, 0, 0.1);</string>
      <widget class="QLabel" name="label">
       <property name="geometry">
        <rect>
-        <x>0</x>
+        <x>6</x>
         <y>0</y>
-        <width>99</width>
+        <width>71</width>
         <height>60</height>
        </rect>
       </property>
       <property name="styleSheet">
        <string notr="true">font-family: 'Roboto';
 font-weight: 500;
-font-size: 48px;
+font-size: 40px;
 color: #FFFFFF;
 background-color:transparent;</string>
       </property>
@@ -500,7 +488,7 @@ background-color:transparent;</string>
      <widget class="QLabel" name="GPS_level">
       <property name="geometry">
        <rect>
-        <x>122</x>
+        <x>90</x>
         <y>10</y>
         <width>76</width>
         <height>39</height>
@@ -525,9 +513,9 @@ background-color:transparent;</string>
     <widget class="QFrame" name="WiFi">
      <property name="geometry">
       <rect>
-       <x>420</x>
+       <x>336</x>
        <y>17</y>
-       <width>198</width>
+       <width>181</width>
        <height>60</height>
       </rect>
      </property>
@@ -544,16 +532,16 @@ background: rgba(0, 10, 0, 0.1);</string>
      <widget class="QLabel" name="label_2">
       <property name="geometry">
        <rect>
-        <x>0</x>
+        <x>-2</x>
         <y>0</y>
-        <width>111</width>
+        <width>91</width>
         <height>60</height>
        </rect>
       </property>
       <property name="styleSheet">
        <string notr="true">font-family: 'Roboto';
 font-weight: 500;
-font-size: 48px;
+font-size: 40px;
 color: #FFFFFF;
 background-color:transparent;</string>
       </property>
@@ -567,7 +555,7 @@ background-color:transparent;</string>
      <widget class="QLabel" name="WiFi_level">
       <property name="geometry">
        <rect>
-        <x>122</x>
+        <x>100</x>
         <y>10</y>
         <width>76</width>
         <height>39</height>
@@ -592,7 +580,7 @@ background-color:transparent;</string>
     <widget class="QLabel" name="TimeLabel">
      <property name="geometry">
       <rect>
-       <x>30</x>
+       <x>10</x>
        <y>50</y>
        <width>141</width>
        <height>29</height>
@@ -620,6 +608,100 @@ background-color:transparent;</string>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignCenter</set>
      </property>
+    </widget>
+    <widget class="QFrame" name="sensor">
+     <property name="geometry">
+      <rect>
+       <x>535</x>
+       <y>-2</y>
+       <width>114</width>
+       <height>91</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border: none;
+background: rgba(0, 10, 0, 0.1);</string>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Shape::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Shadow::Raised</enum>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_4">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>3</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>3</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="label_4">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>36</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">font-family: 'Roboto';
+font-weight: 500;
+font-size: 32px;
+color: #FFFFFF;
+background-color:transparent;</string>
+        </property>
+        <property name="lineWidth">
+         <number>0</number>
+        </property>
+        <property name="text">
+         <string>Sensor</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item alignment="Qt::AlignmentFlag::AlignHCenter">
+       <widget class="QLabel" name="sensor_indicator">
+        <property name="minimumSize">
+         <size>
+          <width>44</width>
+          <height>44</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>36</width>
+          <height>36</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QLabel#sensor_indicator{
+border-image: url(:/images/indicator_off.png) 0 0 0 0;
+}
+
+QLabel#sensor_indicator[isActive=&quot;true&quot;]{
+border-image: url(:/images/indicator_on.png) 0 0 0 0;
+}</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="isActive" stdset="0">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </widget>
    <widget class="QFrame" name="Body">

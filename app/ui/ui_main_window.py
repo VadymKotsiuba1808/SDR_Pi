@@ -38,7 +38,7 @@ class Ui_MainWindow(object):
         self.HeaderBack.setText("")
         self.HeaderBack.setObjectName("HeaderBack")
         self.DateLabel = QtWidgets.QLabel(parent=self.Header)
-        self.DateLabel.setGeometry(QtCore.QRect(30, 14, 141, 29))
+        self.DateLabel.setGeometry(QtCore.QRect(10, 14, 141, 29))
         self.DateLabel.setStyleSheet("font-family: \'Roboto\';\n"
 "font-style: normal;\n"
 "font-weight: 400;\n"
@@ -49,29 +49,14 @@ class Ui_MainWindow(object):
         self.DateLabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.DateLabel.setObjectName("DateLabel")
         self.signals_range = QtWidgets.QFrame(parent=self.Header)
-        self.signals_range.setGeometry(QtCore.QRect(640, -4, 621, 101))
+        self.signals_range.setGeometry(QtCore.QRect(670, -4, 601, 101))
         self.signals_range.setStyleSheet("border: 2px solid #328843;\n"
-"background: rgba(0, 10, 0, 0.1);\n"
-"\n"
-"QSpinBox{\n"
-"    font-size:28px;\n"
-"    padding:2px;\n"
-"color:#fff;\n"
-"}\n"
-"\n"
-"QSpinBox[status=\"unsaved\"]{\n"
-"    border:5px solid darkred; \n"
-"}\n"
-"\n"
-"QSpinBox::up-button, QSpinBox::down-button {\n"
-"    width: 22px;\n"
-"    height: 18px;\n"
-"}")
+"background: rgba(0, 10, 0, 0.1);")
         self.signals_range.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
         self.signals_range.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
         self.signals_range.setObjectName("signals_range")
         self.radioStartSpinBox = QtWidgets.QSpinBox(parent=self.signals_range)
-        self.radioStartSpinBox.setGeometry(QtCore.QRect(100, 30, 145, 50))
+        self.radioStartSpinBox.setGeometry(QtCore.QRect(75, 30, 145, 50))
         self.radioStartSpinBox.setStyleSheet("QSpinBox{\n"
 "    font-size:28px;\n"
 "    padding:2px;\n"
@@ -91,7 +76,7 @@ class Ui_MainWindow(object):
         self.radioStartSpinBox.setMaximum(9999)
         self.radioStartSpinBox.setObjectName("radioStartSpinBox")
         self.radioEndSpinBox = QtWidgets.QSpinBox(parent=self.signals_range)
-        self.radioEndSpinBox.setGeometry(QtCore.QRect(290, 30, 145, 50))
+        self.radioEndSpinBox.setGeometry(QtCore.QRect(260, 30, 145, 50))
         self.radioEndSpinBox.setStyleSheet("QSpinBox{\n"
 "    font-size:28px;\n"
 "    padding:2px;\n"
@@ -113,9 +98,10 @@ class Ui_MainWindow(object):
         self.radioEndSpinBox.setProperty("showGroupSeparator", False)
         self.radioEndSpinBox.setMinimum(1)
         self.radioEndSpinBox.setMaximum(9999)
+        self.radioEndSpinBox.setProperty("value", 900)
         self.radioEndSpinBox.setObjectName("radioEndSpinBox")
         self.rangeDivideLabel = QtWidgets.QLabel(parent=self.signals_range)
-        self.rangeDivideLabel.setGeometry(QtCore.QRect(250, 31, 30, 31))
+        self.rangeDivideLabel.setGeometry(QtCore.QRect(225, 31, 30, 31))
         self.rangeDivideLabel.setStyleSheet("QLabel{\n"
 "border:none;\n"
 "font-size:64px;\n"
@@ -126,7 +112,7 @@ class Ui_MainWindow(object):
         self.rangeDivideLabel.setIndent(-1)
         self.rangeDivideLabel.setObjectName("rangeDivideLabel")
         self.radioRangeLabel = QtWidgets.QLabel(parent=self.signals_range)
-        self.radioRangeLabel.setGeometry(QtCore.QRect(10, 11, 81, 71))
+        self.radioRangeLabel.setGeometry(QtCore.QRect(10, 11, 61, 71))
         self.radioRangeLabel.setStyleSheet("border:none;\n"
 "font-size:28px;\n"
 "color:#fff;")
@@ -134,7 +120,7 @@ class Ui_MainWindow(object):
         self.radioRangeLabel.setObjectName("radioRangeLabel")
         self.saveRadioRangePushButton = QtWidgets.QPushButton(parent=self.signals_range)
         self.saveRadioRangePushButton.setEnabled(False)
-        self.saveRadioRangePushButton.setGeometry(QtCore.QRect(500, 30, 50, 50))
+        self.saveRadioRangePushButton.setGeometry(QtCore.QRect(480, 30, 50, 50))
         self.saveRadioRangePushButton.setStyleSheet("QPushButton{\n"
 "border-image: url(:/images/saveBtn_off.png)  stretch stretch;\n"
 "}\n"
@@ -150,7 +136,7 @@ class Ui_MainWindow(object):
         self.saveRadioRangePushButton.setCheckable(False)
         self.saveRadioRangePushButton.setObjectName("saveRadioRangePushButton")
         self.chartRangePushButton = QtWidgets.QPushButton(parent=self.signals_range)
-        self.chartRangePushButton.setGeometry(QtCore.QRect(560, 30, 50, 50))
+        self.chartRangePushButton.setGeometry(QtCore.QRect(540, 30, 50, 50))
         self.chartRangePushButton.setStyleSheet("QPushButton{\n"
 "border-image: url(:/images/openChartBtn_off.png)  stretch stretch;\n"
 "}\n"
@@ -167,7 +153,7 @@ class Ui_MainWindow(object):
         self.chartRangePushButton.setObjectName("chartRangePushButton")
         self.clearRadioRangePushButton = QtWidgets.QPushButton(parent=self.signals_range)
         self.clearRadioRangePushButton.setEnabled(False)
-        self.clearRadioRangePushButton.setGeometry(QtCore.QRect(440, 30, 50, 50))
+        self.clearRadioRangePushButton.setGeometry(QtCore.QRect(420, 30, 50, 50))
         self.clearRadioRangePushButton.setStyleSheet("QPushButton{\n"
 "border-image: url(:/images/clearBtn_off.png)  stretch stretch;\n"
 "}\n"
@@ -229,23 +215,23 @@ class Ui_MainWindow(object):
         self.Sound_alert.setProperty("alert", False)
         self.Sound_alert.setObjectName("Sound_alert")
         self.GPS = QtWidgets.QFrame(parent=self.Header)
-        self.GPS.setGeometry(QtCore.QRect(200, 17, 198, 60))
+        self.GPS.setGeometry(QtCore.QRect(145, 17, 171, 60))
         self.GPS.setStyleSheet("border: none;\n"
 "background: rgba(0, 10, 0, 0.1);")
         self.GPS.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
         self.GPS.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
         self.GPS.setObjectName("GPS")
         self.label = QtWidgets.QLabel(parent=self.GPS)
-        self.label.setGeometry(QtCore.QRect(0, 0, 99, 60))
+        self.label.setGeometry(QtCore.QRect(6, 0, 71, 60))
         self.label.setStyleSheet("font-family: \'Roboto\';\n"
 "font-weight: 500;\n"
-"font-size: 48px;\n"
+"font-size: 40px;\n"
 "color: #FFFFFF;\n"
 "background-color:transparent;")
         self.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.label.setObjectName("label")
         self.GPS_level = QtWidgets.QLabel(parent=self.GPS)
-        self.GPS_level.setGeometry(QtCore.QRect(122, 10, 76, 39))
+        self.GPS_level.setGeometry(QtCore.QRect(90, 10, 76, 39))
         self.GPS_level.setStyleSheet("*[level=\"0\"] { background-image: url(:/images/level_0.png); }\n"
 "*[level=\"1\"] { background-image: url(:/images/level_1.png); }\n"
 "*[level=\"2\"] { background-image: url(:/images/level_2.png); }\n"
@@ -256,23 +242,23 @@ class Ui_MainWindow(object):
         self.GPS_level.setProperty("level", 0)
         self.GPS_level.setObjectName("GPS_level")
         self.WiFi = QtWidgets.QFrame(parent=self.Header)
-        self.WiFi.setGeometry(QtCore.QRect(420, 17, 198, 60))
+        self.WiFi.setGeometry(QtCore.QRect(336, 17, 181, 60))
         self.WiFi.setStyleSheet("border: none;\n"
 "background: rgba(0, 10, 0, 0.1);")
         self.WiFi.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
         self.WiFi.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
         self.WiFi.setObjectName("WiFi")
         self.label_2 = QtWidgets.QLabel(parent=self.WiFi)
-        self.label_2.setGeometry(QtCore.QRect(0, 0, 111, 60))
+        self.label_2.setGeometry(QtCore.QRect(-2, 0, 91, 60))
         self.label_2.setStyleSheet("font-family: \'Roboto\';\n"
 "font-weight: 500;\n"
-"font-size: 48px;\n"
+"font-size: 40px;\n"
 "color: #FFFFFF;\n"
 "background-color:transparent;")
         self.label_2.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.label_2.setObjectName("label_2")
         self.WiFi_level = QtWidgets.QLabel(parent=self.WiFi)
-        self.WiFi_level.setGeometry(QtCore.QRect(122, 10, 76, 39))
+        self.WiFi_level.setGeometry(QtCore.QRect(100, 10, 76, 39))
         self.WiFi_level.setStyleSheet("*[level=\"0\"] { background-image: url(:/images/level_0.png); }\n"
 "*[level=\"1\"] { background-image: url(:/images/level_1.png); }\n"
 "*[level=\"2\"] { background-image: url(:/images/level_2.png); }\n"
@@ -283,7 +269,7 @@ class Ui_MainWindow(object):
         self.WiFi_level.setProperty("level", 0)
         self.WiFi_level.setObjectName("WiFi_level")
         self.TimeLabel = QtWidgets.QLabel(parent=self.Header)
-        self.TimeLabel.setGeometry(QtCore.QRect(30, 50, 141, 29))
+        self.TimeLabel.setGeometry(QtCore.QRect(10, 50, 141, 29))
         font = QtGui.QFont()
         font.setFamily("Roboto")
         font.setPointSize(-1)
@@ -299,6 +285,42 @@ class Ui_MainWindow(object):
         self.TimeLabel.setText("00:00")
         self.TimeLabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.TimeLabel.setObjectName("TimeLabel")
+        self.sensor = QtWidgets.QFrame(parent=self.Header)
+        self.sensor.setGeometry(QtCore.QRect(535, -2, 114, 91))
+        self.sensor.setStyleSheet("border: none;\n"
+"background: rgba(0, 10, 0, 0.1);")
+        self.sensor.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
+        self.sensor.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
+        self.sensor.setObjectName("sensor")
+        self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.sensor)
+        self.verticalLayout_4.setContentsMargins(0, 3, 0, 3)
+        self.verticalLayout_4.setSpacing(0)
+        self.verticalLayout_4.setObjectName("verticalLayout_4")
+        self.label_4 = QtWidgets.QLabel(parent=self.sensor)
+        self.label_4.setMaximumSize(QtCore.QSize(16777215, 36))
+        self.label_4.setStyleSheet("font-family: \'Roboto\';\n"
+"font-weight: 500;\n"
+"font-size: 32px;\n"
+"color: #FFFFFF;\n"
+"background-color:transparent;")
+        self.label_4.setLineWidth(0)
+        self.label_4.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.label_4.setObjectName("label_4")
+        self.verticalLayout_4.addWidget(self.label_4)
+        self.sensor_indicator = QtWidgets.QLabel(parent=self.sensor)
+        self.sensor_indicator.setMinimumSize(QtCore.QSize(44, 44))
+        self.sensor_indicator.setMaximumSize(QtCore.QSize(36, 36))
+        self.sensor_indicator.setStyleSheet("QLabel#sensor_indicator{\n"
+"border-image: url(:/images/indicator_off.png) 0 0 0 0;\n"
+"}\n"
+"\n"
+"QLabel#sensor_indicator[isActive=\"true\"]{\n"
+"border-image: url(:/images/indicator_on.png) 0 0 0 0;\n"
+"}")
+        self.sensor_indicator.setText("")
+        self.sensor_indicator.setProperty("isActive", False)
+        self.sensor_indicator.setObjectName("sensor_indicator")
+        self.verticalLayout_4.addWidget(self.sensor_indicator, 0, QtCore.Qt.AlignmentFlag.AlignHCenter)
         self.Body = QtWidgets.QFrame(parent=self.centralwidget)
         self.Body.setEnabled(True)
         self.Body.setGeometry(QtCore.QRect(0, 95, 1920, 985))
@@ -1023,11 +1045,12 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "SDR Drone Detector"))
         self.rangeDivideLabel.setText(_translate("MainWindow", "-"))
-        self.radioRangeLabel.setText(_translate("MainWindow", "Radio, MHz"))
+        self.radioRangeLabel.setText(_translate("MainWindow", "RF, MHz"))
         self.RF_alert.setText(_translate("MainWindow", "Тривога RF"))
         self.Sound_alert.setText(_translate("MainWindow", "Тривога Sound"))
         self.label.setText(_translate("MainWindow", "GPS"))
         self.label_2.setText(_translate("MainWindow", "Wi Fi"))
+        self.label_4.setText(_translate("MainWindow", "Sensor"))
         self.label_3.setText(_translate("MainWindow", "Jammer"))
         self.jammerOnTimerButton.setText(_translate("MainWindow", "ON"))
         self.jammerOffTimerButton.setText(_translate("MainWindow", "OFF"))

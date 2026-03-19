@@ -1,6 +1,6 @@
 from typing import Optional, List, Dict, Any
 
-from PyQt6.QtWidgets import QDialog, QMessageBox, QListWidgetItem, QWidget
+from PyQt6.QtWidgets import QDialog, QMessageBox, QListWidgetItem, QListWidget, QWidget
 from PyQt6.QtCore import Qt, QEvent, QCoreApplication, QTranslator, pyqtSignal
 from PyQt6 import uic
 
@@ -280,6 +280,52 @@ class ObjectEditorDialog(QDialog):
         for w in [self.ui.inpSoundFreq, self.ui.lstSoundFreqs]:
             w.setStyleSheet(style)
 
+    def _check_is_duplicate(
+        self,
+        list_widget: QListWidget,
+        value_to_check: str | int,
+        check_range: tuple[int, int] | None = None,
+    ) -> bool:
+        """
+        Перевіряє на дублікати та опційно на перетин діапазонів.
+        """
+        role = Qt.ItemDataRole.UserRole
+
+        for i in range(list_widget.count()):
+            item = list_widget.item(i)
+            existing_data = item.data(role)
+
+            # Перевірка на повний дублікат
+            if existing_data == value_to_check:
+                QMessageBox.warning(
+                    self,
+                    self.tr("Error"),
+                    self.tr("This value has already been added to the list!"),
+                )
+                return True
+
+            # Перевірка на перетин діапазонів
+            if check_range is not None and isinstance(existing_data, str):
+                try:
+                    ex_min_str, ex_max_str = existing_data.split("-")
+                    ex_min, ex_max = int(ex_min_str), int(ex_max_str)
+
+                    new_min, new_max = check_range
+
+                    if new_min <= ex_max and ex_min <= new_max:
+                        QMessageBox.warning(
+                            self,
+                            self.tr("Error"),
+                            self.tr("Range overlaps with existing: {}-{} MHz").format(
+                                convert_hz_to_mhz(ex_min), convert_hz_to_mhz(ex_max)
+                            ),
+                        )
+                        return True
+                except ValueError:
+                    continue
+
+        return False
+
     def _add_rf_range(self) -> None:
         f_min = self.ui.inpRFMin.value()
         f_max = self.ui.inpRFMax.value()
@@ -291,7 +337,15 @@ class ObjectEditorDialog(QDialog):
             self.ui.inpRFMin.setValue(f_min)
             self.ui.inpRFMax.setValue(f_max)
 
-        raw_string = f"{convert_mhz_to_hz(f_min)}-{convert_mhz_to_hz(f_max)}"
+        f_min_hz = convert_mhz_to_hz(f_min)
+        f_max_hz = convert_mhz_to_hz(f_max)
+        raw_string = f"{f_min_hz}-{f_max_hz}"
+
+        if self._check_is_duplicate(
+            self.ui.lstRFFreqs, raw_string, [f_min_hz, f_max_hz]
+        ):
+            return
+
         display_text = (
             self.tr("{} MHz").format(f_min)
             if f_min == f_max
@@ -313,11 +367,8 @@ class ObjectEditorDialog(QDialog):
             return
 
         text = self.tr("{} Hz").format(freq)
-        existing = [
-            self.ui.lstSoundFreqs.item(i).text()
-            for i in range(self.ui.lstSoundFreqs.count())
-        ]
-        if text in existing:
+
+        if self._check_is_duplicate(self.ui.lstSoundFreqs, int(freq)):
             return
 
         item = QListWidgetItem(text)

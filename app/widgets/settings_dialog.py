@@ -25,6 +25,7 @@ class SettingsData:
     radar_max_radius_km: float = 200.0
     gps_interval_s: int = 120
     main_relays: List[str] = field(default_factory=lambda: [RELAY_NAMES_LIST[0]])
+    detection_ttl_s: int = 3
     is_jammer_auto_start_enabled: bool = False
     is_jammer_auto_stop_enabled: bool = False
     jammer_auto_stop_interval_s: int = 900
@@ -92,6 +93,7 @@ class SettingsDialog(QDialog):
 
         self.ui.inpMaxRadius.setValue(s.radar_max_radius_km)
         self.ui.inpGpsInterval.setValue(s.gps_interval_s)
+        self.ui.inpDetectionTTL.setValue(s.detection_ttl_s)
 
         self._populate_relay_cmb()
 
@@ -227,6 +229,7 @@ class SettingsDialog(QDialog):
 
         radius_km = self.ui.inpMaxRadius.value()
         gps_interval = int(self.ui.inpGpsInterval.value())
+        detection_ttl = int(self.ui.inpDetectionTTL.value())
         relays = self.ui.cmbRelay.currentText().split(RELAYS_DIVIDER)
         auto_start_enabled = self.ui.chkJammerAutoStart.isChecked()
         auto_stop_enabled = self.ui.chkJammerAutoStop.isChecked()
@@ -236,6 +239,7 @@ class SettingsDialog(QDialog):
         self.new_settings = SettingsData(
             radar_max_radius_km=radius_km,
             gps_interval_s=gps_interval,
+            detection_ttl_s=detection_ttl,
             main_relays=relays,
             is_jammer_auto_start_enabled=auto_start_enabled,
             is_jammer_auto_stop_enabled=auto_stop_enabled,

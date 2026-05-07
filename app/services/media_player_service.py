@@ -82,7 +82,7 @@ class MediaPlayerService(QObject):
         # Для Linux додаємо специфічний відео-вихід
         if self.system_service.is_linux:
             args.append("--vout=xcb_x11")
-            args.append(url)
+            args.append(file_path)
         elif self.system_service.is_windows:
             url = QUrl.fromLocalFile(file_path)
             args.append(url.toString())

@@ -1,6 +1,6 @@
 import math
 import numpy as np
-from typing import Optional, Union
+from typing import Optional
 
 from PyQt6.QtGui import (
     QPainter,
@@ -21,7 +21,7 @@ from app.core.constants import (
     VISUAL_RANGE_DB,
 )
 from app.models.detection_event import DetectionEvent
-from app.models.detection_background import SpectralData, DetectionBackground
+from app.models.detection_background import SpectralData
 from app.models.source_type import SourceType
 from app.models.chart_models import CursorState
 from app.core.chart_theme import ChartTheme
@@ -106,6 +106,10 @@ class SpectralChartRenderer(TranslatorMixin):
         if self.cached_heatmap:
             p.drawImage(rect, self.cached_heatmap)
         else:
+            matrix = background.data_magnitude
+            if matrix is None:
+                return
+
             if isinstance(matrix, list):
                 matrix = np.array(matrix, dtype=np.uint8)
 

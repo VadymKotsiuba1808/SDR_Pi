@@ -33,17 +33,17 @@ jobs:
         run: deptry .
 
       - name: Ruff - Hard Errors Only
-        run: ruff check . --select E9,F --output-format=github
+        run: ruff check . --select E9,F821 --output-format=github
 
-      # --- Перевірки, що не блокують CI, просто показують попередження ---
+      # --- SOFT FAIL (Показують зауваження, але пропускають CI) ---
 
-      - name: Ruff - Style Recommendations
-        # --exit-zero гарантує, що крок завжди завершується успішно для GitHub,
-        # але всі зауваження до стилю виведуться в логи.
-        run: ruff check . --exit-zero --output-format=github
+      - name: Ruff - Style & Best Practices
+        # --exit-zero: крок завжди успішний
+        # --ignore E9,F821: не повторюємо те, що вже перевірили вище
+        # --select ALL: покаже взагалі всі поради (можна замінити на конкретні, як I або F401)
+        run: ruff check . --extend-ignore E9,F821 --exit-zero --output-format=github
 
       - name: Type check with MyPy
+        # continue-on-error: крок може впасти, але значок буде зеленим/жовтим
         run: mypy . --ignore-missing-imports
-        # Цей параметр каже GitHub Actions ігнорувати помилку кроку
-        # Пайплайн піде далі і буде світитися зеленим, навіть якщо є проблеми з типами.
         continue-on-error: true

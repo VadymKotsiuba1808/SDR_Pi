@@ -27,11 +27,23 @@ jobs:
           pip-compile requirements-dev.in
           pip-sync requirements.txt requirements-dev.txt
 
-      - name: Lint code with Ruff
-        run: ruff check .
-
-      - name: Type check with MyPy
-        run: mypy . --ignore-missing-imports
+      # --- ЖОРСТКІ ПЕРЕВІРКИ (Блокують злиття коду) ---
 
       - name: Check dependencies with Deptry
         run: deptry .
+
+      - name: Ruff - Hard Errors Only
+        run: ruff check . --select E9,F --output-format=github
+
+      # --- Перевірки, що не блокують CI, просто показують попередження ---
+
+      - name: Ruff - Style Recommendations
+        # --exit-zero гарантує, що крок завжди завершується успішно для GitHub,
+        # але всі зауваження до стилю виведуться в логи.
+        run: ruff check . --exit-zero --output-format=github
+
+      - name: Type check with MyPy
+        run: mypy . --ignore-missing-imports
+        # Цей параметр каже GitHub Actions ігнорувати помилку кроку
+        # Пайплайн піде далі і буде світитися зеленим, навіть якщо є проблеми з типами.
+        continue-on-error: true

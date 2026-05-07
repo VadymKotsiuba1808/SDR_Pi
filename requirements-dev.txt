@@ -12,7 +12,6 @@ cfgv==3.5.0
     # via pre-commit
 click==8.3.3
     # via
-    #   -c requirements.txt
     #   black
     #   deptry
 colorama==0.4.6

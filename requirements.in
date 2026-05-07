@@ -4,7 +4,6 @@ passlib
 pillow
 PyQt6
 qasync
-Quart
 vidgear
 mss
 opencv-python-headless

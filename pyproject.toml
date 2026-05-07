@@ -33,3 +33,9 @@ ignore_missing_imports = true
 # --- НАЛАШТУВАННЯ DEPTRY (Залежності) ---
 [tool.deptry]
 extend_exclude = [".venv", "venv"]
+
+[tool.deptry.per_rule_ignores]
+DEP002 = ["bcrypt", "python-xlib"]
+
+[tool.deptry.package_module_name_map]
+pywin32 = ["win32api", "win32gui", "win32con"]

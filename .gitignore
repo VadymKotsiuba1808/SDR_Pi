@@ -1,3 +1,4 @@
+.VSCodeCounter
 
 /temp_data/*.png
 /media/*.png
@@ -11,8 +12,6 @@
 *.db
 *.db-shm
 *.db-wal
-
-requirements.txt
 
 .vscode/
 # Byte-compiled / optimized / DLL files

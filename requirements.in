@@ -17,7 +17,3 @@ sqlalchemy
 python-xlib; sys_platform=="linux" or sys_platform=="darwin"
 
 pyqtgraph
-
-#Dev
-deptry
-black

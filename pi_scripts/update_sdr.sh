@@ -1,3 +1,4 @@
+#!/bin/bash
 
 PROJECT_DIR="/home/admin/SDR_Pi" 
 

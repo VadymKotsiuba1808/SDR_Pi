@@ -1,58 +1,40 @@
 #!/bin/bash
 
-PROJECT_DIR="/home/admin/SDR_Pi"
-REPO_URL="https://github.com/VadymKotsiuba1808/SDR_Pi.git" 
-SERVICE_PATH="pi_scripts/sdr_pi.service"
+echo "🚀 Starting full SDR_Pi setup..."
 
-echo "🚀 Starting SDR_Pi install..."
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# --- 1. Install system tools ---
-echo "Installing required system packages..."
-sudo apt update
-sudo apt install -y git python3-venv python3-pip python3-dev build-essential
+# Make internal scripts executable
+chmod +x "$SCRIPT_DIR/_os_setup.sh"
+chmod +x "$SCRIPT_DIR/_app_setup.sh"
 
-# --- 2. Download project (Clone repo) ---
-if [ -d "$PROJECT_DIR" ]; then
-    echo "❌ Folder $PROJECT_DIR already exists! Stopping install to keep your files safe."
-    echo "Please use the update script or delete the folder first."
-    exit 1
-fi
+echo "======================================"
+"$SCRIPT_DIR/_os_setup.sh" || { echo "❌ OS setup failed"; exit 1; }
 
-echo "Downloading code from GitHub..."
-git clone -b dev "$REPO_URL" "$PROJECT_DIR"
+echo "======================================"
+"$SCRIPT_DIR/_app_setup.sh" || { echo "❌ App setup failed"; exit 1; }
 
-cd "$PROJECT_DIR" || { echo "❌ Error: Folder not found after download"; exit 1; }
+echo "======================================"
+echo "✅ All setup phases completed successfully!"
+echo "⚠️ System needs to reboot to apply X11 and network changes."
 
-# --- 3. Setup Python virtual environment (.venv) ---
-echo "Creating Python virtual environment..."
-python3 -m venv .venv
-source .venv/bin/activate
+# Trigger a graphical dialog window with a 7-second timeout
+zenity --question \
+    --title="Reboot Required" \
+    --text="SDR_Pi setup completed successfully!\n\nSystem will reboot automatically in 7 seconds to apply changes.\nPress 'Cancel' to stop." \
+    --ok-label="Reboot Now" \
+    --cancel-label="Cancel" \
+    --timeout=7
 
-echo "Installing pip-tools..."
-pip install --upgrade pip
-pip install pip-tools
+# Store the exit code returned by Zenity
+ZENITY_STATUS=$?
 
-echo "Installing Python packages..."
-pip-compile --strip-extras
-pip-sync
-
-# --- 4. Setup auto-start service (Systemd) ---
-if [ -f "$SERVICE_PATH" ]; then
-    echo "Setting up background service with symlink..."
-    
-    # Remove old file or symlink if it exists to prevent errors
-    sudo rm -f /etc/systemd/system/sdr_pi.service 
-    
-    # Create a symbolic link pointing to the file in your repository
-    sudo ln -s "$PROJECT_DIR/$SERVICE_PATH" /etc/systemd/system/sdr_pi.service
-    
-    sudo systemctl daemon-reload
-    sudo systemctl enable sdr_pi.service
-    sudo systemctl start sdr_pi.service
-    echo "✅ Service is ready and running!"
+# Exit code 0: User clicked "Reboot Now"
+# Exit code 5: Timeout reached (7 seconds)
+if [ $ZENITY_STATUS -eq 0 ] || [ $ZENITY_STATUS -eq 5 ]; then
+    echo -e "\n🚀 Rebooting now..."
+    sudo reboot
 else
-    echo "⚠️ Warning: $SERVICE_PATH is missing! Auto-start is NOT setup."
-    echo "You need to add it later."
+    # Exit code 1: User clicked "Cancel" or closed the window
+    echo -e "\n🛑 Reboot cancelled by user. Please reboot manually later using 'sudo reboot'."
 fi
-
-echo "✅ Install finished successfully!"

@@ -13,7 +13,6 @@
 *.db-shm
 *.db-wal
 
-.vscode/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

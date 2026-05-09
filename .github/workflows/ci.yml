@@ -39,11 +39,9 @@ jobs:
 
       - name: Ruff - Style & Best Practices
         # --exit-zero: крок завжди успішний
-        # --ignore E9,F821: не повторюємо те, що вже перевірили вище
-        # --select ALL: покаже взагалі всі поради (можна замінити на конкретні, як I або F401)
         run: ruff check . --extend-ignore E9,F821 --exit-zero --output-format=github
 
       - name: Type check with MyPy
-        # continue-on-error: крок може впасти, але значок буде зеленим/жовтим
+
         run: mypy . --ignore-missing-imports
         continue-on-error: true

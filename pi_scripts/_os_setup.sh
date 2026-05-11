@@ -41,22 +41,32 @@ sudo udevadm trigger --subsystem-match=input --action=change
 
 echo "Setting up static IP for LAN interface (eth0)..."
 # Create or modify the wired connection using NetworkManager
-sudo nmcli connection modify "Wired connection 1" ipv4.addresses "$STATIC_IP" ipv4.gateway "$GATEWAY_IP" ipv4.method manual
+sudo nmcli connection modify "Wired connection 1" \
+    ipv4.addresses "$STATIC_IP" \
+    ipv4.method manual \
+    ipv4.gateway "" \
+    ipv4.never-default yes
 sudo nmcli connection up "Wired connection 1"
 
 echo "Applying custom taskbar settings for X11 (LXDE)..."
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_FILE="$SCRIPT_DIR/configs/panel" 
 
-if [ -f "$CONFIG_FILE" ]; then
-    # Create the required folder structure for X11 panel
-    mkdir -p ~/.config/lxpanel/LXDE-pi/panels/
+POSSIBLE_PATHS=(
+    "$HOME/.config/lxpanel-pi/panels"
+    "$HOME/.config/lxpanel/LXDE-pi/panels"
+)
 
-    cp "$CONFIG_FILE" ~/.config/lxpanel/LXDE-pi/panels/panel
+if [ -f "$CONFIG_FILE" ]; then
+    for TARGET_PATH in "${POSSIBLE_PATHS[@]}"; do
+        echo "Checking path: $TARGET_PATH"
+        mkdir -p "$TARGET_PATH"
+        cp "$CONFIG_FILE" "$TARGET_PATH/panel"
+    done
     
     # Restart the panel to apply changes immediately
     lxpanelctl restart
-    echo "✅ Taskbar config copied and applied."
+    echo "✅ Taskbar config copied to all possible locations."
 else
     echo "⚠️ Warning: Custom panel config not found at $CONFIG_FILE. Skipping taskbar setup."
 fi

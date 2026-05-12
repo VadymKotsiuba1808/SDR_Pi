@@ -35,7 +35,7 @@ sudo raspi-config nonint do_wayland W1
 echo "Configuring US and UA keyboard layouts (Switch: Right Alt)..."
 # Replace existing layout and option lines in the config file
 sudo sed -i 's/XKBLAYOUT=.*/XKBLAYOUT="us,ua"/' /etc/default/keyboard
-sudo sed -i 's/XKBOPTIONS=.*/XKBOPTIONS="grp:toggle"/' /etc/default/keyboard
+sudo sed -i 's/XKBOPTIONS=.*/XKBOPTIONS="grp:ctrl_shift_toggle"/' /etc/default/keyboard
 # Apply keyboard changes immediately
 sudo udevadm trigger --subsystem-match=input --action=change
 
@@ -52,9 +52,11 @@ echo "Applying custom taskbar settings for X11 (LXDE)..."
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_FILE="$SCRIPT_DIR/configs/panel" 
 
+USER_HOME=$(getent passwd "$SUDO_USER" | cut -d: -f6)
+
 POSSIBLE_PATHS=(
-    "$HOME/.config/lxpanel-pi/panels"
-    "$HOME/.config/lxpanel/LXDE-pi/panels"
+    "$USER_HOME/.config/lxpanel-pi/panels"
+    "$USER_HOME/.config/lxpanel/LXDE-pi/panels"
 )
 
 if [ -f "$CONFIG_FILE" ]; then

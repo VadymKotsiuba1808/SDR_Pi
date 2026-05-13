@@ -54,7 +54,7 @@ class SettingsService(QObject):
     # Єдиний словник конфігурації: ключ → (секція, тип, значення за замовчуванням)
     _config_schema = {
         # Pinetwork
-        "pi_target_ip": ("pinetwork", str, "0.0.0.0"),
+        "pi_target_ip": ("pinetwork", str, "10.0.0.1"),
         "pi_target_port": ("pinetwork", int, 6000),
         # Maps
         "radar_radius_km": ("maps", float, 100),

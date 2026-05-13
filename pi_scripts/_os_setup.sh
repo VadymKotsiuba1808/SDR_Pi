@@ -1,8 +1,7 @@
 #!/bin/bash
 
 # Network configuration variables
-STATIC_IP="192.168.1.10/24"
-GATEWAY_IP="192.168.1.1"
+STATIC_IP="10.0.0.2/24"
 
 echo "--- Phase 1: OS Configuration ---"
 

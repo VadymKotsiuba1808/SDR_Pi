@@ -62,16 +62,16 @@ def test_clean_settings_buffering(settings_dialog, qtbot):
     settings_dialog.ui.cmbCleanTarget.setCurrentIndex(0)
     assert settings_dialog.ui.chkCleanEnabled.isChecked() is True
     assert settings_dialog.ui.inpCleanDays.value() == 30
-    
+
     # Змінюємо значення
     qtbot.mouseClick(settings_dialog.ui.chkCleanEnabled, pytest.importorskip("PyQt6.QtCore").Qt.MouseButton.LeftButton)
     settings_dialog.ui.inpCleanDays.setValue(45)
-    
+
     # Перемикаємося на інший таргет
     settings_dialog.ui.cmbCleanTarget.setCurrentIndex(1)
     # Має бути вимкнено за замовчуванням (не було в моку)
     assert settings_dialog.ui.chkCleanEnabled.isChecked() is False
-    
+
     # Повертаємося до логів
     settings_dialog.ui.cmbCleanTarget.setCurrentIndex(0)
     assert settings_dialog.ui.chkCleanEnabled.isChecked() is False
@@ -82,10 +82,10 @@ def test_save_settings(settings_dialog, qtbot):
     """Тест збереження налаштувань."""
     settings_dialog.ui.inpMaxRadius.setValue(250.0)
     settings_dialog.ui.inpGpsInterval.setValue(30)
-    
+
     with qtbot.waitSignal(settings_dialog.finished, timeout=1000) as blocker:
         qtbot.mouseClick(settings_dialog.ui.btnSave, pytest.importorskip("PyQt6.QtCore").Qt.MouseButton.LeftButton)
-    
+
     assert blocker.args == [QDialog.DialogCode.Accepted]
     new_data = settings_dialog.get_settings()
     assert new_data.radar_max_radius_km == 250.0
@@ -96,6 +96,6 @@ def test_restart_app_logout(settings_dialog, mock_settings, qtbot):
     """Тест виходу з системи (рестарт процесу)."""
     with patch("app.widgets.settings_dialog.restart_process") as mock_restart:
         qtbot.mouseClick(settings_dialog.ui.btnLogout, pytest.importorskip("PyQt6.QtCore").Qt.MouseButton.LeftButton)
-        
+
         assert mock_settings.remember_me is False
         assert mock_restart.called

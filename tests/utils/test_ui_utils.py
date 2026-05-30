@@ -27,5 +27,5 @@ def test_move_dialog_down(qtbot):
 
     # x = (500 - 100) // 2 = 200
     # y = 100
-    assert dialog.x() == 200
-    assert dialog.y() == 100
+    assert dialog.x() == 200, f"Expected x=200, got {dialog.x()}"
+    assert dialog.y() == 100, f"Expected y=100, got {dialog.y()}"

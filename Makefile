@@ -1,34 +1,41 @@
-.PHONY: help lint check-deps check req req-dev sync deps fix test ai-test ai-autofix ai-review
+.PHONY: help lint check-deps check req req-dev sync deps format fix test ai-test ai-autofix ai-review
 
 help:
 	@echo "Available commands:"
-	@echo "  make check       - Run all checks (Ruff, MyPy, Deptry)"
-	@echo "  make fix         - Run small fixes with Ruff"
-	@echo "  make lint        - Run linter and type checker only"
+	@echo "  make format      - Auto-format code with Ruff formatter"
+	@echo "  make fix         - Run small fixes with Ruff linter"
+	@echo "  make check       - Run formatting, linting, MyPy, and Deptry"
 	@echo "  make test        - Run all pytest unit tests"
-	@echo "  make deps        - Update and sync all dependencies"
 	@echo "  make ai-test     - Generate tests for a specific file (use FILE=path)"
-	@echo "  make ai-autofix  - Let Gemini run check and fix errors automatically"
+	@echo "  make ai-autofix  - Let Gemini format, check, and fix errors automatically"
 
-# --- ПЕРЕВІРКА КОДУ ---
+# --- ПЕРЕВІРКА ТА ФОРМАТУВАННЯ КОДУ ---
 
+# 1. Форматування (вирівнює стиль, відступи, лапки)
+format:
+	ruff format .
+
+# 2. Швидкі автофікси правил лінтера
 fix:
 	ruff check . --fix
 
+# 3. Чистий лінтер та статичний аналіз типів
 lint:
 	ruff check .
 	mypy . 
 
+# 4. Перевірка залежностей
 check-deps:
 	deptry .
 
-check: lint check-deps
+# Головна команда перевірки (тепер спочатку САМА форматує код, а потім перевіряє)
+check: format lint check-deps
 
+# --- ТЕСТИ ---
 test:
 	pytest tests/
 
 # --- РОБОТА ІЗ ЗАЛЕЖНОСТЯМИ (pip-tools) ---
-
 req:
 	pip-compile requirements.in
 
@@ -42,14 +49,11 @@ deps: req req-dev sync
 
 # --- GEMINI CLI AUTOMATION ---
 
-# Згенерувати тести для конкретного файлу
 ai-test:
 	gemini ask "Generate comprehensive pytest unit tests for $(FILE). Ensure all external dependencies are properly mocked."
 
-# Автономний цикл: ШІ сам запускає лінтери, бачить помилки і фіксить їх, поки make check не стане зеленим
 ai-autofix:
 	gemini run "Execute 'make check'. If it fails, analyze the output, fix the errors in code, and repeat until 'make check' passes successfully."
 
-# ШІ-рев'ю перед комітом
 ai-review:
 	gemini ask "Review the current git diff. Check for architectural flaws, memory leaks, and strict typing violations."

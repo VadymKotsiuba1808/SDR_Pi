@@ -23,6 +23,7 @@ from sqlalchemy.orm import (
     relationship,
     sessionmaker,
 )
+from sqlalchemy.pool import StaticPool
 
 from app.models.detection_object import DetectionObject
 from app.models.object_class import ObjectClass
@@ -79,22 +80,32 @@ class DatabaseService(QObject):
         self.threadpool: QThreadPool = QThreadPool()
 
         self.db_url = db_url or DB_CONNECTION_STRING
-        self.engine: Engine = create_engine(
-            self.db_url,
-            connect_args={"check_same_thread": False},
-            echo=False,
-        )
+        connect_args = {"check_same_thread": False}
+        if self.db_url == "sqlite:///:memory:":
+            engine_kwargs = {
+                "connect_args": connect_args,
+                "poolclass": StaticPool,
+            }
+        else:
+            engine_kwargs = {"connect_args": connect_args}
+
+        self.engine: Engine = create_engine(self.db_url, **engine_kwargs, echo=False)
         listen(self.engine, "connect", self._enable_wal)
         Base.metadata.create_all(self.engine)
         self.Session: sessionmaker[Session] = sessionmaker(bind=self.engine)
-        print("[DB] Service started. Mode: WAL enabled.")
+        print(f"[DB] Service started on {self.db_url}")
 
     @staticmethod
     def _enable_wal(dbapi_connection, connection_record):
         cursor = dbapi_connection.cursor()
-        cursor.execute("PRAGMA journal_mode=WAL")
-        cursor.execute("PRAGMA synchronous=NORMAL")
-        cursor.close()
+        try:
+            cursor.execute("PRAGMA journal_mode=WAL")
+            cursor.execute("PRAGMA synchronous=NORMAL")
+        except Exception:
+            # WAL may not be supported for :memory: databases
+            pass
+        finally:
+            cursor.close()
 
     # --- Public Methods ---
 
@@ -244,7 +255,7 @@ class DatabaseService(QObject):
             session.close()
             self.request_finished.emit(resp)
 
-    # --- UPDATED CRUD TASKS (Logic with Status Codes) ---
+    # --- CRUD TASKS ---
 
     def _add_object_task(self, obj_data: DetectionObject) -> None:
         session: Session = self.Session()
@@ -261,7 +272,6 @@ class DatabaseService(QObject):
             target_class_id = obj_data.class_id
             target_class_name = obj_data.object_class
 
-            # Логіка пошуку класу...
             if not target_class_id:
                 obj_class = (
                     session.query(ObjectClassEntity)
@@ -450,7 +460,6 @@ class DatabaseService(QObject):
                 resp.message = "Class not found"
                 return
 
-            # Check duplication if name changed
             if entity.name != class_data.name:
                 existing = (
                     session.query(ObjectClassEntity)

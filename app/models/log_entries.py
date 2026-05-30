@@ -50,14 +50,17 @@ class LogEntry(BaseLogEntry[Union[DetectionEvent, FalseAlarmPayload]]):
 
     def to_dict(self) -> dict:
         """Серіалізація у JSON."""
-
         payload_data = (
             self.payload.to_dict()
             if hasattr(self.payload, "to_dict")
             else self.payload.__dict__
         )
 
-        return {"type": self.type, "timestamp": self.timestamp, "payload": payload_data}
+        return {
+            "type": self.type,
+            "timestamp": self.timestamp,
+            "payload": payload_data,
+        }
 
     @staticmethod
     def from_dict(data: dict) -> "LogEntry":

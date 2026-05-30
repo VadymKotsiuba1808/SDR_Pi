@@ -1,13 +1,24 @@
 #!/bin/bash
 
-PROJECT_DIR="/home/admin/SDR_Pi" 
+PROJECT_DIR="/home/admin/SDR_Pi"
+BRANCH=${1:-dev} 
 
-echo "Start SDR_Pi updating..."
+echo "Start SDR_Pi updating (Branch: $BRANCH)..."
 
 cd "$PROJECT_DIR" || { echo "Directory not found"; exit 1; }
 
 git fetch origin
-git reset --hard origin/dev
+
+# Запитуємо у Git хеш гілки
+git rev-parse --verify origin/"$BRANCH" >/dev/null 2>&1
+
+# Перевіряємо статус виконання (якщо він НЕ дорівнює 0, значить гілки немає)
+if [ $? -ne 0 ]; then
+    echo "❌ Error: Branch '$BRANCH' does not exist on origin!"
+    exit 1
+fi
+
+git reset --hard origin/"$BRANCH"
 
 # --- Verifying and creating .venv ---
 if [ ! -d ".venv" ]; then

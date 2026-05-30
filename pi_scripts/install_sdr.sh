@@ -1,8 +1,9 @@
 #!/bin/bash
 
-echo "🚀 Starting full SDR_Pi setup..."
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BRANCH=${1:-dev} 
+
+echo "🚀 Starting full SDR_Pi setup (Branch: $BRANCH)..."
 
 # Make internal scripts executable
 chmod +x "$SCRIPT_DIR/_os_setup.sh"
@@ -12,7 +13,7 @@ echo "======================================"
 "$SCRIPT_DIR/_os_setup.sh" || { echo "❌ OS setup failed"; exit 1; }
 
 echo "======================================"
-"$SCRIPT_DIR/_app_setup.sh" || { echo "❌ App setup failed"; exit 1; }
+"$SCRIPT_DIR/_app_setup.sh" "$BRANCH" || { echo "❌ App setup failed"; exit 1; }
 
 echo "======================================"
 echo "✅ All setup phases completed successfully!"

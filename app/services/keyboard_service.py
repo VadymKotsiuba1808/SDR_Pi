@@ -9,7 +9,6 @@ from app.protocols import OSService
 
 
 class KeyboardService:
-
     def __init__(self, system: OSService, callback=None):
         self.system_service = system
 
@@ -49,9 +48,9 @@ class KeyboardService:
             self.subprocess = subprocess
 
     def _start_listener(self):
-        if self.system_service.is_windows:
+        if self.system_service.is_windows and self.keyboard:
             self.keyboard.add_hotkey("alt+shift", self.toggle_layout)
-        elif self.system_service.is_linux:
+        elif self.system_service.is_linux and self.pynput_keyboard:
             listener = self.pynput_keyboard.Listener(on_press=self._on_key_press)
             listener.start()
         else:
@@ -61,7 +60,8 @@ class KeyboardService:
     def _on_key_press(self, key):
         try:
             if (
-                key == self.pynput_keyboard.Key.shift
+                self.pynput_keyboard
+                and key == self.pynput_keyboard.Key.shift
                 and self.pynput_keyboard.Controller().pressed(
                     self.pynput_keyboard.Key.alt_l
                 )
@@ -97,6 +97,10 @@ class KeyboardService:
     def _set_windows_layout(self):
         try:
             lid = self.layouts_win[self.current_layout]
+
+            if self.win32api is None or self.win32gui is None:
+                print("Windows API modules not loaded, cannot change layout.")
+                return
 
             self.win32api.LoadKeyboardLayout(lid, 1)
 

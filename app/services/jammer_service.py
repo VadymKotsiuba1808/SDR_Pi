@@ -69,7 +69,7 @@ class JammerService(QObject):
 
     def get_formatted_time(self) -> str:
 
-        if not self.start_time or not self.is_active:
+        if self.start_time is None or not self.is_active:
             return "00:00:00"
 
         secs = self.start_time.secsTo(QDateTime.currentDateTime())

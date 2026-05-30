@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 from typing import Any, Dict, Optional
 
-from PyQt6.QtCore import QByteArray, QObject, QTimer, pyqtSignal, pyqtSlot
+from PyQt6.QtCore import QObject, QTimer, pyqtSignal, pyqtSlot
 from PyQt6.QtNetwork import QHostAddress, QTcpServer, QTcpSocket
 
 from app.models.detection_background import DetectionBackground
@@ -78,7 +78,14 @@ class PiNetworkService(QObject):
         if self.socket:
             self.socket.close()
 
+        if self.server is None:
+            print("[PiNet] Error: Server not initialized.")
+            return
         self.socket = self.server.nextPendingConnection()
+
+        if self.socket is None:
+            print("[PiNet] Error: Failed to get pending connection.")
+            return
         print(f"[PiNet] Client connected: {self.socket.peerAddress().toString()}")
 
         self.connection_status_changed.emit(True)
@@ -157,7 +164,7 @@ class PiNetworkService(QObject):
         while self.socket.canReadLine():
             line = self.socket.readLine().trimmed()
             try:
-                json_str = bytes(line).decode("utf-8")
+                json_str = line.data().decode("utf-8")
                 if not json_str:
                     continue
 
@@ -209,7 +216,7 @@ class PiNetworkService(QObject):
             }
             try:
                 msg = (json.dumps(payload) + "\n").encode("utf-8")
-                self.socket.write(QByteArray(msg))
+                self.socket.write(msg)
                 self.socket.flush()
             except Exception as e:
                 print(f"[PiNet] Send Error: {e}")
@@ -250,7 +257,7 @@ class PiNetworkService(QObject):
         print("[PiNet] Stopping relays working...")
         self.send_packet("stop_alarm")
 
-    def set_rf_range(self, rf_range: list[float]):
+    def set_rf_range(self, rf_range: list[int]) -> None:
         print(f"[PiNet] Setting RF range: {rf_range}")
         self.send_packet("set_rf_range", {"range": rf_range})
 

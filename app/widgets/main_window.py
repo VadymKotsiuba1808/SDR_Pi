@@ -354,8 +354,10 @@ class MainWindow(QMainWindow):
         radar_rect = self.ui.RadarFrame.geometry()
         parent_widget = self.ui.map_background_label.parent()
 
-        if parent_widget is None:
-            print("[MainWindow] Warning: Map background parent widget not found.")
+        if not isinstance(parent_widget, QWidget):
+            print(
+                "[MainWindow] Warning: Map background parent widget not found or is not a QWidget."
+            )
             return
 
         self.add_sizes_map_k = MapViewLogic.calculate_map_expansion_coefficients(

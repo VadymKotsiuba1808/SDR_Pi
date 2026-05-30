@@ -9,7 +9,6 @@ from typing import Any, Dict, List, Optional, Set
 
 import numpy as np
 from PyQt6.QtCore import (
-    QByteArray,
     QCoreApplication,
     QObject,
     QTimer,
@@ -384,7 +383,7 @@ class AdvancedNetworkUtility(QObject):
         while self.client_socket.canReadLine():
             line = self.client_socket.readLine().trimmed()
             try:
-                line_str = bytes(line).decode("utf-8")
+                line_str = line.data().decode("utf-8")
                 if not line_str:
                     continue
 
@@ -655,7 +654,7 @@ class AdvancedNetworkUtility(QObject):
 
         try:
             msg = json.dumps(payload) + "\n"
-            self.client_socket.write(QByteArray(msg.encode("utf-8")))
+            self.client_socket.write(msg.encode("utf-8"))
             self.client_socket.flush()
         except Exception as e:
             print(f"[NetService] Send Error: {e}")

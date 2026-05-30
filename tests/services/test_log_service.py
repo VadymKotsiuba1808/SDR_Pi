@@ -64,13 +64,15 @@ def test_add_log_and_force_flush(log_service: LogService, temp_logs_dir: str) ->
 
     # Перевіряємо наявність файлу сесії
     files = [f for f in os.listdir(temp_logs_dir) if f.startswith("session_")]
-    assert len(files) >= 1
+    assert len(files) >= 1, "Log session file should be created"
 
     # Завантажуємо дані та перевіряємо вміст
     loaded_entries = log_service.load_session_data(files[0])
-    assert len(loaded_entries) >= 1
-    assert loaded_entries[0].type == LogType.DETECTION
-    assert is_detection(loaded_entries[0]) and loaded_entries[0].payload.id == "test_id"
+    assert len(loaded_entries) >= 1, "Should load at least 1 entry"
+    assert loaded_entries[0].type == LogType.DETECTION, "Loaded log type mismatch"
+    assert (
+        is_detection(loaded_entries[0]) and loaded_entries[0].payload.id == "test_id"
+    ), "Loaded event ID mismatch"
 
 
 def test_load_non_existent_session(log_service: LogService) -> None:
@@ -78,7 +80,7 @@ def test_load_non_existent_session(log_service: LogService) -> None:
     Тест завантаження даних з неіснуючого файлу.
     """
     entries = log_service.load_session_data("non_existent.jsonl")
-    assert entries == []
+    assert entries == [], "Should return empty list for non-existent session file"
 
 
 def test_get_available_sessions(log_service: LogService, temp_logs_dir: str) -> None:
@@ -91,8 +93,10 @@ def test_get_available_sessions(log_service: LogService, temp_logs_dir: str) -> 
         f.write('{"type": "info", "timestamp": "2024-01-01T12:00:00", "payload": {}}\n')
 
     sessions = log_service.get_available_sessions()
-    assert len(sessions) >= 1
-    assert any("2024-01-01" in s.filename for s in sessions)
+    assert len(sessions) >= 1, "Should find at least 1 session file"
+    assert any("2024-01-01" in s.filename for s in sessions), (
+        "Should find the manually created session file"
+    )
 
 
 def test_session_rotation_by_date(log_service: LogService, temp_logs_dir: str) -> None:
@@ -108,8 +112,10 @@ def test_session_rotation_by_date(log_service: LogService, temp_logs_dir: str) -
     log_service.force_flush()
 
     # Має з'явитися файл сесії, де self._current_session_date буде "2023-01-01"
-    assert log_service._current_session_date == "2023-01-01"
+    assert log_service._current_session_date == "2023-01-01", (
+        "Service should rotate session date to match log entry timestamp"
+    )
 
     # Перевіряємо, що в списку файлів є хоча б один (сервіс створить файл з поточним часом у назві)
     files = os.listdir(temp_logs_dir)
-    assert len(files) >= 1
+    assert len(files) >= 1, "Log files should exist after flush"

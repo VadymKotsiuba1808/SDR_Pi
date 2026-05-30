@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Union
+from typing import Any, Generic, TypeGuard, TypeVar, Union
 
 from app.models.detection_event import DetectionEvent
 
@@ -23,24 +23,24 @@ class FalseAlarmPayload:
         )
 
 
+LogPayload = Union[DetectionEvent, FalseAlarmPayload]
+T = TypeVar("T", bound=LogPayload)
+
+
 @dataclass
-class LogEntry:
+class BaseLogEntry(Generic[T]):
+    """Базовий клас логу, який вміє підлаштовувати тип payload."""
+
+    type: str
+    payload: T
+    timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
+
+
+class LogEntry(BaseLogEntry[Union[DetectionEvent, FalseAlarmPayload]]):
     """
     Головний клас запису в лог.
     Відповідає структурі JSON: {type: "...", timestamp: "...", payload: {...}}
     """
-
-    type: str
-    payload: Union[DetectionEvent, FalseAlarmPayload]
-    timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
-
-    @property
-    def is_detection(self):
-        return self.type == LogType.DETECTION
-
-    @property
-    def is_false_alarm(self):
-        return self.type == LogType.FALSE_ALARM
 
     def to_dict(self) -> dict:
         """Серіалізація у JSON."""
@@ -66,3 +66,15 @@ class LogEntry:
             payload_obj = DetectionEvent.from_dict(raw_payload)
 
         return LogEntry(type=entry_type, timestamp=timestamp, payload=payload_obj)
+
+
+def is_detection(log: BaseLogEntry[Any]) -> TypeGuard[BaseLogEntry[DetectionEvent]]:
+    """Вказує, що у цього логу payload є DetectionEvent."""
+    return log.type == "detection"
+
+
+def is_false_alarm(
+    log: BaseLogEntry[Any],
+) -> TypeGuard[BaseLogEntry[FalseAlarmPayload]]:
+    """Вказує, що у цього логу payload є FalseAlarmPayload."""
+    return log.type == "false_alarm"

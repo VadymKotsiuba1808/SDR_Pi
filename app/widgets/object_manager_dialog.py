@@ -193,28 +193,33 @@ class ObjectManagerDialog(QDialog):
 
         match response.operation:
             case DbOperation.ADD_OBJECT:
-                self.add_cache_obj(DetectionObject.from_dict(response.data))
+                if response.data:
+                    self.add_cache_obj(DetectionObject.from_dict(response.data))
             case DbOperation.UPDATE_OBJECT:
-                self.update_cache_obj(DetectionObject.from_dict(response.data))
+                if response.data:
+                    self.update_cache_obj(DetectionObject.from_dict(response.data))
             case DbOperation.DELETE_OBJECT:
-                id = response.data.get("id")
-                if id:
-                    self.delete_cache_obj(id)
+                if isinstance(response.data, dict):
+                    id = response.data.get("id")
+                    if id:
+                        self.delete_cache_obj(id)
             case DbOperation.GET_OBJECTS_PAGE:
-                items = response.data.get("items")
-                page = response.data.get("page")
-                total = response.data.get("total")
-                if items and total and page:
-                    obj_list = [DetectionObject.from_dict(item) for item in items]
+                if isinstance(response.data, dict):
+                    items = response.data.get("items")
+                    page = response.data.get("page")
+                    total = response.data.get("total")
+                    if items and total and page:
+                        obj_list = [DetectionObject.from_dict(item) for item in items]
 
-                    self._populate_table_from_db(obj_list, page, total)
+                        self._populate_table_from_db(obj_list, page, total)
             case DbOperation.GET_CLASSES:
-                classes_raw = response.data.get("classes", [])
-                classes_list = [ObjectClass.from_dict(c) for c in classes_raw]
+                if isinstance(response.data, dict):
+                    classes_raw = response.data.get("classes", [])
+                    classes_list = [ObjectClass.from_dict(c) for c in classes_raw]
 
-                if self._waiting_classes_for_editor:
-                    self._waiting_classes_for_editor = False
-                    self._open_editor(classes_list)
+                    if self._waiting_classes_for_editor:
+                        self._waiting_classes_for_editor = False
+                        self._open_editor(classes_list)
 
         print(f"[ObjectManager] DB Operation '{response.operation}': ...")
 
@@ -275,8 +280,8 @@ class ObjectManagerDialog(QDialog):
         if rf_list:
             if len(rf_list) == 1:
                 rf_arr = rf_list[0].split(RF_PARAMS__DIVIDER)
-                min = round(convert_hz_to_mhz(rf_arr[0]), 1)
-                max = round(convert_hz_to_mhz(rf_arr[1]), 1)
+                min = round(convert_hz_to_mhz(float(rf_arr[0])), 1)
+                max = round(convert_hz_to_mhz(float(rf_arr[1])), 1)
                 rf_str = self.tr("{}-{} MHz").format(min, max)
             else:
                 rf_str = self.tr("{} freq(s)").format(len(rf_list))

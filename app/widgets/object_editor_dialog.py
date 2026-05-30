@@ -350,7 +350,7 @@ class ObjectEditorDialog(QDialog):
         raw_string = f"{f_min_hz}-{f_max_hz}"
 
         if self._check_is_duplicate(
-            self.ui.lstRFFreqs, raw_string, [f_min_hz, f_max_hz]
+            self.ui.lstRFFreqs, raw_string, (f_min_hz, f_max_hz)
         ):
             return
 

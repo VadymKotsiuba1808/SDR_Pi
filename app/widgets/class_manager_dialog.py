@@ -130,20 +130,24 @@ class ClassManagerDialog(QDialog):
 
         match response.operation:
             case DbOperation.ADD_CLASS:
-                self.add_cache_class(ObjectClass.from_dict(response.data))
+                if response.data:
+                    self.add_cache_class(ObjectClass.from_dict(response.data))
             case DbOperation.UPDATE_CLASS | DbOperation.RENAME_CLASS:
-                self.update_cache_class(ObjectClass.from_dict(response.data))
+                if response.data:
+                    self.update_cache_class(ObjectClass.from_dict(response.data))
             case DbOperation.DELETE_CLASS:
-                id = response.data.get("id")
-                if id:
-                    self.delete_cache_class(id)
+                if isinstance(response.data, dict):
+                    id = response.data.get("id")
+                    if id:
+                        self.delete_cache_class(id)
             case DbOperation.GET_CLASSES:
-                classes_raw = response.data.get("classes", [])
-                classes_list = [ObjectClass.from_dict(c) for c in classes_raw]
+                if isinstance(response.data, dict):
+                    classes_raw = response.data.get("classes", [])
+                    classes_list = [ObjectClass.from_dict(c) for c in classes_raw]
 
-                if self._waiting_classes:
-                    self._waiting_classes = False
-                    self._populate_list(classes_list)
+                    if self._waiting_classes:
+                        self._waiting_classes = False
+                        self._populate_list(classes_list)
 
         print(f"[ObjectManager] DB Operation '{response.operation}': ...")
 

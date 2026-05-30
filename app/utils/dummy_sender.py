@@ -311,7 +311,8 @@ class AdvancedNetworkUtility(QObject):
         # 2. Оновлення симуляції (якщо це успішна зміна об'єктів або перше завантаження)
         if response.is_success:
             if response.operation == DbOperation.GET_ALL_OBJECTS:
-                self._on_templates_loaded(response.data)
+                if isinstance(response.data, dict):
+                    self._on_templates_loaded(response.data)
 
             elif response.operation in [
                 DbOperation.ADD_OBJECT,

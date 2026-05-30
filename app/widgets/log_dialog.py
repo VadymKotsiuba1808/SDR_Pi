@@ -15,7 +15,12 @@ from PyQt6.QtWidgets import (
 from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
 from app.models.detection_background import DetectionBackground
 from app.models.detection_event import DetectionEvent
-from app.models.log_entries import FalseAlarmPayload, LogEntry
+from app.models.log_entries import (
+    FalseAlarmPayload,
+    LogEntry,
+    is_detection,
+    is_false_alarm,
+)
 from app.models.object_class import ObjectClass
 from app.models.source_type import SourceType
 from app.protocols import LangSettings
@@ -209,9 +214,9 @@ class LogDialog(QDialog):
             except ValueError:
                 pass
 
-            if type_idx == 1 and not e.is_detection:
+            if type_idx == 1 and not is_detection(e):
                 continue
-            if type_idx == 2 and not e.is_false_alarm:
+            if type_idx == 2 and not is_false_alarm(e):
                 continue
 
             if class_filter:
@@ -226,13 +231,13 @@ class LogDialog(QDialog):
                 if name_filter not in search_text:
                     continue
 
-            if e.is_detection:
-                if not (dist_min <= payload.distance_km <= dist_max):
+            if is_detection(e):
+                if not (dist_min <= e.payload.distance_km <= dist_max):
                     continue
-                if not (angle_min <= payload.angle <= angle_max):
+                if not (angle_min <= e.payload.angle <= angle_max):
                     continue
 
-            res.append(e)
+            res.append(cast(LogEntry, e))
 
         self.filtered_entries = res
         print(f"[LogDialog] Filter result: {len(res)} entries found.")
@@ -260,7 +265,7 @@ class LogDialog(QDialog):
         return {
             e.payload.detection_id
             for e in self.all_entries
-            if e.is_false_alarm and hasattr(e.payload, "detection_id")
+            if is_false_alarm(e) and hasattr(e.payload, "detection_id")
         }
 
     def _fill_table(self, entries: List[LogEntry]) -> None:
@@ -280,7 +285,7 @@ class LogDialog(QDialog):
 
             time_item = QTableWidgetItem(time_str)
 
-            if entry.is_detection:
+            if is_detection(entry):
                 d1 = datetime.fromisoformat(entry.payload.timestamp)
                 d2 = datetime.fromisoformat(entry.timestamp)
                 latency_ms = int((d2 - d1).total_seconds() * 1000)
@@ -288,24 +293,26 @@ class LogDialog(QDialog):
 
             t.setItem(row_idx, 0, time_item)
 
-            if entry.is_detection:
-                data: DetectionEvent = entry.payload
-                t.setItem(row_idx, 1, QTableWidgetItem(data.type))
-                short_id = data.id[:25]
+            if is_detection(entry):
+                detection_data: DetectionEvent = entry.payload
+                t.setItem(row_idx, 1, QTableWidgetItem(detection_data.type))
+                short_id = detection_data.id[:25]
                 name_item = QTableWidgetItem(
-                    self.tr("{}\nID: {}...").format(data.name, short_id)
+                    self.tr("{}\nID: {}...").format(detection_data.name, short_id)
                 )
-                name_item.setToolTip(self.tr("Full ID: {}").format(data.id))
+                name_item.setToolTip(self.tr("Full ID: {}").format(detection_data.id))
                 t.setItem(row_idx, 2, name_item)
-                t.setItem(row_idx, 3, QTableWidgetItem(data.object_class))
+                t.setItem(row_idx, 3, QTableWidgetItem(detection_data.object_class))
 
                 formatted_frequency: str
-                if data.type == SourceType.RF:
+                if detection_data.type == SourceType.RF:
                     formatted_frequency = self.tr("{:.1f} MHz").format(
-                        convert_hz_to_mhz(data.frequency_hz)
+                        convert_hz_to_mhz(detection_data.frequency_hz)
                     )
                 else:
-                    formatted_frequency = self.tr("{:.0f} Hz").format(data.frequency_hz)
+                    formatted_frequency = self.tr("{:.0f} Hz").format(
+                        detection_data.frequency_hz
+                    )
 
                 t.setItem(
                     row_idx,
@@ -317,30 +324,36 @@ class LogDialog(QDialog):
                     5,
                     QTableWidgetItem(
                         self.tr("{:.3f}km / {:.0f}°").format(
-                            data.distance_km, data.angle
+                            detection_data.distance_km, detection_data.angle
                         )
                     ),
                 )
 
-                status_text = self.tr("NO") if data.id in false_ids else self.tr("YES")
+                status_text = (
+                    self.tr("NO") if detection_data.id in false_ids else self.tr("YES")
+                )
                 item_status = QTableWidgetItem(status_text)
                 item_status.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-                if data.id in false_ids:
+                if detection_data.id in false_ids:
                     item_status.setForeground(Qt.GlobalColor.yellow)
                 t.setItem(row_idx, 6, item_status)
 
-            elif entry.is_false_alarm:
-                data: FalseAlarmPayload = entry.payload
-                short_id = data.detection_id[:25]
+            elif is_false_alarm(entry):
+                false_alarm_data: FalseAlarmPayload = entry.payload
+                short_id = false_alarm_data.detection_id[:25]
                 type_item = QTableWidgetItem(self.tr("FALSE ALARM"))
                 type_item.setForeground(Qt.GlobalColor.red)
                 type_item.setFont(QFont("Roboto", 10, QFont.Weight.Bold))
                 t.setItem(row_idx, 1, type_item)
                 ref_item = QTableWidgetItem(
-                    self.tr("Ref: {}\nID: {}...").format(data.name, short_id)
+                    self.tr("Ref: {}\nID: {}...").format(
+                        false_alarm_data.name, short_id
+                    )
                 )
 
-                ref_item.setToolTip(self.tr("Full ID: {}").format(data.detection_id))
+                ref_item.setToolTip(
+                    self.tr("Full ID: {}").format(false_alarm_data.detection_id)
+                )
                 t.setItem(row_idx, 2, ref_item)
                 for c in range(3, 7):
                     t.setItem(row_idx, c, QTableWidgetItem("-"))
@@ -352,7 +365,7 @@ class LogDialog(QDialog):
         self.ui.cmbTargetObject.clear()
         seen = set()
         for e in self.filtered_entries:
-            if e.is_detection:
+            if is_detection(e):
                 key = (e.payload.id, e.payload.name)
                 if key not in seen:
                     seen.add(key)
@@ -367,7 +380,7 @@ class LogDialog(QDialog):
         self.ui.cmbSituationTime.clear()
         timestamps = set()
         for e in self.filtered_entries:
-            if e.is_detection:
+            if is_detection(e):
                 try:
                     dt = datetime.fromisoformat(e.timestamp)
                     time_key = dt.strftime("%Y-%m-%d %H:%M")
@@ -391,7 +404,7 @@ class LogDialog(QDialog):
         idx = self.ui.cmbChartTypeGeneral.currentIndex()
         t = "timeline" if idx == 0 else "bar"
         self.chart_gen.set_chart_type(t)
-        detections = [e.payload for e in self.filtered_entries if e.is_detection]
+        detections = [e.payload for e in self.filtered_entries if is_detection(e)]
         false_ids = self._get_false_ids()
         self.chart_gen.set_data(detections, false_ids)
 
@@ -415,7 +428,7 @@ class LogDialog(QDialog):
         track_events = [
             e.payload
             for e in self.all_entries
-            if e.is_detection and e.payload.id == target_id
+            if is_detection(e) and e.payload.id == target_id
         ]
 
         if not track_events:
@@ -511,7 +524,7 @@ class LogDialog(QDialog):
 
         active_objects: List[DetectionEvent] = []
         for e in self.all_entries:
-            if not e.is_detection:
+            if not is_detection(e):
                 continue
             try:
                 dt = datetime.fromisoformat(e.timestamp)

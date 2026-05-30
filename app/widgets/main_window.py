@@ -323,12 +323,7 @@ class MainWindow(QMainWindow):
 
     def _setup_timers(self) -> None:
         self.timer_1sec = QTimer(self)
-        self.timer_1sec.timeout.connect(
-            lambda: (
-                self.update_time_and_date(),
-                self.update_false_alarm_button_state(),
-            )
-        )
+        self.timer_1sec.timeout.connect(self._on_1sec_timeout)
         self.timer_1sec.start(TIMER_INTERVAL_TIME_UPDATE)
 
         self.timer_radar = QTimer(self)
@@ -342,6 +337,11 @@ class MainWindow(QMainWindow):
         self.timer_gps = QTimer(self)
         self.timer_gps.timeout.connect(self.request_gps)
         self.timer_gps.start(self.settings_service.gps_interval_s * 1000)
+
+    def _on_1sec_timeout(self) -> None:
+        """Обробник щосекундного таймера."""
+        self.update_time_and_date()
+        self.update_false_alarm_button_state
 
     def _start_async_tasks(self) -> None:
         """

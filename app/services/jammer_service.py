@@ -14,7 +14,7 @@ class JammerService(QObject):
         self.pi_network = pi_network
         self.settings = settings_service
         self.is_active = False
-        self.start_time = None
+        self.start_time: QDateTime | None = None
 
         self.auto_stop_timer = QTimer()
         self.auto_stop_timer.setSingleShot(True)

@@ -76,7 +76,8 @@ class StaticChartWidget(QWidget):
                     return d
         return self.data[-1]
 
-    def paintEvent(self, event: QPaintEvent) -> None:
+    def paintEvent(self, a0: QPaintEvent | None) -> None:
+        event = a0
         p = QPainter(self)
         p.setRenderHint(QPainter.RenderHint.Antialiasing)
         p.fillRect(self.rect(), ChartTheme.BG)
@@ -129,7 +130,15 @@ class StaticChartWidget(QWidget):
         elif self.chart_type == "bar":
             self.standard_renderer.render_bar(p, self.rect(), self.data)
 
-    def mouseMoveEvent(self, event: QMouseEvent) -> None:
+        super().paintEvent(event)
+
+    def mouseMoveEvent(self, a0: QMouseEvent | None) -> None:
+        event = a0
+
+        if event is None:
+            super().mouseMoveEvent(event)
+            return
+
         pos = event.pos()
 
         if self.chart_type in ["spectrum", "waterfall"]:

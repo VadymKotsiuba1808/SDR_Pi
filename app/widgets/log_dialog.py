@@ -295,7 +295,7 @@ class LogDialog(QDialog):
 
             if is_detection(entry):
                 detection_data: DetectionEvent = entry.payload
-                t.setItem(row_idx, 1, QTableWidgetItem(detection_data.type))
+                t.setItem(row_idx, 1, QTableWidgetItem(str(detection_data.type)))
                 short_id = detection_data.id[:25]
                 name_item = QTableWidgetItem(
                     self.tr("{}\nID: {}...").format(detection_data.name, short_id)

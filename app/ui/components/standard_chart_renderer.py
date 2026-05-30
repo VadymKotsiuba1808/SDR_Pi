@@ -229,7 +229,7 @@ class StandardChartRenderer(TranslatorMixin):
     def _group_by_id(
         self, data: List[DetectionEvent]
     ) -> Dict[str, List[DetectionEvent]]:
-        grouped = {}
+        grouped: Dict[str, List[DetectionEvent]] = {}
         for d in data:
             if d.id not in grouped:
                 grouped[d.id] = []

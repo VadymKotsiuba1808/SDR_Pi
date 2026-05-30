@@ -80,7 +80,7 @@ class SetMapDialog(QDialog):
             uic.loadUi("app/ui/set_map_dialog.ui", self)
             self.ui = cast(Ui_SetMapDialog, self)
 
-    def _setup_variables(self):
+    def _setup_variables(self) -> None:
         self.original_pixmap: Optional[QPixmap] = None
         self.image_path: str = ""
         self.current_scale: float = 1.0

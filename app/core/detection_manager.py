@@ -27,7 +27,7 @@ class DetectionManager(QObject):
         self._setup_variables()
         self._setup_timers()
 
-    def _setup_variables(self):
+    def _setup_variables(self) -> None:
         self.active_targets: Dict[str, RadarTarget] = {}
 
         self.index_history: Dict[str, int] = {}
@@ -38,7 +38,7 @@ class DetectionManager(QObject):
 
         self.update_requested: bool = False
 
-    def _setup_timers(self):
+    def _setup_timers(self) -> None:
         self.ttl_timer: QTimer = QTimer(self)
         self.ttl_timer.timeout.connect(self._check_ttl)
         self.ttl_timer.start(1000)

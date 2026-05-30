@@ -103,7 +103,9 @@ class DynamicChartWidget(QWidget):
         self.img_item.setLookupTable(color_map.getLookupTable(0.0, 1.0, 256))
 
     def _connect_handlers(self) -> None:
-        self.win.scene().sigMouseMoved.connect(self._on_mouse_moved)
+        scene = self.win.scene()
+        if scene is not None:
+            scene.sigMouseMoved.connect(self._on_mouse_moved)
 
     def clear_charts(self) -> None:
         """Повністю очищує графіки та буфери."""
@@ -223,6 +225,9 @@ class DynamicChartWidget(QWidget):
         scene_pos: QPointF,
         is_waterfall: bool,
     ) -> None:
+        if plot.vb is None:
+            return
+
         mouse_point = plot.vb.mapSceneToView(scene_pos)
         x_freq = mouse_point.x()
         y_val = mouse_point.y()

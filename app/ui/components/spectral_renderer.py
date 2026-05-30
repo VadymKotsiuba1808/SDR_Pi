@@ -2,7 +2,7 @@ import math
 from typing import Optional
 
 import numpy as np
-from PyQt6.QtCore import QPointF, QRect, Qt
+from PyQt6.QtCore import QPoint, QPointF, QRect, Qt
 from PyQt6.QtGui import (
     QBrush,
     QColor,
@@ -131,14 +131,14 @@ class SpectralChartRenderer(TranslatorMixin):
 
     def calculate_cursor(
         self,
-        pos: QPointF,
+        pos: QPoint,
         rect: QRect,
         background: SpectralData,
         chart_type: str,
         event: Optional[DetectionEvent] = None,
     ) -> CursorState:
 
-        check_pos = pos.toPoint() if hasattr(pos, "toPoint") else pos
+        check_pos = pos
 
         if not rect.contains(check_pos) or not background:
             return CursorState(visible=False)
@@ -260,7 +260,7 @@ class SpectralChartRenderer(TranslatorMixin):
         p.drawPolyline(poly)
 
     def _draw_grid(
-        self, p: QPainter, rect: QRect, data: SpectralData, type: str, mode: str
+        self, p: QPainter, rect: QRect, data: SpectralData, type: SourceType, mode: str
     ):
         p.setFont(QFont("Arial", 8))
         grid_pen = QPen(ChartTheme.GRID_FAINT, 1, Qt.PenStyle.DashLine)
@@ -300,7 +300,7 @@ class SpectralChartRenderer(TranslatorMixin):
         steps_y = 6
         for i in range(steps_y):
             ratio = i / (steps_y - 1)
-            y = 0
+            y: float = 0
             label = ""
 
             if mode == "dbm":

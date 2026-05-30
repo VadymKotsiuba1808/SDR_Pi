@@ -156,7 +156,7 @@ class LogService:
         self._flush_buffer()
 
     def get_available_sessions(self) -> List[LogSession]:
-        sessions = []
+        sessions: List[LogSession] = []
         if not os.path.exists(LOGS_DIR_PATH):
             return sessions
 

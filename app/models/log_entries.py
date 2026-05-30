@@ -57,6 +57,7 @@ class LogEntry(BaseLogEntry[Union[DetectionEvent, FalseAlarmPayload]]):
         entry_type = data.get("type", LogType.DETECTION)
         timestamp = data.get("timestamp", datetime.now().isoformat())
         raw_payload = data.get("payload", {})
+        payload_obj: Union[DetectionEvent, FalseAlarmPayload]
 
         if entry_type == LogType.DETECTION:
             payload_obj = DetectionEvent.from_dict(raw_payload)

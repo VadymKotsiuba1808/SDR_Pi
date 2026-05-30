@@ -8,9 +8,12 @@ UI Утиліти.
 
 
 def update_element_styles(element: QWidget) -> None:
-    element.style().unpolish(element)
-    element.style().polish(element)
-    element.update()
+    style = element.style()
+
+    if style is not None:
+        style.unpolish(element)
+        style.polish(element)
+        element.update()
 
 
 def move_dialog_down(dialog: QWidget, parent_geo: QRect, offset_y: int = 80) -> None:

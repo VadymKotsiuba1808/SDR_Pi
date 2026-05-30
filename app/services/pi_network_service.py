@@ -180,16 +180,16 @@ class PiNetworkService(QObject):
                     bg_obj = DetectionBackground.from_dict(data)
                     self.background_received.emit(bg_obj)
                 elif action == "gps_position":
-                    obj = GPSData.from_dict(data)
-                    self.gps_received.emit(obj)
+                    gps_obj = GPSData.from_dict(data)
+                    self.gps_received.emit(gps_obj)
 
                 elif action == "rf_stream":
-                    obj = StreamDataChunk.from_dict(data, SourceType.RF)
-                    self.rf_data_received.emit(obj)
+                    rf_stream_obj = StreamDataChunk.from_dict(data, SourceType.RF)
+                    self.rf_data_received.emit(rf_stream_obj)
 
                 elif action == "sound_stream":
-                    obj = StreamDataChunk.from_dict(data, SourceType.SOUND)
-                    self.sound_data_received.emit(obj)
+                    sound_stream_obj = StreamDataChunk.from_dict(data, SourceType.SOUND)
+                    self.sound_data_received.emit(sound_stream_obj)
 
                 elif action == "db_operation_result":
                     response_obj = ServiceResponse.from_dict(data)

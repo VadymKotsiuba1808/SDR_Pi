@@ -20,7 +20,6 @@ class Setting(NamedTuple):
 
 
 class SettingsService(QObject):
-
     settings_changed = pyqtSignal()
 
     # Pinetwork
@@ -156,11 +155,11 @@ class SettingsService(QObject):
         if not isinstance(value, dict):
             return {}
 
-        serialized = {}
+        serialized: Dict[str, dict] = {}
         for target, rule in value.items():
             key_str = target.value if isinstance(target, Enum) else str(target)
 
-            rule_dict = rule.to_dict() if hasattr(rule, "to_dict") else rule
+            rule_dict = rule.to_dict()
             serialized[key_str] = rule_dict
 
         return serialized

@@ -22,11 +22,11 @@ class RadarRenderer:
     """
 
     def __init__(self):
-        self.radar_angle = 0
+        self.radar_angle: int = 0
 
         # Кеш для обробки кліків
-        self._last_scale = 1.0
-        self._last_center = (0, 0)
+        self._last_scale: float = 1.0
+        self._last_center: tuple[float, float] = (0, 0)
         self._current_targets: List[RadarTarget] = []
 
     def draw_detections(

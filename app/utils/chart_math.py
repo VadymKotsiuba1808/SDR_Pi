@@ -56,7 +56,7 @@ class ChartMath:
         """
         h, w = data.shape
         # Format_Indexed8 означає, що значення пікселя (uint8) - це індекс у таблиці кольорів
-        img = QImage(data.data, w, h, w, QImage.Format.Format_Indexed8)
+        img = QImage(data.data.tobytes(), w, h, w, QImage.Format.Format_Indexed8)
         img.setColorTable(cls._get_color_table())
         return img.copy()
 

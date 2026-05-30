@@ -13,9 +13,8 @@ from app.models.source_type import SourceType
 
 @dataclass
 class DetectionEvent:
-
     id: str
-    type: str  # "RF" або "Sound"
+    type: SourceType  # "RF" або "Sound"
     name: str
     object_class: str
     confidence: float

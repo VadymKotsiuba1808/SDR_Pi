@@ -7,11 +7,9 @@ class TranslatorMixin:
     Автоматично визначає ім'я класу як контекст перекладу.
     """
 
-    def tr(self, text: str, disambiguation: str = None, n: int = -1) -> str:
-        return QCoreApplication.translate(
-            self.__class__.__name__, text, disambiguation, n
-        )
+    def tr(self, text: str) -> str:
+        return QCoreApplication.translate(self.__class__.__name__, text)
 
     @classmethod
-    def tr_s(cls, text: str, disambiguation: str = None, n: int = -1) -> str:
-        return QCoreApplication.translate(cls.__name__, text, disambiguation, n)
+    def tr_s(cls, text: str) -> str:
+        return QCoreApplication.translate(cls.__name__, text)

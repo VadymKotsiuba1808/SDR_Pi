@@ -79,7 +79,7 @@ class SettingsDialog(QDialog):
             uic.loadUi("app/ui/settings_dialog.ui", self)
             self.ui = cast(Ui_SettingsDialog, self)
 
-    def _setup_state_variables(self):
+    def _setup_state_variables(self) -> None:
         self.translator = QTranslator()
 
         self.new_settings: Optional[SettingsData] = None

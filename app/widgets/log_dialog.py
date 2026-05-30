@@ -186,7 +186,7 @@ class LogDialog(QDialog):
     def _apply_filters(self) -> None:
         print("[LogDialog] Applying filters...")
         name_filter = self.ui.inpFilterName.text().lower()
-        class_filter: str = None
+        class_filter: str | None = None
         if self.ui.cmbFilterClass.currentIndex() != 0:
             class_filter = self.ui.cmbFilterClass.currentText().lower()
         type_idx = self.ui.cmbFilterType.currentIndex()

@@ -96,7 +96,11 @@ class ChangePwdDialog(QDialog):
         self.ui.errorWidget_2.setVisible(False)
 
     def hide_unhide_password(self) -> None:
-        button: QPushButton = self.sender()
+        button = self.sender()
+
+        if not isinstance(button, QPushButton):
+            return
+
         target_line_edit: Optional[QLineEdit] = None
 
         if button == self.ui.passwordHideBtn:

@@ -18,13 +18,17 @@ def test_calculate_scale_factor():
     scale = MapViewLogic.calculate_scale_factor(
         radar_radius_km=1.0, radar_view_width_px=500, map_resolution_km_px=0.01
     )
-    assert math.isclose(scale, 2.5)
+    assert math.isclose(scale, 2.5), f"Scale factor calculation error: expected 2.5, got {scale}"
 
 
 def test_calculate_scale_factor_zero():
     """Тест граничних значень для масштабування."""
-    assert MapViewLogic.calculate_scale_factor(0, 500, 0.01) == 0.0
-    assert MapViewLogic.calculate_scale_factor(1.0, 500, 0) == 0.0
+    assert (
+        MapViewLogic.calculate_scale_factor(0, 500, 0.01) == 0.0
+    ), "Scale factor should be 0 when radar radius is 0"
+    assert (
+        MapViewLogic.calculate_scale_factor(1.0, 500, 0) == 0.0
+    ), "Scale factor should be 0 when map resolution is 0"
 
 
 def test_generate_view_pixmap_invalid_params(qtbot):
@@ -33,9 +37,9 @@ def test_generate_view_pixmap_invalid_params(qtbot):
         source_map=QPixmap(),
         view_size=QSize(100, 100),
         radar_center_relative=QPointF(0, 0),
-        scale_factor=1.0
+        scale_factor=1.0,
     )
-    assert pixmap.isNull()
+    assert pixmap.isNull(), "Generated pixmap should be null for empty source map"
 
 
 def test_calculate_map_expansion_coefficients():
@@ -52,10 +56,20 @@ def test_calculate_map_expansion_coefficients():
 
     # k_w = 901 / 100 = 9.01
     # k_w_final = 9.01 * 1.05 = 9.4605
-    assert math.isclose(coeffs[0], 9.4605)
-    assert math.isclose(coeffs[1], 9.4605)
+    assert math.isclose(
+        coeffs[0], 9.4605
+    ), f"Width expansion coefficient error: expected ~9.4605, got {coeffs[0]}"
+    assert math.isclose(
+        coeffs[1], 9.4605
+    ), f"Height expansion coefficient error: expected ~9.4605, got {coeffs[1]}"
 
 
 def test_calculate_map_expansion_zero():
     """Тест розрахунку коефіцієнтів при нульових розмірах."""
-    assert MapViewLogic.calculate_map_expansion_coefficients(QRect(0,0,0,0), 100, 100) == [1.0, 1.0]
+    assert MapViewLogic.calculate_map_expansion_coefficients(
+        QRect(0, 0, 0, 0), 100, 100
+    ) == [
+        1.0,
+        1.0,
+    ], "Expansion coefficients should be 1.0 for empty radar rect"
+

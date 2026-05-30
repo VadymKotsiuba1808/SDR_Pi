@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 
 from app.models.detection_event import DetectionEvent
-from app.models.log_entries import LogEntry, LogType
+from app.models.log_entries import LogEntry, LogType, is_detection
 from app.models.source_type import SourceType
 from app.services.log_service import LogService
 
@@ -48,7 +48,7 @@ def create_detection_event(event_id="t1"):
         timestamp=datetime.now().isoformat(),
         distance_km=1.5,
         angle=45.0,
-        frequency_hz=2400.0
+        frequency_hz=2400.0,
     )
 
 
@@ -70,7 +70,7 @@ def test_add_log_and_force_flush(log_service: LogService, temp_logs_dir: str) ->
     loaded_entries = log_service.load_session_data(files[0])
     assert len(loaded_entries) >= 1
     assert loaded_entries[0].type == LogType.DETECTION
-    assert loaded_entries[0].payload.id == "test_id"
+    assert is_detection(loaded_entries[0]) and loaded_entries[0].payload.id == "test_id"
 
 
 def test_load_non_existent_session(log_service: LogService) -> None:
@@ -109,7 +109,7 @@ def test_session_rotation_by_date(log_service: LogService, temp_logs_dir: str) -
 
     # Має з'явитися файл сесії, де self._current_session_date буде "2023-01-01"
     assert log_service._current_session_date == "2023-01-01"
-    
+
     # Перевіряємо, що в списку файлів є хоча б один (сервіс створить файл з поточним часом у назві)
     files = os.listdir(temp_logs_dir)
     assert len(files) >= 1

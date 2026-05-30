@@ -33,8 +33,10 @@ def test_jammer_start(jammer_service, mock_pi_network, mock_jammer_settings):
     """Тест запуску глушилки."""
     jammer_service.start()
 
-    assert jammer_service.is_active is True
-    assert jammer_service.start_time is not None
+    assert jammer_service.is_active is True, "Jammer should be active after start()"
+    assert jammer_service.start_time is not None, (
+        "start_time should be set after start()"
+    )
     mock_pi_network.request_alarm_start.assert_called_once_with(["K1", "K2"])
 
 
@@ -43,8 +45,10 @@ def test_jammer_stop(jammer_service, mock_pi_network):
     jammer_service.start()
     jammer_service.stop()
 
-    assert jammer_service.is_active is False
-    assert jammer_service.start_time is None
+    assert jammer_service.is_active is False, "Jammer should not be active after stop()"
+    assert jammer_service.start_time is None, (
+        "start_time should be cleared after stop()"
+    )
     mock_pi_network.request_alarm_stop.assert_called_once()
 
 
@@ -65,15 +69,19 @@ def test_jammer_auto_stop(jammer_service, mock_jammer_settings, qtbot):
     ):
         pass
 
-    assert jammer_service.is_active is False
+    assert jammer_service.is_active is False, "Jammer should auto-stop after interval"
 
 
 def test_get_formatted_time(jammer_service):
     """Тест форматування часу роботи."""
-    assert jammer_service.get_formatted_time() == "00:00:00"
+    assert jammer_service.get_formatted_time() == "00:00:00", (
+        "Default time should be 00:00:00"
+    )
 
     jammer_service.start()
     # Штучно зміщуємо час старту на 1 годину 5 хвилин 10 секунд назад
     jammer_service.start_time = QDateTime.currentDateTime().addSecs(-(3600 + 300 + 10))
 
-    assert jammer_service.get_formatted_time() == "01:05:10"
+    assert jammer_service.get_formatted_time() == "01:05:10", (
+        "Formatted time mismatch after start"
+    )

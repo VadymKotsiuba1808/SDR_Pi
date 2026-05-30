@@ -51,7 +51,12 @@ class PiServerService(QObject):
     def stop(self) -> None:
         if self.client_socket:
             self.client_socket.disconnectFromHost()
-            if self.client_socket.state() != QTcpSocket.SocketState.UnconnectedState:
+
+            if (
+                self.client_socket
+                and self.client_socket.state()
+                != QTcpSocket.SocketState.UnconnectedState
+            ):
                 self.client_socket.waitForDisconnected(1000)
 
         if self.server:

@@ -1,6 +1,7 @@
 import math
+
+from PyQt6.QtCore import QPointF, QRect, QSize, Qt
 from PyQt6.QtGui import QPixmap
-from PyQt6.QtCore import Qt, QSize, QPointF, QRect
 
 
 class MapViewLogic:

@@ -5,20 +5,20 @@
 
 from typing import Optional
 
-from PyQt6.QtWidgets import QDialog, QLineEdit, QWidget
-from PyQt6.QtCore import QCoreApplication, QTranslator, QEvent, Qt
 from PyQt6 import uic
+from PyQt6.QtCore import QCoreApplication, QEvent, QTranslator
+from PyQt6.QtWidgets import QDialog, QLineEdit, QWidget
 
 from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
-from app.ui.ui_login_dialog import Ui_LoginDialog
 from app.protocols import LoginDialogSettings
-from app.utils.password_utils import verify_password
-from app.utils.ui_utils import update_element_styles
-from app.widgets.keyboard_widget import KeyboardWidget
-from app.widgets.change_pwd_dialog import ChangePwdDialog
-from app.widgets.autosize_window import make_window_stretched
 from app.services.keyboard_service import KeyboardService
 from app.services.usb_auth_service import UsbAuthService
+from app.ui.ui_login_dialog import Ui_LoginDialog
+from app.utils.password_utils import verify_password
+from app.utils.ui_utils import update_element_styles
+from app.widgets.autosize_window import make_window_stretched
+from app.widgets.change_pwd_dialog import ChangePwdDialog
+from app.widgets.keyboard_widget import KeyboardWidget
 
 
 class LoginDialog(QDialog):

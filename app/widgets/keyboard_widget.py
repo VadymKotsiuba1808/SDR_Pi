@@ -3,14 +3,14 @@
 Відображає поточну мову (UA/EN) та дозволяє змінювати її через GUI.
 """
 
-from PyQt6.QtWidgets import QWidget
 from PyQt6 import uic
-from PyQt6.QtCore import QEvent, QCoreApplication, QTranslator
+from PyQt6.QtCore import QCoreApplication, QEvent, QTranslator
+from PyQt6.QtWidgets import QWidget
 
 from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
-from app.ui.ui_keyboard_widget import Ui_KeyboardWidget
-from app.services.keyboard_service import KeyboardService
 from app.protocols import LangSettings
+from app.services.keyboard_service import KeyboardService
+from app.ui.ui_keyboard_widget import Ui_KeyboardWidget
 
 
 class KeyboardWidget(QWidget):
@@ -64,7 +64,7 @@ class KeyboardWidget(QWidget):
     def _load_language(self):
         lang_code = self.settings_service.lang_code
 
-        if lang_code == None:
+        if lang_code is None:
             return
 
         QCoreApplication.removeTranslator(self.translator)

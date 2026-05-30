@@ -1,12 +1,9 @@
-import sys
 import os
+import sys
 import time
-import random
-from datetime import datetime
-from typing import Optional, List, Dict, Any, Callable
-from dataclasses import dataclass
+from typing import List, Optional
 
-from PyQt6.QtCore import QCoreApplication, QTimer, QObject, pyqtSlot
+from PyQt6.QtCore import QCoreApplication, QObject, QTimer
 
 # ==========================================
 # 1. SETUP PATHS & MOCKS
@@ -37,10 +34,10 @@ class SettingsService:
 
 
 try:
-    from app.services.pi_network_service import PiNetworkService
     from app.models.detection_object import DetectionObject
     from app.models.object_class import ObjectClass
-    from app.models.service_response import ServiceResponse, DbOperation, StatusCode
+    from app.models.service_response import DbOperation, ServiceResponse, StatusCode
+    from app.services.pi_network_service import PiNetworkService
 except ImportError as e:
     print(f"{C.FAIL}CRITICAL IMPORT ERROR: {e}{C.ENDC}")
     sys.exit(1)

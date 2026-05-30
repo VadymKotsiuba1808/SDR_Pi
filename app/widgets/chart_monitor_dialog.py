@@ -1,17 +1,17 @@
 from typing import Optional
 
-from PyQt6.QtGui import QCloseEvent
-from PyQt6.QtWidgets import QDialog, QWidget, QVBoxLayout
-from PyQt6.QtCore import Qt, QCoreApplication, QEvent, QTranslator, pyqtSlot
 from PyQt6 import uic
+from PyQt6.QtCore import QCoreApplication, QEvent, Qt, QTranslator, pyqtSlot
+from PyQt6.QtGui import QCloseEvent
+from PyQt6.QtWidgets import QDialog, QWidget
 
-from app.core.constants import DEV_COMPILED_UI_USING_ENABLED, VISUAL_NOISE_FLOOR_UINT8
-from app.protocols import LangSettings
-from app.ui.ui_chart_monitor_dialog import Ui_ChartMonitorDialog
+from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
 from app.models.source_type import SourceType
 from app.models.stream_data import StreamDataChunk
-from app.widgets.dynamic_chart_widget import DynamicChartWidget
+from app.protocols import LangSettings
 from app.services.pi_network_service import PiNetworkService
+from app.ui.ui_chart_monitor_dialog import Ui_ChartMonitorDialog
+from app.widgets.dynamic_chart_widget import DynamicChartWidget
 
 
 class ChartMonitorDialog(QDialog):

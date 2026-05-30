@@ -1,6 +1,7 @@
 from dataclasses import dataclass
-from PyQt6.QtGui import QPixmap
+
 from PyQt6.QtCore import QPoint
+from PyQt6.QtGui import QPixmap
 
 
 @dataclass

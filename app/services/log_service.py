@@ -1,14 +1,13 @@
-import os
 import json
+import os
 import threading
-import time
+from dataclasses import asdict, dataclass
 from datetime import datetime
 from itertools import groupby
-from dataclasses import dataclass, asdict
 from typing import List, Optional
 
-from app.models.log_entries import LogEntry
 from app.core.constants import LOGS_DIR_PATH
+from app.models.log_entries import LogEntry
 
 
 @dataclass
@@ -49,8 +48,6 @@ class LogService:
         self._current_session_date = date_str
 
         self._current_log_filename = f"session_{timestamp}.jsonl"
-
-        full_path = os.path.join(LOGS_DIR_PATH, self._current_log_filename)
 
         print(f"[LogService] Session rotated: {self._current_log_filename}")
 

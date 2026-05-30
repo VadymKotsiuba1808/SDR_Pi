@@ -1,29 +1,29 @@
-import sys
 import json
 import math
 import random
-import uuid
+import sys
 import time
-import numpy as np
+import uuid
 from datetime import datetime
-from typing import Optional, Dict, Any, List, Set
+from typing import Any, Dict, List, Optional, Set
 
+import numpy as np
 from PyQt6.QtCore import (
+    QByteArray,
     QCoreApplication,
     QObject,
-    pyqtSlot,
-    QByteArray,
     QTimer,
+    pyqtSlot,
 )
-from PyQt6.QtNetwork import QTcpServer, QTcpSocket, QHostAddress
+from PyQt6.QtNetwork import QHostAddress, QTcpServer, QTcpSocket
 
 # --- MOCK IMPORTS (Адаптуйте під структуру проекту) ---
-from app.core.constants import DB_OFFSET, UINT8_MIN, UINT8_MAX
-from temp.database_service import DatabaseService
+from app.core.constants import DB_OFFSET, UINT8_MAX, UINT8_MIN
 from app.models.detection_object import DetectionObject
-from app.models.object_class import ObjectClass
 from app.models.gps_data import GPSData
-from app.models.service_response import ServiceResponse, DbOperation
+from app.models.object_class import ObjectClass
+from app.models.service_response import DbOperation, ServiceResponse
+from temp.database_service import DatabaseService
 
 # --- КОНФІГУРАЦІЯ СИМУЛЯЦІЇ ---
 SIMULATION_RADIUS_METERS = 85000  # 85 км
@@ -442,10 +442,10 @@ class AdvancedNetworkUtility(QObject):
 
         # --- HARDWARE CONTROL ---
         if action == "start_alarm":
-            print(f"[NetService] HARDWARE: Relays ON")
+            print("[NetService] HARDWARE: Relays ON")
             return
         if action == "stop_alarm":
-            print(f"[NetService] HARDWARE: Relays OFF")
+            print("[NetService] HARDWARE: Relays OFF")
             return
 
         # --- DB PROXY COMMANDS (Updated for new Logic) ---
@@ -594,7 +594,6 @@ class AdvancedNetworkUtility(QObject):
     def _generate_mock_sound_data(self) -> Dict[str, Any]:
         """Генерує фейковий спектр для звуку (uint8)."""
         fft_size = 512
-        x = np.linspace(0, 100, fft_size)
 
         noise_db = -80 + np.random.normal(0, 2, fft_size)
 

@@ -1,17 +1,17 @@
-from typing import Optional, List, Dict, Any
+from typing import List, Optional
 
-from PyQt6.QtWidgets import QDialog, QMessageBox, QListWidgetItem, QListWidget, QWidget
-from PyQt6.QtCore import Qt, QEvent, QCoreApplication, QTranslator, pyqtSignal
 from PyQt6 import uic
+from PyQt6.QtCore import QCoreApplication, QEvent, Qt, QTranslator
+from PyQt6.QtWidgets import QDialog, QListWidget, QListWidgetItem, QMessageBox, QWidget
 
 from app.core.constants import DEV_COMPILED_UI_USING_ENABLED, RF_PARAMS__DIVIDER
-from app.protocols import LangSettings
-from app.widgets.keyboard_widget import KeyboardWidget
-from app.services.keyboard_service import KeyboardService
 from app.models.detection_object import DetectionObject
 from app.models.object_class import ObjectClass
+from app.protocols import LangSettings
+from app.services.keyboard_service import KeyboardService
 from app.ui.ui_object_editor_dialog import Ui_ObjectEditorDialog
-from app.utils.convert_measurement_unit import convert_mhz_to_hz, convert_hz_to_mhz
+from app.utils.convert_measurement_unit import convert_hz_to_mhz, convert_mhz_to_hz
+from app.widgets.keyboard_widget import KeyboardWidget
 
 
 class ObjectEditorDialog(QDialog):

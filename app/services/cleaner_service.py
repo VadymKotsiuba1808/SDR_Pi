@@ -3,13 +3,13 @@ import time
 from dataclasses import dataclass
 from typing import List
 
-from app.protocols import CleanerServiceSettings
 from app.core.constants import (
-    LOGS_DIR_PATH,
-    MEDIA_DIR_PATH,
     BACKGROUND_LOGS_DIR_PATH,
     CLEAN_TARGET_NAME,
+    LOGS_DIR_PATH,
+    MEDIA_DIR_PATH,
 )
+from app.protocols import CleanerServiceSettings
 
 
 @dataclass

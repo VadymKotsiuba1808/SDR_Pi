@@ -1,18 +1,18 @@
 from dataclasses import dataclass, field
-from typing import Optional, List, Dict
 from itertools import combinations
+from typing import Dict, List, Optional
 
-from PyQt6.QtWidgets import QDialog, QWidget
-from PyQt6.QtCore import Qt, QEvent, QTranslator, QCoreApplication
 from PyQt6 import uic
+from PyQt6.QtCore import QCoreApplication, QEvent, Qt, QTranslator
+from PyQt6.QtWidgets import QDialog, QWidget
 
-from app.protocols import SettingsDialogSettings
 from app.core.constants import (
+    CLEAN_TARGET_NAME,
     DEV_COMPILED_UI_USING_ENABLED,
     RELAY_NAMES_LIST,
-    CLEAN_TARGET_NAME,
 )
 from app.models.settings import CleanRule
+from app.protocols import SettingsDialogSettings
 from app.ui.ui_settings_dialog import Ui_SettingsDialog
 from app.utils.system_utils import restart_process
 from app.utils.ui_utils import update_element_styles

@@ -1,20 +1,19 @@
+from typing import Final, Optional
+
 import numpy as np
 import pyqtgraph as pg
-from typing import Optional, Final
+from PyQt6.QtCore import QPointF
+from PyQt6.QtWidgets import QVBoxLayout, QWidget
 
-from PyQt6.QtWidgets import QWidget, QVBoxLayout
-from PyQt6.QtCore import Qt, QPointF
-
+from app.core.chart_theme import ChartTheme
 from app.core.constants import (
     DB_OFFSET,
-    VISUAL_MIN_DB,
     UINT8_MAX,
+    VISUAL_MIN_DB,
     VISUAL_NOISE_FLOOR_UINT8,
 )
 from app.models.source_type import SourceType
 from app.models.stream_data import StreamDataChunk
-from app.core.chart_theme import ChartTheme
-
 from app.ui.components.chart_crosshair import PyGraphCrosshair
 
 

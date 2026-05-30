@@ -5,13 +5,14 @@
 
 import os
 import shutil
+
 from PyQt6.QtCore import (
     QObject,
     QProcess,
     QProcessEnvironment,
+    QUrl,
     pyqtSignal,
     pyqtSlot,
-    QUrl,
 )
 
 from app.protocols import OSService

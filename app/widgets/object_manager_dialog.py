@@ -1,28 +1,28 @@
-from typing import Optional, List
 import math
+from typing import List, Optional
 
 from PyQt6 import uic
+from PyQt6.QtCore import QCoreApplication, QEvent, Qt, QTranslator
 from PyQt6.QtWidgets import (
     QDialog,
-    QTableWidgetItem,
-    QMessageBox,
     QHeaderView,
+    QMessageBox,
+    QTableWidgetItem,
     QWidget,
 )
-from PyQt6.QtCore import Qt, QEvent, QCoreApplication, QTranslator
 
 from app.core.constants import DEV_COMPILED_UI_USING_ENABLED, RF_PARAMS__DIVIDER
-from app.protocols import LangSettings
-from app.widgets.object_editor_dialog import ObjectEditorDialog
-from app.widgets.class_manager_dialog import ClassManagerDialog
-from app.services.pi_network_service import PiNetworkService
-from app.services.keyboard_service import KeyboardService
 from app.models.detection_object import DetectionObject
 from app.models.object_class import ObjectClass
-from app.models.service_response import ServiceResponse, DbOperation, StatusCode
+from app.models.service_response import DbOperation, ServiceResponse
+from app.protocols import LangSettings
+from app.services.keyboard_service import KeyboardService
+from app.services.pi_network_service import PiNetworkService
 from app.ui.ui_object_manager_dialog import Ui_ObjectManager
-from app.utils.ui_utils import move_dialog_down
 from app.utils.convert_measurement_unit import convert_hz_to_mhz
+from app.utils.ui_utils import move_dialog_down
+from app.widgets.class_manager_dialog import ClassManagerDialog
+from app.widgets.object_editor_dialog import ObjectEditorDialog
 
 ALLOW_DB_OPERATIONS = [
     DbOperation.ADD_OBJECT,
@@ -174,7 +174,7 @@ class ObjectManagerDialog(QDialog):
 
     def _handle_db_status(self, response: ServiceResponse) -> None:
 
-        if not (response.operation in ALLOW_DB_OPERATIONS):
+        if response.operation not in ALLOW_DB_OPERATIONS:
             return
 
         if response.is_error:

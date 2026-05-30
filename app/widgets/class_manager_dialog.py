@@ -1,23 +1,22 @@
-from typing import Optional, List
+from typing import List, Optional
 
+from PyQt6 import uic
+from PyQt6.QtCore import QCoreApplication, QEvent, Qt, QTranslator
 from PyQt6.QtWidgets import (
     QDialog,
     QListWidgetItem,
     QMessageBox,
     QWidget,
 )
-from PyQt6 import uic
-from PyQt6.QtCore import Qt, QEvent, QTranslator, QCoreApplication
 
 from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
-from app.ui.ui_class_manager_dialog import Ui_ClassManagerDialog
-from app.widgets.keyboard_widget import KeyboardWidget
+from app.models.object_class import ObjectClass
+from app.models.service_response import DbOperation, ServiceResponse
+from app.protocols import LangSettings
 from app.services.keyboard_service import KeyboardService
 from app.services.pi_network_service import PiNetworkService
-from app.models.object_class import ObjectClass
-from app.models.service_response import ServiceResponse, DbOperation
-from app.protocols import LangSettings
-
+from app.ui.ui_class_manager_dialog import Ui_ClassManagerDialog
+from app.widgets.keyboard_widget import KeyboardWidget
 
 ALLOW_DB_OPERATIONS = [
     DbOperation.ADD_CLASS,
@@ -111,11 +110,11 @@ class ClassManagerDialog(QDialog):
     def _refresh_list(self) -> None:
         self._waiting_classes = True
         self.network_service.request_db_classes()
-        print(f"[ClassManager] Loaded classes.")
+        print("[ClassManager] Loaded classes.")
 
     def _handle_db_status(self, response: ServiceResponse) -> None:
 
-        if not (response.operation in ALLOW_DB_OPERATIONS):
+        if response.operation not in ALLOW_DB_OPERATIONS:
             return
 
         if response.is_error:

@@ -1,98 +1,83 @@
-import os
 import math
-import asyncio
-from typing import Optional, List, Dict, Any, cast
+import os
+from typing import Any, Dict, List, Optional, cast
 
-from PyQt6.QtWidgets import (
-    QMainWindow,
-    QDialog,
-    QMessageBox,
-    QFileDialog,
-    QWidget,
-    QPushButton,
-    QSpinBox,
-    QApplication,
-)
+from PyQt6 import uic
 from PyQt6.QtCore import (
-    QTimer,
-    QDateTime,
-    Qt,
-    QPointF,
-    QEvent,
     QCoreApplication,
-    QTranslator,
-    pyqtSlot,
-    QUrl,
+    QDateTime,
+    QEvent,
+    QPointF,
     QStorageInfo,
+    Qt,
+    QTimer,
+    QTranslator,
+    QUrl,
+    pyqtSlot,
 )
 from PyQt6.QtGui import (
-    QPixmap,
-    QDesktopServices,
-    QShowEvent,
     QCloseEvent,
-    QTransform,
+    QDesktopServices,
     QPainter,
+    QPixmap,
+    QShowEvent,
+    QTransform,
 )
-from PyQt6 import uic
+from PyQt6.QtWidgets import (
+    QApplication,
+    QDialog,
+    QFileDialog,
+    QMainWindow,
+    QMessageBox,
+    QPushButton,
+    QSpinBox,
+    QWidget,
+)
 from qasync import asyncSlot
 
-
-from app.ui.ui_main_window import Ui_MainWindow
-from app.ui.components.radar_renderer import RadarRenderer
-from app.assets import resources_rc
-
-
-from app.protocols import OSService
+from app.assets import resources_rc  # noqa: F401
 from app.core.constants import (
     DEV_COMPILED_UI_USING_ENABLED,
     MEDIA_DIR_PATH,
+    MIN_DISTANCE_THRESHOLD,
+    STATIONARY_SECONDS,
     TIMER_INTERVAL_RADAR_ANIM,
     TIMER_INTERVAL_TIME_UPDATE,
     TIMER_INTERVAL_WIFI_UPDATE,
-    STATIONARY_SECONDS,
-    MIN_DISTANCE_THRESHOLD,
 )
-
-
-from app.widgets.set_map_dialog import SetMapDialog
-from app.widgets.autosize_window import make_scalable
-from app.widgets.log_dialog import LogDialog
-from app.widgets.record_status_widget import RecordingStatusWidget
-from app.widgets.object_manager_dialog import ObjectManagerDialog
-from app.widgets.settings_dialog import SettingsDialog
-from app.widgets.chart_monitor_dialog import ChartMonitorDialog
-
-
-from app.services.pi_network_service import PiNetworkService
-from app.services.settings_service import SettingsService
-from app.services.map_service import MapService, MapTypes
-from app.services.keyboard_service import KeyboardService
-from app.services.recording_service import RecordingService
-from app.services.media_player_service import MediaPlayerService
-from app.services.log_service import LogService
-from app.services.jammer_service import JammerService
-from app.services.detection_background_service import DetectionBackgroundService
-from app.services.network_signal_service import NetworkSignalService
-
-
 from app.core.detection_manager import DetectionManager
 from app.core.map_view_logic import MapViewLogic
-
-from app.models.source_type import SourceType
-from app.models.detection_event import DetectionEvent
-from app.models.object_class import ObjectClass
-from app.models.log_entries import LogEntry, LogType, FalseAlarmPayload
-from app.models.gps_data import GPSData
 from app.models.detection_background import DetectionBackground
-from app.models.service_response import ServiceResponse, DbOperation
+from app.models.detection_event import DetectionEvent
+from app.models.gps_data import GPSData
+from app.models.log_entries import FalseAlarmPayload, LogEntry, LogType
 from app.models.map_settings import CustomMapSettings
-
-
-from app.utils.ui_utils import update_element_styles, move_dialog_down
-from app.utils.system_utils import restart_process
-from app.utils.geo_utils import calculate_distance
+from app.models.object_class import ObjectClass
+from app.models.service_response import DbOperation, ServiceResponse
+from app.models.source_type import SourceType
+from app.protocols import OSService
+from app.services.detection_background_service import DetectionBackgroundService
+from app.services.jammer_service import JammerService
+from app.services.keyboard_service import KeyboardService
+from app.services.log_service import LogService
+from app.services.map_service import MapService, MapTypes
+from app.services.media_player_service import MediaPlayerService
+from app.services.network_signal_service import NetworkSignalService
+from app.services.pi_network_service import PiNetworkService
+from app.services.recording_service import RecordingService
+from app.services.settings_service import SettingsService
+from app.ui.components.radar_renderer import RadarRenderer
+from app.ui.ui_main_window import Ui_MainWindow
 from app.utils.convert_measurement_unit import convert_hz_to_mhz
-
+from app.utils.geo_utils import calculate_distance
+from app.utils.system_utils import restart_process
+from app.utils.ui_utils import move_dialog_down, update_element_styles
+from app.widgets.chart_monitor_dialog import ChartMonitorDialog
+from app.widgets.log_dialog import LogDialog
+from app.widgets.object_manager_dialog import ObjectManagerDialog
+from app.widgets.record_status_widget import RecordingStatusWidget
+from app.widgets.set_map_dialog import SetMapDialog
+from app.widgets.settings_dialog import SettingsDialog
 
 DEFAULT_START_COORDS = [49.43440, 27.00543]
 SIGNAL_LEVELS_COUNT = 4
@@ -395,7 +380,6 @@ class MainWindow(QMainWindow):
         available_mb = round(available_bytes / 1024 / 1024, 0)
 
         if available_bytes < min_video_space:
-
             QMessageBox.warning(
                 self,
                 self.tr("Not enough disk space"),

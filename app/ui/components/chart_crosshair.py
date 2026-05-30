@@ -1,6 +1,6 @@
 import pyqtgraph as pg
-from PyQt6.QtGui import QPainter, QPen, QBrush
-from PyQt6.QtCore import Qt, QRect
+from PyQt6.QtCore import QRect, Qt
+from PyQt6.QtGui import QBrush, QPainter, QPen
 
 from app.core.chart_theme import ChartTheme
 from app.models.chart_models import CursorState

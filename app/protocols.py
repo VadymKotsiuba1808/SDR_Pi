@@ -3,7 +3,8 @@
 Визначає абстрактні контракти для сервісів та компонентів переважно саме для налаштувань. Дозволяє використовувати Dependency Injection.
 """
 
-from typing import Protocol, Dict
+from typing import Dict, Protocol
+
 from app.services.settings_service import CleanRule
 
 

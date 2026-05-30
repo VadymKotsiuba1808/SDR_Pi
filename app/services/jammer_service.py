@@ -1,4 +1,4 @@
-from PyQt6.QtCore import QObject, QTimer, QDateTime, pyqtSignal
+from PyQt6.QtCore import QDateTime, QObject, QTimer, pyqtSignal
 
 from app.protocols import JammerServiceSettings
 from app.services.pi_network_service import PiNetworkService

@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import datetime
+
 from app.models.detection_event import DetectionEvent
 
 MOVE_THRESHOLD_KM = 0.01  # 10 метрів

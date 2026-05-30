@@ -4,10 +4,9 @@
 """
 
 import string
-from PyQt6.QtCore import QCoreApplication
 
-from app.validators.base_validator import BaseValidator
 from app.core.mixins import TranslatorMixin
+from app.validators.base_validator import BaseValidator
 
 
 class PasswordValidator(BaseValidator, TranslatorMixin):

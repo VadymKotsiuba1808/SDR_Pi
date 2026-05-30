@@ -1,19 +1,19 @@
 import json
 from datetime import datetime
-from typing import Optional, Dict, Any, List
+from typing import Any, Dict, Optional
 
-from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot, QByteArray, QTimer
-from PyQt6.QtNetwork import QTcpServer, QTcpSocket, QHostAddress
+from PyQt6.QtCore import QByteArray, QObject, QTimer, pyqtSignal, pyqtSlot
+from PyQt6.QtNetwork import QHostAddress, QTcpServer, QTcpSocket
 
-from app.protocols import NetworkServiceSettings
-from app.models.source_type import SourceType
+from app.models.detection_background import DetectionBackground
 from app.models.detection_event import DetectionEvent
 from app.models.detection_object import DetectionObject
-from app.models.object_class import ObjectClass
 from app.models.gps_data import GPSData
-from app.models.stream_data import StreamDataChunk
-from app.models.detection_background import DetectionBackground
+from app.models.object_class import ObjectClass
 from app.models.service_response import ServiceResponse
+from app.models.source_type import SourceType
+from app.models.stream_data import StreamDataChunk
+from app.protocols import NetworkServiceSettings
 
 
 class PiNetworkService(QObject):

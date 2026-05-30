@@ -1,7 +1,9 @@
-import socket
 import re
+import socket
 import subprocess
+
 from PyQt6.QtCore import QObject
+
 from app.services.system_service import SystemService
 
 

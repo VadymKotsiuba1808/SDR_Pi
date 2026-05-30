@@ -1,10 +1,10 @@
+import hashlib
 import os
 import time
-import hashlib
-from typing import Set, Optional
+from typing import Optional, Set
 
 import psutil
-from PyQt6.QtCore import QThread, pyqtSignal, QObject
+from PyQt6.QtCore import QObject, QThread, pyqtSignal
 
 from app.core.constants import (
     SECURITY_KEY_FILENAME,

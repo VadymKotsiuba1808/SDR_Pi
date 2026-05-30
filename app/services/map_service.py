@@ -1,8 +1,8 @@
-import math
 import asyncio
-from io import BytesIO
+import math
 from enum import Enum
-from typing import List, Tuple, Optional, Any, Union, Dict
+from io import BytesIO
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import httpx
 from PIL import Image, ImageDraw
@@ -11,7 +11,6 @@ from PyQt6.QtGui import QPixmap
 from app.core.constants import (
     DEV_TILE_DIVIDER_ENABLED,
     MAPS_API_URL,
-    MAPS_IMG_FORMAT,
     MAPS_IMG_FORMAT,
 )
 from app.protocols import MapServiceSettings

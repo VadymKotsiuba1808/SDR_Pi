@@ -4,6 +4,7 @@
 """
 
 import subprocess
+
 from app.protocols import OSService
 
 
@@ -32,16 +33,17 @@ class KeyboardService:
         self.pynput_keyboard = None
 
         if self.system_service.is_windows:
+            import keyboard
             import win32api
             import win32gui
-            import keyboard
 
             self.win32api = win32api
             self.win32gui = win32gui
             self.keyboard = keyboard
         elif self.system_service.is_linux:
-            from pynput import keyboard as pynput_keyboard
             import subprocess
+
+            from pynput import keyboard as pynput_keyboard
 
             self.pynput_keyboard = pynput_keyboard
             self.subprocess = subprocess
@@ -53,7 +55,7 @@ class KeyboardService:
             listener = self.pynput_keyboard.Listener(on_press=self._on_key_press)
             listener.start()
         else:
-            print(f"KeyboardLayoutManager: OS не підтримується.")
+            print("KeyboardLayoutManager: OS не підтримується.")
 
     # ------------------- Linux -------------------
     def _on_key_press(self, key):

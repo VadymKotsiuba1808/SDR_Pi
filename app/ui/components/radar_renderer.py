@@ -1,8 +1,8 @@
 import math
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
-from PyQt6.QtGui import QPainter, QPen, QColor, QFont, QPixmap, QConicalGradient
-from PyQt6.QtCore import Qt, QPointF, QRect
+from PyQt6.QtCore import QPointF, QRect, Qt
+from PyQt6.QtGui import QColor, QConicalGradient, QFont, QPainter, QPen, QPixmap
 
 from app.models.radar_target import RadarTarget
 

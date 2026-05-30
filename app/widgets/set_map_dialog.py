@@ -4,23 +4,22 @@
 """
 
 from typing import List, Optional
+
+from PyQt6 import uic
+from PyQt6.QtCore import (
+    QCoreApplication,
+    QEvent,
+    QObject,
+    QPointF,
+    Qt,
+    QTranslator,
+)
+from PyQt6.QtGui import QPainter, QPixmap, QTransform
 from PyQt6.QtWidgets import (
     QDialog,
     QFileDialog,
     QMessageBox,
 )
-from PyQt6.QtGui import QPixmap, QPainter, QTransform, QMouseEvent
-from PyQt6.QtCore import (
-    Qt,
-    QEvent,
-    QPointF,
-    QCoreApplication,
-    QTranslator,
-    QObject,
-    QPoint,
-)
-
-from PyQt6 import uic
 
 from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
 from app.models.map_settings import CustomMapSettings

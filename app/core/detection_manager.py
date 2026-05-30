@@ -1,11 +1,11 @@
-from typing import Dict, List, Optional
 from datetime import datetime, timedelta
+from typing import Dict, List, Optional
 
-from PyQt6.QtCore import QObject, pyqtSignal, QTimer
+from PyQt6.QtCore import QObject, QTimer, pyqtSignal
 
-from app.protocols import DetectionManagerSettings
 from app.models.detection_event import DetectionEvent
 from app.models.radar_target import RadarTarget
+from app.protocols import DetectionManagerSettings
 
 
 class DetectionManager(QObject):

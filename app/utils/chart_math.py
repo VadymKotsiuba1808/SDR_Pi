@@ -1,8 +1,9 @@
 import math
+from typing import Dict, List, Optional, Tuple
+
 import numpy as np
-from typing import Tuple, Dict, List, Optional
-from PyQt6.QtGui import QImage, QColor, QLinearGradient, QPainter, QBrush
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QBrush, QColor, QImage, QLinearGradient, QPainter
 
 from app.core.chart_theme import ChartTheme
 from app.core.constants import UINT8_MAX, VISUAL_NOISE_FLOOR_UINT8

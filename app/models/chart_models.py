@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from typing import Optional
+
 from PyQt6.QtCore import QPointF
 
 

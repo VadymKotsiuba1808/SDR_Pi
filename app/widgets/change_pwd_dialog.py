@@ -1,17 +1,17 @@
 from typing import Optional
 
-from PyQt6.QtWidgets import QDialog, QLineEdit, QWidget, QPushButton
-from PyQt6.QtCore import QCoreApplication, QEvent, QTranslator, Qt
 from PyQt6 import uic
+from PyQt6.QtCore import QCoreApplication, QEvent, Qt, QTranslator
+from PyQt6.QtWidgets import QDialog, QLineEdit, QPushButton, QWidget
 
-from app.protocols import ChangePwdDialogSettings
 from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
-from app.ui.ui_change_pwd_dialog import Ui_ChangePwdDialog
-from app.widgets.keyboard_widget import KeyboardWidget
+from app.protocols import ChangePwdDialogSettings
 from app.services.keyboard_service import KeyboardService
-from app.validators.password_validator import PasswordValidator
+from app.ui.ui_change_pwd_dialog import Ui_ChangePwdDialog
 from app.utils.password_utils import hash_password
 from app.utils.ui_utils import update_element_styles
+from app.validators.password_validator import PasswordValidator
+from app.widgets.keyboard_widget import KeyboardWidget
 
 
 class ChangePwdDialog(QDialog):

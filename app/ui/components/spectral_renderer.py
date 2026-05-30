@@ -1,30 +1,30 @@
 import math
-import numpy as np
 from typing import Optional
 
+import numpy as np
+from PyQt6.QtCore import QPointF, QRect, Qt
 from PyQt6.QtGui import (
+    QBrush,
+    QColor,
+    QFont,
+    QLinearGradient,
     QPainter,
     QPen,
-    QBrush,
     QPolygonF,
-    QLinearGradient,
-    QFont,
-    QColor,
 )
-from PyQt6.QtCore import QRect, Qt, QPointF
 
-from app.core.mixins import TranslatorMixin
+from app.core.chart_theme import ChartTheme
 from app.core.constants import (
     DB_OFFSET,
-    VISUAL_MIN_DB,
     VISUAL_MAX_DB,
+    VISUAL_MIN_DB,
     VISUAL_RANGE_DB,
 )
-from app.models.detection_event import DetectionEvent
-from app.models.detection_background import SpectralData
-from app.models.source_type import SourceType
+from app.core.mixins import TranslatorMixin
 from app.models.chart_models import CursorState
-from app.core.chart_theme import ChartTheme
+from app.models.detection_background import SpectralData
+from app.models.detection_event import DetectionEvent
+from app.models.source_type import SourceType
 from app.utils.chart_math import ChartMath
 from app.utils.convert_measurement_unit import convert_hz_to_mhz
 

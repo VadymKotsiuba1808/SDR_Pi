@@ -4,20 +4,19 @@
 """
 
 import re
+import types
+
+from PyQt6.QtCore import QSize, Qt, pyqtSlot
+from PyQt6.QtGui import QAction, QGuiApplication, QPainter, QPalette, QResizeEvent
 from PyQt6.QtWidgets import (
+    QComboBox,
+    QDialog,
     QGraphicsScene,
     QGraphicsView,
-    QWidget,
-    QApplication,
-    QVBoxLayout,
-    QDialog,
     QMainWindow,
-    QComboBox,
     QMenu,
+    QVBoxLayout,
 )
-from PyQt6.QtGui import QPainter, QGuiApplication, QResizeEvent, QAction, QPalette
-from PyQt6.QtCore import Qt, QRectF, QSize, pyqtSlot
-import types
 
 
 def make_scalable(base_class):

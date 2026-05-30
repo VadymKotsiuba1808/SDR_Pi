@@ -3,12 +3,13 @@
 Реалізує функціонал захоплення відео з екрану (Screen Recording) та збереження у файл .mp4.
 """
 
-from PyQt6.QtCore import QThread, pyqtSignal, pyqtSlot, QElapsedTimer
-from vidgear.gears import WriteGear
-import numpy as np
-import mss
 import time
+
 import cv2
+import mss
+import numpy as np
+from PyQt6.QtCore import QElapsedTimer, QThread, pyqtSignal, pyqtSlot
+from vidgear.gears import WriteGear
 
 from app.protocols import OSService
 
@@ -67,7 +68,6 @@ class RecordingService(QThread):
                 }
             )
         else:
-
             if use_hardware:
                 params.update(
                     {
@@ -94,7 +94,7 @@ class RecordingService(QThread):
         return params
 
     def run(self):
-        print(f"[Recorder] Thread started")
+        print("[Recorder] Thread started")
         self.is_running = True
 
         try:
@@ -162,8 +162,6 @@ class RecordingService(QThread):
 
         try:
             while self.is_running:
-                now = time.perf_counter()
-
                 if self.is_paused:
                     time.sleep(0.1)
                     self.start_time_perf += 0.1
@@ -183,7 +181,6 @@ class RecordingService(QThread):
                     )
 
                 if self.writer:
-
                     self.writer.write(frame)
                     self.frames_written += 1
 

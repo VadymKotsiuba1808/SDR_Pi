@@ -1,7 +1,6 @@
 from dataclasses import dataclass, field
-from typing import Optional, Union, Dict, Any
-import uuid
 from datetime import datetime
+from typing import Union
 
 from app.models.detection_event import DetectionEvent
 

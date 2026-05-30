@@ -1,30 +1,30 @@
-from datetime import datetime, timedelta
-from typing import List, Set, Optional
+from datetime import datetime
+from typing import List, Optional, Set
 
+from PyQt6 import uic
+from PyQt6.QtCore import QCoreApplication, QEvent, Qt, QTime, QTranslator
+from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import (
-    QDialog,
-    QTableWidgetItem,
-    QHeaderView,
     QAbstractItemView,
+    QDialog,
+    QHeaderView,
+    QTableWidgetItem,
     QWidget,
 )
-from PyQt6.QtCore import Qt, QTime, QEvent, QCoreApplication, QTranslator
-from PyQt6 import uic
-from PyQt6.QtGui import QFont, QColor
 
 from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
-from app.protocols import LangSettings
-from app.ui.ui_log_dialog import Ui_LogDialog
-from app.widgets.static_chart_widget import StaticChartWidget
-from app.models.log_entries import LogEntry, FalseAlarmPayload
-from app.models.source_type import SourceType
-from app.models.detection_event import DetectionEvent
 from app.models.detection_background import DetectionBackground
+from app.models.detection_event import DetectionEvent
+from app.models.log_entries import FalseAlarmPayload, LogEntry
 from app.models.object_class import ObjectClass
-from app.services.log_service import LogService
+from app.models.source_type import SourceType
+from app.protocols import LangSettings
 from app.services.detection_background_service import DetectionBackgroundService
-from app.utils.ui_utils import update_element_styles
+from app.services.log_service import LogService
+from app.ui.ui_log_dialog import Ui_LogDialog
 from app.utils.convert_measurement_unit import convert_hz_to_mhz
+from app.utils.ui_utils import update_element_styles
+from app.widgets.static_chart_widget import StaticChartWidget
 
 
 class LogDialog(QDialog):

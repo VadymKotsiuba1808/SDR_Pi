@@ -171,7 +171,7 @@ class MainWindow(QMainWindow):
             self.ui.setupUi(self)
         else:
             uic.loadUi("app/ui/main_window.ui", self)
-            self.ui = self
+            self.ui = cast(Ui_MainWindow, self)
 
     def _setup_state_variables(self) -> None:
 

@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, cast
 
 from PyQt6 import uic
 from PyQt6.QtCore import QCoreApplication, QEvent, Qt, QTranslator
@@ -54,7 +54,7 @@ class ChangePwdDialog(QDialog):
             self.ui.setupUi(self)
         else:
             uic.loadUi("app/ui/change_pwd_dialog.ui", self)
-            self.ui = self
+            self.ui = cast(Ui_ChangePwdDialog, self)
 
     def _adjust_fields(self) -> None:
         self.keyboard_widget = KeyboardWidget(

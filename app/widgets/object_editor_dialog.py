@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, cast
 
 from PyQt6 import uic
 from PyQt6.QtCore import QCoreApplication, QEvent, Qt, QTranslator
@@ -68,7 +68,7 @@ class ObjectEditorDialog(QDialog):
         else:
             ui_path = "app/ui/object_editor_dialog.ui"
             uic.loadUi(ui_path, self)
-            self.ui = self
+            self.ui = cast(Ui_ObjectEditorDialog, self)
 
     def _setup_state_variables(self) -> None:
         self.translator = QTranslator()

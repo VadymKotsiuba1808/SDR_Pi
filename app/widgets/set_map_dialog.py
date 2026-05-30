@@ -3,7 +3,7 @@
 Дозволяє користувачу вибрати та налаштувати власне зображення мапи.
 """
 
-from typing import List, Optional
+from typing import List, Optional, cast
 
 from PyQt6 import uic
 from PyQt6.QtCore import (
@@ -28,7 +28,6 @@ from app.ui.ui_set_map_dialog import Ui_SetMapDialog
 
 
 class SetMapDialog(QDialog):
-
     def __init__(
         self,
         settings: SetMapDialogSettings,
@@ -78,7 +77,7 @@ class SetMapDialog(QDialog):
             self.ui.setupUi(self)
         else:
             uic.loadUi("app/ui/set_map_dialog.ui", self)
-            self.ui = self
+            self.ui = cast(Ui_SetMapDialog, self)
 
     def _setup_variables(self):
         self.original_pixmap: Optional[QPixmap] = None
@@ -158,7 +157,6 @@ class SetMapDialog(QDialog):
             and event.type() == QEvent.Type.MouseButtonPress
             and self.is_centering_mode
         ):
-
             if event.button() == Qt.MouseButton.LeftButton:
                 if self.current_scale == 0:
                     return True

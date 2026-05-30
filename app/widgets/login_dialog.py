@@ -3,7 +3,7 @@
 Логіка вікна входу: обробка вводу пароля та перехід до головного вікна.
 """
 
-from typing import Optional
+from typing import Optional, cast
 
 from PyQt6 import uic
 from PyQt6.QtCore import QCoreApplication, QEvent, QTranslator
@@ -57,7 +57,7 @@ class LoginDialog(QDialog):
             self.ui.setupUi(self)
         else:
             uic.loadUi("app/ui/login_dialog.ui", self)
-            self.ui = self
+            self.ui = cast(Ui_LoginDialog, self)
 
     def _setup_state_variables(self) -> None:
         self.translator = QTranslator()

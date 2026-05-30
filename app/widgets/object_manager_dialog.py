@@ -1,5 +1,5 @@
 import math
-from typing import List, Optional
+from typing import List, Optional, cast
 
 from PyQt6 import uic
 from PyQt6.QtCore import QCoreApplication, QEvent, Qt, QTranslator
@@ -75,9 +75,8 @@ class ObjectManagerDialog(QDialog):
             self.ui = Ui_ObjectManager()
             self.ui.setupUi(self)
         else:
-            ui_path = "app/ui/object_manager_dialog.ui"
-            uic.loadUi(ui_path, self)
-            self.ui = self
+            uic.loadUi("app/ui/object_manager_dialog.ui", self)
+            self.ui = cast(Ui_ObjectManager, self)
 
     def _setup_state_variables(self) -> None:
         self.cached_objects: List[DetectionObject] = []

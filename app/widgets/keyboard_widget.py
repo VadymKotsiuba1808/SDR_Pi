@@ -3,6 +3,8 @@
 Відображає поточну мову (UA/EN) та дозволяє змінювати її через GUI.
 """
 
+from typing import cast
+
 from PyQt6 import uic
 from PyQt6.QtCore import QCoreApplication, QEvent, QTranslator
 from PyQt6.QtWidgets import QWidget
@@ -49,7 +51,7 @@ class KeyboardWidget(QWidget):
             self.ui.setupUi(self)
         else:
             uic.loadUi("app/ui/keyboard_widget.ui", self)
-            self.ui = self
+            self.ui = cast(Ui_KeyboardWidget, self)
 
     def _setup_state_variables(self):
         self.translator = QTranslator()

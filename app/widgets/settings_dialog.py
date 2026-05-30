@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from itertools import combinations
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, cast
 
 from PyQt6 import uic
 from PyQt6.QtCore import QCoreApplication, QEvent, Qt, QTranslator
@@ -76,7 +76,7 @@ class SettingsDialog(QDialog):
             self.ui.setupUi(self)
         else:
             uic.loadUi("app/ui/settings_dialog.ui", self)
-            self.ui = self
+            self.ui = cast(Ui_SettingsDialog, self)
 
     def _setup_state_variables(self):
         self.translator = QTranslator()

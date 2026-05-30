@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Optional, Set
+from typing import List, Optional, Set, cast
 
 from PyQt6 import uic
 from PyQt6.QtCore import QCoreApplication, QEvent, Qt, QTime, QTranslator
@@ -74,7 +74,7 @@ class LogDialog(QDialog):
             self.ui.setupUi(self)
         else:
             uic.loadUi("app/ui/log_dialog.ui", self)
-            self.ui = self
+            self.ui = cast(Ui_LogDialog, self)
 
     def _setup_state_variables(self) -> None:
         self.translator = QTranslator()

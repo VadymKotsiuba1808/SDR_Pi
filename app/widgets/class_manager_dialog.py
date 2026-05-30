@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, cast
 
 from PyQt6 import uic
 from PyQt6.QtCore import QCoreApplication, QEvent, Qt, QTranslator
@@ -27,7 +27,6 @@ ALLOW_DB_OPERATIONS = [
 
 
 class ClassManagerDialog(QDialog):
-
     def __init__(
         self,
         network_service: PiNetworkService,
@@ -60,9 +59,8 @@ class ClassManagerDialog(QDialog):
             self.ui = Ui_ClassManagerDialog()
             self.ui.setupUi(self)
         else:
-            ui_path = "app/ui/class_manager_dialog.ui"
-            uic.loadUi(ui_path, self)
-            self.ui = self
+            uic.loadUi("app/ui/class_manager_dialog.ui", self)
+            self.ui = cast(Ui_ClassManagerDialog, self)
 
     def _setup_state_variables(self) -> None:
         self.translator = QTranslator()
@@ -165,7 +163,6 @@ class ClassManagerDialog(QDialog):
         selected_items = self.ui.lstClasses.selectedItems()
 
         if selected_items:
-
             item = selected_items[0]
             old_name = item.text()
 

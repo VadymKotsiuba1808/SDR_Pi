@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, cast
 
 from PyQt6 import uic
 from PyQt6.QtCore import QCoreApplication, QEvent, Qt, QTranslator, pyqtSlot
@@ -59,7 +59,7 @@ class ChartMonitorDialog(QDialog):
             pass
         else:
             uic.loadUi("app/ui/realtime_monitor.ui", self)
-            self.ui = self
+            self.ui = cast(Ui_ChartMonitorDialog, self)
 
     def _setup_variables(self):
         self.translator = QTranslator()

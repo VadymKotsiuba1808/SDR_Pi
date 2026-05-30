@@ -5,7 +5,7 @@ from PyQt6.QtCore import QCoreApplication, QEventLoop, QTimer
 
 from app.models.detection_object import DetectionObject
 from app.models.object_class import ObjectClass
-from temp.database_service import DatabaseService
+from pi_server.database_service import DatabaseService
 
 
 def run_seeding():

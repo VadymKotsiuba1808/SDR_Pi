@@ -11,7 +11,7 @@ from app.models.detection_object import DetectionObject
 from app.models.gps_data import GPSData
 from app.models.object_class import ObjectClass
 from app.models.service_response import ServiceResponse, StatusCode
-from temp.database_service import DatabaseService
+from pi_server.database_service import DatabaseService
 
 
 class PiServerService(QObject):

@@ -18,7 +18,7 @@ from app.core.constants import DB_OFFSET, UINT8_MAX, UINT8_MIN
 from app.models.detection_object import DetectionObject
 from app.models.gps_data import GPSData
 from app.models.service_response import DbOperation, ServiceResponse
-from temp.pi_server_service import PiServerService
+from pi_server.pi_server_service import PiServerService
 
 # --- КОНФІГУРАЦІЯ СИМУЛЯЦІЇ ---
 SIMULATION_RADIUS_METERS = 85000  # 85 км

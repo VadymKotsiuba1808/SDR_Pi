@@ -343,8 +343,7 @@ class MainWindow(QMainWindow):
         self.timer_gps.timeout.connect(self.request_gps)
         self.timer_gps.start(self.settings_service.gps_interval_s * 1000)
 
-    @asyncSlot()
-    async def _start_async_tasks(self) -> None:
+    def _start_async_tasks(self) -> None:
         """
         Запускає всі фонові асинхронні задачі.
         """
@@ -574,7 +573,7 @@ class MainWindow(QMainWindow):
         )
         if distance >= MIN_DISTANCE_THRESHOLD or self.force_gps_update:
             self.current_coords = [new_lat, new_lon]
-            self.refresh_map()
+            QTimer.singleShot(0, self.refresh_map)
             self.force_gps_update = False
             print(f"[MainWindow] Map refreshed. Distance moved: {distance:.2f} m")
         else:
@@ -610,7 +609,7 @@ class MainWindow(QMainWindow):
         btn = cast(QPushButton, self.sender())
 
         if not btn.isChecked():
-            self.refresh_map()
+            QTimer.singleShot(0, self.refresh_map)
             return
 
         self.open_set_map_dialog()
@@ -675,10 +674,11 @@ class MainWindow(QMainWindow):
         if response.is_error:
             return
 
-        classes_raw = response.data.get("classes", [])
-        classes = [ObjectClass.from_dict(c) for c in classes_raw]
+        if isinstance(response.data, dict):
+            classes_raw = response.data.get("classes", [])
+            classes = [ObjectClass.from_dict(c) for c in classes_raw]
 
-        self.open_logs_dialog(classes)
+            self.open_logs_dialog(classes)
 
     def request_classes_and_open_logs_dialog(self):
         self.pi_network.request_finished.connect(self._on_classes_received_for_logs)
@@ -718,7 +718,7 @@ class MainWindow(QMainWindow):
             self.settings_service.zoom = self.calculate_optimal_zoom(new_radius)
             self.ui.radarRadiusSpinbox.setMaximum(new_radius)
 
-            self.refresh_map()
+            QTimer.singleShot(0, self.refresh_map)
 
         if self.settings_service.gps_interval_s != new_interval:
             self.settings_service.gps_interval_s = new_interval

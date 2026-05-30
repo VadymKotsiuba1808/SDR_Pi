@@ -20,14 +20,19 @@ class PiServerService(QObject):
     Приймає підключення від Desktop-клієнта, обробляє команди та керує периферією.
     """
 
-    def __init__(self, port: int = 6000, parent: Optional[QObject] = None) -> None:
+    def __init__(
+        self,
+        port: int = 6000,
+        db_service: Optional[DatabaseService] = None,
+        parent: Optional[QObject] = None,
+    ) -> None:
         super().__init__(parent)
         self.port = port
         self.server: Optional[QTcpServer] = None
         self.client_socket: Optional[QTcpSocket] = None
 
         # --- ПІДКЛЮЧЕННЯ БД ---
-        self.db = DatabaseService()
+        self.db = db_service or DatabaseService()
 
         # 2. Підключаємо єдиний сигнал результату
         self.db.request_finished.connect(self.send_db_response)

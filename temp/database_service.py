@@ -72,11 +72,15 @@ class DatabaseService(QObject):
     # Єдиний сигнал для результату операцій
     request_finished = pyqtSignal(ServiceResponse)
 
-    def __init__(self, parent: Optional[QObject] = None) -> None:
+    def __init__(
+        self, db_url: Optional[str] = None, parent: Optional[QObject] = None
+    ) -> None:
         super().__init__(parent)
         self.threadpool: QThreadPool = QThreadPool()
+
+        self.db_url = db_url or DB_CONNECTION_STRING
         self.engine: Engine = create_engine(
-            DB_CONNECTION_STRING,
+            self.db_url,
             connect_args={"check_same_thread": False},
             echo=False,
         )

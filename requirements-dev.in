@@ -5,3 +5,5 @@ black
 ruff
 mypy
 pre-commit
+pytest
+pytest-qt

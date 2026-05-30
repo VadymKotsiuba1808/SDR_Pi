@@ -131,7 +131,9 @@ class RecordingService(QThread):
                 params = self._get_ffmpeg_params(
                     self.record_width, self.record_height, use_hardware=True
                 )
-                self.writer = WriteGear(output=self.filename, logging=True, **params)
+                self.writer = WriteGear(
+                    output=self.filename, logging=True, output_params=params
+                )
             except Exception as e:
                 print(
                     f"[Recorder] Hardware encoding failed: {e}. Switching to Software."
@@ -144,7 +146,9 @@ class RecordingService(QThread):
                 params = self._get_ffmpeg_params(
                     self.record_width, self.record_height, use_hardware=False
                 )
-                self.writer = WriteGear(output=self.filename, logging=False, **params)
+                self.writer = WriteGear(
+                    output=self.filename, logging=False, output_params=params
+                )
             except Exception as e:
                 self.recording_error.emit(f"Writer Init Critical Error: {e}")
                 self.is_running = False

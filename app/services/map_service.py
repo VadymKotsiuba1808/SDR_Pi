@@ -2,7 +2,7 @@ import asyncio
 import math
 from enum import Enum
 from io import BytesIO
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
 import httpx
 from PIL import Image, ImageDraw
@@ -86,7 +86,7 @@ class MapService:
         coord: List[float],
         map_type: MapTypes,
         add_sizes_k: List[float] = [1, 1],
-    ) -> Optional[List[Union[QPixmap, float]]]:
+    ) -> Optional[Tuple[QPixmap, float]]:
 
         if not self.settings_service.api_key:
             print("[MapService] Error: API key missing.")
@@ -102,12 +102,11 @@ class MapService:
         )
 
         try:
-
             full_img = await self._fetch_and_stitch_tiles(geo_data, map_type)
 
             pixmap = self._crop_and_convert(full_img, geo_data)
 
-            return [pixmap, geo_data["km_per_pixel"]]
+            return (pixmap, geo_data["km_per_pixel"])
 
         except Exception as e:
             print(f"[MapService] Critical Map Error: {e}")

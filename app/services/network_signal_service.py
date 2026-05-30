@@ -1,10 +1,11 @@
 import re
 import socket
 import subprocess
+from typing import Optional
 
 from PyQt6.QtCore import QObject
 
-from app.services.system_service import SystemService
+from app.protocols import OSService
 
 
 class NetworkSignalService(QObject):
@@ -16,7 +17,7 @@ class NetworkSignalService(QObject):
     """
 
     # TODO - Перевірити пінгування при підключеній распберрі по Ethernet
-    def __init__(self, system_service: SystemService):
+    def __init__(self, system_service: OSService):
         super().__init__()
         self.system_service = system_service
 
@@ -39,7 +40,7 @@ class NetworkSignalService(QObject):
         print("[Network] ✗ No connection: 0%")
         return 0
 
-    def _get_wifi_signal(self) -> int:
+    def _get_wifi_signal(self) -> Optional[int]:
         """
         Отримує рівень WiFi сигналу
         Повертає None якщо не вдалося визначити
@@ -54,7 +55,7 @@ class NetworkSignalService(QObject):
 
         return None
 
-    def _get_windows_wifi_signal(self) -> int:
+    def _get_windows_wifi_signal(self) -> Optional[int]:
         """Windows: netsh wlan show interfaces"""
         try:
             si = subprocess.STARTUPINFO()
@@ -93,7 +94,7 @@ class NetworkSignalService(QObject):
 
         return None
 
-    def _get_linux_wifi_signal(self) -> int:
+    def _get_linux_wifi_signal(self) -> Optional[int]:
         """Linux: nmcli або iwconfig"""
 
         try:

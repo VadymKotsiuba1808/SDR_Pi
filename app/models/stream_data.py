@@ -3,6 +3,8 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from app.models.source_type import SourceType
+
 
 @dataclass
 class StreamDataChunk:
@@ -19,7 +21,7 @@ class StreamDataChunk:
     timestamp: float  # Час отримання пакету
 
     @staticmethod
-    def from_dict(data: dict, type: str) -> "StreamDataChunk":
+    def from_dict(data: dict, type: SourceType) -> "StreamDataChunk":
         """Парсинг вхідного словника JSON у об'єкт."""
 
         raw_list = data.get("data_magnitude", [])

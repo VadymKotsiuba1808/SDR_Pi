@@ -19,7 +19,6 @@ from app.protocols import OSService
 
 
 class MediaPlayerService(QObject):
-
     # Сигнали для зворотного зв'язку з UI
     playback_finished = pyqtSignal()  # Відео завершилось або вікно закрили
     error_occurred = pyqtSignal(str)  # Щось пішло не так

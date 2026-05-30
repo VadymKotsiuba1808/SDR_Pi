@@ -30,7 +30,7 @@ class SettingsData:
     is_jammer_auto_stop_enabled: bool = False
     jammer_auto_stop_interval_s: int = 900
 
-    clean_settings: Dict[str, CleanRule] = field(default_factory=dict)
+    clean_settings: Dict[CLEAN_TARGET_NAME, CleanRule] = field(default_factory=dict)
 
 
 RELAYS_DIVIDER = ", "

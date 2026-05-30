@@ -5,7 +5,7 @@
 
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, NamedTuple
+from typing import Any, Dict, NamedTuple, Optional
 
 from PyQt6.QtCore import QFileSystemWatcher, QObject, QSettings, pyqtSignal
 
@@ -83,10 +83,11 @@ class SettingsService(QObject):
         "lang_code": ("ui", str, "uk"),
     }
 
-    def __init__(self):
+    def __init__(self, config_path: Optional[Path] = None):
         super().__init__()
 
-        config_path = Path(__file__).parents[2] / "config.ini"
+        if config_path is None:
+            config_path = Path(__file__).parents[2] / "config.ini"
 
         QSettings.setDefaultFormat(QSettings.Format.IniFormat)
         self._settings = QSettings(str(config_path), QSettings.Format.IniFormat)

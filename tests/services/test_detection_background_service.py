@@ -51,24 +51,24 @@ def test_add_background_and_retrieve(bg_service, temp_logs_dir):
 
     # Перевіряємо, що файл створився
     files = os.listdir(temp_logs_dir)
-    assert len(files) == 1
-    assert files[0].endswith(".jsonl")
+    assert len(files) == 1, f"Expected 1 log file, found {len(files)}"
+    assert files[0].endswith(".jsonl"), "Log file should have .jsonl extension"
 
     # Отримуємо дані для конкретного ID
     results_a = bg_service.get_backgrounds_by_target_id("target_A")
-    assert len(results_a) == 1
-    assert results_a[0].id == "target_A"
+    assert len(results_a) == 1, f"Expected 1 background for target_A, got {len(results_a)}"
+    assert results_a[0].id == "target_A", "Retrieved background ID mismatch for target_A"
 
     results_b = bg_service.get_backgrounds_by_target_id("target_B")
-    assert len(results_b) == 1
-    assert results_b[0].id == "target_B"
+    assert len(results_b) == 1, f"Expected 1 background for target_B, got {len(results_b)}"
+    assert results_b[0].id == "target_B", "Retrieved background ID mismatch for target_B"
 
 
 def test_get_backgrounds_non_existent_id(bg_service):
     """Тест отримання даних для неіснуючого ID."""
     bg_service.add_background(create_mock_background("id1"))
     results = bg_service.get_backgrounds_by_target_id("unknown")
-    assert len(results) == 0
+    assert len(results) == 0, "Expected 0 results for non-existent target ID"
 
 
 def test_multiple_files_handling(bg_service, temp_logs_dir):
@@ -88,6 +88,9 @@ def test_multiple_files_handling(bg_service, temp_logs_dir):
 
     # Сервіс має знайти обидва записи
     results = bg_service.get_backgrounds_by_target_id("target_1")
-    assert len(results) == 2
+    assert len(results) == 2, f"Expected 2 backgrounds across multiple files, got {len(results)}"
     # Сортування за часом
-    assert results[0].timestamp < results[1].timestamp
+    assert (
+        results[0].timestamp < results[1].timestamp
+    ), "Backgrounds should be sorted by timestamp"
+

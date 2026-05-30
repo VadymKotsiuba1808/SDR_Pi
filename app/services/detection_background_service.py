@@ -9,14 +9,15 @@ from app.models.detection_background import DetectionBackground
 
 
 class DetectionBackgroundService:
-    def __init__(self):
-        if not os.path.exists(BACKGROUND_LOGS_DIR_PATH):
-            os.makedirs(BACKGROUND_LOGS_DIR_PATH, exist_ok=True)
+    def __init__(self, logs_dir: str | None = None):
+        self.logs_dir = logs_dir or BACKGROUND_LOGS_DIR_PATH
+        if not os.path.exists(self.logs_dir):
+            os.makedirs(self.logs_dir, exist_ok=True)
         self._lock = threading.Lock()
 
         self._current_date = datetime.now().strftime("%Y-%m-%d")
         self._current_file = os.path.join(
-            BACKGROUND_LOGS_DIR_PATH, f"backgrounds_{self._current_date}.jsonl"
+            self.logs_dir, f"backgrounds_{self._current_date}.jsonl"
         )
 
     def add_background(self, bg: DetectionBackground) -> None:
@@ -25,7 +26,7 @@ class DetectionBackgroundService:
         if today != self._current_date:
             self._current_date = today
             self._current_file = os.path.join(
-                BACKGROUND_LOGS_DIR_PATH, f"backgrounds_{self._current_date}.jsonl"
+                self.logs_dir, f"backgrounds_{self._current_date}.jsonl"
             )
 
         try:
@@ -42,17 +43,17 @@ class DetectionBackgroundService:
         """
         results = []
 
-        if not os.path.exists(BACKGROUND_LOGS_DIR_PATH):
+        if not os.path.exists(self.logs_dir):
             return []
 
         files = [
-            f for f in os.listdir(BACKGROUND_LOGS_DIR_PATH) if f.endswith(".jsonl")
+            f for f in os.listdir(self.logs_dir) if f.endswith(".jsonl")
         ]
 
         files.sort()
 
         for filename in files:
-            path = os.path.join(BACKGROUND_LOGS_DIR_PATH, filename)
+            path = os.path.join(self.logs_dir, filename)
             try:
                 with open(path, "r", encoding="utf-8") as f:
                     for line in f:

@@ -1,18 +1,17 @@
-.PHONY: help lint check-deps check req req-dev sync deps
+.PHONY: help lint check-deps check req req-dev sync deps fix test ai-test ai-autofix ai-review
 
 help:
 	@echo "Available commands:"
-	@echo "  make check      - Run all checks (Ruff, MyPy, Deptry)"
-	@echo "  make fix        - Run small fixes with Ruff"
-	@echo "  make lint       - Run linter and type checker only"
-	@echo "  make deps       - Update and sync all dependencies (req + req-dev + sync)"
-	@echo "  make req        - Compile production dependencies only"
-	@echo "  make req-dev    - Compile development dependencies"
-	@echo "  make sync       - Install dependencies to local .venv"
+	@echo "  make check       - Run all checks (Ruff, MyPy, Deptry)"
+	@echo "  make fix         - Run small fixes with Ruff"
+	@echo "  make lint        - Run linter and type checker only"
+	@echo "  make test        - Run all pytest unit tests"
+	@echo "  make deps        - Update and sync all dependencies"
+	@echo "  make ai-test     - Generate tests for a specific file (use FILE=path)"
+	@echo "  make ai-autofix  - Let Gemini run check and fix errors automatically"
 
 # --- ПЕРЕВІРКА КОДУ ---
 
-# Запускає Ruff (лінтер) та MyPy (типи)
 fix:
 	ruff check . --fix
 
@@ -20,27 +19,37 @@ lint:
 	ruff check .
 	mypy . 
 
-# Запускає Deptry для перевірки залежностей
 check-deps:
 	deptry .
 
-# Головна команда перевірки 
 check: lint check-deps
 
+test:
+	pytest tests/
 
 # --- РОБОТА ІЗ ЗАЛЕЖНОСТЯМИ (pip-tools) ---
 
-# 1. Компілюємо основні залежності
 req:
 	pip-compile requirements.in
 
-# 2. Компілюємо dev залежності
 req-dev:
 	pip-compile requirements-dev.in
 
-# 3. Синхронізуємо локальне середовище (.venv)
 sync:
 	pip-sync requirements.txt requirements-dev.txt
 
-# 4. Все разом: повне оновлення середовища однією командою
 deps: req req-dev sync
+
+# --- GEMINI CLI AUTOMATION ---
+
+# Згенерувати тести для конкретного файлу
+ai-test:
+	gemini ask "Generate comprehensive pytest unit tests for $(FILE). Ensure all external dependencies are properly mocked."
+
+# Автономний цикл: ШІ сам запускає лінтери, бачить помилки і фіксить їх, поки make check не стане зеленим
+ai-autofix:
+	gemini run "Execute 'make check'. If it fails, analyze the output, fix the errors in code, and repeat until 'make check' passes successfully."
+
+# ШІ-рев'ю перед комітом
+ai-review:
+	gemini ask "Review the current git diff. Check for architectural flaws, memory leaks, and strict typing violations."

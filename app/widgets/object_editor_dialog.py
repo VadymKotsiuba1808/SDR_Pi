@@ -206,6 +206,10 @@ class ObjectEditorDialog(QDialog):
 
         obj_id = self.object_data.id if self.is_edit_mode and self.object_data else None
 
+        if rf_data is None or sound_data is None:
+            print("[ObjectEditor] Save failed: No RF or Sound data.")
+            return
+
         self.new_object = DetectionObject(
             id=obj_id,
             name=name,
@@ -294,6 +298,9 @@ class ObjectEditorDialog(QDialog):
 
         for i in range(list_widget.count()):
             item = list_widget.item(i)
+            if item is None:
+                continue
+
             existing_data = item.data(role)
 
             # Перевірка на повний дублікат
@@ -386,6 +393,9 @@ class ObjectEditorDialog(QDialog):
         if self.ui.chkRFEnable.isChecked():
             for i in range(self.ui.lstRFFreqs.count()):
                 item = self.ui.lstRFFreqs.item(i)
+                if item is None:
+                    continue
+
                 val = item.data(Qt.ItemDataRole.UserRole)
                 if val is not None:
                     data.append(str(val))
@@ -400,6 +410,9 @@ class ObjectEditorDialog(QDialog):
         if self.ui.chkSoundEnable.isChecked():
             for i in range(self.ui.lstSoundFreqs.count()):
                 item = self.ui.lstSoundFreqs.item(i)
+                if item is None:
+                    continue
+
                 val = item.data(Qt.ItemDataRole.UserRole)
                 if val is not None:
                     data.append(int(val))

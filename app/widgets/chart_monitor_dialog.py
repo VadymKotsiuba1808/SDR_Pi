@@ -37,7 +37,8 @@ class ChartMonitorDialog(QDialog):
         self._init_chart_widget()
         self._connect_handlers()
 
-        self.chart_widget.set_hover_enabled(self.is_paused)
+        if self.chart_widget is not None:
+            self.chart_widget.set_hover_enabled(self.is_paused)
 
         print("[Monitor] Dialog initialized.")
 

@@ -105,15 +105,17 @@ class LogDialog(QDialog):
         t.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         t.setWordWrap(True)
         header = t.horizontalHeader()
-        header.setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
-        t.setColumnWidth(0, 120)
-        t.setColumnWidth(1, 120)
-        header.setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
-        t.setColumnWidth(3, 140)
-        t.setColumnWidth(4, 180)
-        t.setColumnWidth(5, 150)
-        t.setColumnWidth(6, 100)
-        t.setColumnWidth(7, 100)
+
+        if header is not None:
+            header.setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
+            t.setColumnWidth(0, 120)
+            t.setColumnWidth(1, 120)
+            header.setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
+            t.setColumnWidth(3, 140)
+            t.setColumnWidth(4, 180)
+            t.setColumnWidth(5, 150)
+            t.setColumnWidth(6, 100)
+            t.setColumnWidth(7, 100)
 
     def _init_charts(self) -> None:
         self.chart_gen = StaticChartWidget(self.settings_service)

@@ -92,7 +92,9 @@ class ObjectManagerDialog(QDialog):
 
     def _init_table(self) -> None:
         header = self.ui.tableWidget.horizontalHeader()
-        header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        if header is not None:
+            header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+
         self.ui.tableWidget.setColumnWidth(1, 100)
         self.ui.tableWidget.setColumnWidth(2, 100)
         self.ui.tableWidget.setColumnWidth(3, 150)
@@ -298,6 +300,10 @@ class ObjectManagerDialog(QDialog):
             return None
         row = selected_items[0].row()
         item = self.ui.tableWidget.item(row, 0)
+
+        if item is None:
+            return None
+
         val = item.data(Qt.ItemDataRole.UserRole)
         return int(val) if val is not None else None
 

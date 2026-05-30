@@ -84,6 +84,9 @@ class LogService:
             if log_date != self._current_session_date:
                 self._rotate_session_to_date(log_date)
 
+            if not self._current_log_filename:
+                break
+
             if not self._append_batch_to_disk(self._current_log_filename, batch):
                 with self._lock:
                     self._buffer = batch + self._buffer

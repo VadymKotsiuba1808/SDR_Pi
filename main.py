@@ -71,7 +71,8 @@ async def main():
         await future
 
     else:
-        app.quit()
+        if app is not None:
+            app.quit()
 
 
 if __name__ == "__main__":

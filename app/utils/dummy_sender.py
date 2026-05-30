@@ -340,13 +340,19 @@ class AdvancedNetworkUtility(QObject):
             print("[NetService] Dropping old connection.")
             self.client_socket.close()
 
-        self.client_socket = self.server.nextPendingConnection()
-        print(
-            f"[NetService] Client connected: {self.client_socket.peerAddress().toString()}"
-        )
+        if self.server is None:
+            print("[NetService] ERROR: Server not initialized.")
+            return
 
-        self.client_socket.readyRead.connect(self._read_socket_data)
-        self.client_socket.disconnected.connect(self._on_client_disconnected)
+        self.client_socket = self.server.nextPendingConnection()
+
+        if self.client_socket is not None:
+            print(
+                f"[NetService] Client connected: {self.client_socket.peerAddress().toString()}"
+            )
+
+            self.client_socket.readyRead.connect(self._read_socket_data)
+            self.client_socket.disconnected.connect(self._on_client_disconnected)
 
         print("[NetService] New session started. Clearing False Alarm blacklist.")
         self.session_blacklist.clear()
@@ -467,7 +473,11 @@ class AdvancedNetworkUtility(QObject):
                 self.db.update_object(DetectionObject.from_dict(obj_data))
 
         elif action == "db_request_delete":
-            self.db.delete_object(data.get("id"))
+            id_to_delete = data.get("id")
+
+            if id_to_delete:
+                id_to_delete = int(id_to_delete)
+                self.db.delete_object(id_to_delete)
 
         elif action == "db_request_classes":
             self.db.request_classes()
@@ -491,7 +501,11 @@ class AdvancedNetworkUtility(QObject):
                     self.db.update_class(cls_obj)
 
         elif action == "db_request_delete_class":
-            self.db.delete_class(data.get("id"))
+            id_to_delete = data.get("id")
+
+            if id_to_delete:
+                id_to_delete = int(id_to_delete)
+                self.db.delete_class(id_to_delete)
 
     def _check_stream_timer(self):
         """Вмикає або вимикає швидкий таймер залежно від потреби."""

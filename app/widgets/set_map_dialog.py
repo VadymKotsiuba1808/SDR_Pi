@@ -14,7 +14,7 @@ from PyQt6.QtCore import (
     Qt,
     QTranslator,
 )
-from PyQt6.QtGui import QPainter, QPixmap, QTransform
+from PyQt6.QtGui import QMouseEvent, QPainter, QPixmap, QTransform
 from PyQt6.QtWidgets import (
     QDialog,
     QFileDialog,
@@ -64,8 +64,9 @@ class SetMapDialog(QDialog):
 
         self.screen_center_f = QPointF(cx, cy)
 
-    def changeEvent(self, event):
-        if event.type() == QEvent.Type.LanguageChange:
+    def changeEvent(self, a0: QEvent | None) -> None:
+        event = a0
+        if event and event.type() == QEvent.Type.LanguageChange:
             if DEV_COMPILED_UI_USING_ENABLED:
                 self.ui.retranslateUi(self)
         else:
@@ -147,14 +148,20 @@ class SetMapDialog(QDialog):
 
         self.ui.mapDisplayLabel.setPixmap(canvas)
 
-    def eventFilter(self, source: QObject, event: QEvent):
+    def eventFilter(self, a0: QObject | None, a1: QEvent | None) -> bool:
         """
         Обробляє клік по карті або колу.
         Використовує ГЛОБАЛЬНІ координати для уникнення помилок зміщення.
         """
+        source = a0
+        event = a1
+
+        if not source or not event:
+            return super().eventFilter(source, event)
+
         if (
             (source is self.ui.mapDisplayLabel or source is self.ui.centerCircleLabel)
-            and event.type() == QEvent.Type.MouseButtonPress
+            and isinstance(event, QMouseEvent)
             and self.is_centering_mode
         ):
             if event.button() == Qt.MouseButton.LeftButton:

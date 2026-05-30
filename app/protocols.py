@@ -14,7 +14,7 @@ class LangSettings(Protocol):
 
 class MapServiceSettings(Protocol):
     api_key: str
-    radar_max_radius_km: int
+    radar_max_radius_km: float
     zoom: int
 
 
@@ -31,7 +31,7 @@ class ChangePwdDialogSettings(Protocol):
 
 
 class SetMapDialogSettings(Protocol):
-    radar_max_radius_km: int
+    radar_max_radius_km: float
     lang_code: str
 
 

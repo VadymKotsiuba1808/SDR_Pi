@@ -40,8 +40,9 @@ class ChangePwdDialog(QDialog):
         self._connect_handlers()
         self._load_language()
 
-    def changeEvent(self, event: QEvent) -> None:
-        if event.type() == QEvent.Type.LanguageChange:
+    def changeEvent(self, a0: QEvent | None) -> None:
+        event = a0
+        if event and event.type() == QEvent.Type.LanguageChange:
             if DEV_COMPILED_UI_USING_ENABLED:
                 print("[ChangePwdDialog] Language change detected, updating UI...")
                 self.ui.retranslateUi(self)

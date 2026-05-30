@@ -7,6 +7,7 @@ from typing import Optional, cast
 
 from PyQt6 import uic
 from PyQt6.QtCore import QCoreApplication, QEvent, QTranslator
+from PyQt6.QtGui import QCloseEvent
 from PyQt6.QtWidgets import QDialog, QLineEdit, QWidget
 
 from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
@@ -43,8 +44,9 @@ class LoginDialog(QDialog):
         self._load_language()
         print("[LoginDialog] Initialization complete.")
 
-    def changeEvent(self, event: QEvent) -> None:
-        if event.type() == QEvent.Type.LanguageChange:
+    def changeEvent(self, a0: QEvent | None) -> None:
+        event = a0
+        if event and event.type() == QEvent.Type.LanguageChange:
             if DEV_COMPILED_UI_USING_ENABLED:
                 print("[LoginDialog] Language change detected, updating UI...")
                 self.ui.retranslateUi(self)
@@ -156,9 +158,12 @@ class LoginDialog(QDialog):
     def accept_window(self) -> None:
         self.finished.emit(QDialog.DialogCode.Accepted)
 
-    def closeEvent(self, event: QEvent) -> None:
+    def closeEvent(self, a0: QCloseEvent | None) -> None:
+        event = a0
+
         if hasattr(self, "auth_service"):
             self.auth_service.stop_monitoring()
 
         self.done(QDialog.DialogCode.Rejected)
-        event.accept()
+        if event:
+            event.accept()

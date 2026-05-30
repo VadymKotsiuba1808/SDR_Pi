@@ -44,8 +44,9 @@ class ChartMonitorDialog(QDialog):
         self._load_language()
         self._start_stream_for_current_source()
 
-    def changeEvent(self, event: QEvent) -> None:
-        if event.type() == QEvent.Type.LanguageChange:
+    def changeEvent(self, a0: QEvent | None) -> None:
+        event = a0
+        if event and event.type() == QEvent.Type.LanguageChange:
             if DEV_COMPILED_UI_USING_ENABLED:
                 print("[Settings] Language change detected, retranslating UI...")
                 self.ui.retranslateUi(self)
@@ -176,7 +177,9 @@ class ChartMonitorDialog(QDialog):
         if self.chart_widget:
             self.chart_widget.update_data(chunk)
 
-    def closeEvent(self, event: QCloseEvent) -> None:
+    def closeEvent(self, a0: QCloseEvent | None) -> None:
+        event = a0
+
         print("[Monitor] Closing dialog, stopping stream...")
 
         if self.is_paused:
@@ -187,4 +190,5 @@ class ChartMonitorDialog(QDialog):
         else:
             self.network_service.request_sound_data_end()
 
-        event.accept()
+        if event:
+            event.accept()

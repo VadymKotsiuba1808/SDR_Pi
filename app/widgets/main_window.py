@@ -7,6 +7,7 @@ from PyQt6.QtCore import (
     QCoreApplication,
     QDateTime,
     QEvent,
+    QObject,
     QPointF,
     QStorageInfo,
     Qt,
@@ -18,8 +19,10 @@ from PyQt6.QtCore import (
 from PyQt6.QtGui import (
     QCloseEvent,
     QDesktopServices,
+    QMouseEvent,
     QPainter,
     QPixmap,
+    QResizeEvent,
     QShowEvent,
     QTransform,
 )
@@ -134,7 +137,8 @@ class MainWindow(QMainWindow):
         print("[MainWindow] Initialization complete.")
 
     # region --- Init ---
-    def showEvent(self, event: QShowEvent) -> None:
+    def showEvent(self, a0: QShowEvent | None) -> None:
+        event = a0
 
         super().showEvent(event)
         # self.ui.map_background_label.setScaledContents(False)
@@ -145,24 +149,37 @@ class MainWindow(QMainWindow):
             Qt.TransformationMode.FastTransformation,
         )
 
-    def resizeEvent(self, event) -> None:
-        self._update_map_geometry()
+    def resizeEvent(self, a0: QResizeEvent | None) -> None:
+        event = a0
+
+        if event:
+            self._update_map_geometry()
+
         super().resizeEvent(event)
 
-    def changeEvent(self, event: QEvent) -> None:
-        if event.type() == QEvent.Type.LanguageChange:
+    def changeEvent(self, a0: QEvent | None) -> None:
+        event = a0
+
+        if event and event.type() == QEvent.Type.LanguageChange:
             if DEV_COMPILED_UI_USING_ENABLED:
                 print("[MainWindow] Language change detected, updating UI...")
                 self.ui.retranslateUi(self)
         else:
             super().changeEvent(event)
 
-    def eventFilter(self, source, event):
-        if source == self.ui.Radar and event.type() == QEvent.Type.MouseButtonPress:
+    def eventFilter(self, a0: QObject | None, a1: QEvent | None) -> bool:
+        source = a0
+        event = a1
+
+        if source is None or event is None:
+            return super().eventFilter(source, event)
+
+        if source == self.ui.Radar and isinstance(event, QMouseEvent):
             if event.button() == Qt.MouseButton.LeftButton:
                 pos = event.pos()
                 self.handle_radar_click(pos.x(), pos.y())
                 return True
+
         return super().eventFilter(source, event)
 
     def _load_ui(self) -> None:
@@ -1153,7 +1170,8 @@ class MainWindow(QMainWindow):
 
     # endregion
 
-    def closeEvent(self, event: QCloseEvent) -> None:
+    def closeEvent(self, a0: QCloseEvent | None) -> None:
+        event = a0
         print("[MainWindow] Application closing...")
         QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         try:
@@ -1169,4 +1187,5 @@ class MainWindow(QMainWindow):
                 self.log_service.stop()
         finally:
             QApplication.restoreOverrideCursor()
-            event.accept()
+            if event:
+                event.accept()

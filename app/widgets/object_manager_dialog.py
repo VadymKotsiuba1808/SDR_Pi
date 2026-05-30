@@ -63,8 +63,9 @@ class ObjectManagerDialog(QDialog):
         self.refresh_data()
         self._load_language()
 
-    def changeEvent(self, event: QEvent) -> None:
-        if event.type() == QEvent.Type.LanguageChange:
+    def changeEvent(self, a0: QEvent | None) -> None:
+        event = a0
+        if event and event.type() == QEvent.Type.LanguageChange:
             if DEV_COMPILED_UI_USING_ENABLED:
                 self.ui.retranslateUi(self)
         else:

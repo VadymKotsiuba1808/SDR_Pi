@@ -2,6 +2,8 @@
 E2E тести для перевірки авторизації та розмежування прав доступу (RBAC).
 """
 
+from unittest.mock import patch
+
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QDialog
 
@@ -126,3 +128,35 @@ def test_change_password_flow(app_services, qtbot):
 
     assert settings.owner_password_hash != hash_password("old_pass")
     assert verify_password("new_pass_123", settings.owner_password_hash) is True
+
+
+def test_logout_and_user_change_flow(app_services, qtbot, e2e_server):
+    """
+    Сценарій 18: Повний цикл виходу (Logout) та зміна користувача.
+    """
+    settings = app_services["settings"]
+    settings.role = "owner"
+    settings.remember_me = True
+
+    main_win = MainWindow(settings, app_services["keyboard"], app_services["system"])
+    qtbot.addWidget(main_win)
+    main_win.show()
+
+    # 1. Натискаємо вихід (у Власника це зазвичай через меню або спеціальну кнопку,
+    # якщо її немає прямо в UI, ми викликаємо метод restart_app)
+    # Оскільки ми мокаємо перезапуск, ми просто перевіряємо логіку скидання.
+    with patch("PyQt6.QtWidgets.QApplication.quit"):  # Запобігаємо реальному закриттю
+        main_win.restart_app()
+
+    # 2. Перевіряємо скидання налаштувань
+    assert settings.remember_me is False, "Remember me should be cleared on logout"
+    assert settings.role == "operator", "Role should revert to default operator"
+
+    # 3. Емулюємо повернення до вікна логіну
+    login_dlg = LoginDialog(settings, app_services["keyboard"])
+    qtbot.addWidget(login_dlg)
+    login_dlg.show()
+
+    assert login_dlg.ui.roleComboBox.currentIndex() == 0, (
+        "Should default back to Operator"
+    )

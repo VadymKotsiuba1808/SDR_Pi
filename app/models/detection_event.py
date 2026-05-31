@@ -48,7 +48,7 @@ class DetectionEvent:
     def to_dict(self) -> dict:
         return {
             "id": self.id,
-            "type": self.type,
+            "type": self.type.value if hasattr(self.type, "value") else self.type,
             "name": self.name,
             "object_class": self.object_class,
             "confidence": self.confidence,

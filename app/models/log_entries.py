@@ -15,6 +15,12 @@ class FalseAlarmPayload:
     detection_id: str
     name: str
 
+    def to_dict(self) -> dict:
+        return {
+            "detection_id": self.detection_id,
+            "name": self.name,
+        }
+
     @staticmethod
     def from_dict(data: dict) -> "FalseAlarmPayload":
         return FalseAlarmPayload(
@@ -45,11 +51,13 @@ class LogEntry(BaseLogEntry[Union[DetectionEvent, FalseAlarmPayload]]):
     def to_dict(self) -> dict:
         """Серіалізація у JSON."""
 
-        return {
-            "type": self.type,
-            "timestamp": self.timestamp,
-            "payload": self.payload.__dict__,
-        }
+        payload_data = (
+            self.payload.to_dict()
+            if hasattr(self.payload, "to_dict")
+            else self.payload.__dict__
+        )
+
+        return {"type": self.type, "timestamp": self.timestamp, "payload": payload_data}
 
     @staticmethod
     def from_dict(data: dict) -> "LogEntry":

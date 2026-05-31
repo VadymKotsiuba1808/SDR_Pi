@@ -14,8 +14,8 @@ class GPSData:
     @staticmethod
     def from_dict(data: dict) -> "GPSData":
         return GPSData(
-            lat=data.get("lat", 0),
-            lon=int(data.get("lon", 0)),
+            lat=float(data.get("lat", 0)),
+            lon=float(data.get("lon", 0)),
             strength=data.get("strength", 0),
         )
 

@@ -206,7 +206,7 @@ class ObjectEditorDialog(QDialog):
 
         obj_id = self.object_data.id if self.is_edit_mode and self.object_data else None
 
-        if rf_data is None or sound_data is None:
+        if rf_data is None and sound_data is None:
             print("[ObjectEditor] Save failed: No RF or Sound data.")
             return
 
@@ -216,8 +216,8 @@ class ObjectEditorDialog(QDialog):
             class_id=int(selected_class_id),
             object_class=selected_class_name,
             is_dangerous=self.ui.chkDangerous.isChecked(),
-            rf_params_hz=rf_data,
-            sound_params_hz=sound_data,
+            rf_params_hz=rf_data or [],
+            sound_params_hz=sound_data or [],
         )
 
         print(f"[ObjectEditor] Object saved: {name} (ClassID: {selected_class_id})")

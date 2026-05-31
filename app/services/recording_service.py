@@ -32,6 +32,10 @@ class RecordingService(QThread):
         self.is_paused = False
         self.filename = ""
 
+        self.prev_total_ms = 0
+        self.dif_time_ms = 0
+        self.pause_start = 0
+
         if self.system_service.is_windows:
             self.fps = 30
             self.monitor_index = 1
@@ -155,9 +159,6 @@ class RecordingService(QThread):
                 return
 
         self.start_time.start()
-        self.prev_total_ms = 0
-        self.dif_time_ms = 0
-        self.pause_start = 0
 
         self.recording_started.emit()
 

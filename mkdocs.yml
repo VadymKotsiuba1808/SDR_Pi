@@ -72,6 +72,7 @@ nav:
       - Як додати новий клас об'єкта: how-to/add_object_class.md
       - Керування РЕБ та GPS: how-to/hardware_control.md
       - Робота з логами: how-to/manage_logs.md
+      - Медіа (Скріншоти та Запис): how-to/media.md
       - Багатомовність (i18n): how-to/translations.md
   - API Довідник (Клієнт):
       - Сервіси (Services): api/services.md

@@ -5,6 +5,7 @@ from PyQt6.QtCore import QCoreApplication, QEvent, Qt, QTranslator
 from PyQt6.QtWidgets import QDialog, QLineEdit, QPushButton, QWidget
 
 from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
+from app.core.mixins import TestUIOptimizationMixin
 from app.protocols import ChangePwdDialogSettings
 from app.services.keyboard_service import KeyboardService
 from app.ui.ui_change_pwd_dialog import Ui_ChangePwdDialog
@@ -14,7 +15,7 @@ from app.validators.password_validator import PasswordValidator
 from app.widgets.keyboard_widget import KeyboardWidget
 
 
-class ChangePwdDialog(QDialog):
+class ChangePwdDialog(QDialog, TestUIOptimizationMixin):
     """
     Діалог зміни пароля.
     Реалізує логіку інтерфейсу для оновлення облікових даних: валідація нового та збереження змін.
@@ -39,6 +40,8 @@ class ChangePwdDialog(QDialog):
         self._adjust_fields()
         self._connect_handlers()
         self._load_language()
+
+        self.apply_test_ui_optimization()
 
     def changeEvent(self, a0: QEvent | None) -> None:
         event = a0

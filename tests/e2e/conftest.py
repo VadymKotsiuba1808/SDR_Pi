@@ -2,6 +2,7 @@
 Загальні фікстури для E2E тестів.
 """
 
+import os
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -18,6 +19,9 @@ from pi_server.pi_server_service import PiServerService
 # Глобальний патч для системних модулів до будь-яких імпортів сервісів
 @pytest.fixture(scope="session", autouse=True)
 def mock_os_modules():
+    # Встановлюємо прапор тестування для згортання вікон
+    os.environ["SDR_PI_TESTING"] = "1"
+
     with patch.dict(
         "sys.modules",
         {

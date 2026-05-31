@@ -6,6 +6,7 @@ from PyQt6.QtGui import QCloseEvent
 from PyQt6.QtWidgets import QDialog, QWidget
 
 from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
+from app.core.mixins import TestUIOptimizationMixin
 from app.models.source_type import SourceType
 from app.models.stream_data import StreamDataChunk
 from app.protocols import LangSettings
@@ -14,7 +15,7 @@ from app.ui.ui_chart_monitor_dialog import Ui_ChartMonitorDialog
 from app.widgets.dynamic_chart_widget import DynamicChartWidget
 
 
-class ChartMonitorDialog(QDialog):
+class ChartMonitorDialog(QDialog, TestUIOptimizationMixin):
     """
     Діалог моніторингу сигналів у реальному часі.
     Керує потоком даних від NetworkService до DynamicChartWidget.
@@ -44,6 +45,7 @@ class ChartMonitorDialog(QDialog):
 
         self._load_language()
         self._start_stream_for_current_source()
+        self.apply_test_ui_optimization()
 
     def changeEvent(self, a0: QEvent | None) -> None:
         event = a0

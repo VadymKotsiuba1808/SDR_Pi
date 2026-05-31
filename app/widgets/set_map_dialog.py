@@ -22,12 +22,13 @@ from PyQt6.QtWidgets import (
 )
 
 from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
+from app.core.mixins import TestUIOptimizationMixin
 from app.models.map_settings import CustomMapSettings
 from app.protocols import SetMapDialogSettings
 from app.ui.ui_set_map_dialog import Ui_SetMapDialog
 
 
-class SetMapDialog(QDialog):
+class SetMapDialog(QDialog, TestUIOptimizationMixin):
     def __init__(
         self,
         settings: SetMapDialogSettings,
@@ -50,6 +51,7 @@ class SetMapDialog(QDialog):
         self._adjust_fields()
         self._connect_handlers()
         self._load_language()
+        self.apply_test_ui_optimization()
 
     def _calculate_screen_center(self):
         """

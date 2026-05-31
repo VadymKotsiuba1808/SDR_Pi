@@ -285,3 +285,46 @@ def test_object_editor_validation_flow(app_services, qtbot, e2e_server):
     with patch("PyQt6.QtWidgets.QMessageBox.warning") as mock_warn:
         qtbot.mouseClick(editor.ui.btnAddRF, Qt.MouseButton.LeftButton)
         assert mock_warn.called, "Should show warning for duplicate RF range"
+
+
+def test_server_error_handling_flow(app_services, qtbot, e2e_server):
+    """
+    Сценарій 19: Обробка помилок сервера (Internal Server Error 500).
+    """
+    settings = app_services["settings"]
+    settings.role = "owner"
+    main_win = MainWindow(settings, app_services["keyboard"], app_services["system"])
+    qtbot.addWidget(main_win)
+    main_win.show()
+
+    # 1. Відкриваємо менеджер
+    obj_mgr = ObjectManagerDialog(
+        main_win.pi_network, settings, app_services["keyboard"]
+    )
+    qtbot.addWidget(obj_mgr)
+    obj_mgr.show()
+
+    # 2. Мокаємо сервер так, щоб він повернув помилку на наступний запит
+    from app.models.service_response import DbOperation, ServiceResponse, StatusCode
+
+    error_resp = ServiceResponse(
+        operation=DbOperation.GET_OBJECTS_PAGE,
+        status=StatusCode.INTERNAL_ERROR,
+        message="Database connection lost on server side",
+        data={},
+    )
+
+    # 3. Перевіряємо відображення повідомлення про помилку
+    # Коли приходить пакет db_operation_result з помилкою, діалог має показати QMessageBox
+    with patch("PyQt6.QtWidgets.QMessageBox.critical") as mock_error:
+        main_win.pi_network.request_finished.emit(error_resp)
+        qtbot.wait_until(lambda: mock_error.called, timeout=2000)
+
+    # Перевіряємо заголовок або текст (ServiceResponse підставляє дефолтний текст для 500)
+    assert mock_error.called
+    error_text = mock_error.call_args[0][2]
+    assert (
+        "Internal server error" in error_text
+        or "Помилка" in error_text
+        or "error" in error_text.lower()
+    )

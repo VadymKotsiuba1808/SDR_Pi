@@ -1171,6 +1171,8 @@ class MainWindow(QMainWindow):
     def restart_app(self) -> None:
         print("[MainWindow] Logout requested. Restarting application...")
         self.settings_service.remember_me = False
+        self.settings_service.role = "operator"
+        self.settings_service.sync()
         self.setEnabled(False)
         restart_process()
 

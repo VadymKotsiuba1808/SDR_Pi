@@ -10,7 +10,9 @@ from app.utils.chart_math import ChartMath
 
 def test_calculate_nice_axis_basic():
     """Тест розрахунку кроків осі для стандартних значень."""
-    nice_max, nice_step, actual_ticks = ChartMath.calculate_nice_axis(100, target_ticks=5)
+    nice_max, nice_step, actual_ticks = ChartMath.calculate_nice_axis(
+        100, target_ticks=5
+    )
 
     assert nice_max == 100
     assert nice_step == 20
@@ -19,7 +21,9 @@ def test_calculate_nice_axis_basic():
 
 def test_calculate_nice_axis_small():
     """Тест розрахунку кроків осі для малих значень."""
-    nice_max, nice_step, actual_ticks = ChartMath.calculate_nice_axis(0.5, target_ticks=5)
+    nice_max, nice_step, actual_ticks = ChartMath.calculate_nice_axis(
+        0.5, target_ticks=5
+    )
 
     assert nice_max >= 0.5
     assert nice_step > 0

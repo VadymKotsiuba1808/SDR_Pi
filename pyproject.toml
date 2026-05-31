@@ -43,3 +43,4 @@ pywin32 = ["win32api", "win32gui", "win32con"]
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
+timeout = 15

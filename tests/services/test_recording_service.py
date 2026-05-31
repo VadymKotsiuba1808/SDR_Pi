@@ -104,4 +104,4 @@ def test_toggle_pause(mock_system_windows):
     service.toggle_pause(False)
 
     assert service.is_paused is False
-    assert service.dif_time_ms == 2000 # 3000 - 1000
+    assert service.dif_time_ms == 2000  # 3000 - 1000

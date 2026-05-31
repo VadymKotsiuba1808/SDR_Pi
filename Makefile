@@ -1,4 +1,4 @@
-.PHONY: help lint check-deps check req req-dev sync deps format fix test ai-test ai-autofix ai-review
+.PHONY: help lint check-deps check req req-dev sync deps format fix test ai-test ai-autofix ai-review docs docs-build
 
 help:
 	@echo "Available commands:"
@@ -9,6 +9,8 @@ help:
 	@echo "  make test-raw    - Run standard pytest output"
 	@echo "  make coverage    - Run all tests and measure code coverage"
 	@echo "  make cov-report  - Open visual HTML coverage report in browser"
+	@echo "  make docs        - Run MkDocs development server with live reload"
+	@echo "  make docs-build  - Build static MkDocs documentation site"
 	@echo "  make ai-test     - Generate tests for a specific file (use FILE=path)"
 	@echo "  make ai-autofix  - Let Gemini format, check, and fix errors automatically"
 
@@ -67,5 +69,10 @@ ai-test:
 ai-autofix:
 	gemini run "Execute 'make check'. If it fails, analyze the output, fix the errors in code, and repeat until 'make check' passes successfully."
 
-ai-review:
-	gemini ask "Review the current git diff. Check for architectural flaws, memory leaks, and strict typing violations."
+# --- DOCUMENTATION ---
+
+docs:
+	python -m mkdocs serve
+
+docs-build:
+	python -m mkdocs build

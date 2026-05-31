@@ -31,13 +31,15 @@ class TestGroup:
     description: str
 
 
-def run_group(group: TestGroup) -> tuple[int, List[str], List[str]]:
+def run_group(
+    group: TestGroup, collect_cov: bool = False
+) -> tuple[int, List[str], List[str]]:
     print(
         f"\n{Colors.BOLD}{Colors.OKBLUE}=== Running Group: {group.name} ==={Colors.ENDC}"
     )
     print(f"{Colors.OKCYAN}{group.description}{Colors.ENDC}")
 
-    # Використовуємо -ra та --tb=short
+    # Базова команда
     cmd = [
         sys.executable,
         "-m",
@@ -47,6 +49,11 @@ def run_group(group: TestGroup) -> tuple[int, List[str], List[str]]:
         "--tb=short",
         "--no-header",
     ]
+
+    if collect_cov:
+        # Додаємо параметри покриття
+        # --cov-append дозволяє накопичувати дані від різних груп тестів
+        cmd.extend(["--cov=app", "--cov=pi_server", "--cov-append", "--cov-report="])
 
     env = os.environ.copy()
     env["PYTHONIOENCODING"] = "utf-8"
@@ -79,10 +86,8 @@ def run_group(group: TestGroup) -> tuple[int, List[str], List[str]]:
             stripped = line.strip()
 
             # --- 1. Секція FAILURES (Tracebacks) ---
-            # Приклад: ________________ test_name ________________
             if re.match(r"^_{3,}.+_{3,}$", stripped):
                 in_failures_section = True
-                # Очищаємо назву від підкреслень
                 test_name = stripped.strip("_ ").split()[0]
                 current_failure_test = test_name
                 failure_details[current_failure_test] = []
@@ -126,15 +131,12 @@ def run_group(group: TestGroup) -> tuple[int, List[str], List[str]]:
 
             if in_short_summary:
                 if line.startswith("FAILED ") or line.startswith("ERROR "):
-                    # Отримуємо повну назву тесту
                     parts = line.split(" ", 1)
                     if len(parts) > 1:
                         test_id = parts[1].split(" - ")[0].strip()
                         test_func_name = test_id.split("::")[-1]
 
-                        # Шукаємо детальну помилку
                         detail = "No details"
-                        # Шукаємо збіг по імені функції
                         if (
                             test_func_name in failure_details
                             and failure_details[test_func_name]
@@ -154,6 +156,13 @@ def run_group(group: TestGroup) -> tuple[int, List[str], List[str]]:
 
 
 def main():
+    # Перевіряємо чи потрібно збирати покриття
+    collect_cov = "--cov" in sys.argv
+
+    if collect_cov:
+        # Очищаємо старі дані покриття перед початком
+        subprocess.run([sys.executable, "-m", "coverage", "erase"])
+
     groups = [
         TestGroup(
             "Unit: Models", "tests/models/", "Тестування структур даних та серіалізації"
@@ -182,7 +191,7 @@ def main():
     ]
 
     print(
-        f"\n{Colors.HEADER}{Colors.BOLD}SDR_Pi Test Suite Runner (Professional Report){Colors.ENDC}"
+        f"\n{Colors.HEADER}{Colors.BOLD}SDR_Pi Test Suite Runner (with Coverage Support){Colors.ENDC}"
     )
     print("=" * 80)
 
@@ -192,7 +201,7 @@ def main():
     all_warnings = []
 
     for group in groups:
-        exit_code, group_fails, group_warns = run_group(group)
+        exit_code, group_fails, group_warns = run_group(group, collect_cov=collect_cov)
         if exit_code != 0:
             failed_groups.append(group.name)
         all_failures.extend(group_fails)
@@ -205,7 +214,7 @@ def main():
     print("\n" + "=" * 80)
     print(f"{Colors.BOLD}{Colors.UNDERLINE}FINAL SUMMARY REPORT{Colors.ENDC}")
     print("=" * 80)
-    print(f"Total duration: {duration:.2f}s")
+    print(f"Total tests duration: {duration:.2f}s")
 
     # Ворнінги
     if all_warnings:
@@ -240,6 +249,42 @@ def main():
         )
         for gname in failed_groups:
             print(f"  - {gname}")
+
+    if collect_cov:
+        print("\n" + "=" * 80)
+        print(f"{Colors.BOLD}GENERATING COVERAGE REPORTS{Colors.ENDC}")
+        print("=" * 80)
+
+        # Використовуємо модуль coverage для звіту
+        subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "coverage",
+                "report",
+                "--include=app/*,pi_server/*",
+                "-m",
+            ]
+        )
+
+        # Генерація HTML
+        os.makedirs("tests/coverage_html", exist_ok=True)
+        subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "coverage",
+                "html",
+                "-d",
+                "tests/coverage_html",
+                "--include=app/*,pi_server/*",
+            ]
+        )
+
+        print(f"\n{Colors.OKGREEN}✅ Terminal report generated above.{Colors.ENDC}")
+        print(
+            f"{Colors.OKGREEN}✅ HTML report generated at: {Colors.BOLD}tests/coverage_html/index.html{Colors.ENDC}"
+        )
 
     print(
         "\n"

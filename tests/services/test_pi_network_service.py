@@ -22,7 +22,6 @@ def mock_settings():
     settings = MagicMock()
     settings.pi_target_ip = "127.0.0.1"
     settings.pi_target_port = 6000
-    settings.pi_is_receiver = False
     return settings
 
 

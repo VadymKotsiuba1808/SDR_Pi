@@ -15,10 +15,9 @@ from pi_server.pi_server_service import PiServerService
 class MockSettings:
     """Мок для NetworkServiceSettings."""
 
-    def __init__(self, ip: str, port: int, is_receiver: bool = False):
+    def __init__(self, ip: str, port: int):
         self.pi_target_ip = ip
         self.pi_target_port = port
-        self.pi_is_receiver = is_receiver
 
 
 @pytest.fixture

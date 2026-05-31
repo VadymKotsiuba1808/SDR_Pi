@@ -11,6 +11,7 @@ from app.core.constants import (
     DEV_COMPILED_UI_USING_ENABLED,
     RELAY_NAMES_LIST,
 )
+from app.core.mixins import TestUIOptimizationMixin
 from app.models.settings import CleanRule
 from app.protocols import SettingsDialogSettings
 from app.ui.ui_settings_dialog import Ui_SettingsDialog
@@ -36,7 +37,7 @@ class SettingsData:
 RELAYS_DIVIDER = ", "
 
 
-class SettingsDialog(QDialog):
+class SettingsDialog(QDialog, TestUIOptimizationMixin):
     """
     Сторінка налаштувань.
     Логіка відображення та зміни конфігурації системи.
@@ -59,6 +60,8 @@ class SettingsDialog(QDialog):
         self._adjust_fields()
         self._connect_handlers()
         self._load_language()
+
+        self.apply_test_ui_optimization()
 
         print("[Settings] Dialog initialized.")
 

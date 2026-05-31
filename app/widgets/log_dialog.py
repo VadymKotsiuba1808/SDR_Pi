@@ -13,6 +13,7 @@ from PyQt6.QtWidgets import (
 )
 
 from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
+from app.core.mixins import TestUIOptimizationMixin
 from app.models.detection_background import DetectionBackground
 from app.models.detection_event import DetectionEvent
 from app.models.log_entries import (
@@ -32,7 +33,7 @@ from app.utils.ui_utils import update_element_styles
 from app.widgets.static_chart_widget import StaticChartWidget
 
 
-class LogDialog(QDialog):
+class LogDialog(QDialog, TestUIOptimizationMixin):
     """
     Сторінка логів.
     Відображає історію, графіки та дозволяє фільтрувати події.
@@ -64,6 +65,7 @@ class LogDialog(QDialog):
 
         self._load_language()
         print("[LogDialog] Initialized.")
+        self.apply_test_ui_optimization()
 
     def changeEvent(self, a0: QEvent | None) -> None:
         event = a0

@@ -5,6 +5,7 @@ from PyQt6.QtCore import QCoreApplication, QEvent, Qt, QTranslator
 from PyQt6.QtWidgets import QDialog, QListWidget, QListWidgetItem, QMessageBox, QWidget
 
 from app.core.constants import DEV_COMPILED_UI_USING_ENABLED, RF_PARAMS__DIVIDER
+from app.core.mixins import TestUIOptimizationMixin
 from app.models.detection_object import DetectionObject
 from app.models.object_class import ObjectClass
 from app.protocols import LangSettings
@@ -14,7 +15,7 @@ from app.utils.convert_measurement_unit import convert_hz_to_mhz, convert_mhz_to
 from app.widgets.keyboard_widget import KeyboardWidget
 
 
-class ObjectEditorDialog(QDialog):
+class ObjectEditorDialog(QDialog, TestUIOptimizationMixin):
     """
     Діалог додавання/редагування об'єкта.
     Логіка: RF та Sound є взаємовиключними (як RadioButton).
@@ -53,6 +54,7 @@ class ObjectEditorDialog(QDialog):
             self._toggle_sound_fields(self.ui.chkSoundEnable.isChecked())
 
         print(f"[ObjectEditor] Initialized. Edit mode: {self.is_edit_mode}")
+        self.apply_test_ui_optimization()
 
     def changeEvent(self, a0: QEvent | None) -> None:
         event = a0

@@ -4,7 +4,7 @@ import subprocess
 import sys
 import time
 from dataclasses import dataclass
-from typing import List
+from typing import Dict, List
 
 # Налаштування кодування для Windows
 if sys.platform == "win32":
@@ -78,7 +78,7 @@ def run_group(
 
     current_warning_test = None
     current_failure_test = None
-    failure_details = {}  # test_id -> list of error lines
+    failure_details: Dict[str, List[str]] = {}  # test_id -> list of error lines
 
     if process.stdout:
         for line in process.stdout:

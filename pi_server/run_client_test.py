@@ -28,7 +28,6 @@ class C:
 
 class SettingsService:
     def __init__(self):
-        self.pi_is_receiver = False
         self.pi_target_ip = "192.168.0.162"  # Ваша IP
         self.pi_target_port = 6000
 

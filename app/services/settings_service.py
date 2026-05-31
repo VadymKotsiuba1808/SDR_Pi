@@ -25,7 +25,6 @@ class SettingsService(QObject):
     # Pinetwork
     pi_target_ip: str
     pi_target_port: int
-    pi_is_receiver: bool
     # Maps
     radar_radius_km: float
     radar_max_radius_km: float
@@ -56,7 +55,6 @@ class SettingsService(QObject):
         # Pinetwork
         "pi_target_ip": ("pinetwork", str, "0.0.0.0"),
         "pi_target_port": ("pinetwork", int, 6000),
-        "pi_is_receiver": ("pinetwork", bool, True),
         # Maps
         "radar_radius_km": ("maps", float, 100),
         "radar_max_radius_km": ("maps", float, 200),

@@ -9,3 +9,7 @@ pytest
 pytest-qt
 pytest-timeout
 pytest-cov
+mkdocs
+mkdocs-material
+mkdocstrings[python]
+pymdown-extensions

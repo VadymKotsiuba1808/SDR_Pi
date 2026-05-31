@@ -32,5 +32,10 @@
 
   "files.associations": {
     "*.ts": "xml"
-  }
+  },
+
+  "yaml.customTags": [
+    "!!python/name:pymdownx.superfences.fence_code_format scalar",
+    "tag:yaml.org,2002:python/name:pymdownx.superfences.fence_code_format scalar"
+  ]
 }

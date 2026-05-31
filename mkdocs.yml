@@ -1,0 +1,84 @@
+site_name: SDR_Pi
+site_description: Програмний комплекс для пасивного радарного та радіомоніторингу БПЛА
+site_author: Bohdan
+
+# Налаштування теми Material
+theme:
+  name: material
+  language: uk
+  features:
+    - navigation.tabs # Верхнє меню навігації
+    - navigation.sections # Розгортання розділів у лівому меню
+    - navigation.top # Кнопка "Вгору"
+    - search.suggest # Підказки при пошуку
+    - search.highlight # Підсвічування результатів пошуку
+    - content.code.copy # Кнопка копіювання коду
+  palette:
+    # Темна тема за замовчуванням (більш підходить для радарних систем)
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: blue grey
+      accent: light blue
+      toggle:
+        icon: material/weather-night
+        name: Увімкнути світлу тему
+    # Світла тема
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: blue grey
+      accent: light blue
+      toggle:
+        icon: material/weather-sunny
+        name: Увімкнути темну тему
+
+# Підключення плагінів
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: ["."] # Де шукати Python модулі
+          options:
+            docstring_style: google # Використовуємо стиль Google для коментарів
+            show_source: true # Показувати кнопку "Переглянути код"
+            show_root_heading: true # Показувати назву модуля як заголовок
+
+# Налаштування форматування Markdown
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.admonition # Блоки !!! note, !!! warning
+  - pymdownx.details # Блоки, які можна розгортати (???)
+  - md_in_html
+  - tables
+  # Підтримка діаграм Mermaid.js (тепер superfences оголошено лише один раз)
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+nav:
+  - Головна: index.md
+  - Огляд системи:
+      - Архітектура: architecture.md
+      - Розгортання: installation.md
+      - Тестування та Якість: testing.md
+  - Посібники:
+      - Як додати новий клас об'єкта: how-to/add_object_class.md
+      - Керування РЕБ та GPS: how-to/hardware_control.md
+      - Робота з логами: how-to/manage_logs.md
+      - Багатомовність (i18n): how-to/translations.md
+  - API Довідник (Клієнт):
+      - Сервіси (Services): api/services.md
+      - Ядро (Core): api/core.md
+      - Віджети (Widgets): api/widgets.md
+      - Утиліти (Utils): api/utils.md
+      - Валідатори (Validators): api/validators.md
+      - Моделі даних (Models): api/models.md
+  - API Довідник (Сервер):
+      - Сервер та БД: api/pi_server.md

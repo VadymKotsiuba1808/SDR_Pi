@@ -26,7 +26,9 @@ def mock_jammer_settings():
 
 @pytest.fixture
 def jammer_service(mock_pi_network, mock_jammer_settings):
-    return JammerService(mock_pi_network, mock_jammer_settings)
+    service = JammerService(mock_pi_network, mock_jammer_settings)
+    yield service
+    service.stop()
 
 
 def test_jammer_start(jammer_service, mock_pi_network, mock_jammer_settings):
@@ -53,23 +55,19 @@ def test_jammer_stop(jammer_service, mock_pi_network):
 
 
 def test_jammer_auto_stop(jammer_service, mock_jammer_settings, qtbot):
-    """Тест автоматичної зупинки за таймером."""
+    """Тест автоматичної зупинки за таймером (через емуляцію сигналу)."""
     mock_jammer_settings.is_jammer_auto_stop_enabled = True
-    mock_jammer_settings.jammer_auto_stop_interval_s = 1  # 1 секунда
-
-    # Використовуємо callback для перевірки конкретного значення сигналу
-    def check_signal(val):
-        return val is False
+    mock_jammer_settings.jammer_auto_stop_interval_s = 60  # Великий інтервал
 
     jammer_service.start()
 
-    # Чекаємо сигналу вимкнення (False)
-    with qtbot.waitSignal(
-        jammer_service.state_changed, timeout=2000, check_params_cb=check_signal
-    ):
-        pass
+    assert jammer_service.auto_stop_timer.isActive(), "Auto-stop timer should be active"
+    assert jammer_service.is_active is True, "Jammer should be active"
 
-    assert jammer_service.is_active is False, "Jammer should auto-stop after interval"
+    # Емулюємо сигнал таймера замість реального очікування
+    jammer_service.auto_stop_timer.timeout.emit()
+
+    assert jammer_service.is_active is False, "Jammer should stop after timer signal"
 
 
 def test_get_formatted_time(jammer_service):

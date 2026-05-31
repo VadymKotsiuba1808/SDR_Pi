@@ -35,13 +35,19 @@ def change_pwd_dialog(qtbot, mock_settings, mock_keyboard):
     yield dialog
     # Очищуємо транслятори
     from PyQt6.QtCore import QCoreApplication
+
     QCoreApplication.removeTranslator(dialog.translator)
 
 
 def test_ui_initialization(change_pwd_dialog):
     """Тест ініціалізації інтерфейсу."""
-    assert change_pwd_dialog.ui.passwordLineEdit.echoMode() == QLineEdit.EchoMode.Password
-    assert change_pwd_dialog.ui.confirmPasswordLineEdit.echoMode() == QLineEdit.EchoMode.Password
+    assert (
+        change_pwd_dialog.ui.passwordLineEdit.echoMode() == QLineEdit.EchoMode.Password
+    )
+    assert (
+        change_pwd_dialog.ui.confirmPasswordLineEdit.echoMode()
+        == QLineEdit.EchoMode.Password
+    )
     assert change_pwd_dialog.ui.errorWidget_1.isHidden()
     assert change_pwd_dialog.ui.errorWidget_2.isHidden()
 
@@ -54,7 +60,10 @@ def test_password_mismatch(change_pwd_dialog, qtbot):
     qtbot.keyClicks(change_pwd_dialog.ui.passwordLineEdit, "StrongPass123")
     qtbot.keyClicks(change_pwd_dialog.ui.confirmPasswordLineEdit, "DifferentPass123")
 
-    qtbot.mouseClick(change_pwd_dialog.ui.saveButton, pytest.importorskip("PyQt6.QtCore").Qt.MouseButton.LeftButton)
+    qtbot.mouseClick(
+        change_pwd_dialog.ui.saveButton,
+        pytest.importorskip("PyQt6.QtCore").Qt.MouseButton.LeftButton,
+    )
 
     # Використовуємо isHidden() замість isVisible(), бо діалог може бути не показаний реально
     assert not change_pwd_dialog.ui.errorWidget_2.isHidden()
@@ -69,7 +78,10 @@ def test_password_validation_fail(change_pwd_dialog, qtbot):
     qtbot.keyClicks(change_pwd_dialog.ui.passwordLineEdit, "123")
     qtbot.keyClicks(change_pwd_dialog.ui.confirmPasswordLineEdit, "123")
 
-    qtbot.mouseClick(change_pwd_dialog.ui.saveButton, pytest.importorskip("PyQt6.QtCore").Qt.MouseButton.LeftButton)
+    qtbot.mouseClick(
+        change_pwd_dialog.ui.saveButton,
+        pytest.importorskip("PyQt6.QtCore").Qt.MouseButton.LeftButton,
+    )
 
     assert not change_pwd_dialog.ui.errorWidget_1.isHidden()
 
@@ -84,7 +96,10 @@ def test_successful_password_change(change_pwd_dialog, mock_settings, qtbot):
     qtbot.keyClicks(change_pwd_dialog.ui.confirmPasswordLineEdit, password)
 
     with qtbot.waitSignal(change_pwd_dialog.finished, timeout=1000) as blocker:
-        qtbot.mouseClick(change_pwd_dialog.ui.saveButton, pytest.importorskip("PyQt6.QtCore").Qt.MouseButton.LeftButton)
+        qtbot.mouseClick(
+            change_pwd_dialog.ui.saveButton,
+            pytest.importorskip("PyQt6.QtCore").Qt.MouseButton.LeftButton,
+        )
 
     assert blocker.args == [QDialog.DialogCode.Accepted]
     assert mock_settings.owner_password_hash.startswith("$2b$")
@@ -93,11 +108,25 @@ def test_successful_password_change(change_pwd_dialog, mock_settings, qtbot):
 def test_toggle_visibility(change_pwd_dialog, qtbot):
     """Тест перемикання видимості паролів."""
     # Перше поле
-    assert change_pwd_dialog.ui.passwordLineEdit.echoMode() == QLineEdit.EchoMode.Password
-    qtbot.mouseClick(change_pwd_dialog.ui.passwordHideBtn, pytest.importorskip("PyQt6.QtCore").Qt.MouseButton.LeftButton)
+    assert (
+        change_pwd_dialog.ui.passwordLineEdit.echoMode() == QLineEdit.EchoMode.Password
+    )
+    qtbot.mouseClick(
+        change_pwd_dialog.ui.passwordHideBtn,
+        pytest.importorskip("PyQt6.QtCore").Qt.MouseButton.LeftButton,
+    )
     assert change_pwd_dialog.ui.passwordLineEdit.echoMode() == QLineEdit.EchoMode.Normal
 
     # Друге поле
-    assert change_pwd_dialog.ui.confirmPasswordLineEdit.echoMode() == QLineEdit.EchoMode.Password
-    qtbot.mouseClick(change_pwd_dialog.ui.confirmPasswordHideBtn, pytest.importorskip("PyQt6.QtCore").Qt.MouseButton.LeftButton)
-    assert change_pwd_dialog.ui.confirmPasswordLineEdit.echoMode() == QLineEdit.EchoMode.Normal
+    assert (
+        change_pwd_dialog.ui.confirmPasswordLineEdit.echoMode()
+        == QLineEdit.EchoMode.Password
+    )
+    qtbot.mouseClick(
+        change_pwd_dialog.ui.confirmPasswordHideBtn,
+        pytest.importorskip("PyQt6.QtCore").Qt.MouseButton.LeftButton,
+    )
+    assert (
+        change_pwd_dialog.ui.confirmPasswordLineEdit.echoMode()
+        == QLineEdit.EchoMode.Normal
+    )

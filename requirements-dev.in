@@ -7,3 +7,4 @@ mypy
 pre-commit
 pytest
 pytest-qt
+pytest-timeout

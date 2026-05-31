@@ -46,7 +46,7 @@ def create_event(event_id="t1", freq=433.0, dist=1.0, angle=45.0):
         timestamp=datetime.now().isoformat(),
         distance_km=dist,
         angle=angle,
-        frequency_hz=freq
+        frequency_hz=freq,
     )
 
 

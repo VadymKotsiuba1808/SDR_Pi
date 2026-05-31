@@ -45,6 +45,7 @@ def object_editor_add(qtbot, mock_settings, mock_keyboard, known_classes):
     qtbot.addWidget(dialog)
     yield dialog
     from PyQt6.QtCore import QCoreApplication
+
     QCoreApplication.removeTranslator(dialog.translator)
 
 
@@ -58,12 +59,15 @@ def object_editor_edit(qtbot, mock_settings, mock_keyboard, known_classes):
         object_class="Drone",
         is_dangerous=True,
         rf_params_hz=["2400000000-2483500000"],
-        sound_params_hz=[]
+        sound_params_hz=[],
     )
-    dialog = ObjectEditorDialog(mock_settings, mock_keyboard, known_classes, object_data=obj)
+    dialog = ObjectEditorDialog(
+        mock_settings, mock_keyboard, known_classes, object_data=obj
+    )
     qtbot.addWidget(dialog)
     yield dialog
     from PyQt6.QtCore import QCoreApplication
+
     QCoreApplication.removeTranslator(dialog.translator)
 
 
@@ -89,7 +93,10 @@ def test_toggle_rf_sound_exclusivity(object_editor_add, qtbot):
     assert object_editor_add.ui.chkRFEnable.isChecked() is True
 
     # Вмикаємо Sound
-    qtbot.mouseClick(object_editor_add.ui.chkSoundEnable, pytest.importorskip("PyQt6.QtCore").Qt.MouseButton.LeftButton)
+    qtbot.mouseClick(
+        object_editor_add.ui.chkSoundEnable,
+        pytest.importorskip("PyQt6.QtCore").Qt.MouseButton.LeftButton,
+    )
 
     assert object_editor_add.ui.chkSoundEnable.isChecked() is True
     assert object_editor_add.ui.chkRFEnable.isChecked() is False
@@ -102,7 +109,10 @@ def test_add_rf_range(object_editor_add, qtbot):
     object_editor_add.ui.inpRFMin.setValue(2400.0)
     object_editor_add.ui.inpRFMax.setValue(2500.0)
 
-    qtbot.mouseClick(object_editor_add.ui.btnAddRF, pytest.importorskip("PyQt6.QtCore").Qt.MouseButton.LeftButton)
+    qtbot.mouseClick(
+        object_editor_add.ui.btnAddRF,
+        pytest.importorskip("PyQt6.QtCore").Qt.MouseButton.LeftButton,
+    )
 
     assert object_editor_add.ui.lstRFFreqs.count() == 1
     item = object_editor_add.ui.lstRFFreqs.item(0)
@@ -117,15 +127,21 @@ def test_save_new_object_success(object_editor_add, qtbot):
     """Тест успішного збереження нового об'єкта (тільки RF)."""
     object_editor_add.ui.inpName.clear()
     qtbot.keyClicks(object_editor_add.ui.inpName, "New Drone")
-    object_editor_add.ui.comboClass.setCurrentIndex(0) # Drone
+    object_editor_add.ui.comboClass.setCurrentIndex(0)  # Drone
 
     # Додаємо частоту
     object_editor_add.ui.inpRFMin.setValue(433.0)
     object_editor_add.ui.inpRFMax.setValue(433.0)
-    qtbot.mouseClick(object_editor_add.ui.btnAddRF, pytest.importorskip("PyQt6.QtCore").Qt.MouseButton.LeftButton)
+    qtbot.mouseClick(
+        object_editor_add.ui.btnAddRF,
+        pytest.importorskip("PyQt6.QtCore").Qt.MouseButton.LeftButton,
+    )
 
     with qtbot.waitSignal(object_editor_add.finished, timeout=1000) as blocker:
-        qtbot.mouseClick(object_editor_add.ui.btnSave, pytest.importorskip("PyQt6.QtCore").Qt.MouseButton.LeftButton)
+        qtbot.mouseClick(
+            object_editor_add.ui.btnSave,
+            pytest.importorskip("PyQt6.QtCore").Qt.MouseButton.LeftButton,
+        )
 
     assert blocker.args == [QDialog.DialogCode.Accepted]
     obj = object_editor_add.get_new_object()
@@ -138,7 +154,10 @@ def test_save_validation_fail(object_editor_add, qtbot):
     """Тест провалу валідації (порожня назва)."""
     object_editor_add.ui.inpName.clear()
     with patch("PyQt6.QtWidgets.QMessageBox.warning") as mock_warn:
-        qtbot.mouseClick(object_editor_add.ui.btnSave, pytest.importorskip("PyQt6.QtCore").Qt.MouseButton.LeftButton)
+        qtbot.mouseClick(
+            object_editor_add.ui.btnSave,
+            pytest.importorskip("PyQt6.QtCore").Qt.MouseButton.LeftButton,
+        )
         assert mock_warn.called
 
     assert object_editor_add.result() == 0

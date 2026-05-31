@@ -25,34 +25,57 @@ def mock_system_linux():
     return system
 
 
-def test_keyboard_initialization_win(mock_system_win):
+@pytest.fixture
+def mock_modules():
+    """Фікстура для підміни системних модулів, щоб уникнути реальних імпортів."""
+    mock_keyboard = MagicMock()
+    mock_win32api = MagicMock()
+    mock_win32gui = MagicMock()
+
+    with patch.dict(
+        "sys.modules",
+        {
+            "keyboard": mock_keyboard,
+            "win32api": mock_win32api,
+            "win32gui": mock_win32gui,
+            "pynput": MagicMock(),
+            "pynput.keyboard": MagicMock(),
+        },
+    ):
+        yield {
+            "keyboard": mock_keyboard,
+            "win32api": mock_win32api,
+            "win32gui": mock_win32gui,
+        }
+
+
+def test_keyboard_initialization_win(mock_system_win, mock_modules):
     """Тест ініціалізації на Windows."""
-    with patch("keyboard.add_hotkey") as mock_hotkey:
-        service = KeyboardService(mock_system_win)
-        assert service.current_layout == "EN"
-        assert mock_hotkey.called
+    service = KeyboardService(mock_system_win)
+    assert service.current_layout == "EN"
+    assert mock_modules["keyboard"].add_hotkey.called
 
 
-def test_keyboard_toggle_layout(mock_system_win):
+def test_keyboard_toggle_layout(mock_system_win, mock_modules):
     """Тест перемикання розкладки."""
-    # Відключаємо реальні виклики API
-    with patch.object(KeyboardService, "_apply_layout"):
-        service = KeyboardService(mock_system_win)
+    service = KeyboardService(mock_system_win)
+    # Скидаємо виклик з ініціалізації
+    mock_modules["win32api"].LoadKeyboardLayout.reset_mock()
 
-        service.toggle_layout()
-        assert service.current_layout == "UA"
+    service.toggle_layout()
+    assert service.current_layout == "UA"
+    assert mock_modules["win32api"].LoadKeyboardLayout.called
 
-        service.toggle_layout()
-        assert service.current_layout == "EN"
+    service.toggle_layout()
+    assert service.current_layout == "EN"
 
 
-def test_keyboard_callback(mock_system_win):
+def test_keyboard_callback(mock_system_win, mock_modules):
     """Тест виклику callback при зміні розкладки."""
     callback = MagicMock()
-    with patch.object(KeyboardService, "_apply_layout"):
-        service = KeyboardService(mock_system_win, callback=callback)
-        service.toggle_layout()
-        callback.assert_called_once_with("UA")
+    service = KeyboardService(mock_system_win, callback=callback)
+    service.toggle_layout()
+    callback.assert_called_once_with("UA")
 
 
 @pytest.mark.skipif(reason="Залежить від наявності бібліотек win32 на системі")

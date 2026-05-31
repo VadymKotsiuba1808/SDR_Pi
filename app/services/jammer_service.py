@@ -30,7 +30,7 @@ class JammerService(QObject):
         self.pi_network.request_alarm_start(self.settings.main_relays)
 
         if self.settings.is_jammer_auto_stop_enabled:
-            msec = self.settings.jammer_auto_stop_interval_s * 1000
+            msec = int(self.settings.jammer_auto_stop_interval_s * 1000)
             self.auto_stop_timer.start(msec)
 
         self.state_changed.emit(True)

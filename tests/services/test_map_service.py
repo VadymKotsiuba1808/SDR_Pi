@@ -52,7 +52,7 @@ def test_latlon_to_tile(map_service):
 
 def test_calculate_geometry(map_service):
     """Тест розрахунку геометрії для склейки мапи."""
-    lat, lon = 50.45, 30.52 # Київ
+    lat, lon = 50.45, 30.52  # Київ
 
     geo_data = map_service._calculate_geometry(lat, lon, add_sizes_k=[1, 1])
 

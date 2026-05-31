@@ -5,7 +5,10 @@ help:
 	@echo "  make format      - Auto-format code with Ruff formatter"
 	@echo "  make fix         - Run small fixes with Ruff linter"
 	@echo "  make check       - Run formatting, linting, MyPy, and Deptry"
-	@echo "  make test        - Run all pytest unit tests"
+	@echo "  make test        - Run all pytest unit tests (structured)"
+	@echo "  make test-raw    - Run standard pytest output"
+	@echo "  make coverage    - Run all tests and measure code coverage"
+	@echo "  make cov-report  - Open visual HTML coverage report in browser"
 	@echo "  make ai-test     - Generate tests for a specific file (use FILE=path)"
 	@echo "  make ai-autofix  - Let Gemini format, check, and fix errors automatically"
 
@@ -37,6 +40,12 @@ test:
 
 test-raw:
 	pytest tests/
+
+coverage:
+	python tests/run_tests.py --cov
+
+cov-report:
+	cmd /c start tests/coverage_html/index.html
 
 # --- РОБОТА ІЗ ЗАЛЕЖНОСТЯМИ (pip-tools) ---
 req:

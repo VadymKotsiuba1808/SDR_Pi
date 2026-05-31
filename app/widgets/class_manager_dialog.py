@@ -10,6 +10,7 @@ from PyQt6.QtWidgets import (
 )
 
 from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
+from app.core.mixins import TestUIOptimizationMixin
 from app.models.object_class import ObjectClass
 from app.models.service_response import DbOperation, ServiceResponse
 from app.protocols import LangSettings
@@ -26,7 +27,7 @@ ALLOW_DB_OPERATIONS = [
 ]
 
 
-class ClassManagerDialog(QDialog):
+class ClassManagerDialog(QDialog, TestUIOptimizationMixin):
     def __init__(
         self,
         network_service: PiNetworkService,
@@ -46,6 +47,7 @@ class ClassManagerDialog(QDialog):
         self._adjust_fields()
         self._connect_handlers()
         self._load_language()
+        self.apply_test_ui_optimization()
 
     def changeEvent(self, a0: QEvent | None) -> None:
         event = a0

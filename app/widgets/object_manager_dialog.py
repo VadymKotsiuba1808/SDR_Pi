@@ -12,6 +12,7 @@ from PyQt6.QtWidgets import (
 )
 
 from app.core.constants import DEV_COMPILED_UI_USING_ENABLED, RF_PARAMS__DIVIDER
+from app.core.mixins import TestUIOptimizationMixin
 from app.models.detection_object import DetectionObject
 from app.models.object_class import ObjectClass
 from app.models.service_response import DbOperation, ServiceResponse
@@ -33,7 +34,7 @@ ALLOW_DB_OPERATIONS = [
 ]
 
 
-class ObjectManagerDialog(QDialog):
+class ObjectManagerDialog(QDialog, TestUIOptimizationMixin):
     """
     Діалогове вікно керування об'єктами (Object Manager).
     """
@@ -62,6 +63,7 @@ class ObjectManagerDialog(QDialog):
 
         self.refresh_data()
         self._load_language()
+        self.apply_test_ui_optimization()
 
     def changeEvent(self, a0: QEvent | None) -> None:
         event = a0

@@ -46,9 +46,7 @@ class DetectionBackgroundService:
         if not os.path.exists(self.logs_dir):
             return []
 
-        files = [
-            f for f in os.listdir(self.logs_dir) if f.endswith(".jsonl")
-        ]
+        files = [f for f in os.listdir(self.logs_dir) if f.endswith(".jsonl")]
 
         files.sort()
 

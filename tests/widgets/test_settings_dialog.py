@@ -23,9 +23,7 @@ def mock_settings():
     settings.is_jammer_auto_start_enabled = True
     settings.is_jammer_auto_stop_enabled = False
     settings.jammer_auto_stop_interval_s = 600
-    settings.clean_settings = {
-        CLEAN_TARGET_NAME.LOGS: CleanRule(enabled=True, days=30)
-    }
+    settings.clean_settings = {CLEAN_TARGET_NAME.LOGS: CleanRule(enabled=True, days=30)}
     settings.lang_code = "uk"
     return settings
 
@@ -37,6 +35,7 @@ def settings_dialog(qtbot, mock_settings):
     qtbot.addWidget(dialog)
     yield dialog
     from PyQt6.QtCore import QCoreApplication
+
     QCoreApplication.removeTranslator(dialog.translator)
 
 
@@ -51,7 +50,10 @@ def test_ui_initialization_with_settings(settings_dialog, mock_settings):
 
 def test_jammer_auto_stop_toggle(settings_dialog, qtbot):
     """Тест активації поля інтервалу при ввімкненні автостопу."""
-    qtbot.mouseClick(settings_dialog.ui.chkJammerAutoStop, pytest.importorskip("PyQt6.QtCore").Qt.MouseButton.LeftButton)
+    qtbot.mouseClick(
+        settings_dialog.ui.chkJammerAutoStop,
+        pytest.importorskip("PyQt6.QtCore").Qt.MouseButton.LeftButton,
+    )
     assert settings_dialog.ui.chkJammerAutoStop.isChecked() is True
     assert settings_dialog.ui.inpJammerStopInterval.isEnabled() is True
 
@@ -64,7 +66,10 @@ def test_clean_settings_buffering(settings_dialog, qtbot):
     assert settings_dialog.ui.inpCleanDays.value() == 30
 
     # Змінюємо значення
-    qtbot.mouseClick(settings_dialog.ui.chkCleanEnabled, pytest.importorskip("PyQt6.QtCore").Qt.MouseButton.LeftButton)
+    qtbot.mouseClick(
+        settings_dialog.ui.chkCleanEnabled,
+        pytest.importorskip("PyQt6.QtCore").Qt.MouseButton.LeftButton,
+    )
     settings_dialog.ui.inpCleanDays.setValue(45)
 
     # Перемикаємося на інший таргет
@@ -84,7 +89,10 @@ def test_save_settings(settings_dialog, qtbot):
     settings_dialog.ui.inpGpsInterval.setValue(30)
 
     with qtbot.waitSignal(settings_dialog.finished, timeout=1000) as blocker:
-        qtbot.mouseClick(settings_dialog.ui.btnSave, pytest.importorskip("PyQt6.QtCore").Qt.MouseButton.LeftButton)
+        qtbot.mouseClick(
+            settings_dialog.ui.btnSave,
+            pytest.importorskip("PyQt6.QtCore").Qt.MouseButton.LeftButton,
+        )
 
     assert blocker.args == [QDialog.DialogCode.Accepted]
     new_data = settings_dialog.get_settings()
@@ -95,7 +103,10 @@ def test_save_settings(settings_dialog, qtbot):
 def test_restart_app_logout(settings_dialog, mock_settings, qtbot):
     """Тест виходу з системи (рестарт процесу)."""
     with patch("app.widgets.settings_dialog.restart_process") as mock_restart:
-        qtbot.mouseClick(settings_dialog.ui.btnLogout, pytest.importorskip("PyQt6.QtCore").Qt.MouseButton.LeftButton)
+        qtbot.mouseClick(
+            settings_dialog.ui.btnLogout,
+            pytest.importorskip("PyQt6.QtCore").Qt.MouseButton.LeftButton,
+        )
 
         assert mock_settings.remember_me is False
         assert mock_restart.called

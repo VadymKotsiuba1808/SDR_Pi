@@ -21,6 +21,6 @@ async def test_make_safe_set_result():
 
     # Друге встановлення - не повинно викликати винятку InvalidStateError
     safe_setter(20)
-    assert (
-        future.result() == 10
-    ), "Future result should remain unchanged after second safe_setter call"
+    assert future.result() == 10, (
+        "Future result should remain unchanged after second safe_setter call"
+    )

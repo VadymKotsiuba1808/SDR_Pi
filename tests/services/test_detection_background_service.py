@@ -31,13 +31,13 @@ def bg_service(temp_logs_dir: str):
 def create_mock_background(target_id: str):
     """Допоміжна функція для створення об'єкта фону."""
     spec = SpectralData(
-        center_freq_hz=915e6, sample_rate_hz=10e6, duration_sec=1.0,
-        data_magnitude=np.zeros(10, dtype=np.uint8)
+        center_freq_hz=915e6,
+        sample_rate_hz=10e6,
+        duration_sec=1.0,
+        data_magnitude=np.zeros(10, dtype=np.uint8),
     )
     return DetectionBackground(
-        id=target_id,
-        timestamp=datetime.now().isoformat(),
-        spectral_data=spec
+        id=target_id, timestamp=datetime.now().isoformat(), spectral_data=spec
     )
 
 
@@ -56,12 +56,20 @@ def test_add_background_and_retrieve(bg_service, temp_logs_dir):
 
     # Отримуємо дані для конкретного ID
     results_a = bg_service.get_backgrounds_by_target_id("target_A")
-    assert len(results_a) == 1, f"Expected 1 background for target_A, got {len(results_a)}"
-    assert results_a[0].id == "target_A", "Retrieved background ID mismatch for target_A"
+    assert len(results_a) == 1, (
+        f"Expected 1 background for target_A, got {len(results_a)}"
+    )
+    assert results_a[0].id == "target_A", (
+        "Retrieved background ID mismatch for target_A"
+    )
 
     results_b = bg_service.get_backgrounds_by_target_id("target_B")
-    assert len(results_b) == 1, f"Expected 1 background for target_B, got {len(results_b)}"
-    assert results_b[0].id == "target_B", "Retrieved background ID mismatch for target_B"
+    assert len(results_b) == 1, (
+        f"Expected 1 background for target_B, got {len(results_b)}"
+    )
+    assert results_b[0].id == "target_B", (
+        "Retrieved background ID mismatch for target_B"
+    )
 
 
 def test_get_backgrounds_non_existent_id(bg_service):
@@ -88,9 +96,10 @@ def test_multiple_files_handling(bg_service, temp_logs_dir):
 
     # Сервіс має знайти обидва записи
     results = bg_service.get_backgrounds_by_target_id("target_1")
-    assert len(results) == 2, f"Expected 2 backgrounds across multiple files, got {len(results)}"
+    assert len(results) == 2, (
+        f"Expected 2 backgrounds across multiple files, got {len(results)}"
+    )
     # Сортування за часом
-    assert (
-        results[0].timestamp < results[1].timestamp
-    ), "Backgrounds should be sorted by timestamp"
-
+    assert results[0].timestamp < results[1].timestamp, (
+        "Backgrounds should be sorted by timestamp"
+    )

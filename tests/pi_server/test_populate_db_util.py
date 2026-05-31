@@ -16,11 +16,12 @@ def test_run_seeding_calls_db_methods():
     """
     mock_db_instance = MagicMock()
 
-    # Мокаємо QEventLoop та QTimer, щоб тест не зависав на очікуванні
+    # Мокаємо QCoreApplication, QEventLoop та QTimer, щоб тест не зависав на очікуванні
     with (
         patch(
             "pi_server.populate_db_util.DatabaseService", return_value=mock_db_instance
         ),
+        patch("pi_server.populate_db_util.QCoreApplication"),
         patch("pi_server.populate_db_util.QEventLoop.exec"),
         patch("pi_server.populate_db_util.time.sleep"),
     ):  # Прискорюємо тест

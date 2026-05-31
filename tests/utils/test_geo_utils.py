@@ -28,7 +28,7 @@ def test_calculate_distance_known_points():
 def test_calculate_distance_small_offset():
     """Перевірка на малих відстанях."""
     lat1, lon1 = 50.0, 30.0
-    lat2, lon2 = 50.0001, 30.0001 # ~14 метрів
+    lat2, lon2 = 50.0001, 30.0001  # ~14 метрів
 
     dist = calculate_distance(lat1, lon1, lat2, lon2)
     assert 10 < dist < 20

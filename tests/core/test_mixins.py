@@ -32,8 +32,7 @@ def test_translator_mixin_tr_s():
     ) as mock_translate:
         result = DummyClass.tr_s("world")
 
-        assert (
-            result == "translated_static"
-        ), "tr_s() should return translated text for static call"
+        assert result == "translated_static", (
+            "tr_s() should return translated text for static call"
+        )
         mock_translate.assert_called_once_with("DummyClass", "world")
-

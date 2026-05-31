@@ -156,7 +156,7 @@ class LoginDialog(QDialog):
                 self.ui.passwordIncorrectLabel.setVisible(True)
 
     def accept_window(self) -> None:
-        self.finished.emit(QDialog.DialogCode.Accepted)
+        self.accept()
 
     def closeEvent(self, a0: QCloseEvent | None) -> None:
         event = a0

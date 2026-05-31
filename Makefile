@@ -33,6 +33,9 @@ check: format lint check-deps
 
 # --- ТЕСТИ ---
 test:
+	python tests/run_tests.py
+
+test-raw:
 	pytest tests/
 
 # --- РОБОТА ІЗ ЗАЛЕЖНОСТЯМИ (pip-tools) ---

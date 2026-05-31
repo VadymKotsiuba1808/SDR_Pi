@@ -2,38 +2,42 @@ name: Python CI Pipeline
 
 on:
   push:
+    branches: [ "**" ]
   pull_request:
+    branches: [ "**" ]
 
 jobs:
-  lint-and-check:
+  static-analysis:
+    name: Static Analysis (Lint, Format, Types)
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.13
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
+          python-version: "3.12"
           cache: "pip"
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install pip-tools
-
           pip-compile requirements.in
           pip-compile requirements-dev.in
           pip-sync requirements.txt requirements-dev.txt
 
-      # --- ЖОРСТКІ ПЕРЕВІРКИ (Блокують злиття коду) ---
+      # --- ЖОРСТКІ ПЕРЕВІРКИ (Блокують пайплайн) ---
 
-      - name: Check dependencies with Deptry
+      - name: Check dependencies (Deptry)
         run: deptry .
 
-      - name: Ruff - Hard Errors Only
+      - name: Ruff - Hard Errors Only (Syntax, Undefined names)
         run: ruff check . --select E9,F821 --output-format=github
+
+      - name: Format Check (Ruff)
+        run: ruff format --check .
 
       # --- SOFT FAIL (Показують зауваження, але пропускають CI) ---
 
@@ -42,6 +46,58 @@ jobs:
         run: ruff check . --extend-ignore E9,F821 --exit-zero --output-format=github
 
       - name: Type check with MyPy
-
         run: mypy . --ignore-missing-imports
         continue-on-error: true
+
+  run-tests-and-coverage:
+    name: Automated Tests and Coverage
+    needs: static-analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install System Dependencies (Qt Headless)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libegl1 \
+            libdbus-1-3 \
+            libxkbcommon-x11-0 \
+            libxcb-cursor0 \
+            libxcb-icccm4 \
+            libxcb-keysyms1 \
+            libxcb-randr0 \
+            libxcb-render-util0 \
+            libxcb-xinerama0 \
+            libxcb-xinput0 \
+            libxcb-xfixes0 \
+            libxcb-shape0 \
+            xvfb
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pip-tools
+          pip-compile requirements.in
+          pip-compile requirements-dev.in
+          pip-sync requirements.txt requirements-dev.txt
+
+      - name: Run Tests with Coverage
+        run: |
+          xvfb-run --auto-servernum python tests/run_tests.py --cov
+        env:
+          QT_QPA_PLATFORM: xcb
+          SDR_PI_TESTING: "1"
+
+      - name: Upload Coverage Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-coverage-report
+          path: tests/coverage_html/

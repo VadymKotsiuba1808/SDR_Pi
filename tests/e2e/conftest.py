@@ -7,6 +7,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
+from PyQt6.QtWidgets import QApplication
 
 from app.models.object_class import ObjectClass
 from app.services.keyboard_service import KeyboardService
@@ -22,17 +23,29 @@ def mock_os_modules():
     # Встановлюємо прапор тестування для згортання вікон
     os.environ["SDR_PI_TESTING"] = "1"
 
-    with patch.dict(
-        "sys.modules",
-        {
-            "keyboard": MagicMock(),
-            "win32api": MagicMock(),
-            "win32gui": MagicMock(),
-            "pynput": MagicMock(),
-            "pynput.keyboard": MagicMock(),
-        },
+    with (
+        patch.dict(
+            "sys.modules",
+            {
+                "keyboard": MagicMock(),
+                "win32api": MagicMock(),
+                "win32gui": MagicMock(),
+                "pynput": MagicMock(),
+                "pynput.keyboard": MagicMock(),
+            },
+        ),
+        patch("app.widgets.main_window.restart_process", MagicMock()),
+        patch("app.widgets.settings_dialog.restart_process", MagicMock()),
     ):
         yield
+
+
+@pytest.fixture(autouse=True)
+def close_all_windows():
+    """Фікстура для автоматичного закриття всіх вікон після кожного тесту."""
+    yield
+    for widget in QApplication.topLevelWidgets():
+        widget.close()
 
 
 class E2ESettings(SettingsService):

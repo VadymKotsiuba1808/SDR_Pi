@@ -15,13 +15,24 @@ from app.core.constants import (
 
 class UsbMonitorWorker(QThread):
     """
-    Воркер виконує моніторинг USB пристроїв в окремому потоці,
-    щоб GUI на Raspberry Pi не фризило.
+    Фоновий воркер для моніторингу підключення USB-накопичувачів.
+
+    Виконує періодичне сканування точок монтування та перевірку
+    наявності та валідності секретного ключа (файлу).
+
+    Attributes:
+        key_found (pyqtSignal): Випромінюється при знаходженні валідного ключа (str: mount_point).
     """
 
     key_found = pyqtSignal(str)
 
     def __init__(self, parent: Optional[QObject] = None) -> None:
+        """
+        Ініціалізує воркер моніторингу.
+
+        Args:
+            parent (Optional[QObject]): Батьківський об'єкт.
+        """
         super().__init__(parent)
         self.running: bool = True
         self._known_devices: Set[str] = set()
@@ -100,24 +111,32 @@ class UsbMonitorWorker(QThread):
 
 class UsbAuthService(QObject):
     """
-    Фасад для роботи з сервісом.
-    Головне вікно спілкується саме з цим класом.
+    Сервіс апаратної авторизації через USB-ключ.
+
+    Використовується на Raspberry Pi для розблокування функцій
+    адміністрування при підключенні фізичної флешки з коректним ключем.
+
+    Attributes:
+        auth_success_signal (pyqtSignal): Випромінюється при успішній авторизації.
     """
 
     auth_success_signal = pyqtSignal(str)
 
     def __init__(self, parent: Optional[QObject] = None) -> None:
+        """Ініціалізує сервіс USB-авторизації."""
         super().__init__(parent)
         self._worker = UsbMonitorWorker()
         self._worker.key_found.connect(self._handle_auth_success)
         print("[USB Auth] Service initialized.")
 
     def start_monitoring(self) -> None:
+        """Запускає фоновий потік моніторингу USB."""
         if not self._worker.isRunning():
             self._worker.running = True
             self._worker.start()
 
     def stop_monitoring(self) -> None:
+        """Зупиняє фоновий потік моніторингу USB."""
         if self._worker.isRunning():
             print("[USB Auth] Stopping monitoring...")
             self._worker.stop()

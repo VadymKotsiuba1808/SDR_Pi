@@ -17,31 +17,65 @@ from app.protocols import MapServiceSettings
 
 
 class MapTypes(str, Enum):
+    """Перелік доступних типів мапи."""
+
     ROAD = "streets-v2"
-    # SATELLITE = "satellite-v2"
+    """Вулична мапа."""
     HYBRID = "hybrid"
+    """Гібридна мапа (супутник + назви)."""
     TERRAIN = "topo-v2"
+    """Рельєфна мапа."""
 
 
 class MapService:
     """
-    Сервіс мапи.
-    Відповідає за роботу з геоданими, завантаження тайлів мапи, тощо.
+    Сервіс для роботи з картографічними даними.
+
+    Відповідає за завантаження тайлів (плиток) мапи з віддаленого сервера,
+    їх зшивання у велике зображення та математичні перетворення між
+    географічними координатами (Lat/Lon) та пікселями на екрані.
     """
 
     TILE_SIZE: int = 512
+    """Стандартний розмір тайла в пікселях."""
 
     def __init__(self, settings: MapServiceSettings) -> None:
+        """
+        Ініціалізує сервіс мапи.
+
+        Args:
+            settings (MapServiceSettings): Налаштування мапи (API ключ, масштаб тощо).
+        """
         self.settings_service: MapServiceSettings = settings
         self.client: httpx.AsyncClient = httpx.AsyncClient()
 
     def get_resolution_at_lat(self, zoom: int, lat: float) -> float:
+        """
+        Обчислює роздільну здатність мапи (метрів на піксель) для заданої широти.
+
+        Args:
+            zoom (int): Рівень масштабування.
+            lat (float): Широта в градусах.
+
+        Returns:
+            float: Роздільна здатність у метрах на піксель.
+        """
         initial_res: float = 156543.03392
         res: float = (initial_res * math.cos(math.radians(lat))) / (2**zoom)
         return res * (256 / self.TILE_SIZE)
 
     def latlon_to_tile(self, lat: float, lon: float, zoom: int) -> Tuple[float, float]:
+        """
+        Перетворює географічні координати у координати тайлів.
 
+        Args:
+            lat (float): Широта.
+            lon (float): Довгота.
+            zoom (int): Рівень масштабування.
+
+        Returns:
+            Tuple[float, float]: Координати X та Y у системі тайлів.
+        """
         lat_rad: float = math.radians(lat)
         n: float = 2.0**zoom
         x_tile: float = (lon + 180.0) / 360.0 * n
@@ -55,7 +89,17 @@ class MapService:
     def tile_to_pixel_offset(
         self, lat: float, lon: float, zoom: int
     ) -> Tuple[float, float]:
+        """
+        Перетворює координати у глобальне піксельне зміщення.
 
+        Args:
+            lat (float): Широта.
+            lon (float): Довгота.
+            zoom (int): Рівень масштабування.
+
+        Returns:
+            Tuple[float, float]: Глобальні піксельні координати X та Y.
+        """
         x_tile, y_tile = self.latlon_to_tile(lat, lon, zoom)
         return x_tile * self.TILE_SIZE, y_tile * self.TILE_SIZE
 
@@ -69,7 +113,21 @@ class MapService:
         format: str,
         api_key: str,
     ) -> Image.Image:
+        """
+        Завантажує окремий тайл мапи.
 
+        Args:
+            base_url (str): Базовий URL API.
+            zoom (int): Масштаб.
+            x (int): Номер тайла по горизонталі.
+            y (int): Номер тайла по вертикалі.
+            map_type (str): Тип мапи.
+            format (str): Формат зображення (png, jpg).
+            api_key (str): Ключ доступу до API.
+
+        Returns:
+            Image.Image: Об'єкт зображення PIL. У разі помилки повертає пустий сірий квадрат.
+        """
         url: str = (
             f"{base_url}/{map_type}/{zoom}/{x}/{y}.{format.lower()}?key={api_key}"
         )
@@ -87,7 +145,20 @@ class MapService:
         map_type: MapTypes,
         add_sizes_k: List[float] = [1, 1],
     ) -> Optional[Tuple[QPixmap, float]]:
+        """
+        Головний метод для отримання готового зображення мапи для UI.
 
+        Обчислює необхідну область, завантажує тайли, зшиває їх та обрізає під потрібний розмір.
+
+        Args:
+            coord (List[float]): Координати центру мапи [lat, lon].
+            map_type (MapTypes): Тип мапи (Road, Hybrid тощо).
+            add_sizes_k (List[float]): Коефіцієнти розширення області мапи відносно радіуса радара.
+
+        Returns:
+            Optional[Tuple[QPixmap, float]]: Кортеж із готового QPixmap та ціни пікселя в км.
+                Повертає None при помилці.
+        """
         if not self.settings_service.api_key:
             print("[MapService] Error: API key missing.")
             return None

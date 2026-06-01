@@ -14,6 +14,15 @@ from app.protocols import CleanerServiceSettings
 
 @dataclass
 class CleanTarget:
+    """
+    Представляє ціль для очистки (директорію та параметри фільтрації).
+
+    Attributes:
+        path (str): Абсолютний шлях до папки.
+        days (int): Кількість днів, після яких файл вважається застарілим.
+        extensions (List[str]): Список розширень файлів для видалення (наприклад, ['.json', '.mp4']).
+    """
+
     path: str
     days: int
     extensions: List[str]
@@ -21,7 +30,10 @@ class CleanTarget:
 
 class CleanerService:
     """
-    Клас для автоматичної очистки пам'яті.
+    Сервіс для автоматичного керування дисковим простором.
+
+    Виконує періодичну очистку застарілих логів, скріншотів та відеозаписів
+    на основі налаштувань користувача.
     """
 
     def __init__(
@@ -29,6 +41,14 @@ class CleanerService:
         settings_service: CleanerServiceSettings,
         paths_override: dict | None = None,
     ):
+        """
+        Ініціалізує сервіс очистки.
+
+        Args:
+            settings_service (CleanerServiceSettings): Сервіс налаштувань для отримання правил очистки.
+            paths_override (dict | None, optional): Словник для заміни стандартних шляхів (корисно для тестів).
+                Очікує ключі 'logs', 'bg_logs', 'media'.
+        """
         super().__init__()
         self.settings_service = settings_service
 
@@ -78,6 +98,12 @@ class CleanerService:
                 )
 
     def clean_sdr_data(self):
+        """
+        Запускає процес сканування та видалення застарілих файлів.
+
+        Перебирає всі зареєстровані цілі (targets) та видаляє файли,
+        дата зміни яких старша за вказаний ліміт днів.
+        """
         print("[Cleaner] Запуск очистки старих даних...")
         now = time.time()
 

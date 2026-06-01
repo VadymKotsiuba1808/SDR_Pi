@@ -19,11 +19,29 @@ from app.protocols import OSService
 
 
 class MediaPlayerService(QObject):
+    """
+    Сервіс керування зовнішнім медіа-плеєром (VLC).
+
+    Забезпечує запуск VLC для перегляду відеозаписів детекцій,
+    автоматично очищаючи змінні середовища Qt для уникнення конфліктів бібліотек.
+
+    Attributes:
+        playback_finished (pyqtSignal): Випромінюється при закритті плеєра або завершенні відео.
+        error_occurred (pyqtSignal): Випромінюється при виникненні помилки (наприклад, VLC не знайдено).
+    """
+
     # Сигнали для зворотного зв'язку з UI
-    playback_finished = pyqtSignal()  # Відео завершилось або вікно закрили
-    error_occurred = pyqtSignal(str)  # Щось пішло не так
+    playback_finished = pyqtSignal()
+    error_occurred = pyqtSignal(str)
 
     def __init__(self, system: OSService, parent=None):
+        """
+        Ініціалізує сервіс медіа-плеєра.
+
+        Args:
+            system (OSService): Сервіс для визначення ОС та пошуку шляхів.
+            parent (QObject, optional): Батьківський об'єкт.
+        """
         super().__init__(parent)
         self.system_service = system
 
@@ -34,8 +52,12 @@ class MediaPlayerService(QObject):
         self._vlc_path = self._get_vlc_executable()
 
     def play(self, file_path: str):
-        """Запускає відео у зовнішньому плеєрі."""
+        """
+        Запускає відтворення медіа-файлу у зовнішньому вікні.
 
+        Args:
+            file_path (str): Абсолютний шлях до файлу (відео або фото).
+        """
         print(file_path)
 
         if not self._vlc_path:

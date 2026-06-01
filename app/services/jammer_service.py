@@ -5,11 +5,28 @@ from app.services.pi_network_service import PiNetworkService
 
 
 class JammerService(QObject):
+    """
+    Сервіс керування апаратними реле (Jammer).
+
+    Відповідає за активацію та деактивацію реле на віддаленому сервері Raspberry Pi,
+    відстеження часу роботи та автоматичне вимкнення за таймером.
+
+    Attributes:
+        state_changed (pyqtSignal): Сигнал, що випромінюється при зміні стану (bool: True - увімкнено, False - вимкнено).
+    """
+
     state_changed = pyqtSignal(bool)
 
     def __init__(
         self, pi_network: PiNetworkService, settings_service: JammerServiceSettings
     ):
+        """
+        Ініціалізує сервіс керування реле.
+
+        Args:
+            pi_network (PiNetworkService): Сервіс мережевої взаємодії для відправки команд.
+            settings_service (JammerServiceSettings): Сервіс налаштувань.
+        """
         super().__init__()
         self.pi_network = pi_network
         self.settings = settings_service
@@ -21,6 +38,12 @@ class JammerService(QObject):
         self.auto_stop_timer.timeout.connect(self.stop)
 
     def start(self):
+        """
+        Активує реле (Jammer).
+
+        Надсилає запит на сервер, запускає таймер авто-стопу (якщо увімкнено)
+        та оновлює внутрішній стан.
+        """
         if self.is_active:
             return
 
@@ -36,6 +59,11 @@ class JammerService(QObject):
         self.state_changed.emit(True)
 
     def stop(self):
+        """
+        Деактивує реле (Jammer).
+
+        Надсилає запит на зупинку серверу, зупиняє таймери та оновлює стан.
+        """
         if not self.is_active:
             return
 
@@ -50,6 +78,12 @@ class JammerService(QObject):
         self.state_changed.emit(False)
 
     def update_auto_stop(self):
+        """
+        Оновлює параметри таймера авто-стопу на основі поточних налаштувань.
+
+        Викликається при зміні налаштувань в процесі роботи реле, щоб
+        скоригувати час вимкнення без перезапуску сервісу.
+        """
 
         if not self.is_active or self.start_time is None:
             return
@@ -68,6 +102,12 @@ class JammerService(QObject):
             self.auto_stop_timer.stop()
 
     def get_formatted_time(self) -> str:
+        """
+        Повертає тривалість поточної сесії роботи у форматі HH:MM:SS.
+
+        Returns:
+            str: Відформатований рядок часу.
+        """
 
         if self.start_time is None or not self.is_active:
             return "00:00:00"

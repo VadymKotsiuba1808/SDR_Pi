@@ -9,7 +9,20 @@ from app.models.detection_background import DetectionBackground
 
 
 class DetectionBackgroundService:
+    """
+    Сервіс для збереження та отримання фонового стану детекцій.
+
+    Відповідає за логування "фону" (сигналу навколо виявленого об'єкта)
+    у форматі JSON Lines для подальшого аналізу оператором.
+    """
+
     def __init__(self, logs_dir: str | None = None):
+        """
+        Ініціалізує сервіс збереження фону.
+
+        Args:
+            logs_dir (str | None): Директорія для логів фону.
+        """
         self.logs_dir = logs_dir or BACKGROUND_LOGS_DIR_PATH
         if not os.path.exists(self.logs_dir):
             os.makedirs(self.logs_dir, exist_ok=True)
@@ -21,7 +34,12 @@ class DetectionBackgroundService:
         )
 
     def add_background(self, bg: DetectionBackground) -> None:
-        """Зберігає новий фон у файл."""
+        """
+        Зберігає новий запис фону у файл поточної дати.
+
+        Args:
+            bg (DetectionBackground): Об'єкт даних фону.
+        """
         today = datetime.now().strftime("%Y-%m-%d")
         if today != self._current_date:
             self._current_date = today
@@ -38,8 +56,13 @@ class DetectionBackgroundService:
 
     def get_backgrounds_by_target_id(self, target_id: str) -> List[DetectionBackground]:
         """
-        Знаходить всі фони, які мають вказаний ID (ID треку/детекції).
-        Це використовується в LogDialog для відображення історії фону конкретного об'єкта.
+        Шукає всі історичні записи фону для конкретного ID детекції.
+
+        Args:
+            target_id (str): Унікальний ідентифікатор цілі.
+
+        Returns:
+            List[DetectionBackground]: Список знайдених записів, відсортованих за часом.
         """
         results = []
 

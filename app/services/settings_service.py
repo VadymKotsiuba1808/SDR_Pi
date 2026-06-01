@@ -14,41 +14,86 @@ from app.models.settings import CleanRule
 
 
 class Setting(NamedTuple):
+    """
+    Структура опису окремого налаштування.
+
+    Attributes:
+        section (str): Секція в INI-файлі.
+        typ (type): Тип даних (int, float, str, bool, list, dict).
+        default (Any): Значення за замовчуванням.
+    """
     section: str
     typ: type
     default: Any
 
 
 class SettingsService(QObject):
+    """
+    Централізований сервіс керування налаштуваннями програми.
+
+    Забезпечує збереження та завантаження параметрів з INI-файлу,
+    автоматичну синхронізацію при зміні атрибутів класу та
+    відстеження зовнішніх змін файлу конфігурації.
+
+    Attributes:
+        settings_changed (pyqtSignal): Випромінюється при будь-якій зміні налаштувань.
+    """
+
     settings_changed = pyqtSignal()
 
     # Pinetwork
     pi_target_ip: str
+    """IP-адреса сервера Raspberry Pi."""
     pi_target_port: int
+    """Порт сервера Raspberry Pi."""
+
     # Maps
     radar_radius_km: float
+    """Поточний радіус відображення на радарі (км)."""
     radar_max_radius_km: float
+    """Максимально допустимий радіус радара (км)."""
     api_key: str
+    """API ключ для доступу до тайлів мапи (Stadia Maps)."""
     zoom: int
+    """Рівень масштабування мапи."""
+
     # Auth
     role: str
+    """Поточна роль користувача (admin/operator)."""
     owner_password_hash: str
+    """Хеш пароля адміністратора."""
     remember_me: bool
+    """Чи зберігати сесію входу."""
+
     # Signal
     radio_range_mhz: list[int]
+    """Діапазон радіочастот для сканування [min, max]."""
+
     # Detection
     detection_ttl_s: int
+    """Час життя детекції без оновлення (секунди)."""
+
     # Timers
     gps_interval_s: int
+    """Інтервал опитування GPS (секунди)."""
+
     # Jammer
     main_relays: list[str]
+    """Список реле, що активуються кнопкою Jammer."""
     is_jammer_auto_start_enabled: bool
+    """Чи активувати реле автоматично при детекції."""
     is_jammer_auto_stop_enabled: bool
+    """Чи вимикати реле автоматично за таймером."""
     jammer_auto_stop_interval_s: int
+    """Інтервал авто-стопу реле (секунди)."""
+
     # Clean
     clean_settings: Dict[CLEAN_TARGET_NAME, CleanRule]
+    """Налаштування автоматичної очистки старих файлів."""
+
     # UI
     lang_code: str
+    """Код мови інтерфейсу (uk/en)."""
 
     # Єдиний словник конфігурації: ключ → (секція, тип, значення за замовчуванням)
     _config_schema = {

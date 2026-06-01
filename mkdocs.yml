@@ -66,8 +66,9 @@ nav:
   - Головна: index.md
   - Огляд системи:
       - Архітектура: architecture.md
+      - Якість та Стандарти: quality.md
       - Розгортання: installation.md
-      - Тестування та Якість: testing.md
+      - Тестування: testing.md
       - План розвитку: roadmap.md
       - Глосарій термінів: glossary.md
   - Посібники:

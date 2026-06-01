@@ -1,6 +1,7 @@
-"""
-E2E тести для перевірки робочих процесів з детекціями БПЛА.
-Охоплює пошук цілей, відображення інформації та обробку помилкових тривог.
+"""E2E тести для перевірки робочих процесів з детекціями БПЛА.
+
+Цей модуль містить сценарії, що імітують реальну взаємодію користувача з інтерфейсом
+для пошуку цілей, відображення детальної інформації та обробки помилкових тривог.
 """
 
 from unittest.mock import MagicMock, patch
@@ -13,21 +14,28 @@ from app.models.source_type import SourceType
 from app.widgets.main_window import MainWindow
 
 
-def test_detection_search_and_info_display(app_services, qtbot, e2e_server):
-    """
-    Сценарій 4: Пошук цілі за індексом та відображення інформації.
+def test_detection_search_and_info_display(app_services, qtbot, e2e_server) -> None:
+    """Сценарій 4: Пошук цілі за індексом та відображення інформації.
+
+    Перевіряє, чи правильно UI реагує на введення візуального індексу цілі
+    та чи коректно заповнюється панель інформації даними з об'єкта події.
+
+    Args:
+        app_services: Фікстура сервісів додатку.
+        qtbot: Помічник для тестування PyQt6.
+        e2e_server: Мок-сервер для надсилання подій.
     """
     settings = app_services["settings"]
     main_win = MainWindow(settings, app_services["keyboard"], app_services["system"])
     qtbot.addWidget(main_win)
     main_win.show()
 
-    # 1. Чекаємо коннекту
+    # Очікуємо активації індикатора сенсора як ознаки успішного підключення до сервера
     qtbot.wait_until(
         lambda: main_win.ui.sensor_indicator.property("isActive") is True, timeout=5000
     )
 
-    # 2. Сервер надсилає детекцію
+    # Імітуємо виявлення цілі сервером
     event = DetectionEvent(
         id="uav_123",
         type=SourceType.RF,
@@ -41,37 +49,44 @@ def test_detection_search_and_info_display(app_services, qtbot, e2e_server):
     )
     e2e_server.send_detection_event(event)
 
-    # 3. Чекаємо появи цілі в менеджері (вона отримає візуальний індекс, зазвичай 1)
+    # Очікуємо обробку події менеджером детекцій
     qtbot.wait_until(lambda: main_win.detection_manager.has_detections(), timeout=3000)
     target = main_win.detection_manager.get_targets()[0]
     v_index = target.visual_index
 
-    # 4. Вводимо індекс у поле пошуку
+    # Користувач вводить індекс у поле пошуку та натискає Enter
     qtbot.keyClicks(main_win.ui.index_search_edit, str(v_index))
     qtbot.keyClick(main_win.ui.index_search_edit, Qt.Key.Key_Enter)
 
-    # 5. Перевіряємо інфо-панель (враховуємо локалізацію)
+    # Перевіряємо вміст панелі інформації на відповідність переданим даним.
+    # Враховуємо динамічну зміну локалізації (INDEX/ІНДЕКС).
     info_text = main_win.ui.detection_info_text.toPlainText()
 
-    # Перевіряємо наявність значень, а не міток
     assert str(v_index) in info_text
     assert "MAVIC 3" in info_text
     assert "2400.0" in info_text
     assert "1.500" in info_text
 
-    # Перевіряємо, що хоча б одна з міток (Eng/Ukr) присутня
     assert "INDEX" in info_text or "ІНДЕКС" in info_text
     assert "NAME" in info_text or "НАЗВА" in info_text
 
 
-def test_false_alarm_workflow(app_services, qtbot, e2e_server):
+def test_false_alarm_workflow(app_services, qtbot, e2e_server) -> None:
+    """Сценарій 5: Повний цикл обробки помилкової тривоги.
+
+    Перевіряє можливість позначення цілі як помилкової, що повинно
+    призвести до її видалення з UI та відправки відповідної команди на сервер.
+
+    Args:
+        app_services: Фікстура сервісів додатку.
+        qtbot: Помічник для тестування PyQt6.
+        e2e_server: Мок-сервер для взаємодії.
     """
-    Сценарій 5: Повний цикл обробки помилкової тривоги.
-    """
-    # Зменшуємо час очікування "нерухомості" для тесту
+    # Встановлюємо STATIONARY_SECONDS в 0, щоб кнопка 'False Alarm' активувалася миттєво,
+    # не чекаючи реального часу нерухомості цілі.
     with patch("app.widgets.main_window.STATIONARY_SECONDS", 0):
         settings = app_services["settings"]
-        settings.role = "owner"  # Тільки власник може звітувати про помилкові тривоги
+        settings.role = "owner"  # Функція доступна лише для ролі 'owner'
 
         main_win = MainWindow(
             settings, app_services["keyboard"], app_services["system"]
@@ -84,7 +99,6 @@ def test_false_alarm_workflow(app_services, qtbot, e2e_server):
             timeout=5000,
         )
 
-        # 1. Надсилаємо детекцію
         event = DetectionEvent(
             id="ghost_target",
             type=SourceType.SOUND,
@@ -103,27 +117,24 @@ def test_false_alarm_workflow(app_services, qtbot, e2e_server):
         )
         v_index = main_win.detection_manager.get_targets()[0].visual_index
 
-        # 2. Вибираємо ціль (через пошук)
+        # Вибираємо ціль для взаємодії
         qtbot.keyClicks(main_win.ui.index_search_edit, str(v_index))
         qtbot.keyClick(main_win.ui.index_search_edit, Qt.Key.Key_Enter)
 
-        # 3. Перевіряємо, що кнопка False Alarm стала активною (завдяки STATIONARY_SECONDS=0)
-        assert main_win.ui.falseAlarmButton.isEnabled() is True, (
-            "False Alarm button should be enabled for stationary target"
+        # Очікуємо активації кнопки (це може бути асинхронним процесом після зміни вибору)
+        qtbot.wait_until(
+            lambda: main_win.ui.falseAlarmButton.isEnabled() is True, timeout=2000
         )
 
-        # 4. Мокаємо метод обробки на сервері для перевірки отримання команди
+        # Перехоплюємо команду, що надсилається на сервер
         e2e_server._handle_hardware_command = MagicMock()
 
-        # 5. Натискаємо "Помилкова тривога"
         qtbot.mouseClick(main_win.ui.falseAlarmButton, Qt.MouseButton.LeftButton)
 
-        # 6. Перевірка:
-        # а) Ціль зникла з менеджера
+        # Перевіряємо, що ціль видалена з локального списку та сервер отримав запит
         qtbot.wait_until(
             lambda: not main_win.detection_manager.has_detections(), timeout=2000
         )
-        # б) Команда пішла на сервер
         qtbot.wait_until(
             lambda: e2e_server._handle_hardware_command.called, timeout=2000
         )
@@ -134,9 +145,16 @@ def test_false_alarm_workflow(app_services, qtbot, e2e_server):
         )
 
 
-def test_multiple_detections_stability(app_services, qtbot, e2e_server):
-    """
-    Сценарій 6: Робота з декількома цілями одночасно.
+def test_multiple_detections_stability(app_services, qtbot, e2e_server) -> None:
+    """Сценарій 6: Робота з декількома цілями одночасно.
+
+    Перевіряє стабільність UI при отриманні декількох подій детекції
+    та можливість незалежного перегляду інформації про кожну з них.
+
+    Args:
+        app_services: Фікстура сервісів додатку.
+        qtbot: Помічник для тестування PyQt6.
+        e2e_server: Мок-сервер для надсилання подій.
     """
     settings = app_services["settings"]
     main_win = MainWindow(settings, app_services["keyboard"], app_services["system"])
@@ -147,7 +165,7 @@ def test_multiple_detections_stability(app_services, qtbot, e2e_server):
         lambda: main_win.ui.sensor_indicator.property("isActive") is True, timeout=5000
     )
 
-    # 1. Надсилаємо дві цілі
+    # Імітуємо появу двох різних БПЛА для перевірки конкурентної обробки
     e1 = DetectionEvent(
         id="uav_1",
         type=SourceType.RF,
@@ -174,21 +192,20 @@ def test_multiple_detections_stability(app_services, qtbot, e2e_server):
     e2e_server.send_detection_event(e1)
     e2e_server.send_detection_event(e2)
 
+    # Перевіряємо, що обидві цілі з'явилися в списку
     qtbot.wait_until(
         lambda: len(main_win.detection_manager.get_targets()) == 2, timeout=3000
     )
 
-    # 2. Вибираємо першу ціль
+    # Перемикаємося між цілями через пошук та перевіряємо оновлення інфо-панелі
     t1 = main_win.detection_manager.get_targets()[0]
     main_win.ui.index_search_edit.clear()
     qtbot.keyClicks(main_win.ui.index_search_edit, str(t1.visual_index))
     qtbot.keyClick(main_win.ui.index_search_edit, Qt.Key.Key_Enter)
 
-    # Текст у панелі може бути у верхньому регістрі
     info1 = main_win.ui.detection_info_text.toPlainText().upper()
     assert "DRONE 1" in info1
 
-    # 3. Вибираємо другу ціль
     t2 = main_win.detection_manager.get_targets()[1]
     main_win.ui.index_search_edit.clear()
     qtbot.keyClicks(main_win.ui.index_search_edit, str(t2.visual_index))
@@ -198,30 +215,36 @@ def test_multiple_detections_stability(app_services, qtbot, e2e_server):
     assert "DRONE 2" in info2
 
 
-def test_network_reconnect_ui_reaction(app_services, qtbot, e2e_server):
-    """
-    Сценарій 7: Реакція UI на розрив та відновлення зв'язку з сервером.
+def test_network_reconnect_ui_reaction(app_services, qtbot, e2e_server) -> None:
+    """Сценарій 7: Реакція UI на розрив та відновлення зв'язку з сервером.
+
+    Перевіряє механізм автоматичного перепідключення клієнта та
+    візуальну індикацію статусу з'єднання в інтерфейсі.
+
+    Args:
+        app_services: Фікстура сервісів додатку.
+        qtbot: Помічник для тестування PyQt6.
+        e2e_server: Мок-сервер для імітації розриву.
     """
     settings = app_services["settings"]
     main_win = MainWindow(settings, app_services["keyboard"], app_services["system"])
     qtbot.addWidget(main_win)
     main_win.show()
 
-    # 1. Чекаємо стабільного з'єднання
     qtbot.wait_until(
         lambda: main_win.ui.sensor_indicator.property("isActive") is True, timeout=5000
     )
 
-    # 2. Зупиняємо сервер (розрив)
+    # Імітуємо аварійне завершення роботи сервера
     e2e_server.stop()
 
-    # Перевіряємо, що індикатор став неактивним
+    # UI повинен змінити стан індикатора на неактивний
     qtbot.wait_until(
         lambda: main_win.ui.sensor_indicator.property("isActive") is False, timeout=5000
     )
 
-    # 3. Перезапускаємо сервер (відновлення)
-    # Створюємо новий сервер на тому ж порту (settings.pi_target_port вже знає порт)
+    # Відновлюємо сервер на тому ж порті. Використовуємо локальні імпорти,
+    # щоб уникнути циклічних залежностей або зайвого навантаження в інших тестах.
     from app.models.object_class import ObjectClass
     from pi_server.database_service import DatabaseService
     from pi_server.pi_server_service import PiServerService
@@ -232,7 +255,7 @@ def test_network_reconnect_ui_reaction(app_services, qtbot, e2e_server):
     new_srv = PiServerService(port=settings.pi_target_port, db_service=db)
     new_srv.start()
 
-    # Перевіряємо, що клієнт сам перепідключився
+    # Очікуємо, що клієнт автоматично виявить доступність сервера та підключиться
     qtbot.wait_until(
         lambda: main_win.ui.sensor_indicator.property("isActive") is True, timeout=10000
     )
@@ -240,15 +263,23 @@ def test_network_reconnect_ui_reaction(app_services, qtbot, e2e_server):
     new_srv.stop()
 
 
-def test_chart_monitor_flow(app_services, qtbot, e2e_server):
-    """
-    Сценарій 14: Відкриття та робота Монітора Графіків (Спектрограми).
+def test_chart_monitor_flow(app_services, qtbot, e2e_server) -> None:
+    """Сценарій 14: Відкриття та робота Монітора Графіків (Спектрограми).
+
+    Перевіряє, чи відкривається вікно спектрограми при натисканні відповідної
+    кнопки та чи відбувається підписка на мережевий потік даних.
+
+    Args:
+        app_services: Фікстура сервісів додатку.
+        qtbot: Помічник для тестування PyQt6.
+        e2e_server: Мок-сервер для взаємодії.
     """
     settings = app_services["settings"]
     main_win = MainWindow(settings, app_services["keyboard"], app_services["system"])
     qtbot.addWidget(main_win)
     main_win.show()
 
+    # Мокаємо метод 'exec' діалогу, щоб тест не блокувався модальним вікном
     with patch(
         "app.widgets.main_window.ChartMonitorDialog.exec",
         return_value=QDialog.DialogCode.Accepted,
@@ -261,41 +292,46 @@ def test_chart_monitor_flow(app_services, qtbot, e2e_server):
     qtbot.addWidget(chart_dlg)
     chart_dlg.show()
 
-    # Перевіряємо, що діалог підписався на дані
+    # Перевірка наявності хоча б одного обробника сигналу свідчить про успішну ініціалізацію монітора
     assert (
         chart_dlg.network_service.receivers(chart_dlg.network_service.data_received) > 0
     )
 
 
-def test_screen_recording_flow(app_services, qtbot):
-    """
-    Сценарій 17: Повний цикл ручного запису екрану.
+def test_screen_recording_flow(app_services, qtbot) -> None:
+    """Сценарій 17: Повний цикл ручного запису екрану.
+
+    Перевіряє логіку керування записом екрану, візуальну індикацію
+    статусу запису та взаємодію з сервісом запису.
+
+    Args:
+        app_services: Фікстура сервісів додатку.
+        qtbot: Помічник для тестування PyQt6.
     """
     settings = app_services["settings"]
     main_win = MainWindow(settings, app_services["keyboard"], app_services["system"])
     qtbot.addWidget(main_win)
     main_win.show()
 
-    # Мокаємо Recorder щоб не запускати MSS/FFmpeg в тестах
+    # Мокаємо Recorder для ізоляції тесту від системних залежностей (MSS, FFmpeg)
     main_win.recorder = MagicMock()
-    # Імітуємо старт
     main_win.recorder.start_recording = MagicMock()
     main_win.recorder.stop_recording = MagicMock()
 
-    # 1. Починаємо запис
+    # Активуємо запис
     qtbot.mouseClick(main_win.ui.screenRecordButton, Qt.MouseButton.LeftButton)
     assert main_win.ui.screenRecordButton.isChecked()
     assert main_win.recorder.start_recording.called
 
-    # Емулюємо сигнал від сервісу, що запис почався
+    # Імітуємо сигнал зворотного зв'язку від сервісу про успішний старт
     main_win.on_recording_started()
     assert main_win.record_status_widget.isVisible()
 
-    # 2. Зупиняємо запис
+    # Вимикаємо запис
     qtbot.mouseClick(main_win.ui.screenRecordButton, Qt.MouseButton.LeftButton)
     assert not main_win.ui.screenRecordButton.isChecked()
     assert main_win.recorder.stop_recording.called
 
-    # Емулюємо сигнал від сервісу, що запис зупинився
+    # Імітуємо сигнал про завершення запису
     main_win.on_recording_stopped()
     assert not main_win.record_status_widget.isVisible()

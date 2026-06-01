@@ -1,6 +1,8 @@
-"""
-Інтеграційні тести для взаємодії Desktop Client <-> Pi Server.
-Перевірка повного циклу обміну даними через TCP.
+"""Інтеграційні тести для взаємодії Desktop Client <-> Pi Server.
+
+Цей модуль містить тести, що перевіряють повний цикл обміну даними через TCP сокети
+між клієнтською частиною (app) та серверною частиною (pi_server), включаючи
+роботу з базою даних, передачу телеметрії та апаратних команд.
 """
 
 import pytest
@@ -13,22 +15,39 @@ from pi_server.pi_server_service import PiServerService
 
 
 class MockSettings:
-    """Мок для NetworkServiceSettings."""
+    """Мок-об'єкт для налаштувань мережевого сервісу.
 
-    def __init__(self, ip: str, port: int):
+    Використовується для імітації об'єкта конфігурації, який очікує PiNetworkService.
+    """
+
+    def __init__(self, ip: str, port: int) -> None:
+        """Ініціалізація налаштувань.
+
+        Args:
+            ip: IP-адреса сервера.
+            port: Порт сервера.
+        """
         self.pi_target_ip = ip
         self.pi_target_port = port
 
 
 @pytest.fixture
 def server_instance(qtbot):
-    """Фікстура для запуску реального Pi сервера."""
+    """Фікстура для запуску реального екземпляра Pi Server в ізольованому середовищі.
+
+    Створює сервер з базою даних у пам'яті та динамічно виділеним портом для
+    уникнення конфліктів при паралельному запуску тестів.
+
+    Yields:
+        PiServerService: Запущений екземпляр сервера.
+    """
+    # Використовуємо SQLite в пам'яті для ізоляції тестів та швидкості
     db = DatabaseService(db_url="sqlite:///:memory:")
-    # port=0 виділяє вільний порт динамічно
+    # port=0 дозволяє ОС автоматично виділити будь-який вільний порт
     srv = PiServerService(port=0, db_service=db)
     srv.start()
 
-    # Чекаємо, поки сервер почне слухати, щоб отримати порт
+    # Чекаємо, поки сервер почне слухати, щоб отримати фактично виділений порт
     qtbot.wait_until(
         lambda: srv.server.isListening() if srv.server else False, timeout=2000
     )
@@ -39,14 +58,20 @@ def server_instance(qtbot):
 
 @pytest.fixture
 def client_instance(server_instance, qtbot):
-    """Фікстура для ініціалізації клієнтського сервісу."""
+    """Фікстура для ініціалізації клієнтського мережевого сервісу.
+
+    Створює PiNetworkService та підключає його до запущеного server_instance.
+
+    Yields:
+        PiNetworkService: Підключений екземпляр клієнтського сервісу.
+    """
     port = server_instance.server.serverPort()
     settings = MockSettings(ip="127.0.0.1", port=port)
 
     client = PiNetworkService(settings=settings)
     client.start()
 
-    # Чекаємо на успішне з'єднання
+    # Чекаємо на успішне встановлення TCP-з'єднання перед початком тесту
     qtbot.wait_until(
         lambda: (
             client.socket is not None
@@ -59,16 +84,16 @@ def client_instance(server_instance, qtbot):
     client.stop()
 
 
-def test_integration_connection_established(client_instance):
-    """Test 1: Перевірка встановлення з'єднання."""
+def test_integration_connection_established(client_instance) -> None:
+    """Перевірка успішного встановлення з'єднання між клієнтом та сервером."""
     assert (
         client_instance.socket.state()
         == client_instance.socket.SocketState.ConnectedState
-    ), "Client should be connected"
+    ), "Клієнт повинен мати статус з'єднання ConnectedState"
 
 
-def test_integration_db_get_classes_empty(client_instance, qtbot):
-    """Test 3a: Запит списку класів через мережу (порожня база)."""
+def test_integration_db_get_classes_empty(client_instance, qtbot) -> None:
+    """Перевірка отримання порожнього списку класів об'єктів при першому запиті."""
     with qtbot.wait_signal(client_instance.request_finished, timeout=3000) as blocker:
         client_instance.request_db_classes()
 
@@ -79,11 +104,11 @@ def test_integration_db_get_classes_empty(client_instance, qtbot):
     assert len(response.data["classes"]) == 0
 
 
-def test_integration_db_add_and_list_class(client_instance, qtbot):
-    """Test 4: Повний цикл додавання класу та його отримання."""
+def test_integration_db_add_and_list_class(client_instance, qtbot) -> None:
+    """Перевірка повного циклу додавання нового класу об'єктів та його верифікація."""
     new_class = ObjectClass(id=None, name="IntegrationTest")
 
-    # 1. Додаємо клас
+    # 1. Відправляємо запит на додавання класу
     with qtbot.wait_signal(client_instance.request_finished, timeout=3000) as blocker:
         client_instance.request_db_add_class(new_class)
 
@@ -92,7 +117,7 @@ def test_integration_db_add_and_list_class(client_instance, qtbot):
     assert add_resp.data["name"] == "IntegrationTest"
     class_id = add_resp.data["id"]
 
-    # 2. Запитуємо список класів, щоб переконатися, що він там є
+    # 2. Запитуємо оновлений список класів для підтвердження збереження в БД
     with qtbot.wait_signal(client_instance.request_finished, timeout=3000) as blocker:
         client_instance.request_db_classes()
 
@@ -100,11 +125,11 @@ def test_integration_db_add_and_list_class(client_instance, qtbot):
     classes = list_resp.data["classes"]
     assert any(
         c["id"] == class_id and c["name"] == "IntegrationTest" for c in classes
-    ), "Added class should be in the list"
+    ), "Доданий клас повинен бути присутнім у списку"
 
 
-def test_integration_server_events(server_instance, client_instance, qtbot):
-    """Test 7: Отримання подій від сервера в реальному часі (Detections)."""
+def test_integration_server_events(server_instance, client_instance, qtbot) -> None:
+    """Перевірка отримання подій детекції від сервера в реальному часі."""
     from app.models.detection_event import DetectionEvent
     from app.models.source_type import SourceType
 
@@ -120,8 +145,9 @@ def test_integration_server_events(server_instance, client_instance, qtbot):
         frequency_hz=2400000000,
     )
 
+    # Очікуємо сигнал від клієнта, коли він отримає та обробить пакет від сервера
     with qtbot.wait_signal(client_instance.detection_received, timeout=3000) as blocker:
-        # Сервер ініціює відправку події
+        # Сервер ініціює відправку події (Push-модель)
         server_instance.send_detection_event(fake_event)
 
     received_event = blocker.args[0]
@@ -129,12 +155,12 @@ def test_integration_server_events(server_instance, client_instance, qtbot):
     assert received_event.distance_km == 1.2
 
 
-def test_integration_db_object_crud_cycle(client_instance, qtbot):
-    """Test 4-5: Повний цикл CRUD для об'єкта через мережу."""
-    # 1. Підготовка: додаємо клас
+def test_integration_db_object_crud_cycle(client_instance, qtbot) -> None:
+    """Перевірка повного CRUD-циклу для об'єктів детекції через мережу."""
+    # 1. Підготовка: додаємо необхідний клас
     with qtbot.wait_signal(client_instance.request_finished):
         client_instance.request_db_add_class(ObjectClass(id=None, name="CRUD_Test"))
-    class_id = 1  # В порожній базі в пам'яті це буде 1
+    class_id = 1  # У порожній базі перший ID завжди 1
 
     from app.models.detection_object import DetectionObject
 
@@ -142,12 +168,12 @@ def test_integration_db_object_crud_cycle(client_instance, qtbot):
         id=None, name="Initial Name", class_id=class_id, object_class="CRUD_Test"
     )
 
-    # 2. CREATE
+    # 2. CREATE: Створення об'єкта
     with qtbot.wait_signal(client_instance.request_finished) as blocker:
         client_instance.request_db_add_object(obj)
     obj_id = blocker.args[0].data["id"]
 
-    # 3. UPDATE
+    # 3. UPDATE: Оновлення об'єкта
     updated_obj = DetectionObject(
         id=obj_id, name="Updated Name", class_id=class_id, object_class="CRUD_Test"
     )
@@ -156,21 +182,21 @@ def test_integration_db_object_crud_cycle(client_instance, qtbot):
     assert blocker.args[0].status == StatusCode.OK
     assert blocker.args[0].data["name"] == "Updated Name"
 
-    # 4. DELETE
+    # 4. DELETE: Видалення об'єкта
     with qtbot.wait_signal(client_instance.request_finished) as blocker:
         client_instance.request_db_delete_object(obj_id)
     assert blocker.args[0].status == StatusCode.OK
     assert blocker.args[0].data["id"] == obj_id
 
 
-def test_integration_db_pagination(client_instance, qtbot):
-    """Test 5: Перевірка пагінації через мережу."""
+def test_integration_db_pagination(client_instance, qtbot) -> None:
+    """Перевірка коректності роботи пагінації при запиті великої кількості об'єктів."""
     with qtbot.wait_signal(client_instance.request_finished):
         client_instance.request_db_add_class(ObjectClass(id=None, name="PageTest"))
 
     from app.models.detection_object import DetectionObject
 
-    # Додаємо 3 об'єкти
+    # Наповнюємо базу тестовими даними (3 об'єкти)
     for i in range(3):
         with qtbot.wait_signal(client_instance.request_finished):
             client_instance.request_db_add_object(
@@ -179,7 +205,7 @@ def test_integration_db_pagination(client_instance, qtbot):
                 )
             )
 
-    # Запитуємо сторінку розміром 2
+    # Запитуємо першу сторінку з лімітом у 2 елементи
     with qtbot.wait_signal(client_instance.request_finished) as blocker:
         client_instance.request_db_objects_page(page=1, page_size=2)
 
@@ -188,16 +214,16 @@ def test_integration_db_pagination(client_instance, qtbot):
     assert resp.data["total"] == 3
 
 
-def test_integration_db_class_rename(client_instance, qtbot):
-    """Test: Перейменування класу через мережу."""
-    # 1. Створюємо клас
+def test_integration_db_class_rename(client_instance, qtbot) -> None:
+    """Перевірка операції перейменування класу об'єктів через мережевий запит."""
+    # 1. Створюємо клас з початковою назвою
     with qtbot.wait_signal(client_instance.request_finished):
         client_instance.request_db_add_class(ObjectClass(id=None, name="OldName"))
 
     old_cls = ObjectClass(id=1, name="OldName")
     new_cls = ObjectClass(id=1, name="NewName")
 
-    # 2. Перейменовуємо
+    # 2. Виконуємо операцію перейменування
     with qtbot.wait_signal(client_instance.request_finished) as blocker:
         client_instance.request_db_rename_class(old_cls, new_cls)
 
@@ -205,13 +231,14 @@ def test_integration_db_class_rename(client_instance, qtbot):
     assert blocker.args[0].data["name"] == "NewName"
 
 
-def test_integration_telemetry_gps(server_instance, client_instance, qtbot):
-    """Test 8: Передача телеметрії GPS від сервера до клієнта."""
+def test_integration_telemetry_gps(server_instance, client_instance, qtbot) -> None:
+    """Перевірка передачі та обробки телеметрії GPS від сервера до клієнта."""
     from app.models.gps_data import GPSData
 
     fake_gps = GPSData(lat=50.45, lon=30.52, strength=85)
 
     with qtbot.wait_signal(client_instance.gps_received, timeout=3000) as blocker:
+        # Імітуємо отримання координат GPS модулем сервера
         server_instance.send_gps_data(fake_gps)
 
     received_gps = blocker.args[0]
@@ -220,21 +247,21 @@ def test_integration_telemetry_gps(server_instance, client_instance, qtbot):
     assert received_gps.strength == 85
 
 
-def test_integration_hardware_commands(server_instance, client_instance, qtbot):
-    """Test 10: Перевірка проходження апаратних команд від клієнта до сервера."""
+def test_integration_hardware_commands(server_instance, client_instance, qtbot) -> None:
+    """Перевірка успішного проходження апаратних команд від клієнта до заліза сервера."""
     from unittest.mock import MagicMock
 
-    # Створюємо мок-обробник
+    # Створюємо мок-обробник для перехоплення команд, що йдуть "на залізо"
     mock_handler = MagicMock()
-    # Замінюємо реальний метод нашого екземпляра сервера
+    # Підміняємо внутрішній метод сервера для верифікації викликів
     server_instance._handle_hardware_command = mock_handler
 
-    # 1. Тест команди Alarm
+    # 1. Тест команди активації тривоги (Alarm)
     client_instance.request_alarm_start(["relay1", "relay2"])
 
-    # Чекаємо, поки сервер обробить пакет (це асинхронно через сокет)
+    # Оскільки обмін асинхронний, чекаємо виклику обробника на стороні сервера
     qtbot.wait_until(lambda: mock_handler.called, timeout=2000)
-    assert mock_handler.called, "Server should receive start_alarm command"
+    assert mock_handler.called, "Сервер повинен отримати команду start_alarm"
 
     args = mock_handler.call_args
     assert args[0][0] == "start_alarm"
@@ -242,32 +269,33 @@ def test_integration_hardware_commands(server_instance, client_instance, qtbot):
 
     mock_handler.reset_mock()
 
-    # 2. Тест команди False Alarm
+    # 2. Тест звіту про помилкову тривогу (False Alarm)
     client_instance.report_false_alarm("event_123")
     qtbot.wait_until(lambda: mock_handler.called, timeout=2000)
-    assert mock_handler.called, "Server should receive false_alarm command"
+    assert mock_handler.called, "Сервер повинен отримати команду false_alarm"
     assert mock_handler.call_args[0][0] == "false_alarm"
     assert mock_handler.call_args[0][1]["event_id"] == "event_123"
 
     mock_handler.reset_mock()
 
-    # 3. Тест встановлення діапазону частот
+    # 3. Тест налаштування діапазону частот радіомоніторингу
     client_instance.set_rf_range([900, 930])
     qtbot.wait_until(lambda: mock_handler.called, timeout=2000)
-    assert mock_handler.called, "Server should receive set_rf_range command"
+    assert mock_handler.called, "Сервер повинен отримати команду set_rf_range"
     assert mock_handler.call_args[0][0] == "set_rf_range"
     assert mock_handler.call_args[0][1]["range"] == [900, 930]
 
 
-def test_integration_gps_request_cycle(server_instance, client_instance, qtbot):
-    """Test 11: Цикл запиту GPS (Клієнт запитує -> Сервер отримує запит)."""
+def test_integration_gps_request_cycle(server_instance, client_instance, qtbot) -> None:
+    """Перевірка циклу запиту GPS-координат (Клієнт -> Сервер)."""
     from unittest.mock import MagicMock
 
     mock_handler = MagicMock()
     server_instance._handle_hardware_command = mock_handler
 
+    # Клієнт запитує примусове оновлення GPS
     client_instance.request_remote_gps()
 
     qtbot.wait_until(lambda: mock_handler.called, timeout=2000)
-    assert mock_handler.called, "Server should receive get_gps command"
+    assert mock_handler.called, "Сервер повинен отримати команду get_gps"
     assert mock_handler.call_args[0][0] == "get_gps"

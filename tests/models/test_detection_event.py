@@ -1,13 +1,21 @@
 """
-Тести для моделі DetectionEvent.
+Модульні тести для моделі DetectionEvent.
+
+Цей модуль містить тести для перевірки коректності серіалізації,
+десеріалізації та обробки даних у класі DetectionEvent.
 """
 
 from app.models.detection_event import DetectionEvent
 from app.models.source_type import SourceType
 
 
-def test_detection_event_serialization():
-    """Тест серіалізації та десеріалізації DetectionEvent."""
+def test_detection_event_serialization() -> None:
+    """
+    Перевіряє правильність серіалізації та десеріалізації DetectionEvent.
+
+    Переконується, що об'єкт коректно створюється з повного набору даних
+    та правильно перетворюється назад у словник, зберігаючи всі значення.
+    """
     data = {
         "id": "e2e-123",
         "type": "RF",
@@ -21,22 +29,32 @@ def test_detection_event_serialization():
     }
     obj = DetectionEvent.from_dict(data)
 
-    assert obj.id == "e2e-123"
-    assert obj.type == SourceType.RF
-    assert obj.confidence == 0.92
-    assert obj.to_dict() == data
+    assert obj.id == "e2e-123", "ID має збігатися з вхідними даними"
+    assert obj.type == SourceType.RF, "Тип джерела має бути RF"
+    assert obj.confidence == 0.92, "Впевненість має збігатися"
+    assert obj.to_dict() == data, "Результат to_dict має бути ідентичним вхідним даним"
 
 
-def test_detection_event_from_dict_minimal():
-    """Тест десеріалізації DetectionEvent з мінімальними даними."""
+def test_detection_event_from_dict_minimal() -> None:
+    """
+    Перевіряє десеріалізацію DetectionEvent з мінімальними даними.
+
+    Тестує здатність методу from_dict обробляти відсутні поля,
+    підставляючи значення за замовчуванням.
+    """
     obj = DetectionEvent.from_dict({"id": "custom-id"})
-    assert obj.id == "custom-id"
-    assert obj.type == SourceType.RF
-    assert obj.name == "unknown"
-    assert obj.confidence == 0.0
+    assert obj.id == "custom-id", "ID має бути встановлено"
+    assert obj.type == SourceType.RF, "Тип за замовчуванням має бути RF"
+    assert obj.name == "unknown", "Назва за замовчуванням має бути unknown"
+    assert obj.confidence == 0.0, "Впевненість за замовчуванням має бути 0.0"
 
 
-def test_detection_event_invalid_type():
-    """Тест обробки некоректного типу джерела."""
+def test_detection_event_invalid_type() -> None:
+    """
+    Перевіряє обробку некоректного типу джерела при десеріалізації.
+
+    Переконується, що при отриманні невідомого типу джерела система
+    автоматично встановлює безпечне значення за замовчуванням (RF).
+    """
     obj = DetectionEvent.from_dict({"type": "INVALID"})
-    assert obj.type == SourceType.RF  # Дефолтний тип
+    assert obj.type == SourceType.RF, "Некоректний тип має замінюватися на RF"

@@ -17,7 +17,7 @@ def radar_renderer():
     return RadarRenderer()
 
 
-def test_radar_renderer_draw_detections(radar_renderer):
+def test_radar_renderer_draw_detections(qtbot, radar_renderer):
     """Тест малювання точок на радарі."""
     # Створюємо порожній Pixmap
     base = QPixmap(500, 500)
@@ -44,7 +44,7 @@ def test_radar_renderer_draw_detections(radar_renderer):
     assert result.size() == base.size()
 
 
-def test_radar_renderer_get_target_at_position(radar_renderer):
+def test_radar_renderer_get_target_at_position(qtbot, radar_renderer):
     """Тест визначення цілі за координатами кліку."""
     base = QPixmap(500, 500)
     event = DetectionEvent(
@@ -76,7 +76,7 @@ def test_radar_renderer_get_target_at_position(radar_renderer):
     assert radar_renderer.get_target_id_at_position(0, 0) is None
 
 
-def test_radar_renderer_scan_animation(radar_renderer):
+def test_radar_renderer_scan_animation(qtbot, radar_renderer):
     """Тест малювання анімації сканування."""
     size = QSize(500, 500)
 

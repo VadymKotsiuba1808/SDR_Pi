@@ -1,5 +1,9 @@
 """
-E2E тести для перевірки роботи з базою даних об'єктів та перегляду логів.
+Модуль містить E2E тести для перевірки повноцінних сценаріїв роботи з базою даних об'єктів
+та перегляду логів у клієнтському додатку.
+
+Тести покривають додавання/видалення об'єктів, перегляд історії виявлень,
+спектральний аналіз фонових даних та обробку помилок сервера.
 """
 
 import json
@@ -19,9 +23,20 @@ from app.widgets.object_editor_dialog import ObjectEditorDialog
 from app.widgets.object_manager_dialog import ObjectManagerDialog
 
 
-def test_object_manager_add_and_delete_flow(app_services, qtbot, e2e_server):
+def test_object_manager_add_and_delete_flow(app_services, qtbot, e2e_server) -> None:
     """
-    Сценарій 10: Додавання та видалення об'єкта в Менеджері Об'єктів.
+    Тестує повний цикл додавання та видалення об'єкта в Менеджері Об'єктів.
+
+    Сценарій 10:
+    1. Відкриття діалогу менеджера об'єктів та завантаження даних.
+    2. Створення нового об'єкта через редактор (з імітацією вибору).
+    3. Відображення нового об'єкта в таблиці після додавання.
+    4. Видалення об'єкта та його зникнення з інтерфейсу.
+
+    Args:
+        app_services: Словник з ініціалізованими сервісами додатку.
+        qtbot: Об'єкт для імітації дій користувача та очікування сигналів.
+        e2e_server: Фікстура, що забезпечує роботу тестового сервера.
     """
     settings = app_services["settings"]
     settings.role = "owner"
@@ -96,9 +111,20 @@ def test_object_manager_add_and_delete_flow(app_services, qtbot, e2e_server):
     assert obj_mgr.ui.tableWidget.rowCount() >= 0
 
 
-def test_log_history_view_flow(app_services, qtbot, e2e_server, tmp_path):
+def test_log_history_view_flow(app_services, qtbot, e2e_server, tmp_path) -> None:
     """
-    Сценарій 11: Перегляд історії сесій.
+    Тестує перегляд історії сесій та виявлень у журналі подій.
+
+    Сценарій 11:
+    1. Створення тимчасового файлу сесії з одним записом про виявлення.
+    2. Відкриття діалогу логів та перевірка завантаження сесій.
+    3. Перевірка відображення запису в таблиці логів.
+
+    Args:
+        app_services: Словник з ініціалізованими сервісами додатку.
+        qtbot: Об'єкт для імітації дій користувача.
+        e2e_server: Фікстура тестового сервера.
+        tmp_path: Фікстура для створення тимчасових директорій.
     """
     logs_dir = tmp_path / "logs"
     logs_dir.mkdir()
@@ -157,9 +183,19 @@ def test_log_history_view_flow(app_services, qtbot, e2e_server, tmp_path):
     assert found, "Log entry should be visible in table"
 
 
-def test_background_scan_view_in_logs(app_services, qtbot, tmp_path):
+def test_background_scan_view_in_logs(app_services, qtbot, tmp_path) -> None:
     """
-    Сценарій 12: Спектральний аналіз фону в логах.
+    Тестує відображення спектрального аналізу фонових даних у журналі.
+
+    Сценарій 12:
+    1. Підготовка даних виявлення та відповідних спектральних даних фону.
+    2. Відкриття діалогу логів та перехід на вкладку спектру.
+    3. Перевірка коректності відображення інформації про фонові скани.
+
+    Args:
+        app_services: Словник сервісів.
+        qtbot: Об'єкт для UI-тестування.
+        tmp_path: Тимчасовий шлях для файлів логів.
     """
     import numpy as np
 
@@ -236,9 +272,18 @@ def test_background_scan_view_in_logs(app_services, qtbot, tmp_path):
     assert re.search(r"1 (з|of) \d+", info_text) is not None
 
 
-def test_object_editor_validation_flow(app_services, qtbot, e2e_server):
+def test_object_editor_validation_flow(app_services, qtbot, e2e_server) -> None:
     """
-    Сценарій 13: Валідація некоректних даних при редагуванні об'єктів.
+    Тестує валідацію вхідних даних у діалозі редагування об'єкта.
+
+    Сценарій 13:
+    1. Перевірка заборони збереження об'єкта з порожнім ім'ям.
+    2. Перевірка валідації дублікатів частотних діапазонів RF.
+
+    Args:
+        app_services: Словник сервісів.
+        qtbot: Об'єкт для UI-тестування.
+        e2e_server: Фікстура сервера.
     """
     settings = app_services["settings"]
     settings.role = "owner"
@@ -287,9 +332,19 @@ def test_object_editor_validation_flow(app_services, qtbot, e2e_server):
         assert mock_warn.called, "Should show warning for duplicate RF range"
 
 
-def test_server_error_handling_flow(app_services, qtbot, e2e_server):
+def test_server_error_handling_flow(app_services, qtbot, e2e_server) -> None:
     """
-    Сценарій 19: Обробка помилок сервера (Internal Server Error 500).
+    Тестує реакцію клієнта на помилки сервера (HTTP 500).
+
+    Сценарій 19:
+    1. Відкриття менеджера об'єктів.
+    2. Імітація відповіді сервера з кодом помилки INTERNAL_ERROR.
+    3. Перевірка появи критичного повідомлення про помилку в інтерфейсі.
+
+    Args:
+        app_services: Словник сервісів.
+        qtbot: Об'єкт для UI-тестування.
+        e2e_server: Фікстура сервера.
     """
     settings = app_services["settings"]
     settings.role = "owner"

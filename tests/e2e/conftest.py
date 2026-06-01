@@ -1,9 +1,14 @@
 """
-Загальні фікстури для E2E тестів.
+Загальні фікстури для налаштування середовища наскрізного (E2E) тестування.
+
+Цей модуль містить глобальні перехоплення (patches) системних модулів,
+налаштування ізольованої конфігурації та управління життєвим циклом
+тестового сервера та клієнтських сервісів.
 """
 
 import os
 from pathlib import Path
+from typing import Any, Dict, Generator
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -17,10 +22,16 @@ from pi_server.database_service import DatabaseService
 from pi_server.pi_server_service import PiServerService
 
 
-# Глобальний патч для системних модулів до будь-яких імпортів сервісів
 @pytest.fixture(scope="session", autouse=True)
-def mock_os_modules():
-    # Встановлюємо прапор тестування для згортання вікон
+def mock_os_modules() -> Generator[None, None, None]:
+    """
+    Глобально замінює системні модулі на заглушки.
+
+    Ця фікстура необхідна для уникнення залежностей від специфічних для ОС бібліотек
+    (таких як win32api або keyboard), які можуть бути відсутні у середовищі CI
+    або вимагати прав адміністратора. Також налаштовує глобальні прапорці тестування.
+    """
+    # SDR_PI_TESTING запобігає реальному перезапуску процесів та зміні системних налаштувань
     os.environ["SDR_PI_TESTING"] = "1"
 
     with (
@@ -41,23 +52,38 @@ def mock_os_modules():
 
 
 @pytest.fixture(autouse=True)
-def close_all_windows():
-    """Фікстура для автоматичного закриття всіх вікон після кожного тесту."""
+def close_all_windows() -> Generator[None, None, None]:
+    """
+    Автоматично закриває всі активні вікна після кожного тесту.
+
+    Гарантує, що стан GUI очищується між тестами, запобігаючи витокам пам'яті
+    та впливу попередніх тестів на наступні.
+    """
     yield
     for widget in QApplication.topLevelWidgets():
         widget.close()
 
 
 class E2ESettings(SettingsService):
-    """Налаштування для E2E тестів, щоб не змінювати реальний config.ini."""
+    """
+    Спеціалізована реалізація налаштувань для E2E тестів.
 
-    def __init__(self, config_path: Path):
-        # Передаємо шлях до тимчасового файлу в базовий клас
+    Використовує тимчасовий шлях для файлу конфігурації, щоб запобігти зміні
+    користувацьких налаштувань розробника під час виконання тестів.
+    """
+
+    def __init__(self, config_path: Path) -> None:
+        """
+        Ініціалізує налаштування зі значеннями для тестування.
+
+        Args:
+            config_path: Шлях до тимчасового .ini файлу.
+        """
         super().__init__(config_path=config_path)
 
-        # Встановлюємо значення за замовчуванням для тестів
+        # Значення жорстко прописані для передбачуваності результатів тестів
         self.pi_target_ip = "127.0.0.1"
-        self.pi_target_port = 0  # Буде встановлено динамічно в app_services
+        self.pi_target_port = 0  # Призначається динамічно при старті сервера
         self.remember_me = False
         self.role = "operator"
         self.owner_password_hash = ""
@@ -65,10 +91,17 @@ class E2ESettings(SettingsService):
 
 
 @pytest.fixture
-def e2e_server():
-    """Фікстура для запуску реального Pi сервера."""
+def e2e_server() -> Generator[PiServerService, None, None]:
+    """
+    Запускає реальний екземпляр PiServerService в ізольованій базі даних.
+
+    Використовує SQLite в пам'яті для максимальної швидкості та ізоляції.
+
+    Yields:
+        PiServerService: Запущений сервер, готовий до прийому з'єднань.
+    """
     db = DatabaseService(db_url="sqlite:///:memory:")
-    # Початкове наповнення бази
+    # Мінімальний набір даних для функціонування інтерфейсу
     db.add_class(ObjectClass(id=None, name="UAV"))
     db.add_class(ObjectClass(id=None, name="BIRD"))
 
@@ -79,12 +112,23 @@ def e2e_server():
 
 
 @pytest.fixture
-def app_services(e2e_server, tmp_path):
-    """Фікстура для ініціалізації клієнтських сервісів."""
-    # Створюємо тимчасовий файл конфігурації для кожного тесту
+def app_services(e2e_server: PiServerService, tmp_path: Path) -> Dict[str, Any]:
+    """
+    Створює та налаштовує клієнтські сервіси для тестування.
+
+    Пов'язує налаштування клієнта з портом, на якому було запущено e2e_server.
+
+    Args:
+        e2e_server: Фікстура сервера.
+        tmp_path: Тимчасова директорія від pytest.
+
+    Returns:
+        Словник з ініціалізованими сервісами (settings, system, keyboard).
+    """
     test_config_path = tmp_path / "e2e_config.ini"
 
     settings = E2ESettings(test_config_path)
+    assert e2e_server.server is not None, "Сервер має бути ініціалізований"
     settings.pi_target_port = e2e_server.server.serverPort()
 
     system = SystemService()

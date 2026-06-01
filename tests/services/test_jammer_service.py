@@ -1,5 +1,5 @@
 """
-Тести для сервісу глушилки (JammerService).
+Тести для сервісу реле (JammerService).
 """
 
 from unittest.mock import MagicMock
@@ -32,7 +32,7 @@ def jammer_service(mock_pi_network, mock_jammer_settings):
 
 
 def test_jammer_start(jammer_service, mock_pi_network, mock_jammer_settings):
-    """Тест запуску глушилки."""
+    """Тест запуску реле."""
     jammer_service.start()
 
     assert jammer_service.is_active is True, "Jammer should be active after start()"
@@ -43,7 +43,7 @@ def test_jammer_start(jammer_service, mock_pi_network, mock_jammer_settings):
 
 
 def test_jammer_stop(jammer_service, mock_pi_network):
-    """Тест зупинки глушилки."""
+    """Тест зупинки реле."""
     jammer_service.start()
     jammer_service.stop()
 

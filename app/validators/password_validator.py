@@ -16,7 +16,7 @@ class PasswordValidator(BaseValidator, TranslatorMixin):
 
     def __init__(
         self,
-        min_length=4,
+        min_length=6,
     ):
         """
         Ініціалізує валідатор з гнучкими правилами.
@@ -30,13 +30,13 @@ class PasswordValidator(BaseValidator, TranslatorMixin):
             string.ascii_letters + string.digits + string.punctuation
         )
 
-    def validate(self, password):
+    def validate(self, data: str) -> bool:
         self._errors.clear()
         """
         Запускає всі перевірки для наданого пароля.
         """
 
-        self._password_validate(password)
+        self._password_validate(data)
 
         return self._is_valid()
 

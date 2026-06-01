@@ -155,7 +155,7 @@ def test_handle_detection_adds_to_manager_and_logs(main_window):
 
 
 def test_jammer_auto_start(main_window, mock_settings):
-    """Тест автостарту глушилки при детекції."""
+    """Тест автостарту реле при детекції."""
     mock_settings.is_jammer_auto_start_enabled = True
     main_window.jammer_service.is_active = False
 

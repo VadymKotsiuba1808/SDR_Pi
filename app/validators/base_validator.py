@@ -4,6 +4,7 @@
 """
 
 from abc import ABC, abstractmethod
+from typing import Any
 
 
 class BaseValidator(ABC):
@@ -15,7 +16,7 @@ class BaseValidator(ABC):
         self._errors = {}
 
     @abstractmethod
-    def validate(self, data):
+    def validate(self, data: Any) -> bool:
         """Головний метод, який запускає всі перевірки."""
         self._errors.clear()
         return self._is_valid()

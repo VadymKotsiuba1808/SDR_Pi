@@ -69,10 +69,15 @@ nav:
       - Розгортання: installation.md
       - Тестування та Якість: testing.md
   - Посібники:
+      - Головний екран та Керування: how-to/main_controls.md
       - Як додати новий клас об'єкта: how-to/add_object_class.md
       - Керування РЕБ та GPS: how-to/hardware_control.md
+      - Моніторинг ефіру (Real-time): how-to/realtime_monitor.md
       - Робота з логами: how-to/manage_logs.md
       - Медіа (Скріншоти та Запис): how-to/media.md
+      - Налаштування мапи: how-to/map_setup.md
+      - Системне меню (Меню): how-to/menu_settings.md
+      - Безпека та Авторизація: how-to/auth_security.md
       - Багатомовність (i18n): how-to/translations.md
   - API Довідник (Клієнт):
       - Сервіси (Services): api/services.md

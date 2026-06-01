@@ -1470,7 +1470,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
     </message>
     <message>
         <location filename="../ui/settings_dialog.ui" line="263"/>
-        <source>Авто-старт глушилки:</source>
+        <source>Авто-старт реле:</source>
         <translation>Autostart of jammer:</translation>
     </message>
     <message>
@@ -1481,7 +1481,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
     </message>
     <message>
         <location filename="../ui/settings_dialog.ui" line="277"/>
-        <source>Авто-стоп глушилки:</source>
+        <source>Авто-стоп реле:</source>
         <translation>Autostop of jammer:</translation>
     </message>
     <message>

@@ -1,9 +1,5 @@
-"""
-Адаптивне вікно.
-Базовий клас або функції для віджетів, що реалізує логіку автоматичного масштабування та підлаштування розмірів елементів під роздільну здатність екрану.
-"""
-
 import re
+from typing import Optional
 
 from PyQt6.QtCore import Qt, pyqtSlot
 from PyQt6.QtGui import (
@@ -14,18 +10,26 @@ from PyQt6.QtGui import (
 )
 from PyQt6.QtWidgets import (
     QComboBox,
+    QDialog,
     QGraphicsScene,
     QGraphicsView,
     QMainWindow,
     QMenu,
+    QWidget,
 )
 
 
-def make_window_stretched(widget):
+def make_window_stretched(widget: QDialog) -> None:
+    """Розтягує вікно на весь первинний екран.
 
+    Встановлює прапорці вікна, вмикає захват розміру та розгортає віджет на
+    всю доступну геометрію основного монітора.
+
+    Args:
+        widget: Віджет (зазвичай QDialog або QMainWindow), який потрібно розтягнути.
+    """
     widget.setSizeGripEnabled(True)
     widget.setModal(True)
-
     widget.setWindowFlags(Qt.WindowType.Window)
 
     pr_screen = QGuiApplication.primaryScreen()
@@ -35,24 +39,34 @@ def make_window_stretched(widget):
 
 
 class ScaledComboBox(QComboBox):
-    """
-    Цей QComboBox приймає словник стилів І "старий" комбобокс,
-    сигнали якого він буде "дзеркалити".
+    """Спеціалізований QComboBox для масштабованого інтерфейсу.
+
+    Цей віджет замінює стандартний випадаючий список на кастомне QMenu, щоб
+    уникнути проблем з відображенням тексту та елементів при масштабуванні
+    через QGraphicsView. Він дзеркалює стан прихованого оригінального комбобокса.
     """
 
-    # (ОНОВЛЕНИЙ __init__)
-    def __init__(self, parent=None, style_data=None, old_combo_to_forward_to=None):
+    def __init__(
+        self,
+        parent: Optional[QWidget] = None,
+        style_data: Optional[dict] = None,
+        old_combo_to_forward_to: Optional[QComboBox] = None,
+    ) -> None:
+        """Ініціалізація ScaledComboBox.
+
+        Args:
+            parent: Батьківський віджет.
+            style_data: Словник з налаштуваннями стилів (кольорів, рамок).
+            old_combo_to_forward_to: Оригінальний QComboBox, сигнали якого потрібно дзеркалити.
+        """
         super().__init__(parent)
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
-        # Зберігаємо прихований комбобокс
         self.hidden_combo = old_combo_to_forward_to
 
-        # Зберігаємо передані стилі
         if style_data:
             self._menu_style_data = style_data
         else:
-            # Аварійний варіант
             self._menu_style_data = {
                 "background": "#FFFFFF",
                 "color": "#000000",
@@ -63,24 +77,30 @@ class ScaledComboBox(QComboBox):
 
         print(f"[ScaledComboBox] Ініціалізовано для {self.objectName()}")
 
-    def showPopup(self):
+    def showPopup(self) -> None:
+        """Перевизначений метод для показу кастомного меню замість стандартного попапа."""
         self.create_custom_menu()
 
-    def mousePressEvent(self, e: QMouseEvent | None) -> None:
-        event = e
-        if event and event.button() == Qt.MouseButton.LeftButton:
+    def mousePressEvent(self, e: Optional[QMouseEvent]) -> None:
+        """Обробка натискання миші для виклику кастомного меню.
+
+        Args:
+            e: Подія миші.
+        """
+        if e and e.button() == Qt.MouseButton.LeftButton:
             self.create_custom_menu()
         else:
-            super().mousePressEvent(event)
+            super().mousePressEvent(e)
 
-    def create_custom_menu(self):
+    def create_custom_menu(self) -> None:
+        """Створює та відображає стилізоване QMenu з елементами комбобокса."""
         menu = QMenu(self)
         menu.setFont(self.font())
 
         data = self._menu_style_data
         font_size = self.font().pointSize()
         if font_size <= 0:
-            font_size = 28  # Аварійний варіант
+            font_size = 28
 
         menu_stylesheet = f"""
             QMenu {{
@@ -111,17 +131,21 @@ class ScaledComboBox(QComboBox):
         global_pos = self.mapToGlobal(self.rect().bottomLeft())
         menu.exec(global_pos)
 
-    # (ОНОВЛЕНИЙ set_selection)
     @pyqtSlot(int)
-    def set_selection(self, index):
-        # 1. Встановлюємо індекс для себе (це оновить UI)
-        # (блокуємо сигнали, щоб не було подвійного виклику)
+    def set_selection(self, index: int) -> None:
+        """Встановлює вибраний елемент та передає подію прихованому комбобоксу.
+
+        !!! note
+            Це важливо для підтримки існуючих підключень до сигналів
+            оригінального віджета, який був створений у Qt Designer.
+
+        Args:
+            index: Індекс вибраного елемента.
+        """
         self.blockSignals(True)
         self.setCurrentIndex(index)
         self.blockSignals(False)
 
-        # 2. (ВАЖЛИВО) Встановлюємо індекс для прихованого 'old_combo',
-        #    щоб ВІН випромінив сигнал до вашого обробника
         if self.hidden_combo:
             print(
                 f"[ScaledComboBox] Передача індексу {index} до прихованого комбобокса"
@@ -131,8 +155,18 @@ class ScaledComboBox(QComboBox):
 
 def enable_auto_scaling(
     window: QMainWindow, base_width: int = 1920, base_height: int = 1080
-):
+) -> None:
+    """Вмикає автоматичне масштабування для головного вікна.
 
+    Ця функція переміщує центральний віджет вікна в QGraphicsScene, яка потім
+    масштабується під фактичну роздільну здатність екрана. Також виконується
+    заміна стандартних QComboBox на ScaledComboBox для коректного відображення.
+
+    Args:
+        window: Головне вікно програми.
+        base_width: Базова ширина, на яку розрахований дизайн (за замовчуванням 1920).
+        base_height: Базова висота, на яку розрахований дизайн (за замовчуванням 1080).
+    """
     original_widget = window.centralWidget()
     if not original_widget:
         print("[AutoScaler] Помилка: Немає centralWidget.")
@@ -149,7 +183,7 @@ def enable_auto_scaling(
 
         print(f"[AutoScaler] Замінюю {old_combo.objectName()}...")
 
-        # 1. Зчитуємо стилі
+        # Зчитуємо стилі для передачі в новий комбобокс
         combo_view = old_combo.view()
         if combo_view is None:
             print(
@@ -169,6 +203,7 @@ def enable_auto_scaling(
             ).name(),
         }
 
+        # Спроба витягти стиль рамки з stylesheet
         border_style = "1px solid black"
         match = re.search(
             r"QComboBox\s*\{[^\}]*border\s*:\s*([^;\}]+)",
@@ -185,13 +220,13 @@ def enable_auto_scaling(
 
         print(f"[AutoScaler]   -> Зчитані стилі: {style_data}")
 
-        # 2. Створюємо new_combo, ПЕРЕДАЮЧИ old_combo
+        # Створюємо ScaledComboBox, який буде проксі-віджетом для старого
         parent = old_combo.parentWidget()
         new_combo = ScaledComboBox(
             parent, style_data, old_combo_to_forward_to=old_combo
         )
 
-        # 3. Копіюємо вміст та властивості
+        # Копіюємо стан та геометрію
         new_combo.addItems([old_combo.itemText(i) for i in range(old_combo.count())])
         new_combo.setCurrentIndex(old_combo.currentIndex())
         new_combo.setObjectName(old_combo.objectName())
@@ -199,7 +234,7 @@ def enable_auto_scaling(
         new_combo.setFont(old_combo.font())
         new_combo.setGeometry(old_combo.geometry())
 
-        # 4. Оновлюємо атрибут на 'window.ui'
+        # Оновлюємо посилання в об'єкті UI, якщо він існує
         attr_name = old_combo.objectName()
         window_ui = getattr(window, "ui", None)
 
@@ -207,14 +242,11 @@ def enable_auto_scaling(
             setattr(window_ui, attr_name, new_combo)
             print(f"[AutoScaler]   -> Оновлено атрибут 'window.ui.{attr_name}'")
 
-        # 5. (ВАЖЛИВО) Ховаємо старий, але НЕ видаляємо його
+        # Ховаємо старий віджет, але не видаляємо, бо він потрібен як джерело сигналів
         old_combo.setVisible(False)
-        # old_combo.deleteLater() # <--- НЕ ВИДАЛЯЄМО
-
         new_combo.setVisible(True)
 
-    # --- (Решта функції без змін) ---
-
+    # Налаштування сцени для масштабування
     scene = QGraphicsScene(0, 0, base_width, base_height)
     view = QGraphicsView(scene)
     view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)

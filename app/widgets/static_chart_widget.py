@@ -19,9 +19,27 @@ from app.utils.convert_measurement_unit import convert_hz_to_mhz
 
 
 class StaticChartWidget(QWidget):
+    """Віджет для відображення статичних графіків аналізу сигналів.
+
+    Підтримує декілька режимів відображення:
+    - спектр (spectrum)
+    - водоспад (waterfall)
+    - шлях (path)
+    - радарний знімок (radar_snapshot)
+    - часова шкала (timeline)
+    - сигнал (signal)
+    - гістограма (bar)
+    """
+
     def __init__(
         self, settings_service: LangSettings, parent: Optional[QWidget] = None
     ) -> None:
+        """Ініціалізує віджет графіка.
+
+        Args:
+            settings_service: Сервіс налаштувань мови та інтерфейсу.
+            parent: Батьківський віджет.
+        """
         super().__init__(parent)
         self.settings_service = settings_service
         self.setMouseTracking(True)
@@ -29,6 +47,7 @@ class StaticChartWidget(QWidget):
         self._setup_variables()
 
     def _setup_variables(self) -> None:
+        """Налаштовує внутрішні змінні та рендерери."""
         self.data: List[DetectionEvent] = []
         self.highlight_ids: Set[str] = set()
         self.chart_type: str = "timeline"
@@ -45,12 +64,22 @@ class StaticChartWidget(QWidget):
     def set_data(
         self, data: List[DetectionEvent], highlight_ids: Optional[Set[str]] = None
     ) -> None:
+        """Встановлює дані для відображення на графіку.
+
+        Args:
+            data: Список подій виявлення.
+            highlight_ids: Набір ID подій, які потрібно виділити.
+        """
         self.data = sorted(data, key=lambda x: x.timestamp)
         self.highlight_ids = highlight_ids or set()
         self.update()
 
     def set_background(self, spectral_data: Optional[SpectralData]) -> None:
-        """Встановлює дані фону для відображення на графіках спектру/водоспаду."""
+        """Встановлює дані фону для відображення на графіках спектру/водоспаду.
+
+        Args:
+            spectral_data: Спектральні дані для фону.
+        """
         self.current_background = spectral_data
 
         if self.chart_type in ["spectrum", "waterfall"] and self.current_background:
@@ -59,6 +88,11 @@ class StaticChartWidget(QWidget):
         self.update()
 
     def set_chart_type(self, t: str) -> None:
+        """Змінює тип графіка, що відображається.
+
+        Args:
+            t: Назва типу графіка (напр. 'spectrum', 'timeline').
+        """
         if self.chart_type != t:
             self.chart_type = t
 
@@ -67,7 +101,14 @@ class StaticChartWidget(QWidget):
             self.update()
 
     def _get_active_event(self) -> Optional[DetectionEvent]:
-        """Повертає 'активну' подію (останню або підсвічену) для відображення маркера."""
+        """Повертає 'активну' подію для відображення маркера.
+
+        Активною вважається або остання подія в списку, або подія,
+        яка входить до списку підсвічених (highlight_ids).
+
+        Returns:
+            Об'єкт події або None, якщо даних немає.
+        """
         if not self.data:
             return None
         if self.highlight_ids:
@@ -77,6 +118,14 @@ class StaticChartWidget(QWidget):
         return self.data[-1]
 
     def paintEvent(self, a0: QPaintEvent | None) -> None:
+        """Малює вміст віджета.
+
+        Відповідає за вибір відповідного рендерера залежно від поточного
+        типу графіка та малювання осей, сітки та самих даних.
+
+        Args:
+            a0: Подія малювання.
+        """
         event = a0
         p = QPainter(self)
         p.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -94,7 +143,7 @@ class StaticChartWidget(QWidget):
             p.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, self.tr("No Data"))
             return
 
-        # --- ЛОГІКА МАЛЮВАННЯ СПЕКТРАЛЬНИХ ГРАФІКІВ ---
+        # Логіка малювання спектральних графіків
         if self.chart_type == "spectrum":
             active = self._get_active_event()
 
@@ -111,7 +160,7 @@ class StaticChartWidget(QWidget):
             )
             self.crosshair.draw(p, self.content_rect)
 
-        # --- СТАНДАРТНІ ГРАФІКИ ---
+        # Стандартні графіки
         elif self.chart_type in ["path", "radar_snapshot"]:
             self.standard_renderer.render_polar(
                 p, self.rect(), self.data, self.highlight_ids, self._interactive_points
@@ -133,6 +182,11 @@ class StaticChartWidget(QWidget):
         super().paintEvent(event)
 
     def mouseMoveEvent(self, a0: QMouseEvent | None) -> None:
+        """Обробляє рух миші для оновлення курсора та підказок.
+
+        Args:
+            a0: Подія миші.
+        """
         event = a0
 
         if event is None:
@@ -170,6 +224,12 @@ class StaticChartWidget(QWidget):
         super().mouseMoveEvent(event)
 
     def _show_tooltip(self, global_pos, data: DetectionEvent) -> None:
+        """Відображає спливаючу підказку з детальною інформацією про подію.
+
+        Args:
+            global_pos: Глобальна позиція для відображення підказки.
+            data: Об'єкт події, дані якої потрібно відобразити.
+        """
         dt = datetime.fromisoformat(data.timestamp)
         time_str = dt.strftime("%H:%M:%S")
 

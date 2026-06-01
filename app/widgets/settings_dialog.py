@@ -21,7 +21,18 @@ from app.utils.ui_utils import update_element_styles
 
 @dataclass
 class SettingsData:
-    """Клас для зберігання налаштувань діалогу (DTO)."""
+    """Клас для зберігання налаштувань діалогу (DTO).
+
+    Attributes:
+        radar_max_radius_km (float): Максимальний радіус радара у кілометрах.
+        gps_interval_s (int): Інтервал оновлення GPS у секундах.
+        main_relays (List[str]): Список активних реле.
+        detection_ttl_s (int): Час життя об'єкта виявлення у секундах.
+        is_jammer_auto_start_enabled (bool): Чи увімкнено автостарт джаммера.
+        is_jammer_auto_stop_enabled (bool): Чи увімкнено автостоп джаммера.
+        jammer_auto_stop_interval_s (int): Інтервал автостопу джаммера у секундах.
+        clean_settings (Dict[CLEAN_TARGET_NAME, CleanRule]): Налаштування автоматичного очищення.
+    """
 
     radar_max_radius_km: float = 200.0
     gps_interval_s: int = 120
@@ -38,9 +49,10 @@ RELAYS_DIVIDER = ", "
 
 
 class SettingsDialog(QDialog, TestUIOptimizationMixin):
-    """
-    Сторінка налаштувань.
-    Логіка відображення та зміни конфігурації системи.
+    """Вікно налаштувань програми.
+
+    Забезпечує інтерфейс для зміни параметрів системи, таких як радіус дії радара,
+    інтервали оновлення GPS, керування реле та параметри автоматичного очищення логів/медіа.
     """
 
     def __init__(
@@ -48,6 +60,12 @@ class SettingsDialog(QDialog, TestUIOptimizationMixin):
         settings_service: SettingsDialogSettings,
         parent: Optional[QWidget] = None,
     ) -> None:
+        """Ініціалізує вікно налаштувань.
+
+        Args:
+            settings_service (SettingsDialogSettings): Сервіс для роботи з налаштуваннями.
+            parent (Optional[QWidget]): Батьківський віджет.
+        """
         super().__init__(parent)
 
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
@@ -66,6 +84,11 @@ class SettingsDialog(QDialog, TestUIOptimizationMixin):
         print("[Settings] Dialog initialized.")
 
     def changeEvent(self, a0: QEvent | None) -> None:
+        """Обробка подій зміни стану вікна, зокрема зміни мови.
+
+        Args:
+            a0 (QEvent | None): Об'єкт події.
+        """
         event = a0
         if event and event.type() == QEvent.Type.LanguageChange:
             if DEV_COMPILED_UI_USING_ENABLED:
@@ -75,6 +98,11 @@ class SettingsDialog(QDialog, TestUIOptimizationMixin):
             super().changeEvent(event)
 
     def _load_ui(self) -> None:
+        """Завантажує інтерфейс користувача з .ui файлу або скомпільованого класу.
+
+        Використовує `uic.loadUi` для динамічного завантаження в режимі розробки
+        або `Ui_SettingsDialog` для стабільної роботи у скомпільованому стані.
+        """
         if DEV_COMPILED_UI_USING_ENABLED:
             self.ui = Ui_SettingsDialog()
             self.ui.setupUi(self)
@@ -83,6 +111,11 @@ class SettingsDialog(QDialog, TestUIOptimizationMixin):
             self.ui = cast(Ui_SettingsDialog, self)
 
     def _setup_state_variables(self) -> None:
+        """Ініціалізує внутрішні змінні стану діалогу.
+
+        Створює буфер для налаштувань очищення, щоб зміни можна було скасувати
+        без впливу на основний сервіс до натискання кнопки 'Зберегти'.
+        """
         self.translator = QTranslator()
 
         self.new_settings: Optional[SettingsData] = None
@@ -93,6 +126,7 @@ class SettingsDialog(QDialog, TestUIOptimizationMixin):
         self.current_clean_target_key: Optional[CLEAN_TARGET_NAME] = None
 
     def _adjust_fields(self) -> None:
+        """Встановлює початкові значення полів вводу з сервісу налаштувань."""
         s = self.settings_service
 
         self.ui.inpMaxRadius.setValue(s.radar_max_radius_km)
@@ -116,7 +150,11 @@ class SettingsDialog(QDialog, TestUIOptimizationMixin):
             self.ui.cmbCleanTarget.setCurrentIndex(0)
             self._load_clean_settings_to_ui(0)
 
-    def _populate_relay_cmb(self):
+    def _populate_relay_cmb(self) -> None:
+        """Генерує всі можливі комбінації реле для вибору в ComboBox.
+
+        Це дозволяє користувачеві обирати довільну групу реле (наприклад, "RELAY_1, RELAY_2").
+        """
         self.ui.cmbRelay.clear()
         self.ui.cmbRelay.blockSignals(True)
 
@@ -127,8 +165,8 @@ class SettingsDialog(QDialog, TestUIOptimizationMixin):
 
         self.ui.cmbRelay.blockSignals(False)
 
-    def _setup_clean_ui_logic(self):
-        """Заповнює ComboBox і налаштовує сигнали для блоку очистки."""
+    def _setup_clean_ui_logic(self) -> None:
+        """Налаштовує випадаючий список цілей для автоматичного очищення."""
         self.ui.cmbCleanTarget.clear()
 
         TARGET_DISPLAY_NAMES = {
@@ -143,6 +181,7 @@ class SettingsDialog(QDialog, TestUIOptimizationMixin):
             self.ui.cmbCleanTarget.addItem(display_name, userData=target)
 
     def _connect_handlers(self) -> None:
+        """Реєструє обробники сигналів віджетів UI."""
         self.ui.chkJammerAutoStop.toggled.connect(self.handle_auto_stop_enabled)
 
         self.ui.cmbCleanTarget.currentIndexChanged.connect(
@@ -155,6 +194,7 @@ class SettingsDialog(QDialog, TestUIOptimizationMixin):
         self.ui.btnLogout.clicked.connect(self.restart_app)
 
     def _load_language(self) -> None:
+        """Завантажує та встановлює мовний файл згідно з налаштуваннями користувача."""
         lang_code = self.settings_service.lang_code
 
         if lang_code is None:
@@ -169,8 +209,12 @@ class SettingsDialog(QDialog, TestUIOptimizationMixin):
         else:
             print(f"[Settings] Error: Failed to load translation file: {path}")
 
-    def _on_clean_target_changed(self, index: int):
-        """Зберігає поточні дані в буфер і завантажує нові при зміні папки."""
+    def _on_clean_target_changed(self, index: int) -> None:
+        """Зберігає поточні дані в буфер і завантажує нові при зміні папки.
+
+        Args:
+            index (int): Новий вибраний індекс у ComboBox.
+        """
         if index < 0:
             return
 
@@ -178,8 +222,8 @@ class SettingsDialog(QDialog, TestUIOptimizationMixin):
 
         self._load_clean_settings_to_ui(index)
 
-    def _save_current_clean_target_to_buffer(self):
-        """Зчитує UI і оновлює буфер для поточної активної вкладки."""
+    def _save_current_clean_target_to_buffer(self) -> None:
+        """Зчитує дані з полів UI та оновлює буфер для поточної цілі очищення."""
         if self.current_clean_target_key:
             rule = CleanRule(
                 enabled=self.ui.chkCleanEnabled.isChecked(),
@@ -187,8 +231,12 @@ class SettingsDialog(QDialog, TestUIOptimizationMixin):
             )
             self.clean_settings_buffer[self.current_clean_target_key] = rule
 
-    def _load_clean_settings_to_ui(self, index: int):
-        """Завантажує дані з буфера в UI для обраного індексу."""
+    def _load_clean_settings_to_ui(self, index: int) -> None:
+        """Відображає налаштування очищення з буфера для вибраної цілі.
+
+        Args:
+            index (int): Індекс елемента у ComboBox.
+        """
         target_key = self.ui.cmbCleanTarget.itemData(index)
         self.current_clean_target_key = target_key
 
@@ -196,6 +244,7 @@ class SettingsDialog(QDialog, TestUIOptimizationMixin):
         if target_key in self.clean_settings_buffer:
             rule = self.clean_settings_buffer[target_key]
 
+        # Блокуємо сигнали, щоб уникнути зациклення при оновленні UI
         self.ui.chkCleanEnabled.blockSignals(True)
         self.ui.inpCleanDays.blockSignals(True)
 
@@ -212,16 +261,29 @@ class SettingsDialog(QDialog, TestUIOptimizationMixin):
         self.ui.chkCleanEnabled.blockSignals(False)
         self.ui.inpCleanDays.blockSignals(False)
 
-    def _handle_clean_enabled_toggled(self, is_checked: bool):
-        """Обробка візуального стану поля днів."""
+    def _handle_clean_enabled_toggled(self, is_checked: bool) -> None:
+        """Керує доступністю поля введення кількості днів очищення.
+
+        Args:
+            is_checked (bool): Стан CheckBox 'Увімкнено'.
+        """
         self.ui.inpCleanDays.setEnabled(is_checked)
         update_element_styles(self.ui.inpCleanDays)
 
     def handle_auto_stop_enabled(self, isChecked: bool) -> None:
+        """Керує доступністю поля інтервалу автостопу джаммера.
+
+        Args:
+            isChecked (bool): Стан CheckBox автостопу.
+        """
         self.ui.inpJammerStopInterval.setEnabled(isChecked)
         update_element_styles(self.ui.inpJammerStopInterval)
 
     def restart_app(self) -> None:
+        """Ініціює перезапуск програми.
+
+        Вимикає 'Запам'ятати мене', щоб користувач міг увійти під іншим обліковим записом.
+        """
         print("[Settings] Initiating application restart...")
         self.settings_service.remember_me = False
         self.setEnabled(False)
@@ -229,6 +291,7 @@ class SettingsDialog(QDialog, TestUIOptimizationMixin):
         restart_process()
 
     def _handle_save(self) -> None:
+        """Зчитує всі дані з форми, формує об'єкт SettingsData та закриває діалог."""
         self._save_current_clean_target_to_buffer()
 
         radius_km = self.ui.inpMaxRadius.value()
@@ -255,4 +318,9 @@ class SettingsDialog(QDialog, TestUIOptimizationMixin):
         self.accept()
 
     def get_settings(self) -> Optional[SettingsData]:
+        """Повертає об'єкт з новими налаштуваннями, якщо вони були збережені.
+
+        Returns:
+            Optional[SettingsData]: Нові налаштування або None, якщо діалог скасовано.
+        """
         return self.new_settings

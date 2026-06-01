@@ -68,10 +68,12 @@ nav:
       - Архітектура: architecture.md
       - Розгортання: installation.md
       - Тестування та Якість: testing.md
+      - План розвитку: roadmap.md
+      - Глосарій термінів: glossary.md
   - Посібники:
       - Головний екран та Керування: how-to/main_controls.md
       - Як додати новий клас об'єкта: how-to/add_object_class.md
-      - Керування РЕБ та GPS: how-to/hardware_control.md
+      - Керування реле та GPS: how-to/hardware_control.md
       - Моніторинг ефіру (Real-time): how-to/realtime_monitor.md
       - Робота з логами: how-to/manage_logs.md
       - Медіа (Скріншоти та Запис): how-to/media.md

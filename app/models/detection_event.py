@@ -1,9 +1,3 @@
-"""
-Модель події детекції.
-type: Джерело детекції -> ТІЛЬКИ "RF" або "Sound".
-object_class: Клас об'єкта -> "drone", "bird", "mavic_3" тощо.
-"""
-
 import uuid
 from dataclasses import dataclass
 from datetime import datetime
@@ -13,8 +7,23 @@ from app.models.source_type import SourceType
 
 @dataclass
 class DetectionEvent:
+    """
+    Представляє подію виявлення об'єкта.
+
+    Атрибути:
+        id (str): Унікальний ідентифікатор події.
+        type (SourceType): Джерело детекції (радіочастотне або акустичне).
+        name (str): Назва об'єкта або сигналу.
+        object_class (str): Клас об'єкта (наприклад, "drone", "bird").
+        confidence (float): Впевненість системи у виявленні (0.0 - 1.0).
+        timestamp (str): ISO-мітка часу події.
+        distance_km (float): Відстань до об'єкта в кілометрах.
+        angle (float): Кут (азимут) на об'єкт у градусах.
+        frequency_hz (float): Частота сигналу в Герцах.
+    """
+
     id: str
-    type: SourceType  # "RF" або "Sound"
+    type: SourceType
     name: str
     object_class: str
     confidence: float

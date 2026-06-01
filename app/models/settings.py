@@ -4,6 +4,14 @@ from typing import Any, Dict
 
 @dataclass
 class CleanRule:
+    """
+    Модель правила очищення застарілих даних.
+
+    Attributes:
+        enabled (bool): Чи увімкнено правило автоматичного очищення.
+        days (int): Кількість днів, після яких дані вважаються застарілими.
+    """
+
     enabled: bool
     days: int
 

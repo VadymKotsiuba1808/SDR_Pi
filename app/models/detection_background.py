@@ -7,29 +7,29 @@ import numpy as np
 
 @dataclass
 class SpectralData:
-    """Важкі дані для спектрального аналізу"""
+    """
+    Дані для спектрального аналізу.
 
-    # Центральна частота прийому в Герцах.
+    Цей клас містить параметри прийому та матрицю амплітуд, що використовується
+    для побудови спектрограм та виявлення сигналів.
+
+    Attributes:
+        center_freq_hz (float): Центральна частота прийому в Герцах.
+        sample_rate_hz (float): Смуга пропускання (ширина огляду) в Герцах.
+        duration_sec (float): Тривалість запису у секундах.
+        data_magnitude (np.ndarray): Матриця амплітуд (спектрограма) типу uint8.
+            Має форму (Time, Frequency), де рядки — це пакети у часі,
+            а стовпці — біни FFT. Значення 0-255 конвертуються в dB
+            за допомогою зміщення DB_OFFSET.
+    """
+
     center_freq_hz: float
-
-    # Смуга пропускання (ширина огляду) в Герцах.
     sample_rate_hz: float
-
-    # Тривалість запису у секундах.
     duration_sec: float
-
-    # Матриця амплітуд (спектрограма).
-    # Shape: (Rows, Cols) -> (Time, Frequency).
-    #   - Rows (висота): кількість пакетів у часі.
-    #   - Cols (ширина): кількість бінів FFT (наприклад, 1024).
-    #
-    # Тип: uint8 (0...255).
-    # Переводиться у db за формулою dB=value_uint8−DB_OFFSET(у constants)
     data_magnitude: np.ndarray
 
     @staticmethod
     def from_dict(data: dict) -> "SpectralData":
-
         mag_data = data.get("data_magnitude", [])
         if isinstance(mag_data, list):
             mag_data = np.array(mag_data, dtype=np.uint8)
@@ -58,6 +58,14 @@ class SpectralData:
 class DetectionBackground:
     """
     Фоновий спектр.
+
+    Представляє зріз радіочастотного фону в певний момент часу. Використовується
+    для порівняння з поточними даними та виявлення аномалій (нових цілей).
+
+    Attributes:
+        id (str): Унікальний ідентифікатор фонового запису.
+        timestamp (str): Часова мітка створення запису в форматі ISO.
+        spectral_data (SpectralData): Спектральні дані фону.
     """
 
     id: str

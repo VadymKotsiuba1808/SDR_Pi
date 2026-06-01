@@ -1,8 +1,3 @@
-"""
-Сервіс налаштувань.
-Відповідає за валідацію, застосування змін на льоту та надання доступу до налаштувань для інших компонентів.
-"""
-
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, NamedTuple, Optional
@@ -14,29 +9,33 @@ from app.models.settings import CleanRule
 
 
 class Setting(NamedTuple):
-    """
-    Структура опису окремого налаштування.
+    """Структура опису окремого налаштування для схеми конфігурації.
 
     Attributes:
-        section (str): Секція в INI-файлі.
-        typ (type): Тип даних (int, float, str, bool, list, dict).
-        default (Any): Значення за замовчуванням.
+        section: Секція в INI-файлі, до якої належить налаштування.
+        typ: Тип даних (int, float, str, bool, list, dict), використовується для приведення типів.
+        default: Значення за замовчуванням, якщо налаштування відсутнє у файлі.
     """
+
     section: str
     typ: type
     default: Any
 
 
 class SettingsService(QObject):
-    """
-    Централізований сервіс керування налаштуваннями програми.
+    """Централізований сервіс керування налаштуваннями програми.
 
-    Забезпечує збереження та завантаження параметрів з INI-файлу,
-    автоматичну синхронізацію при зміні атрибутів класу та
-    відстеження зовнішніх змін файлу конфігурації.
+    Забезпечує збереження та завантаження параметрів з INI-файлу, автоматичну
+    синхронізацію при зміні атрибутів класу та відстеження зовнішніх змін файлу
+    конфігурації.
+
+    !!! note
+        Сервіс реалізує реактивну модель: зміна будь-якого атрибута (наприклад,
+        `service.zoom = 10`) автоматично призводить до запису в INI-файл та
+        випромінювання сигналу `settings_changed`.
 
     Attributes:
-        settings_changed (pyqtSignal): Випромінюється при будь-якій зміні налаштувань.
+        settings_changed: Сигнал, що випромінюється при будь-якій зміні налаштувань.
     """
 
     settings_changed = pyqtSignal()
@@ -126,7 +125,13 @@ class SettingsService(QObject):
         "lang_code": ("ui", str, "uk"),
     }
 
-    def __init__(self, config_path: Optional[Path] = None):
+    def __init__(self, config_path: Optional[Path] = None) -> None:
+        """Ініціалізує сервіс та завантажує налаштування.
+
+        Args:
+            config_path: Шлях до INI-файлу. Якщо не вказано, використовується 'config.ini'
+                у корені проекту.
+        """
         super().__init__()
 
         if config_path is None:
@@ -137,12 +142,20 @@ class SettingsService(QObject):
 
         self._load_all_settings()
 
+        # Використовуємо QFileSystemWatcher, щоб синхронізувати стан програми,
+        # якщо користувач вручну редагує config.ini під час роботи.
         self._watcher = QFileSystemWatcher([self._settings.fileName()])
         self._watcher.fileChanged.connect(self._reload_from_file)
 
-    def __setattr__(self, name: str, value: Any):
-        """
-        Перехоплює присвоєння атрибутів для автоматичного збереження в QSettings.
+    def __setattr__(self, name: str, value: Any) -> None:
+        """Перехоплює присвоєння атрибутів для синхронізації з файлом.
+
+        Цей магічний метод дозволяє використовувати звичайний синтаксис Python для
+        зміни налаштувань, автоматизуючи виклик QSettings.setValue.
+
+        Args:
+            name: Назва атрибута.
+            value: Нове значення.
         """
         if name not in self._config_schema:
             return super().__setattr__(name, value)
@@ -150,35 +163,42 @@ class SettingsService(QObject):
         section, _, _ = self._config_schema[name]
         value_to_save = value
 
-        # Спеціальна логіка для clean_settings
+        # Налаштування очистки потребують серіалізації, оскільки містять складні об'єкти.
         if name == "clean_settings":
             value_to_save = self._serialize_clean_settings(value)
 
-        # Зберігаємо в файл
+        # Зберігаємо в файл. QSettings автоматично обробляє базові типи.
         self._settings.setValue(f"{section}/{name}", value_to_save)
 
         super().__setattr__(name, value)
         self.settings_changed.emit()
 
-    def _reload_from_file(self):
-        """Перезавантажує дані, якщо файл змінено зовні."""
-        print("[Settings] File changed externally, reloading...")
+    def _reload_from_file(self) -> None:
+        """Перезавантажує дані при зовнішній зміні файлу.
+
+        Синхронізує внутрішній стан QSettings з диском та оновлює атрибути
+        сервісу, якщо вони фактично змінилися.
+        """
         self._settings.sync()
 
         if self._load_all_settings(check_if_changed=True):
             self.settings_changed.emit()
 
     def _load_all_settings(self, check_if_changed: bool = False) -> bool:
-        """
-        Універсальний метод завантаження всіх налаштувань.
-        Повертає True, якщо хоча б одне налаштування змінилося.
+        """Завантажує всі налаштування зі схеми конфігурації.
+
+        Args:
+            check_if_changed: Якщо True, метод лише порівнює значення і повертає
+                ознаку наявності змін, не випромінюючи сигнали передчасно.
+
+        Returns:
+            True, якщо хоча б одне значення було змінено (при check_if_changed=True).
         """
         updated = False
 
         for key, (section, typ, default) in self._config_schema.items():
             raw_value = self._settings.value(f"{section}/{key}", default, type=typ)
 
-            # Обробка складних типів
             final_value = raw_value
             if key == "clean_settings" and isinstance(raw_value, dict):
                 final_value = self._deserialize_clean_settings(raw_value)
@@ -195,7 +215,14 @@ class SettingsService(QObject):
     def _serialize_clean_settings(
         self, value: Dict[CLEAN_TARGET_NAME, CleanRule]
     ) -> Dict[str, dict]:
-        """Конвертує Dict[Enum, CleanRule] -> Dict[str, dict] для JSON/Ini."""
+        """Конвертує словник правил очистки у формат, придатний для збереження.
+
+        Args:
+            value: Словник з об'єктами CleanRule та ключами-Enums.
+
+        Returns:
+            Словник зі строковими ключами та примітивними типами даних.
+        """
         if not isinstance(value, dict):
             return {}
 
@@ -209,7 +236,14 @@ class SettingsService(QObject):
     def _deserialize_clean_settings(
         self, value: Dict[str, dict]
     ) -> Dict[CLEAN_TARGET_NAME, CleanRule]:
-        """Конвертує Dict[str, dict] -> Dict[Enum, CleanRule]."""
+        """Відновлює об'єкти CleanRule зі збереженого словника.
+
+        Args:
+            value: Дані, прочитані з QSettings.
+
+        Returns:
+            Словник з типізованими ключами та об'єктами CleanRule.
+        """
         parsed = {}
         for k, v in value.items():
             try:
@@ -219,6 +253,6 @@ class SettingsService(QObject):
                 continue
         return parsed
 
-    def sync(self):
-        """Примусово записує зміни у файл."""
+    def sync(self) -> None:
+        """Примусово записує всі відкладені зміни у фізичний файл на диску."""
         self._settings.sync()

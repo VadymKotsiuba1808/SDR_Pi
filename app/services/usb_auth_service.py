@@ -38,12 +38,19 @@ class UsbMonitorWorker(QThread):
         self._known_devices: Set[str] = set()
 
     def run(self) -> None:
+        """
+        Основний цикл моніторингу USB-пристроїв.
+
+        Періодично опитує систему на предмет нових точок монтування.
+        При виявленні нового пристрою ініціює перевірку наявності ключа.
+        """
         print("[USB Auth] Monitor worker started.")
         self._known_devices = self._get_mounts()
 
         while self.running:
             current_devices = self._get_mounts()
 
+            # Визначаємо щойно підключені пристрої через різницю множин
             new_devices = current_devices - self._known_devices
 
             if new_devices:
@@ -63,11 +70,21 @@ class UsbMonitorWorker(QThread):
         print("[USB Auth] Monitor worker stopped.")
 
     def _get_mounts(self) -> Set[str]:
+        """
+        Отримує список актуальних точок монтування знімних носіїв.
+
+        Використовує psutil для перевірки розділів дисків. Фільтрує результати,
+        щоб зосередитися на USB-накопичувачах.
+
+        Returns:
+            Set[str]: Множина шляхів до точок монтування.
+        """
         devices: Set[str] = set()
         try:
             for part in psutil.disk_partitions(all=False):
-                # На Linux (Raspberry Pi) потрібно фільтрувати
-                # Зазвичай флешки монтуються в /media або /mnt
+                # На Linux (Raspberry Pi) флешки зазвичай монтуються в /media або /mnt.
+                # Прапор 'removable' допомагає ідентифікувати фізичні USB-накопичувачі,
+                # уникаючи системних або мережевих розділів.
                 if (
                     "removable" in part.opts
                     or "/media" in part.mountpoint
@@ -80,6 +97,18 @@ class UsbMonitorWorker(QThread):
         return devices
 
     def _check_key_file(self, mount_point: str) -> bool:
+        """
+        Перевіряє наявність та цілісність файлу ключа на пристрої.
+
+        Зчитує вміст файлу за заздалегідь визначеним ім'ям, обчислює його
+        SHA-256 хеш та порівнює з еталонним значенням з констант.
+
+        Args:
+            mount_point (str): Точка монтування пристрою.
+
+        Returns:
+            bool: True, якщо файл існує і його хеш збігається з очікуваним.
+        """
         target_path = os.path.join(mount_point, SECURITY_KEY_FILENAME)
 
         if not os.path.exists(target_path):
@@ -105,6 +134,11 @@ class UsbMonitorWorker(QThread):
         return False
 
     def stop(self) -> None:
+        """
+        Зупиняє воркер моніторингу.
+
+        Встановлює прапор running в False та очікує завершення потоку.
+        """
         self.running = False
         self.wait()
 
@@ -142,4 +176,10 @@ class UsbAuthService(QObject):
             self._worker.stop()
 
     def _handle_auth_success(self, mount_point: str) -> None:
+        """
+        Передає сигнал успішної авторизації далі.
+
+        Args:
+            mount_point (str): Шлях до пристрою з ключем.
+        """
         self.auth_success_signal.emit(mount_point)

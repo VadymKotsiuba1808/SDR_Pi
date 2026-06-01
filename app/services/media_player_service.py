@@ -1,10 +1,13 @@
 """
-Сервіс для керування зовнішнім медіа-плеєром (VLC).
-Відповідає за запуск процесу, очищення змінних середовища та обробку помилок.
+Модуль для керування зовнішнім медіа-плеєром.
+
+Цей модуль містить сервіс, який відповідає за інтеграцію з VLC медіа-плеєром
+для перегляду зафіксованих подій детекції (відео та фото).
 """
 
 import os
 import shutil
+from typing import Optional
 
 from PyQt6.QtCore import (
     QObject,
@@ -22,44 +25,41 @@ class MediaPlayerService(QObject):
     """
     Сервіс керування зовнішнім медіа-плеєром (VLC).
 
-    Забезпечує запуск VLC для перегляду відеозаписів детекцій,
-    автоматично очищаючи змінні середовища Qt для уникнення конфліктів бібліотек.
+    Забезпечує ізольований запуск VLC для перегляду медіа-файлів,
+    автоматично очищаючи змінні середовища Qt для уникнення конфліктів
+    між основною програмою та плеєром.
 
     Attributes:
-        playback_finished (pyqtSignal): Випромінюється при закритті плеєра або завершенні відео.
-        error_occurred (pyqtSignal): Випромінюється при виникненні помилки (наприклад, VLC не знайдено).
+        playback_finished (pyqtSignal): Сигнал, що випромінюється при закритті плеєра.
+        error_occurred (pyqtSignal): Сигнал з повідомленням про помилку (str).
     """
 
-    # Сигнали для зворотного зв'язку з UI
     playback_finished = pyqtSignal()
     error_occurred = pyqtSignal(str)
 
-    def __init__(self, system: OSService, parent=None):
+    def __init__(self, system: OSService, parent: Optional[QObject] = None) -> None:
         """
         Ініціалізує сервіс медіа-плеєра.
 
         Args:
-            system (OSService): Сервіс для визначення ОС та пошуку шляхів.
-            parent (QObject, optional): Батьківський об'єкт.
+            system (OSService): Сервіс для роботи з операційною системою.
+            parent (Optional[QObject]): Батьківський об'єкт Qt.
         """
         super().__init__(parent)
         self.system_service = system
+        self._process: Optional[QProcess] = None
+        self._vlc_path: Optional[str] = self._get_vlc_executable()
 
-        self._setup_state_variables()
-
-    def _setup_state_variables(self):
-        self._process = None
-        self._vlc_path = self._get_vlc_executable()
-
-    def play(self, file_path: str):
+    def play(self, file_path: str) -> None:
         """
-        Запускає відтворення медіа-файлу у зовнішньому вікні.
+        Запускає відтворення медіа-файлу у зовнішньому вікні VLC.
+
+        Метод налаштовує параметри запуску VLC, включаючи повноекранний режим,
+        циклічне відтворення та очищення конфліктних змінних оточення.
 
         Args:
-            file_path (str): Абсолютний шлях до файлу (відео або фото).
+            file_path (str): Абсолютний шлях до медіа-файлу.
         """
-        print(file_path)
-
         if not self._vlc_path:
             self.error_occurred.emit("VLC плеєр не знайдено в системі.")
             return
@@ -71,26 +71,9 @@ class MediaPlayerService(QObject):
         self.stop()
 
         self._process = QProcess(self)
+        self._process.setProcessEnvironment(self._prepare_environment())
 
-        env = QProcessEnvironment.systemEnvironment()
-        # Видаляємо змінні Qt, щоб VLC (який теж на Qt) не конфліктував з нашою програмою
-        keys_to_clean = [
-            "QT_PLUGIN_PATH",
-            "QT_QPA_PLATFORM_PLUGIN_PATH",
-            "LD_LIBRARY_PATH",
-            "PYTHONPATH",
-            "PYTHONHOME",
-        ]
-        for key in keys_to_clean:
-            if env.contains(key):
-                env.remove(key)
-
-        for key in env.keys():
-            if key.startswith("QT_"):
-                env.remove(key)
-
-        self._process.setProcessEnvironment(env)
-
+        # Базові аргументи для VLC
         args = [
             "--fullscreen",
             "--play-and-pause",
@@ -101,48 +84,87 @@ class MediaPlayerService(QObject):
             "--loop",
         ]
 
-        # Для Linux додаємо специфічний відео-вихід
+        # Специфічні налаштування для різних ОС
         if self.system_service.is_linux:
+            # Використовуємо xcb_x11 для стабільності на Raspberry Pi/Linux
             args.append("--vout=xcb_x11")
             args.append(file_path)
         elif self.system_service.is_windows:
+            # Windows краще обробляє шляхи через QUrl
             url = QUrl.fromLocalFile(file_path)
             args.append(url.toString())
 
-        # Підписка на події процесу
         self._process.finished.connect(self._on_process_finished)
         self._process.readyReadStandardError.connect(self._handle_stderr)
 
-        print(f"[MediaPlayer] Запуск: {self._vlc_path} {file_path}")
         self._process.start(self._vlc_path, args)
 
-    def stop(self):
-        """Примусово зупиняє відтворення."""
+    def stop(self) -> None:
+        """
+        Примусово зупиняє процес відтворення.
+
+        Закриває вікно VLC, якщо воно було відкрите цим сервісом.
+        """
         if self._process and self._process.state() != QProcess.ProcessState.NotRunning:
-            print("[MediaPlayer] Зупинка процесу...")
             self._process.close()
             self._process = None
 
+    def _prepare_environment(self) -> QProcessEnvironment:
+        """
+        Готує чисте середовище для запуску VLC.
+
+        VLC використовує бібліотеки Qt, які можуть конфліктувати з тими, що
+        завантажені в основному процесі програми (особливо плагіни платформ).
+        Ми видаляємо всі змінні QT_*, щоб VLC використовував власні ресурси.
+
+        Returns:
+            QProcessEnvironment: Налаштоване середовище процесу.
+        """
+        env = QProcessEnvironment.systemEnvironment()
+
+        # Список критичних змінних, що викликають сегфолти при конфлікті версій
+        keys_to_clean = [
+            "QT_PLUGIN_PATH",
+            "QT_QPA_PLATFORM_PLUGIN_PATH",
+            "LD_LIBRARY_PATH",
+            "PYTHONPATH",
+            "PYTHONHOME",
+        ]
+
+        for key in keys_to_clean:
+            if env.contains(key):
+                env.remove(key)
+
+        # Додатково видаляємо будь-які інші QT_ змінні для повної ізоляції
+        for key in env.keys():
+            if key.startswith("QT_"):
+                env.remove(key)
+
+        return env
+
     @pyqtSlot()
-    def _on_process_finished(self):
-        print("[MediaPlayer] Відтворення завершено.")
+    def _on_process_finished(self) -> None:
+        """Обробник завершення процесу VLC."""
         self.playback_finished.emit()
         self._process = None
 
     @pyqtSlot()
-    def _handle_stderr(self):
+    def _handle_stderr(self) -> None:
+        """Зчитує та логує помилки з виводу VLC."""
         if self._process:
             data = self._process.readAllStandardError().data().decode().strip()
             if data:
+                # Логування може бути корисним для діагностики проблем з кодеками
                 print(f"[VLC Log]: {data}")
 
-    def _get_vlc_executable(self):
+    def _get_vlc_executable(self) -> Optional[str]:
         """
-        Знаходить шлях до виконуваного файлу VLC в залежності від ОС.
-        """
+        Визначає шлях до виконуваного файлу VLC.
 
+        Returns:
+            Optional[str]: Повний шлях до vlc або None, якщо не знайдено.
+        """
         if self.system_service.is_windows:
-            # Шукаємо у стандартних папках Windows
             possible_paths = [
                 r"C:\Program Files\VideoLAN\VLC\vlc.exe",
                 r"C:\Program Files (x86)\VideoLAN\VLC\vlc.exe",
@@ -151,15 +173,5 @@ class MediaPlayerService(QObject):
                 if os.path.exists(path):
                     return path
 
-            # Якщо не знайшли, шукаємо в системному PATH
-            path_in_env = shutil.which("vlc")
-            if path_in_env:
-                return path_in_env
-
-        elif self.system_service.is_linux:
-            path_in_env = shutil.which("vlc")
-            if path_in_env:
-                return path_in_env
-
-        # Якщо нічого не знайшли
-        return None
+        # Для Linux або якщо не знайдено за стандартними шляхами Windows
+        return shutil.which("vlc")

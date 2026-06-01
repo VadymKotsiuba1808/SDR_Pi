@@ -1,9 +1,5 @@
-"""
-Валідатор паролів.
-Перевіряє безпечність пароля при зміні або створенні користувача.
-"""
-
 import string
+from typing import Set
 
 from app.core.mixins import TranslatorMixin
 from app.validators.base_validator import BaseValidator
@@ -11,54 +7,68 @@ from app.validators.base_validator import BaseValidator
 
 class PasswordValidator(BaseValidator, TranslatorMixin):
     """
-    Валідує пароль за набором критеріїв.
+    Валідатор для перевірки складності та коректності пароля.
+
+    Клас реалізує набір правил для забезпечення безпеки паролів користувачів,
+    включаючи перевірку довжини та дозволених символів.
     """
 
     def __init__(
         self,
-        min_length=4,
-    ):
+        min_length: int = 6,
+    ) -> None:
         """
-        Ініціалізує валідатор з гнучкими правилами.
+        Ініціалізує валідатор з налаштуваннями безпеки.
 
+        Args:
+            min_length: Мінімально допустима довжина пароля.
         """
         super().__init__()
-        self.min_length = min_length
+        self.min_length: int = min_length
 
-        # Визначаємо набір "безпечних" символів
-        self.allowed_characters = set(
+        self.allowed_characters: Set[str] = set(
             string.ascii_letters + string.digits + string.punctuation
         )
 
-    def validate(self, password):
-        self._errors.clear()
+    def validate(self, data: str) -> bool:
         """
-        Запускає всі перевірки для наданого пароля.
-        """
+        Виконує повну валідацію наданого пароля.
 
-        self._password_validate(password)
+        Очищує попередній стан помилок та запускає каскад перевірок.
+
+        Args:
+            data: Рядок пароля для перевірки.
+
+        Returns:
+            bool: True, якщо пароль відповідає всім критеріям безпеки, інакше False.
+        """
+        self._errors.clear()
+        self._password_validate(data)
 
         return self._is_valid()
 
-    def _password_validate(self, password):
-        self._errors["password"] = []
+    def _password_validate(self, password: str) -> None:
+        """
+        Внутрішній метод для послідовної перевірки критеріїв пароля.
 
-        # Базові перевірки (Тип та порожній рядок) ---
+        Перевіряє тип даних, довжину та склад символів.
+
+        Args:
+            password: Пароль для аналізу.
+        """
+        self._errors["password"] = []
 
         if not password or not isinstance(password, str):
             self._errors["password"].append(
                 self.tr("The password must be a string and cannot be empty.")
             )
-            # Якщо це не рядок, подальші перевірки не мають сенсу
             return
 
-        # Перевірка чи всі символи є "дозволеними" (букви, цифри, пунктуація)
         if not all(c in self.allowed_characters for c in password):
             self._errors["password"].append(
                 self.tr("The password contains invalid characters.")
             )
 
-        # Перевірка мінімальної довжини ---
         if len(password) < self.min_length:
             template = self.tr("Password must be at least {count} characters long.")
             msg = template.format(count=self.min_length)

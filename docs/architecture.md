@@ -14,22 +14,22 @@
 
 ```mermaid
 graph TD
-    subgraph RaspberryPi [Обчислювальний Модуль (Сервер)]
-        Hardware[Апаратна частина<br/>SDR Антени, Мікрофони,<br/>GPS, Реле]
-        DSP[Модуль Аналізу<br/>DSP / Зіставлення сигнатур]
-        TCPServer[TCP Сервер<br/>pi_server]
-        DB[(SQLite БД<br/>Сигнатури об'єктів)]
+    subgraph RaspberryPi ["Обчислювальний Модуль - Сервер"]
+        Hardware["Апаратна частина: SDR, GPS, Реле"]
+        DSP["Модуль Аналізу та Зіставлення"]
+        TCPServer["TCP Сервер pi_server"]
+        DB["SQLite БД Сигнатур"]
 
         Hardware --> DSP
         DB --> DSP
         DSP --> TCPServer
     end
 
-    subgraph DesktopClient [Модуль Оператора (Клієнт ПК)]
-        TCPClient[Мережевий Сервіс<br/>app.services]
-        Logic[Ядро Логіки<br/>app.core]
-        GUI[Графічний Інтерфейс<br/>PyQt6]
-        LocalLogs[(Локальне сховище<br/>JSONL Журнали)]
+    subgraph DesktopClient ["Модуль Оператора - Клієнт ПК"]
+        TCPClient["Мережевий Сервіс app.services"]
+        Logic["Ядро Логіки app.core"]
+        GUI["Графічний Інтерфейс PyQt6"]
+        LocalLogs["Локальні журнали JSONL"]
 
         TCPClient --> Logic
         Logic --> GUI
@@ -37,7 +37,7 @@ graph TD
     end
 
     %% Зв'язки
-    TCPServer <-->|"Ethernet / TCP / JSON"| TCPClient
+    TCPServer <--> TCPClient
 ```
 
 ---

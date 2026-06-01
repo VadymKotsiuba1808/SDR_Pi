@@ -15,9 +15,17 @@ from pi_server.database_service import DatabaseService
 
 
 class PiServerService(QObject):
-    """
-    Сервіс-сервер для Raspberry Pi.
-    Приймає підключення від Desktop-клієнта, обробляє команди та керує периферією.
+    """Сервіс-сервер для Raspberry Pi.
+
+    Цей клас реалізує TCP-сервер, який працює на Raspberry Pi. Він приймає підключення
+    від Desktop-клієнта, обробляє вхідні JSON-команди для керування периферією
+    (SDR, GPS, GPIO) та взаємодіє з локальною базою даних через DatabaseService.
+
+    Attributes:
+        port (int): Порт, на якому сервер очікує підключення.
+        server (Optional[QTcpServer]): Об'єкт TCP-сервера Qt.
+        client_socket (Optional[QTcpSocket]): Сокет поточного підключеного клієнта.
+        db (DatabaseService): Сервіс для роботи з базою даних SQLite.
     """
 
     def __init__(
@@ -26,20 +34,26 @@ class PiServerService(QObject):
         db_service: Optional[DatabaseService] = None,
         parent: Optional[QObject] = None,
     ) -> None:
+        """Ініціалізує сервіс сервера.
+
+        Args:
+            port: Номер порту для прослуховування. За замовчуванням 6000.
+            db_service: Екземпляр сервісу БД. Якщо не вказано, створюється новий.
+            parent: Батьківський об'єкт QObject.
+        """
         super().__init__(parent)
         self.port = port
         self.server: Optional[QTcpServer] = None
         self.client_socket: Optional[QTcpSocket] = None
 
-        # --- ПІДКЛЮЧЕННЯ БД ---
         self.db = db_service or DatabaseService()
-
-        # 2. Підключаємо єдиний сигнал результату
         self.db.request_finished.connect(self.send_db_response)
 
-        # self.hardware_manager = ...
-
     def start(self) -> None:
+        """Запускає TCP-сервер на вказаному порту.
+
+        Сервер починає прослуховувати всі доступні мережеві інтерфейси.
+        """
         self.server = QTcpServer(self)
         self.server.newConnection.connect(self._handle_new_connection)
 
@@ -49,9 +63,14 @@ class PiServerService(QObject):
             print(f"[PiProxy] Error starting server: {self.server.errorString()}")
 
     def stop(self) -> None:
+        """Зупиняє сервер та розриває активні з'єднання.
+
+        Метод гарантує коректне закриття клієнтського сокета перед зупинкою сервера.
+        """
         if self.client_socket:
             self.client_socket.disconnectFromHost()
 
+            # Чекаємо розриву з'єднання (макс. 1 сек), щоб уникнути "завислих" сокетів
             if (
                 self.client_socket
                 and self.client_socket.state()
@@ -66,9 +85,12 @@ class PiServerService(QObject):
 
     @pyqtSlot()
     def _handle_new_connection(self) -> None:
-        """
-        Обробка нового підключення.
-        Стратегія: Одночасно лише один клієнт. Новий клієнт 'вибиває' старого.
+        """Обробляє нове вхідне підключення.
+
+        !!! info "Стратегія підключення"
+            Система підтримує лише одного активного клієнта одночасно (Desktop GUI).
+            Якщо підключається новий клієнт, старе з'єднання примусово закривається.
+            Це запобігає конфліктам при керуванні апаратними ресурсами.
         """
         if self.server is None:
             return
@@ -93,11 +115,17 @@ class PiServerService(QObject):
 
     @pyqtSlot()
     def _handle_disconnected(self) -> None:
+        """Слот для обробки відключення клієнта."""
         print("[PiProxy] Client disconnected.")
         self.client_socket = None
 
     @pyqtSlot()
     def _read_data(self) -> None:
+        """Читає та парсить вхідні дані з сокета.
+
+        Використовує лінійний протокол: кожне повідомлення — це JSON-об'єкт,
+        що завершується символом нового рядка `\\n`.
+        """
         if not self.client_socket:
             return
 
@@ -117,38 +145,44 @@ class PiServerService(QObject):
 
             except json.JSONDecodeError:
                 print(f"[PiProxy] JSON Error: {line}")
-                # Тут можна відправити клієнту 400 Bad Request, якщо треба
             except Exception as e:
                 print(f"[PiProxy] Processing Error: {e}")
 
     def _process_command(self, action: str, data: Dict[str, Any]) -> None:
-        """Головний маршрутизатор команд."""
+        """Головний маршрутизатор команд від клієнта.
 
+        Розподіляє команди на дві категорії: операції з базою даних (префікс `db_`)
+        та пряме керування апаратним забезпеченням.
+
+        Args:
+            action: Назва команди/дії.
+            data: Словник з параметрами команди.
+        """
         if action.startswith("db_"):
             self._handle_db_command(action, data)
         else:
             self._handle_hardware_command(action, data)
 
     def _handle_hardware_command(self, action: str, data: Dict[str, Any]) -> None:
-        """Обробка команд, пов'язаних з сенсорами та залізом."""
+        """Обробка команд, пов'язаних з сенсорами та апаратним забезпеченням.
 
+        Args:
+            action: Назва апаратної команди.
+            data: Параметри (наприклад, номери реле або частотний діапазон).
+        """
         if action == "get_gps":
-            # TODO: Get real GPS data
-            # gps_data = self.hardware.get_gps()
-            # self.send_gps_data(gps_data)
+            # TODO: Реалізувати отримання реальних даних з GPS-модуля
             pass
 
         elif action == "start_rf_stream":
-            # TODO: Start SDR process
-            # self.send_rf_stream_data({...})
+            # TODO: Запустити процес зчитування спектру з Pluto SDR
             pass
 
         elif action == "stop_rf_stream":
             pass
 
         elif action == "start_sound_stream":
-            # TODO: Start Audio process
-            # self.send_sound_stream_data({...})
+            # TODO: Запустити процес захоплення аудіо для аналізу
             pass
 
         elif action == "stop_sound_stream":
@@ -157,7 +191,7 @@ class PiServerService(QObject):
         elif action == "start_alarm":
             relays = data.get("relays", [])
             print(f"[PiProxy] Activating relays: {relays}")
-            # TODO: GPIO logic
+            # TODO: Логіка керування GPIO (реле тривоги)
             pass
 
         elif action == "stop_alarm":
@@ -167,21 +201,28 @@ class PiServerService(QObject):
         elif action == "false_alarm":
             event_id = data.get("event_id")
             print(f"[PiProxy] Marking event {event_id} as false alarm")
-            # TODO: Log false alarm to DB / Retrain model
+            # TODO: Логування хибної тривоги та можливе донавчання моделі
             pass
 
         elif action == "set_rf_range":
             r_range = data.get("range", [])
             print(f"[PiProxy] Set follow rf range {r_range}")
-            # TODO: Set range for detecting, range is in mhz
+            # TODO: Встановлення діапазону сканування для SDR (в МГц)
             pass
 
         else:
             print(f"[PiProxy] Unknown hardware command: {action}")
 
     def _handle_db_command(self, action: str, data: Dict[str, Any]) -> None:
-        """Обробка CRUD операцій та запитів до бази даних."""
+        """Обробка CRUD операцій та запитів до бази даних.
 
+        Цей метод перетворює JSON-дані у моделі SQLAlchemy/Pydantic та передає
+        їх до DatabaseService для асинхронного виконання.
+
+        Args:
+            action: Тип операції (наприклад, `db_request_add`).
+            data: Дані об'єкта або параметри фільтрації.
+        """
         try:
             if action == "db_request_page":
                 page = data.get("page", 1)
@@ -248,7 +289,7 @@ class PiServerService(QObject):
                 if class_id:
                     self.db.delete_class(class_id)
                 else:
-                    raise ValueError("Missing 'id1'")
+                    raise ValueError("Missing 'id'")
 
             else:
                 print(f"[PiProxy] Unknown DB command: {action}")
@@ -258,12 +299,12 @@ class PiServerService(QObject):
             print(f"[PiProxy] DB Logic Error: {e}")
             self._send_protocol_error(action, str(e))
 
-    # --- SENDER METHODS ---
-
     def _send_protocol_error(self, operation: str, error_msg: str) -> None:
-        """
-        Відправляє помилку валідації або протоколу через стандартний ServiceResponse.
-        Замінює стару логіку send_db_error.
+        """Відправляє повідомлення про помилку протоколу або валідації.
+
+        Args:
+            operation: Назва операції, під час якої виникла помилка.
+            error_msg: Текст повідомлення про помилку.
         """
         response = ServiceResponse(
             operation=operation,
@@ -273,7 +314,15 @@ class PiServerService(QObject):
         self.send_db_response(response)
 
     def send_packet(self, action: str, data: Optional[Dict[str, Any]] = None) -> None:
-        """Відправка відповіді клієнту."""
+        """Відправляє структурований JSON-пакет клієнту.
+
+        Кожен пакет включає дію, корисне навантаження та мітку часу.
+        Додає символ `\\n` в кінці повідомлення для лінійної обробки на стороні клієнта.
+
+        Args:
+            action: Назва дії (тип повідомлення).
+            data: Дані повідомлення. За замовчуванням порожній словник.
+        """
         if (
             self.client_socket
             and self.client_socket.state() == QTcpSocket.SocketState.ConnectedState
@@ -291,34 +340,57 @@ class PiServerService(QObject):
                 print(f"[PiProxy] Send Error: {e}")
 
     def send_detection_event(self, event: DetectionEvent) -> None:
+        """Відправляє подію виявлення об'єкта.
+
+        Args:
+            event: Екземпляр моделі DetectionEvent.
+        """
         print(f"[PiProxy] Sending Detection: {event.name}")
         self.send_packet("detection", event.to_dict())
 
     def send_detection_background(self, back: DetectionBackground) -> None:
+        """Відправляє статистичну інформацію про фонову обстановку.
+
+        Args:
+            back: Екземпляр моделі DetectionBackground.
+        """
         print("[PiProxy] Sending Detection background")
         self.send_packet("detection_background", back.to_dict())
 
     def send_gps_data(self, gps_data: GPSData) -> None:
-        """Відправляє координати {lat, lon, alt}."""
+        """Відправляє поточні GPS-координати сервера.
+
+        Args:
+            gps_data: Екземпляр моделі GPSData {lat, lon, alt}.
+        """
         self.send_packet("gps_position", gps_data.to_dict())
 
     def send_rf_stream_data(self, spectrum_data: Dict[str, Any]) -> None:
-        """Відправляє пакет даних спектру."""
+        """Відправляє пакет сирих даних спектру для візуалізації.
+
+        Args:
+            spectrum_data: Словник з амплітудами та частотами.
+        """
         self.send_packet("rf_stream", spectrum_data)
 
     def send_sound_stream_data(self, audio_analysis: Dict[str, Any]) -> None:
-        """Відправляє дані аналізу звуку."""
-        self.send_packet("sound_stream", audio_analysis)
+        """Відправляє результат акустичного аналізу.
 
-    # --- DB RESPONSE SENDERS (СЛОТИ) ---
+        Args:
+            audio_analysis: Дані про виявлені звукові сигнатури.
+        """
+        self.send_packet("sound_stream", audio_analysis)
 
     @pyqtSlot(object)
     def send_db_response(self, response: ServiceResponse) -> None:
-        """
-        Відправляє результат виконання будь-якої DB операції (успіх або помилка).
+        """Відправляє результат виконання операції з БД.
+
+        Цей метод є слотом, який підключається до сигналу `request_finished`
+        сервісу бази даних.
+
+        Args:
+            response: Об'єкт ServiceResponse зі статусом та даними.
         """
         print(f"[PiProxy] DB Response: {response.operation} -> {response.status}")
-
         packet_data = response.to_dict()
-
         self.send_packet("db_operation_result", packet_data)

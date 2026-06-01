@@ -260,7 +260,7 @@ QPushButton#btnLogout:pressed { background-color: #C0392B; color: #2B0000; }
         <item row="4" column="0">
          <widget class="QLabel" name="labelAutoStart">
           <property name="text">
-           <string>Авто-старт глушилки:</string>
+           <string>Авто-старт реле:</string>
           </property>
          </widget>
         </item>
@@ -274,7 +274,7 @@ QPushButton#btnLogout:pressed { background-color: #C0392B; color: #2B0000; }
         <item row="5" column="0">
          <widget class="QLabel" name="labelAutoStop">
           <property name="text">
-           <string>Авто-стоп глушилки:</string>
+           <string>Авто-стоп реле:</string>
           </property>
          </widget>
         </item>

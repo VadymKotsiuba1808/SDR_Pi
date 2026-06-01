@@ -14,7 +14,7 @@ class BaseValidator(ABC):
 
     @abstractmethod
     def validate(self, data: Any) -> bool:
-        """Запускає процес валідації та очищує попередні помилки."""
+        """Головний метод, який запускає всі перевірки."""
         self._errors.clear()
         return self._is_valid()
 

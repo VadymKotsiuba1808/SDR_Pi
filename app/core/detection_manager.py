@@ -9,8 +9,15 @@ from app.protocols import DetectionManagerSettings
 
 
 class DetectionManager(QObject):
-    """
-    Менеджер для управління детекціями: додавання, видалення, TTL, індексація.
+    """Менеджер для управління детекціями радара.
+
+    Цей клас відповідає за життєвий цикл виявлених цілей (RadarTarget), включаючи
+    їх додавання, оновлення, автоматичне видалення за часом (TTL) та
+    керування візуальними індексами для відображення в UI.
+
+    Attributes:
+        detections_changed (pyqtSignal): Сигнал, що випромінюється при будь-якій зміні
+            списку активних цілей (з використанням дебаунсу).
     """
 
     detections_changed = pyqtSignal()
@@ -20,6 +27,12 @@ class DetectionManager(QObject):
         settings_service: DetectionManagerSettings,
         parent: Optional[QObject] = None,
     ) -> None:
+        """Ініціалізує менеджер детекцій.
+
+        Args:
+            settings_service: Сервіс налаштувань для отримання параметрів TTL тощо.
+            parent: Батьківський QObject.
+        """
         super().__init__(parent)
 
         self.settings_service = settings_service
@@ -44,7 +57,15 @@ class DetectionManager(QObject):
         self.ttl_timer.start(1000)
 
     def add_detection(self, event: DetectionEvent) -> None:
-        """Головний метод додавання або оновлення цілі."""
+        """Додає нову детекцію або оновлює існуючу ціль.
+
+        Якщо ціль з таким ID вже існує, її дані оновлюються. Якщо ID знаходиться
+        в списку тимчасового ігнорування (наприклад, після видалення користувачем),
+        подія ігнорується.
+
+        Args:
+            event: Подія детекції, отримана від сервера.
+        """
 
         if self._is_ignored(event.id):
             return
@@ -62,7 +83,15 @@ class DetectionManager(QObject):
         self._trigger_update()
 
     def remove_detection(self, event_id: str) -> None:
-        """Ручне видалення цілі (наприклад, кнопкою 'False Alarm')."""
+        """Видаляє ціль зі списку активних.
+
+        Після видалення ID цілі додається до списку ігнорування на 3 секунди,
+        щоб запобігти її негайному повторному додаванню при надходженні
+        наступного пакету даних від сервера.
+
+        Args:
+            event_id: Унікальний ідентифікатор цілі.
+        """
         if event_id not in self.active_targets:
             return
 
@@ -74,7 +103,11 @@ class DetectionManager(QObject):
         self._trigger_update()
 
     def clear_detections(self) -> None:
-        """Повне очищення всіх детекцій."""
+        """Повністю очищує всі активні цілі та історію індексів.
+
+        Всі поточні активні цілі додаються до списку ігнорування на 3 секунди.
+        Лічильник візуальних індексів скидається до 1.
+        """
         expiry: datetime = datetime.now() + timedelta(seconds=3)
 
         eid: str
@@ -89,7 +122,12 @@ class DetectionManager(QObject):
         self._trigger_update()
 
     def _check_ttl(self) -> None:
-        """Періодична перевірка на застарілі дані."""
+        """Перевіряє цілі на застарілість та очищує список ігнорування.
+
+        Ціль вважається застарілою, якщо час з моменту її останнього оновлення
+        перевищує `detection_ttl_s` з налаштувань. Також видаляє ID зі списку
+        ігнорування, якщо час ігнорування вичерпано.
+        """
         ids_to_remove: List[str] = [
             tid
             for tid, target in self.active_targets.items()
@@ -113,7 +151,17 @@ class DetectionManager(QObject):
             self._trigger_update()
 
     def _get_visual_index(self, event_id: str) -> int:
-        """Логіка вибору індексу: повертає старий з історії або створює новий."""
+        """Визначає візуальний індекс для цілі.
+
+        Якщо ціль вже мала індекс раніше (є в історії), повертає його.
+        В іншому випадку створює новий індекс, інкрементуючи лічильник.
+
+        Args:
+            event_id: ID події.
+
+        Returns:
+            Візуальний індекс (ціле число).
+        """
         if event_id in self.index_history:
             return self.index_history[event_id]
 
@@ -123,13 +171,24 @@ class DetectionManager(QObject):
         return idx
 
     def _check_cleanup(self) -> None:
-        """Якщо активних цілей не залишилось, скидаємо лічильник індексів."""
+        """Скидає стан індексації, якщо немає активних цілей.
+
+        Це дозволяє починати нумерацію цілей з 1, коли моніторинг відновлюється
+        після повної відсутності об'єктів.
+        """
         if not self.active_targets:
             self.next_index = 1
             self.index_history.clear()
 
     def _is_ignored(self, event_id: str) -> bool:
-        """Перевіряє, чи знаходиться ID в списку ігнорування."""
+        """Перевіряє, чи ігнорується даний ID.
+
+        Args:
+            event_id: ID для перевірки.
+
+        Returns:
+            True, якщо ID ігнорується, інакше False.
+        """
         if event_id in self.ignored_ids:
             if datetime.now() < self.ignored_ids[event_id]:
                 return True
@@ -138,27 +197,55 @@ class DetectionManager(QObject):
         return False
 
     def get_targets(self) -> List[RadarTarget]:
-        """Повертає список всіх активних об'єктів (для малювання)."""
+        """Повертає список всіх поточних активних цілей.
+
+        Returns:
+            Список об'єктів RadarTarget.
+        """
         return list(self.active_targets.values())
 
     def get_target_by_id(self, event_id: str) -> Optional[RadarTarget]:
-        """Пошук конкретного об'єкта за ID (для обробки кліків)."""
+        """Шукає активну ціль за її ідентифікатором.
+
+        Args:
+            event_id: ID цілі.
+
+        Returns:
+            Об'єкт RadarTarget або None, якщо ціль не знайдена.
+        """
         return self.active_targets.get(event_id)
 
     def get_index_by_id(self, event_id: str) -> Optional[int]:
-        """Повертає візуальний індекс за ID події."""
+        """Повертає візуальний індекс цілі за її ID.
+
+        Args:
+            event_id: ID цілі.
+
+        Returns:
+            Індекс або None, якщо ціль не активна.
+        """
         target: Optional[RadarTarget] = self.active_targets.get(event_id)
         return target.visual_index if target else None
 
     def has_detections(self) -> bool:
-        """Перевірка на наявність будь-яких цілей."""
+        """Перевіряє наявність активних цілей.
+
+        Returns:
+            True, якщо є хоча б одна активна ціль.
+        """
         return bool(self.active_targets)
 
     def _trigger_update(self) -> None:
+        """Ініціює випромінювання сигналу про зміну детекцій з дебаунсом.
+
+        Використовується для оптимізації продуктивності UI, щоб уникнути
+        занадто частого перемалювання при масовому надходженні оновлень.
+        """
         if not self.update_requested:
             self.update_requested = True
             QTimer.singleShot(50, self._emit_debounced)
 
     def _emit_debounced(self) -> None:
+        """Випромінює сигнал `detections_changed` після затримки дебаунсу."""
         self.update_requested = False
         self.detections_changed.emit()

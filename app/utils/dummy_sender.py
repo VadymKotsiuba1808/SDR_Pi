@@ -21,8 +21,8 @@ from app.models.service_response import DbOperation, ServiceResponse
 from pi_server.pi_server_service import PiServerService
 
 # --- КОНФІГУРАЦІЯ СИМУЛЯЦІЇ ---
-SIMULATION_RADIUS_METERS = 85000  # 85 км
-MAX_SIMULTANEOUS_TARGETS = 15  # Макс цілей
+SIMULATION_RADIUS_METERS = 20000  # 85 км
+MAX_SIMULTANEOUS_TARGETS = 5  # Макс цілей
 UPDATE_INTERVAL_MS = 300  # Оновлення фізики (3.3 Гц)
 STREAM_INTERVAL_MS = 50  # Оновлення "живого" потоку (20 Гц)
 

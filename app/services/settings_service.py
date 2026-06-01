@@ -67,9 +67,9 @@ class SettingsService(QObject):
         # Signal
         "radio_range_mhz": ("signal", list, [100, 999]),
         # Detection
-        "detection_ttl_s": ("detection", int, 3),
+        "detection_ttl_s": ("detection", int, 5),
         # Timers
-        "gps_interval_s": ("timers", int, 2),
+        "gps_interval_s": ("timers", int, 120),
         # Jammer
         "main_relays": ("jammer", list, [RELAY_NAMES_LIST[0]]),
         "is_jammer_auto_start_enabled": ("jammer", bool, False),

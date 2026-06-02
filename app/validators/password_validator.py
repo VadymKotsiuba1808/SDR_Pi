@@ -17,12 +17,6 @@ class PasswordValidator(BaseValidator, TranslatorMixin):
         self,
         min_length: int = 6,
     ) -> None:
-        """
-        Ініціалізує валідатор з налаштуваннями безпеки.
-
-        Args:
-            min_length: Мінімально допустима довжина пароля.
-        """
         super().__init__()
         self.min_length: int = min_length
 
@@ -31,31 +25,13 @@ class PasswordValidator(BaseValidator, TranslatorMixin):
         )
 
     def validate(self, data: str) -> bool:
-        """
-        Виконує повну валідацію наданого пароля.
-
-        Очищує попередній стан помилок та запускає каскад перевірок.
-
-        Args:
-            data: Рядок пароля для перевірки.
-
-        Returns:
-            bool: True, якщо пароль відповідає всім критеріям безпеки, інакше False.
-        """
+        """Виконує повну валідацію наданого пароля."""
         self._errors.clear()
         self._password_validate(data)
 
         return self._is_valid()
 
     def _password_validate(self, password: str) -> None:
-        """
-        Внутрішній метод для послідовної перевірки критеріїв пароля.
-
-        Перевіряє тип даних, довжину та склад символів.
-
-        Args:
-            password: Пароль для аналізу.
-        """
         self._errors["password"] = []
 
         if not password or not isinstance(password, str):

@@ -14,25 +14,21 @@ class LogType:
 
 @dataclass
 class FalseAlarmPayload:
-    """Дані про хибне спрацювання.
+    """
+    Дані про хибне спрацювання.
 
     Використовується, коли оператор позначає виявлений об'єкт як помилковий,
     щоб уникнути подальших некоректних спрацювань алгоритму.
 
-    Attributes:
-        detection_id: Унікальний ідентифікатор вихідної події виявлення.
-        name: Назва або опис об'єкта, який спричинив помилку.
+    - **detection_id**: Унікальний ідентифікатор вихідної події виявлення.
+    - **name**: Назва або опис об'єкта, який спричинив помилку.
     """
 
     detection_id: str
     name: str
 
     def to_dict(self) -> dict:
-        """Перетворює об'єкт у словник для JSON-серіалізації.
-
-        Returns:
-            Словник з полями detection_id та name.
-        """
+        """Перетворює об'єкт у словник для JSON-серіалізації."""
         return {
             "detection_id": self.detection_id,
             "name": self.name,
@@ -40,14 +36,7 @@ class FalseAlarmPayload:
 
     @staticmethod
     def from_dict(data: dict) -> "FalseAlarmPayload":
-        """Створює екземпляр FalseAlarmPayload зі словника.
-
-        Args:
-            data: Словник з даними (зазвичай отриманий з JSON).
-
-        Returns:
-            Новий об'єкт FalseAlarmPayload.
-        """
+        """Створює екземпляр FalseAlarmPayload зі словника."""
         return FalseAlarmPayload(
             detection_id=data.get("detection_id", ""),
             name=data.get("name", "Unknown"),
@@ -60,14 +49,14 @@ T = TypeVar("T", bound=LogPayload)
 
 @dataclass
 class BaseLogEntry(Generic[T]):
-    """Базовий клас логу, який вміє підлаштовувати тип payload.
+    """
+    Базовий клас логу з підтримкою різних типів payload.
 
     Забезпечує уніфіковану структуру для всіх типів системних повідомлень.
 
-    Attributes:
-        type: Строковий ідентифікатор типу логу (див. LogType).
-        payload: Конкретні дані події, тип яких залежить від `type`.
-        timestamp: Час створення запису в форматі ISO 8601.
+    - **type**: Строковий ідентифікатор типу логу (див. `LogType`).
+    - **payload**: Конкретні дані події, тип яких залежить від `type`.
+    - **timestamp**: Час створення запису в форматі ISO 8601.
     """
 
     type: str
@@ -76,18 +65,15 @@ class BaseLogEntry(Generic[T]):
 
 
 class LogEntry(BaseLogEntry[Union[DetectionEvent, FalseAlarmPayload]]):
-    """Головний клас запису в лог.
+    """
+    Головний клас запису в лог.
 
     Цей клас використовується для обробки всіх вхідних та вихідних повідомлень журналу.
     Відповідає структурі JSON: `{type: "...", timestamp: "...", payload: {...}}`.
     """
 
     def to_dict(self) -> dict:
-        """Серіалізація об'єкта у словник для відправки через мережу або збереження в БД.
-
-        Returns:
-            Повний словник запису логу.
-        """
+        """Серіалізація об'єкта у словник для мережевого обміну або збереження в БД."""
         payload_data = (
             self.payload.to_dict()
             if hasattr(self.payload, "to_dict")
@@ -102,14 +88,7 @@ class LogEntry(BaseLogEntry[Union[DetectionEvent, FalseAlarmPayload]]):
 
     @staticmethod
     def from_dict(data: dict) -> "LogEntry":
-        """Фабричний метод: створює правильний об'єкт залежно від поля `type`.
-
-        Args:
-            data: Сирі дані у вигляді словника.
-
-        Returns:
-            Відповідно налаштований екземпляр LogEntry.
-        """
+        """Фабричний метод для створення об'єкта залежно від поля `type`."""
         entry_type = data.get("type", LogType.DETECTION)
         timestamp = data.get("timestamp", datetime.now().isoformat())
         raw_payload = data.get("payload", {})
@@ -127,26 +106,12 @@ class LogEntry(BaseLogEntry[Union[DetectionEvent, FalseAlarmPayload]]):
 
 
 def is_detection(log: BaseLogEntry[Any]) -> TypeGuard[BaseLogEntry[DetectionEvent]]:
-    """Type guard для перевірки, чи є payload типом DetectionEvent.
-
-    Args:
-        log: Запис логу для перевірки.
-
-    Returns:
-        True, якщо тип логу відповідає виявленню.
-    """
+    """Перевірка, чи є payload типом DetectionEvent."""
     return log.type == LogType.DETECTION
 
 
 def is_false_alarm(
     log: BaseLogEntry[Any],
 ) -> TypeGuard[BaseLogEntry[FalseAlarmPayload]]:
-    """Type guard для перевірки, чи є payload типом FalseAlarmPayload.
-
-    Args:
-        log: Запис логу для перевірки.
-
-    Returns:
-        True, якщо тип логу відповідає хибному спрацюванню.
-    """
+    """Перевірка, чи є payload типом FalseAlarmPayload."""
     return log.type == LogType.FALSE_ALARM

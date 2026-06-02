@@ -4,13 +4,12 @@ from typing import Any, Dict
 
 @dataclass
 class GPSData:
-    """
-    Представляє дані GPS, включаючи координати та рівень сигналу.
+    """Модель даних GPS для зберігання координат та якості сигналу.
 
     Attributes:
-        lat (float): Широта.
-        lon (float): Довгота.
-        strength (int): Рівень сигналу (від 0 до 100).
+        lat: Географічна широта.
+        lon: Географічна довгота.
+        strength: Рівень сигналу (0-100).
     """
 
     lat: float

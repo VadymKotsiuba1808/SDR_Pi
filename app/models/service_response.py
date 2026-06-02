@@ -7,7 +7,7 @@ from app.core.mixins import TranslatorMixin
 
 class DbOperation(str, Enum):
     """
-    Перелік усіх можливих операцій з базою даних.
+    ### Перелік усіх можливих операцій з базою даних
 
     Використовується для ідентифікації типу запиту між клієнтом та сервером.
     Це дозволяє GUI коректно обробляти результати різних дій (додавання, видалення тощо).
@@ -33,7 +33,7 @@ class DbOperation(str, Enum):
 
 class StatusCode(IntEnum):
     """
-    Стандартні коди статусів відповідей сервісів.
+    ### Стандартні коди статусів відповідей сервісів
 
     Наслідують логіку HTTP статус-кодів для забезпечення одноманітності
     обробки відповідей як на рівні мережі, так і всередині бізнес-логіки.
@@ -49,23 +49,14 @@ class StatusCode(IntEnum):
 
 class StatusMessage(TranslatorMixin):
     """
-    Стандартні повідомлення для кодів статусів з підтримкою локалізації.
+    ### Стандартні повідомлення для кодів статусів
+
+    Підтримує локалізацію через `TranslatorMixin`.
     """
 
     @classmethod
     def get(cls, code: int) -> str:
-        """
-        Отримує локалізоване повідомлення для конкретного коду статусу.
-
-        Використовує `tr_s` для динамічного перекладу, що дозволяє змінювати мову інтерфейсу
-        без перезавантаження даних, якщо вони використовують ці методи.
-
-        Args:
-            code: Код статусу StatusCode або відповідний цілочисельний код.
-
-        Returns:
-            Локалізований рядок повідомлення.
-        """
+        """Отримує локалізоване повідомлення для конкретного коду статусу."""
         if code == StatusCode.OK:
             return cls.tr_s("Operation successful.")
         elif code == StatusCode.CREATED:
@@ -84,7 +75,7 @@ class StatusMessage(TranslatorMixin):
 
 class OperationTitle(TranslatorMixin):
     """
-    Утиліта для отримання локалізованих заголовків операцій.
+    ### Утиліта для отримання локалізованих заголовків операцій
 
     Забезпечує консистентність заголовків діалогових вікон та повідомлень про помилки
     у всьому додатку.
@@ -92,15 +83,7 @@ class OperationTitle(TranslatorMixin):
 
     @classmethod
     def get_error(cls, op: Union[DbOperation, str]) -> str:
-        """
-        Повертає заголовок помилки для вказаної операції.
-
-        Args:
-            op: Тип операції (Enum або рядок).
-
-        Returns:
-            Локалізований заголовок помилки.
-        """
+        """Повертає заголовок помилки для вказаної операції."""
         match op:
             case DbOperation.ADD_OBJECT:
                 return cls.tr_s("Error adding object")
@@ -125,15 +108,7 @@ class OperationTitle(TranslatorMixin):
 
     @classmethod
     def get_success(cls, op: Union[DbOperation, str]) -> str:
-        """
-        Повертає заголовок успіху для вказаної операції.
-
-        Args:
-            op: Тип операції (Enum або рядок).
-
-        Returns:
-            Локалізований заголовок успіху.
-        """
+        """Повертає заголовок успіху для вказаної операції."""
         match op:
             case DbOperation.ADD_OBJECT:
                 return cls.tr_s("Object added")
@@ -158,16 +133,16 @@ class OperationTitle(TranslatorMixin):
 @dataclass
 class ServiceResponse:
     """
-    Універсальна модель відповіді сервісів системи.
+    ### Універсальна модель відповіді сервісів системи
 
     Використовується для стандартизації обміну даними між компонентами додатку
     та для десеріалізації відповідей від віддаленого сервера.
 
-    Attributes:
-        status: Статус операції (StatusCode).
-        message: Текстове повідомлення (зазвичай детальне пояснення від сервера).
-        operation: Тип операції, що виконувалася. Допомагає GUI визначити контекст.
-        data: Довільні дані відповіді (об'єкти, списки тощо).
+    **Поля:**
+    - `status`: Статус операції (`StatusCode`).
+    - `message`: Текстове повідомлення (зазвичай детальне пояснення від сервера).
+    - `operation`: Тип операції, що виконувалася.
+    - `data`: Довільні дані відповіді (об'єкти, списки тощо).
     """
 
     status: StatusCode
@@ -184,34 +159,20 @@ class ServiceResponse:
         return int(self.status) >= 400
 
     def get_title(self) -> str:
-        """
-        Автоматично підбирає заголовок залежно від статусу та типу операції.
-
-        Використовує `OperationTitle` для отримання локалізованого рядка.
-
-        Returns:
-            Локалізований заголовок для використання в UI.
-        """
+        """Автоматично підбирає заголовок залежно від статусу та типу операції."""
         if self.is_success:
             return OperationTitle.get_success(self.operation)
         return OperationTitle.get_error(self.operation)
 
     def get_message_or_default(self) -> str:
-        """
-        Повертає повідомлення з відповіді або стандартне повідомлення для коду статусу.
-
-        Це корисно, коли сервер не надіслав детального повідомлення, або коли потрібно
-        показати стандартизований опис помилки.
-
-        Returns:
-            Текст повідомлення.
-        """
+        """Повертає повідомлення з відповіді або стандартне повідомлення для коду статусу."""
         msg = StatusMessage.get(self.status)
         if msg:
             return msg
         return self.message
 
     def to_dict(self) -> dict:
+        """Перетворює об'єкт відповіді у словник."""
         return {
             "status": int(self.status),
             "message": self.message,
@@ -225,6 +186,7 @@ class ServiceResponse:
 
     @staticmethod
     def from_dict(data: dict) -> "ServiceResponse":
+        """Створює об'єкт відповіді зі словника."""
         op_str = data.get("operation", "unknown")
         try:
             op = DbOperation(op_str)

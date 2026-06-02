@@ -2,24 +2,26 @@ import uuid
 from dataclasses import dataclass
 from datetime import datetime
 
+from app.core.logging_config import get_logger
 from app.models.source_type import SourceType
+
+logger = get_logger(__name__)
 
 
 @dataclass
 class DetectionEvent:
-    """
-    Представляє подію виявлення об'єкта.
+    """Представлення події виявлення об'єкта.
 
-    Атрибути:
-        id (str): Унікальний ідентифікатор події.
-        type (SourceType): Джерело детекції (радіочастотне або акустичне).
-        name (str): Назва об'єкта або сигналу.
-        object_class (str): Клас об'єкта (наприклад, "drone", "bird").
-        confidence (float): Впевненість системи у виявленні (0.0 - 1.0).
-        timestamp (str): ISO-мітка часу події.
-        distance_km (float): Відстань до об'єкта в кілометрах.
-        angle (float): Кут (азимут) на об'єкт у градусах.
-        frequency_hz (float): Частота сигналу в Герцах.
+    Attributes:
+        id: Унікальний ідентифікатор події.
+        type: Джерело детекції (радіочастотне або акустичне).
+        name: Назва об'єкта або сигналу.
+        object_class: Клас об'єкта (наприклад, "drone", "bird").
+        confidence: Впевненість системи у виявленні (0.0 - 1.0).
+        timestamp: ISO-мітка часу події.
+        distance_km: Відстань до об'єкта в кілометрах.
+        angle: Кут (азимут) на об'єкт у градусах.
+        frequency_hz: Частота сигналу в Герцах.
     """
 
     id: str
@@ -49,6 +51,7 @@ class DetectionEvent:
                 except KeyError:
                     raw_type = SourceType.RF
         else:
+            logger.debug(f"Unknown source type '{raw_type}', defaulting to RF")
             raw_type = SourceType.RF
         obj_class = data.get("object_class", data.get("class", "unknown"))
 

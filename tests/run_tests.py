@@ -165,6 +165,9 @@ def main():
 
     groups = [
         TestGroup(
+            "Bootstrap", "tests/test_main.py", "Тестування ініціалізації та точки входу"
+        ),
+        TestGroup(
             "Unit: Models", "tests/models/", "Тестування структур даних та серіалізації"
         ),
         TestGroup(

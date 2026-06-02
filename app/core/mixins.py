@@ -13,30 +13,10 @@ class TranslatorMixin:
     """
 
     def tr(self, text: str) -> str:
-        """
-        Перекладає текст, використовуючи ім'я поточного класу як контекст.
-
-        Args:
-            text: Рядок для перекладу.
-
-        Returns:
-            Перекладений рядок або оригінал, якщо переклад не знайдено.
-        """
         return QCoreApplication.translate(self.__class__.__name__, text)
 
     @classmethod
     def tr_s(cls, text: str) -> str:
-        """
-        Статичний метод для перекладу тексту з контекстом імені класу.
-
-        Корисний для перекладу констант або у випадках, коли екземпляр класу ще не створений.
-
-        Args:
-            text: Рядок для перекладу.
-
-        Returns:
-            Перекладений рядок.
-        """
         return QCoreApplication.translate(cls.__name__, text)
 
 
@@ -49,17 +29,7 @@ class TestUIOptimizationMixin:
     """
 
     def apply_test_ui_optimization(self) -> None:
-        """
-        Застосовує оптимізації GUI, якщо активовано режим тестування.
-
-        !!! info
-            Режим тестування активується через змінну оточення `SDR_PI_TESTING=1`.
-
-        Вікно буде мінімізоване, щоб не заважати іншим процесам, при цьому
-        функціональність залишається доступною для `qtbot`.
-        """
         if os.environ.get("SDR_PI_TESTING") == "1":
-            # Мінімізація вікна запобігає захопленню фокусу під час тестів,
-            # що робить виконання тестів стабільнішим у багатозадачному середовищі.
+            # Мінімізація вікна запобігає захопленню фокусу під час тестів.
             if isinstance(self, QWidget):
                 self.setWindowState(Qt.WindowState.WindowMinimized)

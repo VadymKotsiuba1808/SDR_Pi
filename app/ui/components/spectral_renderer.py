@@ -37,30 +37,18 @@ class SpectralChartRenderer(TranslatorMixin):
     Цей клас відповідає за візуалізацію спектральної щільності потужності
     та історії спектру у часі. Він використовує кешування для оптимізації
     візуалізації важких об'єктів, таких як теплові карти (heatmap).
-
-    Attributes:
-        cached_heatmap (Optional[QImage]): Кешоване зображення теплової карти.
-        _last_bg_id (Optional[int]): ID останнього обробленого фону (для інвалідації кешу).
     """
 
     def __init__(self) -> None:
-        """Ініціалізує рендерер з пустим кешем."""
         self.cached_heatmap: Optional[QImage] = None
         self._last_bg_id: Optional[int] = None
 
     def prepare_cache(self, background: Optional[SpectralData]) -> None:
-        """
-        Підготовлює та кешує теплову карту для водоспаду.
-
-        Кешування необхідне, оскільки перетворення матриці амплітуд у QImage
-        є важкою операцією. Це дозволяє уникнути падіння FPS при перемальовуванні.
-
-        Args:
-            background (Optional[SpectralData]): Дані фону, що містять матрицю потужностей.
-        """
+        """Підготовлює та кешує теплову карту для водоспаду."""
         if not background or background.data_magnitude is None:
             return
 
+        # Кешування необхідне, оскільки перетворення матриці амплітуд у QImage є важкою операцією.
         matrix = background.data_magnitude
         if isinstance(matrix, np.ndarray) and len(matrix.shape) > 1:
             self.cached_heatmap = ChartMath.create_heatmap(matrix)
@@ -76,15 +64,7 @@ class SpectralChartRenderer(TranslatorMixin):
         background: Optional[SpectralData],
         event: Optional[DetectionEvent] = None,
     ) -> None:
-        """
-        Малює графік спектральної щільності (2D лінія).
-
-        Args:
-            p (QPainter): Об'єкт малювання.
-            rect (QRect): Область малювання.
-            background (Optional[SpectralData]): Дані спектру.
-            event (Optional[DetectionEvent]): Активна подія для відображення маркера.
-        """
+        """Малює графік спектральної щільності (2D лінія)."""
         if not background:
             p.setPen(ChartTheme.TEXT)
             p.drawText(
@@ -121,15 +101,7 @@ class SpectralChartRenderer(TranslatorMixin):
         background: Optional[SpectralData],
         event: Optional[DetectionEvent] = None,
     ) -> None:
-        """
-        Малює водоспад (heatmap історії спектру).
-
-        Args:
-            p (QPainter): Об'єкт малювання.
-            rect (QRect): Область малювання.
-            background (Optional[SpectralData]): Дані спектру.
-            event (Optional[DetectionEvent]): Активна подія для відображення маркера.
-        """
+        """Малює водоспад (heatmap історії спектру)."""
         if not background:
             return
 
@@ -164,19 +136,7 @@ class SpectralChartRenderer(TranslatorMixin):
         chart_type: str,
         event: Optional[DetectionEvent] = None,
     ) -> CursorState:
-        """
-        Обчислює стан курсору (частоту, рівень, час) на основі координат миші.
-
-        Args:
-            pos (QPoint): Координати миші.
-            rect (QRect): Область графіка.
-            background (SpectralData): Дані фону для розрахунку значень.
-            chart_type (str): Тип графіка ("spectrum" або "waterfall").
-            event (Optional[DetectionEvent]): Поточна подія.
-
-        Returns:
-            CursorState: Стан курсору з текстовою міткою та точкою підсвітки.
-        """
+        """Обчислює стан курсору (частоту, рівень, час) на основі координат миші."""
         check_pos = pos
 
         if not rect.contains(check_pos) or not background:
@@ -236,15 +196,7 @@ class SpectralChartRenderer(TranslatorMixin):
     def _draw_event_marker(
         self, p: QPainter, rect: QRect, bg: SpectralData, event: DetectionEvent
     ) -> None:
-        """
-        Малює вертикальну лінію та підсвітку на частоті детекції.
-
-        Args:
-            p (QPainter): Об'єкт малювання.
-            rect (QRect): Область графіка.
-            bg (SpectralData): Дані фону.
-            event (DetectionEvent): Подія, яку потрібно позначити.
-        """
+        """Малює вертикальну лінію та підсвітку на частоті детекції."""
         start_freq = bg.center_freq_hz - (bg.sample_rate_hz / 2)
         freq_offset = event.frequency_hz - start_freq
 
@@ -275,15 +227,7 @@ class SpectralChartRenderer(TranslatorMixin):
     def _draw_curve(
         self, p: QPainter, rect: QRect, data: np.ndarray, is_fill: bool
     ) -> None:
-        """
-        Малює криву спектру.
-
-        Args:
-            p (QPainter): Об'єкт малювання.
-            rect (QRect): Область графіка.
-            data (np.ndarray): Вектор амплітуд.
-            is_fill (bool): Чи заповнювати область під кривою градієнтом.
-        """
+        """Малює криву спектру."""
         num_points = len(data)
         if num_points < 2:
             return
@@ -324,16 +268,7 @@ class SpectralChartRenderer(TranslatorMixin):
         source_type: SourceType,
         mode: str,
     ) -> None:
-        """
-        Малює координатну сітку та мітки осей.
-
-        Args:
-            p (QPainter): Об'єкт малювання.
-            rect (QRect): Область графіка.
-            data (SpectralData): Дані для розрахунку діапазонів.
-            source_type (SourceType): Тип джерела (RF або інше).
-            mode (str): Режим сітки ("dbm" для спектру, "time" для водоспаду).
-        """
+        """Малює координатну сітку та мітки осей."""
         p.setFont(QFont("Arial", 8))
         grid_pen = QPen(ChartTheme.GRID_FAINT, 1, Qt.PenStyle.DashLine)
         text_pen = QPen(ChartTheme.TEXT)

@@ -20,22 +20,20 @@ class StandardChartRenderer(TranslatorMixin):
     від віджетів. Він підтримує як полярні, так і декартові системи координат,
     а також гістограми.
 
-    Атрибути:
-        LINE_WIDTH_NORMAL (int): Стандартна товщина ліній траєкторії.
-        LINE_WIDTH_THIN (int): Товщина ліній для розривів (пунктир).
-        DOT_RADIUS (int): Радіус точки виявлення.
-        HIGHLIGHT_RADIUS_OFFSET (int): Додатковий радіус для підсвічування обраного об'єкта.
-        HIGHLIGHT_FRAME_WIDTH (int): Товщина рамки підсвічування.
-        TEXT_OFFSET_Y (int): Вертикальне зміщення підписів об'єктів.
-        TIME_DIFF_S (int): Поріг часу (в секундах), після якого лінія малюється пунктиром.
+    **Атрибути:**
+    - `LINE_WIDTH_NORMAL` (int): Стандартна товщина ліній траєкторії.
+    - `LINE_WIDTH_THIN` (int): Товщина ліній для розривів (пунктир).
+    - `DOT_RADIUS` (int): Радіус точки виявлення.
+    - `HIGHLIGHT_RADIUS_OFFSET` (int): Додатковий радіус для підсвічування обраного об'єкта.
+    - `HIGHLIGHT_FRAME_WIDTH` (int): Товщина рамки підсвічування.
+    - `TEXT_OFFSET_Y` (int): Вертикальне зміщення підписів об'єктів.
+    - `TIME_DIFF_S` (int): Поріг часу (в секундах), після якого лінія малюється пунктиром.
     """
 
     def __init__(self) -> None:
         """Ініціалізація рендерера з параметрами за замовчуванням."""
         self._id_color_cache: Dict[str, QColor] = {}
 
-        # Використовуємо фіксовані константи для забезпечення візуальної
-        # цілісності графіків незалежно від контексту використання.
         self.LINE_WIDTH_NORMAL = 3
         self.LINE_WIDTH_THIN = 1
         self.DOT_RADIUS = 3
@@ -52,33 +50,16 @@ class StandardChartRenderer(TranslatorMixin):
         highlight_ids: set,
         interactive_points: list,
     ) -> None:
-        """
-        Малює графік у полярних координатах (Radar/Path chart).
-
-        Цей метод відображає траєкторії об'єктів на радарній сітці, де кут відповідає
-        азимуту, а радіус — відстані до об'єкта.
-
-        Args:
-            p (QPainter): Об'єкт малювальника Qt.
-            full_rect (QRect): Область для малювання.
-            data (List[DetectionEvent]): Список подій виявлення для відображення.
-            highlight_ids (set): Набір ID об'єктів, які мають бути підсвічені.
-            interactive_points (list): Список для збереження координат точок для
-                забезпечення інтерактивності (обробка кліків).
-        """
+        """Малює графік у полярних координатах (Radar/Path chart)."""
         if not data:
             return
 
         w, h = full_rect.width(), full_rect.height()
         center = QPointF(w / 2, h / 2)
-        # Віднімаємо 30 пікселів для відступів підписів осей
         radius = min(w, h) / 2 - 30
 
         sorted_data = sorted(data, key=lambda x: x.timestamp)
         max_dist_val = max([d.distance_km for d in sorted_data]) if sorted_data else 1.0
-
-        # Додаємо 10% запасу до максимальної відстані, щоб крайні точки
-        # не малювалися впритул до межі графіка.
         max_dist_val *= 1.1
 
         view_max_dist, step, _ = ChartMath.calculate_nice_axis(
@@ -102,7 +83,6 @@ class StandardChartRenderer(TranslatorMixin):
                 )
                 points.append(pt)
                 timestamps.append(datetime.fromisoformat(ev.timestamp).timestamp())
-                # Зберігаємо точку для подальшої перевірки попадання курсору (Hit testing)
                 interactive_points.append((pt, ev))
 
             self._draw_trace(
@@ -124,25 +104,12 @@ class StandardChartRenderer(TranslatorMixin):
         highlight_ids: set,
         interactive_points: list,
     ) -> None:
-        """
-        Малює графік у декартових координатах (Timeline або Signal chart).
-
-        Використовується для відображення зміни відстані або впевненості у часі.
-
-        Args:
-            p (QPainter): Об'єкт малювальника Qt.
-            full_rect (QRect): Область для малювання.
-            data (List[DetectionEvent]): Список подій виявлення.
-            mode (str): Режим відображення: 'timeline' (відстань) або 'signal' (впевненість).
-            highlight_ids (set): Набір ID для підсвічування.
-            interactive_points (list): Список для Hit testing.
-        """
+        """Малює графік у декартових координатах (Timeline або Signal chart)."""
         if not data:
             return
 
         w, h = full_rect.width(), full_rect.height()
 
-        # Фіксовані відступи для розміщення осей та підписів
         margin_left = 60.0
         margin_right = 30.0
         margin_top = 30.0
@@ -159,7 +126,6 @@ class StandardChartRenderer(TranslatorMixin):
         sorted_data = sorted(data, key=lambda x: x.timestamp)
         t_start = datetime.fromisoformat(sorted_data[0].timestamp).timestamp()
         t_end = datetime.fromisoformat(sorted_data[-1].timestamp).timestamp()
-        # Запобігаємо діленню на нуль, якщо є лише одна точка
         duration = t_end - t_start or 1.0
         nice_step: float | None = None
 
@@ -203,7 +169,6 @@ class StandardChartRenderer(TranslatorMixin):
                 x = px + x_ratio * pw
                 val_y = ev.distance_km if mode == "timeline" else ev.confidence
                 norm_y = val_y / y_max
-                # Обмежуємо значення діапазоном [0, 1] для коректного малювання
                 norm_y = max(0, min(1, norm_y))
                 y = (py + ph) - (norm_y * ph)
 
@@ -225,19 +190,10 @@ class StandardChartRenderer(TranslatorMixin):
     def render_bar(
         self, p: QPainter, full_rect: QRect, data: List[DetectionEvent]
     ) -> None:
-        """
-        Малює гістограму розподілу об'єктів за класами.
-
-        Args:
-            p (QPainter): Об'єкт малювальника Qt.
-            full_rect (QRect): Область для малювання.
-            data (List[DetectionEvent]): Список подій виявлення.
-        """
+        """Малює гістограму розподілу об'єктів за класами."""
         if not data:
             return
 
-        # Групуємо події за унікальними ID об'єктів, щоб кожен реальний об'єкт
-        # рахувався лише один раз, незалежно від кількості виявлень.
         unique_objects = {}
         for d in data:
             unique_objects[d.id] = d.object_class
@@ -258,7 +214,6 @@ class StandardChartRenderer(TranslatorMixin):
         avail_w = w - 2 * margin
         avail_h = h - 2 * margin
 
-        # Розраховуємо ширину стовпчиків так, щоб вони займали 60% доступного місця
         bar_width = avail_w / len(keys) * 0.6
         spacing = avail_w / len(keys)
 
@@ -271,28 +226,13 @@ class StandardChartRenderer(TranslatorMixin):
             y = h - margin - bar_h
 
             p.drawRect(int(x), int(y), int(bar_width), int(bar_h))
-            # Малюємо числове значення над стовпчиком
             p.drawText(int(x), int(y - 5), str(val))
-            # Малюємо назву класу під стовпчиком
             p.drawText(int(x), int(h - margin + 20), cls)
-
-    # --- INTERNAL HELPERS (Exact copy logic) ---
 
     def _group_by_id(
         self, data: List[DetectionEvent]
     ) -> Dict[str, List[DetectionEvent]]:
-        """
-        Групує події виявлення за ідентифікатором об'єкта.
-
-        Це необхідно для малювання окремих траєкторій для кожного об'єкта.
-
-        Args:
-            data (List[DetectionEvent]): Список подій.
-
-        Returns:
-            Dict[str, List[DetectionEvent]]: Словник, де ключ — ID об'єкта,
-                а значення — список його подій.
-        """
+        """Групує події виявлення за ідентифікатором об'єкта."""
         grouped: Dict[str, List[DetectionEvent]] = {}
         for d in data:
             if d.id not in grouped:
@@ -303,26 +243,9 @@ class StandardChartRenderer(TranslatorMixin):
     def _get_polar_pos(
         self, center: QPointF, radius: float, angle: float, dist: float, max_dist: float
     ) -> QPointF:
-        """
-        Перетворює полярні координати (кут, відстань) у декартові (x, y) для малювання.
-
-        Args:
-            center (QPointF): Центр радарної сітки.
-            radius (float): Максимальний радіус сітки в пікселях.
-            angle (float): Азимут у градусах.
-            dist (float): Відстань до об'єкта в кілометрах.
-            max_dist (float): Максимальна відстань на графіку в кілометрах.
-
-        Returns:
-            QPointF: Координати точки на екрані.
-        """
-        # Віднімаємо 90 градусів, оскільки в математичній системі координат 0 градусів
-        # знаходиться справа (вісь X), а в радарній — зверху (північ).
+        """Перетворює полярні координати у декартові для малювання."""
         rad = math.radians(angle - 90)
-
-        # Розраховуємо радіус у пікселях пропорційно до відстані.
         r_px = (dist / max_dist) * radius
-        # Обмежуємо радіус, щоб точка не виходила за межі сітки (Clipping).
         if r_px > radius:
             r_px = radius
 
@@ -340,18 +263,7 @@ class StandardChartRenderer(TranslatorMixin):
         highlight_ids: set,
         draw_label: bool,
     ) -> None:
-        """
-        Малює лінію траєкторії та маркери для одного об'єкта.
-
-        Args:
-            p (QPainter): Об'єкт малювальника.
-            points (List[QPointF]): Точки траєкторії в пікселях.
-            timestamps (List[float]): Часові мітки точок (для визначення розривів).
-            color (QColor): Колір лінії об'єкта.
-            events (List[DetectionEvent]): Події, що відповідають точкам.
-            highlight_ids (set): Набір ID для підсвічування.
-            draw_label (bool): Чи потрібно малювати підпис назви об'єкта.
-        """
+        """Малює лінію траєкторії та маркери для одного об'єкта."""
         if not points:
             return
 
@@ -366,8 +278,6 @@ class StandardChartRenderer(TranslatorMixin):
             for i in range(len(points) - 1):
                 t1 = timestamps[i]
                 t2 = timestamps[i + 1]
-                # Якщо між двома виявленнями велика пауза, малюємо лінію пунктиром,
-                # щоб показати невпевненість у траєкторії на цьому відрізку.
                 if (t2 - t1) > self.TIME_DIFF_S:
                     p.setPen(pen_dash)
                 else:
@@ -377,16 +287,13 @@ class StandardChartRenderer(TranslatorMixin):
             start_pt = points[0]
             end_pt = points[-1]
 
-            # Малюємо початкову точку траєкторії зеленим кольором.
             p.setPen(Qt.PenStyle.NoPen)
             p.setBrush(QBrush(QColor(0, 255, 0)))
             p.drawEllipse(start_pt, self.DOT_RADIUS, self.DOT_RADIUS)
 
-            # Малюємо останню (поточну) точку червоним кольором.
             p.setBrush(QBrush(QColor(255, 50, 50)))
             p.drawEllipse(end_pt, self.DOT_RADIUS + 1, self.DOT_RADIUS + 1)
 
-            # Додаємо додаткове кільце навколо точки, якщо об'єкт обраний користувачем.
             if is_highlighted:
                 p.setPen(QPen(ChartTheme.HIGHLIGHT, self.HIGHLIGHT_FRAME_WIDTH))
                 p.setBrush(Qt.BrushStyle.NoBrush)
@@ -396,7 +303,6 @@ class StandardChartRenderer(TranslatorMixin):
             if draw_label:
                 self._draw_label_rotated(p, points, events[0].name, is_highlighted)
         else:
-            # Якщо є лише одна точка виявлення, малюємо її без лінії.
             pt = points[0]
             p.setPen(Qt.PenStyle.NoPen)
             p.setBrush(QBrush(color))
@@ -411,16 +317,7 @@ class StandardChartRenderer(TranslatorMixin):
     def _draw_label_rotated(
         self, p: QPainter, points: List[QPointF], text: str, is_highlighted: bool
     ) -> None:
-        """
-        Малює підпис об'єкта, повернутий вздовж його траєкторії.
-
-        Args:
-            p (QPainter): Об'єкт малювальника.
-            points (List[QPointF]): Точки траєкторії.
-            text (str): Текст підпису.
-            is_highlighted (bool): Чи підсвічено об'єкт.
-        """
-        # Визначаємо кут нахилу на основі останнього відрізка траєкторії.
+        """Малює підпис об'єкта, повернутий вздовж його траєкторії."""
         mid_idx = len(points) // 2
         start_pt = points[0]
         end_pt = points[-1]
@@ -434,11 +331,9 @@ class StandardChartRenderer(TranslatorMixin):
         dy = p_b.y() - p_a.y()
         angle_deg = math.degrees(math.atan2(dy, dx))
 
-        # Перевертаємо текст, якщо він малюється "догори ногами" (між 90 та 270 градусами).
         if 90 < abs(angle_deg) <= 180:
             angle_deg += 180
 
-        # Обмежуємо довжину тексту для запобігання візуальному перевантаженню.
         if len(text) > 10:
             text = text[:10] + ".."
 
@@ -448,26 +343,16 @@ class StandardChartRenderer(TranslatorMixin):
         text_col = ChartTheme.HIGHLIGHT if is_highlighted else ChartTheme.TEXT
         p.setPen(text_col)
         p.setFont(QFont("Arial", 8, QFont.Weight.Bold))
-        # Використовуємо TEXT_OFFSET_Y, щоб текст був над лінією, а не на ній.
         p.drawText(0, self.TEXT_OFFSET_Y, text)
         p.restore()
 
     def _draw_polar_grid(
         self, p: QPainter, center: QPointF, radius: float, max_dist: float, step: float
     ) -> None:
-        """
-        Малює сітку для полярного графіка (концентричні кола та осі).
-
-        Args:
-            p (QPainter): Об'єкт малювальника.
-            center (QPointF): Центр сітки.
-            radius (float): Радіус сітки в пікселях.
-            max_dist (float): Максимальна відстань у кілометрах.
-            step (float): Крок основних ліній сітки.
-        """
+        """Малює сітку для полярного графіка (концентричні кола та осі)."""
         main_pen = QPen(ChartTheme.GRID, 1)
         sub_color = QColor(ChartTheme.GRID)
-        sub_color.setAlpha(40)  # Робимо допоміжні лінії напівпрозорими
+        sub_color.setAlpha(40)
         sub_pen = QPen(sub_color, 1)
         sub_pen.setStyle(Qt.PenStyle.DotLine)
         p.setFont(QFont("Arial", 8))
@@ -480,14 +365,12 @@ class StandardChartRenderer(TranslatorMixin):
             if val > max_dist:
                 break
             r_current = (val / max_dist) * radius
-            # Перевіряємо, чи є ця лінія основною (цілий крок) чи допоміжною.
             is_main = abs(val % step) < 0.001 or abs((val % step) - step) < 0.001
 
             if is_main:
                 p.setPen(main_pen)
                 p.drawEllipse(center, r_current, r_current)
                 p.setPen(ChartTheme.TEXT)
-                # Форматуємо підписи відстані.
                 label = (
                     self.tr("{:.1f}km").format(val)
                     if step < 1
@@ -498,7 +381,6 @@ class StandardChartRenderer(TranslatorMixin):
                 p.setPen(sub_pen)
                 p.drawEllipse(center, r_current, r_current)
 
-        # Малюємо основні осі (Північ-Південь, Захід-Схід).
         p.setPen(QPen(ChartTheme.GRID, 1))
         p.drawLine(
             QPointF(center.x(), center.y() - radius * 1.1),
@@ -520,19 +402,7 @@ class StandardChartRenderer(TranslatorMixin):
         num_ticks: int,
         fmt: Callable[[float], str],
     ) -> None:
-        """
-        Малює сітку для декартового графіка (Timeline).
-
-        Args:
-            p (QPainter): Об'єкт малювальника.
-            rect (tuple): Прямокутник області малювання (x, y, w, h).
-            y_max (float): Максимальне значення по осі Y.
-            t_start (float): Початковий час (timestamp).
-            t_end (float): Кінцевий час (timestamp).
-            duration (float): Тривалість у секундах.
-            num_ticks (int): Кількість поділок.
-            fmt (Callable[[float], str]): Функція форматування підписів осей.
-        """
+        """Малює сітку для декартового графіка (Timeline)."""
         (px, py, pw, ph) = rect
         p.setFont(QFont("Arial", 8))
         grid_pen = QPen(ChartTheme.GRID_FAINT, 1, Qt.PenStyle.DashLine)
@@ -541,7 +411,6 @@ class StandardChartRenderer(TranslatorMixin):
         sub_color.setAlpha(30)
         sub_grid_pen = QPen(sub_color, 1, Qt.PenStyle.DotLine)
 
-        # --- МАЛЮВАННЯ ГОРИЗОНТАЛЬНИХ ЛІНІЙ (Вісь Y) ---
         total_y_steps = num_ticks * 2
         for i in range(total_y_steps + 1):
             ratio = i / total_y_steps
@@ -559,9 +428,7 @@ class StandardChartRenderer(TranslatorMixin):
                 p.setPen(sub_grid_pen)
                 p.drawLine(QPointF(px, y), QPointF(px + pw, y))
 
-        # --- МАЛЮВАННЯ ВЕРТИКАЛЬНИХ ЛІНІЙ (Вісь часу) ---
         target_step = duration / max(1, num_ticks)
-        # Вибираємо "красивий" крок часу (10с, 30с, 1хв тощо).
         nice_intervals = [
             10,
             30,
@@ -585,7 +452,6 @@ class StandardChartRenderer(TranslatorMixin):
                 break
 
         sub_step_time = step_time / 2
-        # Вирівнюємо першу поділку по сітці часу.
         first_tick_ts = math.ceil(t_start / sub_step_time) * sub_step_time
         current_t = first_tick_ts
 
@@ -613,7 +479,6 @@ class StandardChartRenderer(TranslatorMixin):
                     p.drawLine(QPointF(x, py), QPointF(x, py + ph))
             current_t += sub_step_time
 
-        # Малюємо рамку навколо області графіка.
         p.setPen(QPen(ChartTheme.GRID, 2))
         p.setBrush(Qt.BrushStyle.NoBrush)
         p.drawRect(int(px), int(py), int(pw), int(ph))

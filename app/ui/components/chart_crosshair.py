@@ -20,27 +20,15 @@ class QPainterCrosshair:
     """
 
     def __init__(self) -> None:
-        """Ініціалізує об'єкт QPainterCrosshair налаштуваннями стилю за замовчуванням."""
         self.pen = QPen(ChartTheme.HIGHLIGHT, 1, Qt.PenStyle.DashLine)
         self.text_pen = QPen(ChartTheme.HIGHLIGHT)
         self.bg_brush = QBrush(ChartTheme.HIGHLIGHT_BG)
         self.state = CursorState()
 
     def update_state(self, state: CursorState) -> None:
-        """Оновлює внутрішній стан курсору.
-
-        Args:
-            state (CursorState): Новий стан курсору.
-        """
         self.state = state
 
     def draw(self, p: QPainter, bounds: QRect) -> None:
-        """Малює курсор на вказаному QPainter у межах заданого прямокутника.
-
-        Args:
-            p (QPainter): Об'єкт малювальника.
-            bounds (QRect): Границі області малювання.
-        """
         if not self.state.visible or not bounds.contains(self.state.pos):
             return
 
@@ -62,14 +50,6 @@ class QPainterCrosshair:
             self._draw_tooltip_box(p, x, y, bounds)
 
     def _draw_tooltip_box(self, p: QPainter, x: float, y: float, bounds: QRect) -> None:
-        """Малює рамку з текстом підказки біля позиції курсору.
-
-        Args:
-            p (QPainter): Об'єкт малювальника.
-            x (float): Координата X курсору.
-            y (float): Координата Y курсору.
-            bounds (QRect): Границі області малювання для обчислення позиції рамки.
-        """
         fm = p.fontMetrics()
         text = self.state.text
         tw = fm.horizontalAdvance(text)
@@ -110,11 +90,6 @@ class PyGraphCrosshair:
     """
 
     def __init__(self, plot_item: pg.PlotItem) -> None:
-        """Ініціалізує курсор та додає його елементи до графіка.
-
-        Args:
-            plot_item (pg.PlotItem): Елемент графіка pyqtgraph, до якого додається курсор.
-        """
         self._plot_item = plot_item
 
         pen = pg.mkPen(
@@ -138,13 +113,6 @@ class PyGraphCrosshair:
         self.hide()
 
     def update_position(self, x: float, y: float, text: str) -> None:
-        """Оновлює позицію ліній та текст мітки курсору.
-
-        Args:
-            x (float): Координата X на графіку.
-            y (float): Координата Y на графіку.
-            text (str): Текст, що відображатиметься у мітці.
-        """
         self.v_line.setPos(x)
         self.h_line.setPos(y)
         self.label.setText(text)
@@ -154,13 +122,11 @@ class PyGraphCrosshair:
             self.show()
 
     def show(self) -> None:
-        """Робить курсор видимим."""
         self.v_line.show()
         self.h_line.show()
         self.label.show()
 
     def hide(self) -> None:
-        """Приховує курсор."""
         self.v_line.hide()
         self.h_line.hide()
         self.label.hide()

@@ -15,10 +15,13 @@ from PyQt6.QtCore import (
 )
 
 from app.core.constants import DB_OFFSET, UINT8_MAX, UINT8_MIN
+from app.core.logging_config import get_logger
 from app.models.detection_object import DetectionObject
 from app.models.gps_data import GPSData
 from app.models.service_response import DbOperation, ServiceResponse
 from pi_server.pi_server_service import PiServerService
+
+logger = get_logger(__name__)
 
 # --- КОНФІГУРАЦІЯ СИМУЛЯЦІЇ ---
 SIMULATION_RADIUS_METERS = 85000  # 85 км
@@ -33,39 +36,20 @@ SPEED_MULTIPLIER = 2.0
 
 
 class SimulatedTarget:
-    """Клас фізичної симуляції однієї цілі для тестування системи.
+    """
+    ### SimulatedTarget
+    Клас фізичної симуляції однієї цілі для тестування системи.
 
-    Цей клас імітує рух об'єкта (БПЛА, птах тощо), його радіочастотні
-    характеристики та спектральні дані для перевірки роботи GUI та серверної логіки
-    без реального SDR заліза.
+    Імітує рух об'єкта (**БПЛА**, птах тощо), його радіочастотні характеристики
+    та спектральні дані для перевірки роботи GUI та серверної логіки без реального SDR заліза.
 
-    Attributes:
-        id (str): Унікальний ідентифікатор цілі.
-        template (DetectionObject): Шаблон об'єкта з бази даних.
-        name (str): Назва об'єкта.
-        object_class (str): Клас об'єкта (наприклад, 'UAV').
-        is_dangerous (bool): Чи є об'єкт небезпечним.
-        base_freq (float): Базова частота випромінювання.
-        current_freq (float): Поточна частота з врахуванням дрейфу.
-        x (float): Координата X у метрах відносно центру (сервера).
-        y (float): Координата Y у метрах відносно центру.
-        vx (float): Швидкість по осі X (м/с).
-        vy (float): Швидкість по осі Y (м/с).
-        speed (float): Абсолютна швидкість руху.
-        behavior (str): Тип поведінки ('linear', 'circle', 'zigzag').
-        confidence (float): Рівень впевненості детекції (0.0 - 1.0).
-        is_hidden (bool): Чи прихована ціль (симуляція завмирання сигналу).
-        hidden_until (float): Час, до якого ціль буде прихована.
-        last_bg_time (float): Час останньої відправки спектрального фону.
-        force_bg_send (bool): Прапорець для примусової відправки фону.
+    - **id**: Унікальний ідентифікатор цілі.
+    - **template**: Шаблон об'єкта з бази даних.
+    - **behavior**: Тип поведінки (`linear`, `circle`, `zigzag`).
+    - **confidence**: Рівень впевненості детекції (0.0 - 1.0).
     """
 
     def __init__(self, template: DetectionObject) -> None:
-        """Ініціалізує нову симульовану ціль на основі шаблону.
-
-        Args:
-            template: Об'єкт детекції, що слугує шаблоном.
-        """
         self.id = str(uuid.uuid4())
         self.template = template
         self.name = template.name
@@ -115,16 +99,7 @@ class SimulatedTarget:
         self.force_bg_send = True
 
     def _parse_frequency(self, params: List[str]) -> float:
-        """Парсить рядок частоти з параметрів об'єкта.
-
-        Підтримує поодинокі значення та діапазони (наприклад, '2400-2485').
-
-        Args:
-            params: Список рядків з частотними параметрами.
-
-        Returns:
-            Випадкова частота з діапазону або фіксоване значення в Гц.
-        """
+        """Парсить рядок частоти (поодинокі значення або діапазони)."""
         if not params:
             return random.uniform(400e6, 6000e6)
         raw_str = random.choice(params)
@@ -143,14 +118,7 @@ class SimulatedTarget:
                 return 900e6
 
     def update(self, dt: float) -> bool:
-        """Оновлює стан цілі (фізику та логіку).
-
-        Args:
-            dt: Час, що минув з останнього оновлення (в секундах).
-
-        Returns:
-            True, якщо ціль все ще активна; False, якщо вона вийшла за межі радіусу.
-        """
+        """Оновлює фізичний стан цілі; повертає False, якщо об'єкт вийшов за межі."""
         now = time.time()
         # Симуляція тимчасової втрати сигналу (fading) для перевірки стійкості GUI
         if self.is_hidden:
@@ -193,11 +161,7 @@ class SimulatedTarget:
         return True
 
     def get_event_data(self) -> Optional[Dict[str, Any]]:
-        """Генерує словник з даними про подію детекції.
-
-        Returns:
-            Словник з даними або None, якщо ціль прихована.
-        """
+        """Генерує словник з даними детекції або None, якщо ціль прихована."""
         if self.is_hidden:
             return None
 
@@ -221,14 +185,7 @@ class SimulatedTarget:
         }
 
     def check_and_get_background(self) -> Optional[Dict[str, Any]]:
-        """Перевіряє таймер і генерує спектральні дані "фону" для цілі.
-
-        Ці дані використовуються для відображення водоспаду (waterfall) навколо
-        конкретної цілі в інтерфейсі.
-
-        Returns:
-            Словник зі спектральними даними або None.
-        """
+        """Генерує спектральні дані "фону" (водоспаду) для цілі за таймером."""
         now = time.time()
         if self.force_bg_send or (now - self.last_bg_time > TARGET_BG_INTERVAL_SEC):
             self.last_bg_time = now
@@ -264,30 +221,21 @@ class SimulatedTarget:
 
 
 class AdvancedNetworkUtility(PiServerService):
-    """Розширений симуляційний сервер для розробки та тестування GUI.
+    """
+    ### AdvancedNetworkUtility
+    Розширений симуляційний сервер для розробки та тестування GUI.
 
-    Наслідує PiServerService і замінює реальну роботу з залізом на симуляцію
+    Наслідує `PiServerService` і замінює реальну роботу з залізом на симуляцію
     активних цілей, GPS та спектральних потоків.
 
-    Attributes:
-        active_targets (List[SimulatedTarget]): Список активних цілей у симуляції.
-        detection_templates (List[DetectionObject]): Шаблони об'єктів, завантажені з БД.
-        session_blacklist (Set[str]): Список ID цілей, помічених як "хибна тривога".
-        gps_lat (float): Поточна симульована широта.
-        gps_lon (float): Поточна симульована довгота.
-        is_rf_streaming (bool): Прапорець активності потоку RF спектру.
-        is_sound_streaming (bool): Прапорець активності потоку звукового спектру.
+    - **active_targets**: Список активних цілей у симуляції.
+    - **session_blacklist**: Список ID цілей, помічених як "хибна тривога".
+    - **is_rf_streaming**: Прапорець активності потоку RF спектру.
     """
 
     def __init__(self, port: int = 6000, parent: Optional[QObject] = None) -> None:
-        """Ініціалізує симуляційний сервер.
-
-        Args:
-            port: Порт для прослуховування TCP з'єднань.
-            parent: Батьківський об'єкт QObject.
-        """
         super().__init__(port=port, parent=parent)
-        print("[SimServer] Initializing advanced simulation...")
+        logger.info("Initializing advanced simulation...")
 
         self.active_targets: List[SimulatedTarget] = []
         self.detection_templates: List[DetectionObject] = []
@@ -325,11 +273,7 @@ class AdvancedNetworkUtility(PiServerService):
 
     @pyqtSlot(object)
     def _on_db_response(self, response: ServiceResponse) -> None:
-        """Обробляє відповіді від сервісу бази даних.
-
-        Args:
-            response: Об'єкт відповіді сервісу.
-        """
+        """Обробляє відповіді від сервісу бази даних."""
         if response.is_success:
             if response.operation == DbOperation.GET_ALL_OBJECTS:
                 if isinstance(response.data, dict):
@@ -337,22 +281,20 @@ class AdvancedNetworkUtility(PiServerService):
                     self.detection_templates = [
                         DetectionObject.from_dict(d) for d in items_raw
                     ]
-                    print(
-                        f"[SimServer] Loaded {len(self.detection_templates)} templates."
-                    )
+                    logger.info(f"Loaded {len(self.detection_templates)} templates.")
 
             elif response.operation in [
                 DbOperation.ADD_OBJECT,
                 DbOperation.UPDATE_OBJECT,
             ]:
                 # Оновлюємо шаблони, якщо користувач змінив їх у менеджері об'єктів
-                print("[SimServer] DB Changed. Refreshing templates...")
+                logger.info("DB Changed. Refreshing templates...")
                 self.db.request_all_objects()
 
     def _handle_new_connection(self) -> None:
         """Скидає стан сесії при новому підключенні клієнта."""
         super()._handle_new_connection()
-        print("[SimServer] Resetting session state for new client.")
+        logger.info("Resetting session state for new client.")
         self.session_blacklist.clear()
         for target in self.active_targets:
             target.force_bg_send = True
@@ -362,17 +304,12 @@ class AdvancedNetworkUtility(PiServerService):
         self._check_stream_timer()
 
     def _handle_hardware_command(self, action: str, data: Dict[str, Any]) -> None:
-        """Перехоплює команди керування залізом для виконання симуляції.
-
-        Args:
-            action: Назва команди.
-            data: Параметри команди.
-        """
+        """Перехоплює команди керування залізом для виконання симуляції."""
         if action == "get_gps":
             self._send_single_gps_response()
 
         elif action == "start_rf_stream":
-            print("[SimServer] Starting RF Stream")
+            logger.info("Starting RF Stream")
             self.is_rf_streaming = True
             self.is_sound_streaming = False
             self._check_stream_timer()
@@ -382,7 +319,7 @@ class AdvancedNetworkUtility(PiServerService):
             self._check_stream_timer()
 
         elif action == "start_sound_stream":
-            print("[SimServer] Starting Sound Stream")
+            logger.info("Starting Sound Stream")
             self.is_sound_streaming = True
             self.is_rf_streaming = False
             self._check_stream_timer()
@@ -395,7 +332,7 @@ class AdvancedNetworkUtility(PiServerService):
             # Якщо клієнт позначив ціль як помилкову, видаляємо її з симуляції
             event_id = data.get("event_id")
             if event_id:
-                print(f"[SimServer] False Alarm on {event_id}. Blacklisting.")
+                logger.info(f"False Alarm on {event_id}. Blacklisting.")
                 self.session_blacklist.add(event_id)
                 self.active_targets = [
                     t for t in self.active_targets if t.id != event_id
@@ -414,10 +351,7 @@ class AdvancedNetworkUtility(PiServerService):
             self.stream_timer.stop()
 
     def _on_sim_tick(self) -> None:
-        """Основний цикл фізичної симуляції.
-
-        Викликається за таймером. Оновлює позиції цілей та відправляє детекції клієнту.
-        """
+        """Основний цикл фізичної симуляції (оновлення позицій та відправка детекцій)."""
         if not self.detection_templates:
             return
 
@@ -458,11 +392,7 @@ class AdvancedNetworkUtility(PiServerService):
             self.send_packet("sound_stream", data)
 
     def _generate_mock_rf_data(self) -> Dict[str, Any]:
-        """Генерує випадкові дані RF спектру (шум).
-
-        Returns:
-            Словник з параметрами спектру та масивом значень.
-        """
+        """Генерує випадкові дані RF спектру (шум)."""
         fft_size = 512
         spectrum_db = -100 + np.random.normal(0, 3, fft_size)
         data_uint8 = (
@@ -476,11 +406,7 @@ class AdvancedNetworkUtility(PiServerService):
         }
 
     def _generate_mock_sound_data(self) -> Dict[str, Any]:
-        """Генерує випадкові дані звукового спектру (шум).
-
-        Returns:
-            Словник з параметрами спектру та масивом значень.
-        """
+        """Генерує випадкові дані звукового спектру (шум)."""
         fft_size = 512
         spectrum_db = -80 + np.random.normal(0, 5, fft_size)
         data_uint8 = (
@@ -507,5 +433,5 @@ if __name__ == "__main__":
     app = QCoreApplication(sys.argv)
     service = AdvancedNetworkUtility(port=6000)
     service.start()
-    print("=== ADVANCED SIMULATION SERVER (REFACTORED) RUNNING ===")
+    logger.info("=== ADVANCED SIMULATION SERVER (REFACTORED) RUNNING ===")
     sys.exit(app.exec())

@@ -1,6 +1,6 @@
 from passlib.context import CryptContext
 
-# Контекст для хешування паролів. Використовує bcrypt.
+# Контекст хешування (bcrypt)
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
@@ -9,10 +9,8 @@ def hash_password(plain_password: str) -> str:
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Перевіряє відповідність відкритого пароля його хешу."""
     try:
         return pwd_context.verify(plain_password, hashed_password)
     except Exception:
-        # Повертаємо False замість винятку, щоб запобігти витоку інформації
-        # про структуру хешу та забезпечити стійкість до пошкоджених даних.
+        # Захист від витоку інформації про структуру хешу
         return False

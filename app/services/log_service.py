@@ -7,20 +7,22 @@ from itertools import groupby
 from typing import List, Optional
 
 from app.core.constants import LOGS_DIR_PATH
+from app.core.logging_config import get_logger
 from app.models.log_entries import LogEntry
+
+logger = get_logger(__name__)
 
 
 @dataclass
 class LogSession:
     """
-    Представляє метадані сесії логування.
+    **Метадані сесії логування.**
 
-    Цей клас використовується для відображення списку доступних сесій у GUI
-    та забезпечення зв'язку між файлом на диску та його зрозумілою назвою.
+    Використовується для відображення списку доступних сесій у GUI та зв'язку між файлом на диску і його міткою.
 
     Attributes:
-        filename: Назва файлу логу на диску (наприклад, 'session_2024-06-01_12-00-00.jsonl').
-        label: Людиночитана мітка сесії, відформатована для відображення користувачеві.
+        filename (str): Назва файлу логу на диску.
+        label (str): Людиночитана мітка сесії.
     """
 
     filename: str
@@ -29,22 +31,15 @@ class LogSession:
 
 class LogService:
     """
-    Сервіс для надійного та асинхронного логування подій у форматі JSON Lines (NDJSON).
+    **Сервіс для асинхронного логування подій у форматі JSON Lines.**
 
-    Цей сервіс забезпечує потокобезпечне накопичення логів у буфері та їх періодичне
-    скидання на диск у фоновому потоці. Це мінімізує вплив дискових операцій на
-    продуктивність основного UI-потоку.
+    Забезпечує потокобезпечне накопичення логів у буфері та їх періодичне скидання на диск у фоновому потоці.
 
-    Особливості:
+    Features:
         - Потокобезпечність через `threading.Lock`.
-        - Автоматична ротація файлів при зміні календарної дати.
-        - Стійкість до помилок запису (повернення даних у буфер).
-        - Підтримка формату NDJSON для легкого парсингу та стійкості до пошкоджень.
-
-    Args:
-        flush_interval: Інтервал (у секундах) між автоматичними скиданнями буфера на диск.
-        logs_dir: Шлях до директорії, де зберігатимуться файли логів. Якщо None,
-            використовується шлях за замовчуванням з констант.
+        - Автоматична ротація файлів за датою.
+        - Стійкість до помилок запису (повернення в буфер).
+        - Підтримка формату NDJSON.
     """
 
     def __init__(
@@ -67,15 +62,7 @@ class LogService:
         self._start_background_worker()
 
     def _rotate_session_to_date(self, date_str: str) -> None:
-        """
-        Створює новий файл сесії логування при зміні дати або при ініціалізації.
-
-        Це необхідно для зручного групування логів за днями та уникнення створення
-        надто великих файлів.
-
-        Args:
-            date_str: Рядок дати у форматі 'YYYY-MM-DD'.
-        """
+        """Створює новий файл сесії логування при зміні дати."""
         if self._current_session_date == date_str and self._current_log_filename:
             return
 
@@ -84,18 +71,10 @@ class LogService:
 
         self._current_log_filename = f"session_{timestamp}.jsonl"
 
-        print(f"[LogService] Session rotated: {self._current_log_filename}")
+        logger.info(f"Session rotated: {self._current_log_filename}")
 
     def add_log(self, entry: LogEntry) -> None:
-        """
-        Додає новий запис логу до внутрішнього буфера.
-
-        Цей метод є неблокуючим відносно дискових операцій. Запис фактично
-        буде здійснено під час наступного циклу фонового воркера.
-
-        Args:
-            entry: Об'єкт LogEntry, який потрібно зберегти.
-        """
+        """Додає новий запис логу до внутрішнього буфера."""
         try:
             if hasattr(entry, "to_dict"):
                 data = entry.to_dict()
@@ -106,19 +85,10 @@ class LogService:
                 self._buffer.append(data)
 
         except Exception as e:
-            print(f"[LogService] Error adding log: {e}")
+            logger.error(f"Error adding log: {e}")
 
     def _flush_buffer(self) -> None:
-        """
-        Скидає вміст буфера на диск.
-
-        Метод сортує логі за часом, групує їх за датами (якщо в буфері є логі
-        за різні дні) та записує у відповідні файли сесій.
-
-        !!! note
-            Якщо запис на диск не вдався, дані повертаються на початок буфера,
-            щоб спробувати записати їх знову під час наступного циклу.
-        """
+        """Скидає вміст буфера на диск з групуванням за датами."""
         with self._lock:
             if not self._buffer:
                 return
@@ -142,22 +112,12 @@ class LogService:
                 break
 
             if not self._append_batch_to_disk(self._current_log_filename, batch):
-                # Повертаємо невдалий батч назад у буфер
                 with self._lock:
                     self._buffer = batch + self._buffer
                 break
 
     def _append_batch_to_disk(self, filename: str, batch: List[dict]) -> bool:
-        """
-        Безпосередньо дописує батч записів у файл на диску.
-
-        Args:
-            filename: Назва файлу в директорії логів.
-            batch: Список словників з даними логів.
-
-        Returns:
-            bool: True, якщо запис успішний, False у разі помилки введення/виведення.
-        """
+        """Дописує батч записів у файл на диску."""
         if not batch:
             return True
 
@@ -169,22 +129,11 @@ class LogService:
                     f.write(json_str + "\n")
             return True
         except Exception as e:
-            print(f"[LogService] Disk write error: {e}")
+            logger.error(f"Disk write error: {e}")
             return False
 
     def load_session_data(self, filename: str) -> List[LogEntry]:
-        """
-        Завантажує та десеріалізує дані логів з конкретного файлу сесії.
-
-        Використовується для перегляду історії логів у GUI. Пошкоджені рядки
-        ігноруються для забезпечення стійкості.
-
-        Args:
-            filename: Назва файлу для завантаження.
-
-        Returns:
-            Список об'єктів `LogEntry`, відсортованих за часом.
-        """
+        """Завантажує та десеріалізує дані логів з файлу сесії."""
         path = os.path.join(self.logs_dir, filename)
         if not os.path.exists(path):
             return []
@@ -200,16 +149,14 @@ class LogService:
                         data = json.loads(line)
                         entries.append(LogEntry.from_dict(data))
                     except json.JSONDecodeError:
-                        print(
-                            f"[LogService] Warning: Skipping corrupted line in {filename}"
-                        )
+                        logger.warning(f"Skipping corrupted line in {filename}")
                         continue
 
             entries.sort(key=lambda x: x.timestamp)
             return entries
 
         except Exception as e:
-            print(f"[LogService] Read error: {e}")
+            logger.error(f"Read error: {e}")
             return []
 
     def _start_background_worker(self) -> None:
@@ -220,38 +167,24 @@ class LogService:
     def _worker_loop(self) -> None:
         """Головний цикл фонового воркера."""
         while not self._stop_event.is_set():
-            # Очікуємо інтервал або подію зупинки
             if self._stop_event.wait(self.flush_interval):
                 break
             self._flush_buffer()
 
     def stop(self) -> None:
-        """
-        Коректно зупиняє сервіс логування.
-
-        Гарантує, що всі логі, які залишилися в буфері, будуть записані на диск
-        перед завершенням роботи.
-        """
-        print("[LogService] Stopping...")
+        """Зупиняє сервіс та гарантує запис залишків буфера."""
+        logger.info("Stopping...")
         self._stop_event.set()
         if self._worker_thread and self._worker_thread.is_alive():
             self._worker_thread.join(timeout=2.0)
         self.force_flush()
 
     def force_flush(self) -> None:
-        """Примусово скидає поточний буфер на диск незалежно від таймера."""
+        """Примусово скидає буфер на диск."""
         self._flush_buffer()
 
     def get_available_sessions(self) -> List[LogSession]:
-        """
-        Отримує список усіх доступних файлів сесій з диска.
-
-        Файли сортуються за часом останньої зміни (новіші попереду). Назви файлів
-        перетворюються у зручні мітки часу.
-
-        Returns:
-            Список об'єктів `LogSession` для відображення в інтерфейсі.
-        """
+        """Отримує список усіх доступних файлів сесій з диска."""
         sessions: List[LogSession] = []
         if not os.path.exists(self.logs_dir):
             return sessions

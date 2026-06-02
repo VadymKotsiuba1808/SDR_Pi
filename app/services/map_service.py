@@ -13,18 +13,18 @@ from app.core.constants import (
     MAPS_API_URL,
     MAPS_IMG_FORMAT,
 )
+from app.core.logging_config import get_logger
 from app.protocols import MapServiceSettings
+
+logger = get_logger(__name__)
 
 
 class MapTypes(str, Enum):
     """Перелік доступних типів мапи."""
 
     ROAD = "streets-v2"
-    """Вулична мапа."""
     HYBRID = "hybrid"
-    """Гібридна мапа (супутник + назви)."""
     TERRAIN = "topo-v2"
-    """Рельєфна мапа."""
 
 
 class MapService:
@@ -37,53 +37,22 @@ class MapService:
     """
 
     TILE_SIZE: int = 512
-    """Стандартний розмір тайла в пікселях."""
 
     def __init__(self, settings: MapServiceSettings) -> None:
-        """
-        Ініціалізує сервіс мапи.
-
-        Args:
-            settings (MapServiceSettings): Налаштування мапи (API ключ, масштаб тощо).
-        """
         self.settings_service: MapServiceSettings = settings
         self.client: httpx.AsyncClient = httpx.AsyncClient()
 
     def get_resolution_at_lat(self, zoom: int, lat: float) -> float:
-        """
-        Обчислює роздільну здатність мапи (метрів на піксель) для заданої широти.
-
-        Args:
-            zoom (int): Рівень масштабування.
-            lat (float): Широта в градусах.
-
-        Returns:
-            float: Роздільна здатність у метрах на піксель.
-        """
+        """Обчислює роздільну здатність мапи (метрів на піксель) для заданої широти."""
         initial_res: float = 156543.03392
         res: float = (initial_res * math.cos(math.radians(lat))) / (2**zoom)
         return res * (256 / self.TILE_SIZE)
 
     def latlon_to_tile(self, lat: float, lon: float, zoom: int) -> Tuple[float, float]:
-        """
-        Перетворює географічні координати у координати тайлів.
-
-        Використовує формули проекції Меркатора. Оскільки Земля не є ідеальною кулею,
-        а мапи використовують циліндричну проекцію, трансформація по осі Y є
-        нелінійною (логарифмічною).
-
-        Args:
-            lat (float): Широта в градусах.
-            lon (float): Довгота в градусах.
-            zoom (int): Рівень масштабування.
-
-        Returns:
-            Tuple[float, float]: Координати тайла (x, y) у вигляді дійсних чисел.
-        """
+        """Перетворює географічні координати у координати тайлів за проекцією Меркатора."""
         lat_rad: float = math.radians(lat)
         n: float = 2.0**zoom
         x_tile: float = (lon + 180.0) / 360.0 * n
-        # Складна трансформація для осі Y через нелінійність проекції Меркатора
         y_tile: float = (
             (1.0 - math.log(math.tan(lat_rad) + 1 / math.cos(lat_rad)) / math.pi)
             / 2.0
@@ -94,20 +63,7 @@ class MapService:
     def tile_to_pixel_offset(
         self, lat: float, lon: float, zoom: int
     ) -> Tuple[float, float]:
-        """
-        Перетворює координати у глобальне піксельне зміщення.
-
-        Цей метод дозволяє визначити точне місцеположення точки на
-        віртуальному "нескінченному" полотні всіх тайлів даного масштабу.
-
-        Args:
-            lat (float): Широта в градусах.
-            lon (float): Довгота в градусах.
-            zoom (int): Рівень масштабування.
-
-        Returns:
-            Tuple[float, float]: Глобальні піксельні координати X та Y.
-        """
+        """Перетворює координати у глобальне піксельне зміщення на полотні тайлів."""
         x_tile, y_tile = self.latlon_to_tile(lat, lon, zoom)
         return x_tile * self.TILE_SIZE, y_tile * self.TILE_SIZE
 
@@ -121,21 +77,7 @@ class MapService:
         format: str,
         api_key: str,
     ) -> Image.Image:
-        """
-        Завантажує окремий тайл мапи.
-
-        Args:
-            base_url (str): Базовий URL API.
-            zoom (int): Масштаб.
-            x (int): Номер тайла по горизонталі.
-            y (int): Номер тайла по вертикалі.
-            map_type (str): Тип мапи.
-            format (str): Формат зображення (png, jpg).
-            api_key (str): Ключ доступу до API.
-
-        Returns:
-            Image.Image: Об'єкт зображення PIL. У разі помилки повертає пустий сірий квадрат.
-        """
+        """Завантажує окремий тайл мапи або повертає пустий квадрат при помилці."""
         url: str = (
             f"{base_url}/{map_type}/{zoom}/{x}/{y}.{format.lower()}?key={api_key}"
         )
@@ -144,7 +86,7 @@ class MapService:
             response.raise_for_status()
             return Image.open(BytesIO(response.content))
         except Exception as e:
-            print(f"[MapService] Error loading tile {x}/{y}: {e}")
+            logger.error(f"Error loading tile {x}/{y}: {e}")
             return Image.new("RGB", (self.TILE_SIZE, self.TILE_SIZE), (200, 200, 200))
 
     async def get_map_pixmap(
@@ -153,89 +95,52 @@ class MapService:
         map_type: MapTypes,
         add_sizes_k: List[float] = [1, 1],
     ) -> Optional[Tuple[QPixmap, float]]:
-        """
-        Головний метод для отримання готового зображення мапи для UI.
-
-        Обчислює необхідну область, завантажує тайли, зшиває їх та обрізає під потрібний розмір.
-
-        Args:
-            coord (List[float]): Координати центру мапи [lat, lon].
-            map_type (MapTypes): Тип мапи (Road, Hybrid тощо).
-            add_sizes_k (List[float]): Коефіцієнти розширення області мапи відносно радіуса радара.
-
-        Returns:
-            Optional[Tuple[QPixmap, float]]: Кортеж із готового QPixmap та ціни пікселя в км.
-                Повертає None при помилці.
-        """
+        """Отримує готове зображення мапи (QPixmap) та ціну пікселя для заданих координат."""
         if not self.settings_service.api_key:
-            print("[MapService] Error: API key missing.")
+            logger.error("API key missing.")
             return None
 
         lat, lon = coord
-
         geo_data = self._calculate_geometry(lat, lon, add_sizes_k)
 
-        print(
-            f"[MapService] Size: {geo_data['width_px']}x{geo_data['height_px']} | "
+        logger.info(
+            f"Map requested: {geo_data['width_px']}x{geo_data['height_px']} | "
             f"Res: {geo_data['km_per_pixel']:.4f} km/px"
         )
 
         try:
             full_img = await self._fetch_and_stitch_tiles(geo_data, map_type)
-
             pixmap = self._crop_and_convert(full_img, geo_data)
-
             return (pixmap, geo_data["km_per_pixel"])
 
         except Exception as e:
-            print(f"[MapService] Critical Map Error: {e}")
+            logger.exception(f"Critical Map Error: {e}")
             return None
 
     def _calculate_geometry(
         self, lat: float, lon: float, add_sizes_k: List[float]
     ) -> Dict[str, Any]:
-        """
-        Розраховує піксельні межі області мапи, яку потрібно завантажити.
-
-        Метод обчислює "Bounding Box" у глобальних піксельних координатах,
-        базуючись на максимальному радіусі дії радара та коефіцієнтах запасу.
-        Також визначає діапазон номерів тайлів (X, Y), які необхідно завантажити.
-
-        Args:
-            lat (float): Широта центру мапи.
-            lon (float): Довгота центру мапи.
-            add_sizes_k (List[float]): Коефіцієнти розширення [ширина, висота].
-
-        Returns:
-            Dict[str, Any]: Словник з геометричними параметрами (розміри, межі, номери тайлів).
-        """
+        """Розраховує піксельні межі та діапазон тайлів для завантаження області мапи."""
         zoom = self.settings_service.zoom
         radar_max_radius_km = self.settings_service.radar_max_radius_km
         add_width_k, add_height_k = add_sizes_k
 
-        # Розрахунок масштабу (скільки км в одному пікселі на даній широті)
         km_per_pixel = self.get_resolution_at_lat(zoom, lat) / 1000.0
-
-        # Переводимо радіус дії радара з км у пікселі
         radius_px = radar_max_radius_km / km_per_pixel
 
-        # Визначаємо розмір полотна (з урахуванням коефіцієнтів запасу)
         width_px = math.ceil(radius_px * 2 * add_width_k)
         height_px = math.ceil(radius_px * 2 * add_height_k)
 
-        # Знаходимо піксельні координати центру мапи у глобальному полотні тайлів
         center_px_x, center_px_y = self.tile_to_pixel_offset(lat, lon, zoom)
 
         half_width = width_px // 2
         half_height = height_px // 2
 
-        # Визначаємо межі (Bounding Box) у пікселях
         top_left_px_x = center_px_x - half_width
         top_left_px_y = center_px_y - half_height
         bottom_right_px_x = center_px_x + half_width
         bottom_right_px_y = center_px_y + half_height
 
-        # Визначаємо діапазон номерів тайлів (X та Y), які покривають цей Bounding Box
         tile_x_min = int(top_left_px_x // self.TILE_SIZE)
         tile_y_min = int(top_left_px_y // self.TILE_SIZE)
         tile_x_max = int(bottom_right_px_x // self.TILE_SIZE)
@@ -257,24 +162,7 @@ class MapService:
     async def _fetch_and_stitch_tiles(
         self, geo_data: Dict[str, Any], map_type: MapTypes
     ) -> Image.Image:
-        """
-        Завантажує та зшиває всі необхідні тайли в одне велике зображення.
-
-        Завантаження відбувається паралельно за допомогою `asyncio.gather` для
-        максимальної продуктивності. Після завантаження всі тайли розміщуються
-        на спільному "полотні" (canvas).
-
-        Args:
-            geo_data (Dict[str, Any]): Дані про межі та номери тайлів.
-            map_type (MapTypes): Тип мапи.
-
-        Returns:
-            Image.Image: Зшите зображення PIL.
-
-        !!! note
-            Розмір полотна завжди є кратним `TILE_SIZE`, тому воно зазвичай
-            більше за фінальну область відображення.
-        """
+        """Паралельно завантажує та зшиває необхідні тайли в одне зображення."""
         base_url = MAPS_API_URL
         api_key = self.settings_service.api_key
         img_format = str(MAPS_IMG_FORMAT)
@@ -303,7 +191,7 @@ class MapService:
                 positions.append((x, y))
 
         tiles = await asyncio.gather(*tasks)
-        print(f"[MapService] Count of tiles: {len(tasks)}")
+        logger.debug(f"Stitching {len(tasks)} tiles.")
 
         for img, (x, y) in zip(tiles, positions):
             px = (x - tile_x_min) * self.TILE_SIZE
@@ -322,20 +210,7 @@ class MapService:
     def _crop_and_convert(
         self, full_img: Image.Image, geo_data: Dict[str, Any]
     ) -> QPixmap:
-        """
-        Обрізає зшите зображення до точних меж та конвертує в QPixmap.
-
-        Оскільки тайли мають фіксований розмір, зшите зображення має "зайві" краї.
-        Цей метод вирізає саме ту область, яка відповідає запиту користувача,
-        та готує її для відображення у Qt.
-
-        Args:
-            full_img (Image.Image): Велике зшите зображення.
-            geo_data (Dict[str, Any]): Геометричні параметри обрізки (offsets, sizes).
-
-        Returns:
-            QPixmap: Готове зображення для UI.
-        """
+        """Обрізає зшите зображення до точних меж та конвертує в QPixmap."""
         img_format = str(MAPS_IMG_FORMAT)
 
         top_left_px_x = geo_data["top_left_px_x"]

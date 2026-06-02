@@ -1,8 +1,3 @@
-"""
-Сервіс запису екрану.
-Реалізує функціонал захоплення відео з екрану (Screen Recording) та збереження у файл .mp4.
-"""
-
 import time
 from typing import Any, Optional
 
@@ -12,19 +7,18 @@ import numpy as np
 from PyQt6.QtCore import QElapsedTimer, QThread, pyqtSignal, pyqtSlot
 from vidgear.gears import WriteGear
 
+from app.core.logging_config import get_logger
 from app.protocols import OSService
+
+logger = get_logger(__name__)
 
 
 class RecordingService(QThread):
     """
-    Сервіс фонового запису екрану.
+    ### Сервіс фонового запису екрану
 
-    Забезпечує захоплення відеопотоку та його збереження у форматі .mp4
+    Забезпечує захоплення відеопотоку та його збереження у форматі `.mp4`
     з використанням апаратного або програмного кодування.
-
-    Attributes:
-        recording_started (pyqtSignal): Сигнал успішного початку запису.
-        duration_updated (pyqtSignal): Поточна тривалість (HH:MM:SS).
     """
 
     recording_started = pyqtSignal()
@@ -34,26 +28,11 @@ class RecordingService(QThread):
     duration_updated = pyqtSignal(str)
 
     def __init__(self, system: OSService, parent=None):
-        """
-        Ініціалізує сервіс запису.
-
-        Args:
-            system (OSService): Сервіс для доступу до параметрів операційної системи.
-            parent (QObject, optional): Батьківський об'єкт для управління пам'яттю Qt.
-        """
         super().__init__(parent)
         self.system_service = system
-
         self._setup_state_variables()
 
     def _setup_state_variables(self) -> None:
-        """
-        Налаштовує початковий стан змінних та параметри захоплення.
-
-        Встановлює FPS та коефіцієнт масштабування залежно від ОС:
-        - Windows: 30 FPS, повний розмір.
-        - Linux/Pi: 10 FPS, 0.5 масштаб (для економії ресурсів процесора).
-        """
         self.is_running = False
         self.is_paused = False
         self.filename = ""
@@ -80,17 +59,7 @@ class RecordingService(QThread):
     def _get_ffmpeg_params(
         self, width: int, height: int, use_hardware: bool = False
     ) -> dict:
-        """
-        Повертає оптимізовані параметри FFmpeg для кодування відео.
-
-        Args:
-            width (int): Ширина відеокадру.
-            height (int): Висота відеокадру.
-            use_hardware (bool): Чи використовувати апаратне прискорення (h264_v4l2m2m).
-
-        Returns:
-            dict: Словник з ключами та значеннями аргументів FFmpeg.
-        """
+        """Повертає оптимізовані параметри FFmpeg для кодування відео."""
         params = {
             "-input_framerate": str(self.fps),
             "-s": f"{width}x{height}",
@@ -136,16 +105,7 @@ class RecordingService(QThread):
         return params
 
     def run(self) -> None:
-        """
-        Основний цикл потоку запису.
-
-        Виконує:
-        1. Ініціалізацію захоплення екрану (MSS).
-        2. Розрахунок розмірів кадру.
-        3. Ініціалізацію запису (WriteGear) з пріоритетом на апаратне кодування.
-        4. Циклічне захоплення та збереження кадрів з підтримкою стабільного FPS.
-        """
-        print("[Recorder] Thread started")
+        logger.info("Recording thread started")
         self.is_running = True
 
         try:
@@ -167,8 +127,12 @@ class RecordingService(QThread):
             if self.record_height % 2 != 0:
                 self.record_height -= 1
 
-            print(
-                f"[Recorder] Scaling: {raw_width}x{raw_height} -> {self.record_width}x{self.record_height}"
+            logger.info(
+                "Scaling: %dx%d -> %dx%d",
+                raw_width,
+                raw_height,
+                self.record_width,
+                self.record_height,
             )
 
         except Exception as e:
@@ -179,22 +143,22 @@ class RecordingService(QThread):
 
         if not self.system_service.is_windows:
             try:
-                print("[Recorder] Attempting Hardware Encoding...")
+                logger.info("Attempting Hardware Encoding...")
                 params = self._get_ffmpeg_params(
                     self.record_width, self.record_height, use_hardware=True
                 )
                 self.writer = WriteGear(
-                    output=self.filename, logging=True, output_params=params
+                    output=self.filename, logging=False, output_params=params
                 )
             except Exception as e:
-                print(
-                    f"[Recorder] Hardware encoding failed: {e}. Switching to Software."
+                logger.warning(
+                    "Hardware encoding failed: %s. Switching to Software.", e
                 )
                 self.writer = None
 
         if self.writer is None:
             try:
-                print("[Recorder] Using Software Encoding (libx264 ultrafast)...")
+                logger.info("Using Software Encoding (libx264 ultrafast)...")
                 params = self._get_ffmpeg_params(
                     self.record_width, self.record_height, use_hardware=False
                 )
@@ -207,7 +171,6 @@ class RecordingService(QThread):
                 return
 
         self.start_time.start()
-
         self.recording_started.emit()
 
         self.frames_written = 0
@@ -217,7 +180,7 @@ class RecordingService(QThread):
             while self.is_running:
                 if self.is_paused:
                     time.sleep(0.1)
-                    # Коригуємо час початку, щоб уникнути стрибків у таймінгах після паузи
+                    # Коригуємо час початку після паузи
                     self.start_time_perf += 0.1
                     continue
 
@@ -238,11 +201,7 @@ class RecordingService(QThread):
                     self.writer.write(frame)
                     self.frames_written += 1
 
-                    # АЛГОРИТМ КОМПЕНСАЦІЇ FPS:
-                    # Якщо захоплення кадру зайняло забагато часу, ми порівнюємо реальну кількість
-                    # записаних кадрів з очікуваною на основі системного часу.
-                    # Якщо ми відстаємо, дублюємо поточний кадр. Це запобігає прискоренню
-                    # відео при відтворенні (ефект "Fast Forward").
+                    # Алгоритм компенсації FPS: дублюємо кадр, якщо захоплення відстає від таймера
                     elapsed = time.perf_counter() - self.start_time_perf
                     expected_frames = int(elapsed * self.fps)
 
@@ -250,7 +209,7 @@ class RecordingService(QThread):
                         self.writer.write(frame)
                         self.frames_written += 1
 
-                # Динамічна пауза: вираховуємо час до наступного кадру для плавності
+                # Динамічна пауза для плавності кадрів
                 next_frame_time = self.start_time_perf + (
                     self.frames_written / self.fps
                 )
@@ -261,10 +220,10 @@ class RecordingService(QThread):
 
         except Exception as e:
             self.recording_error.emit(f"Loop Error: {e}")
-            print(f"[Recorder] Error: {e}")
+            logger.error("Recording loop error: %s", e)
 
         finally:
-            print("[Recorder] Stopping...")
+            logger.info("Stopping recorder...")
             if self.sct:
                 self.sct.close()
             if self.writer:
@@ -274,11 +233,7 @@ class RecordingService(QThread):
             self.duration_updated.emit("00:00:00")
 
     def update_duration(self) -> None:
-        """
-        Оновлює та емітує поточну тривалість запису.
-
-        Розраховує час з урахуванням тривалості пауз.
-        """
+        """Оновлює та емітує поточну тривалість запису."""
         if self.is_paused:
             return
         total_ms = self.start_time.elapsed() - self.dif_time_ms
@@ -292,31 +247,17 @@ class RecordingService(QThread):
             self.duration_updated.emit(f"{h:02}:{m:02}:{s:02}")
 
     @pyqtSlot(str)
-    def start_recording(self, filename):
-        """
-        Запускає потік запису екрану.
-
-        Args:
-            filename (str): Шлях до файлу для збереження (.mp4).
-        """
+    def start_recording(self, filename: str) -> None:
         if not self.isRunning():
             self.filename = filename
-
             self.start()
 
     @pyqtSlot()
-    def stop_recording(self):
-        """Зупиняє запис та завершує роботу потоку."""
+    def stop_recording(self) -> None:
         self.is_running = False
 
     @pyqtSlot(bool)
-    def toggle_pause(self, is_paused):
-        """
-        Керує станом паузи запису.
-
-        Args:
-            is_paused (bool): True для паузи, False для продовження.
-        """
+    def toggle_pause(self, is_paused: bool) -> None:
         if is_paused and not self.is_paused:
             self.pause_start = self.start_time.elapsed()
         elif not is_paused and self.is_paused:

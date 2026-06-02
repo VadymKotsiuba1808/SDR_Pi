@@ -1,10 +1,3 @@
-"""
-Модуль для керування зовнішнім медіа-плеєром.
-
-Цей модуль містить сервіс, який відповідає за інтеграцію з VLC медіа-плеєром
-для перегляду зафіксованих подій детекції (відео та фото).
-"""
-
 import os
 import shutil
 from typing import Optional
@@ -18,7 +11,10 @@ from PyQt6.QtCore import (
     pyqtSlot,
 )
 
+from app.core.logging_config import get_logger
 from app.protocols import OSService
+
+logger = get_logger(__name__)
 
 
 class MediaPlayerService(QObject):
@@ -38,28 +34,14 @@ class MediaPlayerService(QObject):
     error_occurred = pyqtSignal(str)
 
     def __init__(self, system: OSService, parent: Optional[QObject] = None) -> None:
-        """
-        Ініціалізує сервіс медіа-плеєра.
-
-        Args:
-            system (OSService): Сервіс для роботи з операційною системою.
-            parent (Optional[QObject]): Батьківський об'єкт Qt.
-        """
+        """Ініціалізує сервіс медіа-плеєра."""
         super().__init__(parent)
         self.system_service = system
         self._process: Optional[QProcess] = None
         self._vlc_path: Optional[str] = self._get_vlc_executable()
 
     def play(self, file_path: str) -> None:
-        """
-        Запускає відтворення медіа-файлу у зовнішньому вікні VLC.
-
-        Метод налаштовує параметри запуску VLC, включаючи повноекранний режим,
-        циклічне відтворення та очищення конфліктних змінних оточення.
-
-        Args:
-            file_path (str): Абсолютний шлях до медіа-файлу.
-        """
+        """Запускає відтворення медіа-файлу у зовнішньому вікні VLC."""
         if not self._vlc_path:
             self.error_occurred.emit("VLC плеєр не знайдено в системі.")
             return
@@ -100,26 +82,13 @@ class MediaPlayerService(QObject):
         self._process.start(self._vlc_path, args)
 
     def stop(self) -> None:
-        """
-        Примусово зупиняє процес відтворення.
-
-        Закриває вікно VLC, якщо воно було відкрите цим сервісом.
-        """
+        """Примусово зупиняє процес відтворення."""
         if self._process and self._process.state() != QProcess.ProcessState.NotRunning:
             self._process.close()
             self._process = None
 
     def _prepare_environment(self) -> QProcessEnvironment:
-        """
-        Готує чисте середовище для запуску VLC.
-
-        VLC використовує бібліотеки Qt, які можуть конфліктувати з тими, що
-        завантажені в основному процесі програми (особливо плагіни платформ).
-        Ми видаляємо всі змінні QT_*, щоб VLC використовував власні ресурси.
-
-        Returns:
-            QProcessEnvironment: Налаштоване середовище процесу.
-        """
+        """Готує чисте середовище для запуску VLC (очищення QT_* змінних)."""
         env = QProcessEnvironment.systemEnvironment()
 
         # Список критичних змінних, що викликають сегфолти при конфлікті версій
@@ -154,16 +123,10 @@ class MediaPlayerService(QObject):
         if self._process:
             data = self._process.readAllStandardError().data().decode().strip()
             if data:
-                # Логування може бути корисним для діагностики проблем з кодеками
-                print(f"[VLC Log]: {data}")
+                logger.debug(f"[VLC Log]: {data}")
 
     def _get_vlc_executable(self) -> Optional[str]:
-        """
-        Визначає шлях до виконуваного файлу VLC.
-
-        Returns:
-            Optional[str]: Повний шлях до vlc або None, якщо не знайдено.
-        """
+        """Визначає шлях до виконуваного файлу VLC."""
         if self.system_service.is_windows:
             possible_paths = [
                 r"C:\Program Files\VideoLAN\VLC\vlc.exe",

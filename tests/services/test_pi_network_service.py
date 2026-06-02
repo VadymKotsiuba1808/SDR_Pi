@@ -63,16 +63,16 @@ def test_send_packet_success(network_service) -> None:
     assert "timestamp" in sent_payload
 
 
-def test_send_packet_no_connection(network_service) -> None:
+def test_send_packet_no_connection(network_service, caplog) -> None:
     """
     Тест відправки пакету при відсутності з'єднання.
     """
     service, mock_socket = network_service
     mock_socket.state.return_value = QTcpSocket.SocketState.UnconnectedState
 
-    with patch("builtins.print") as mock_print:
+    with caplog.at_level("WARNING"):
         service.send_packet("action")
-        mock_print.assert_any_call("[PiNet] Cannot send packet: No connection.")
+        assert "Cannot send packet: No connection." in caplog.text
 
     assert not mock_socket.write.called
 

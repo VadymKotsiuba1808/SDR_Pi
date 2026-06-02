@@ -3,33 +3,24 @@ import time
 
 from PyQt6.QtCore import QCoreApplication, QEventLoop, QTimer
 
+from app.core.logging_config import get_logger
 from app.models.detection_object import DetectionObject
 from app.models.object_class import ObjectClass
 from pi_server.database_service import DatabaseService
 
+logger = get_logger(__name__)
+
 
 def run_seeding() -> None:
-    """
-    Виконує процес наповнення бази даних початковими даними.
-
-    Ця функція створює екземпляр `QCoreApplication` для забезпечення роботи
-    асинхронних механізмів Qt, ініціалізує `DatabaseService` та послідовно
-    додає визначені класи та об'єкти виявлення.
-
-    !!! note
-        Використовується `time.sleep(0.1)` між операціями додавання, щоб дати
-        можливість фоновим потокам бази даних обробити запити без перевантаження.
-    """
     app = QCoreApplication(sys.argv)
 
     if not app:
-        print("Failed to create QCoreApplication instance.")
+        logger.error("Не вдалося створити екземпляр QCoreApplication.")
         return
 
     db = DatabaseService()
     loop = QEventLoop()
 
-    # Перелік класів об'єктів для категоризації виявлень
     classes_to_add = [
         "Recon Drone",
         "Loitering Munition",
@@ -39,10 +30,7 @@ def run_seeding() -> None:
         "Interference",
     ]
 
-    # Словник сигнатур: (Назва, Class_ID, is_dangerous, rf_params, sound_params)
-    # Кожен запис представляє унікальний набір параметрів для ідентифікації.
-    # Для деяких об'єктів (наприклад, DJI Mavic 3) створюється два окремих записи:
-    # один для радіочастотних параметрів, інший — для акустичних.
+    # (Назва, Class_ID, is_dangerous, rf_params, sound_params)
     signatures_data = [
         # DJI Mavic 3
         (
@@ -62,33 +50,30 @@ def run_seeding() -> None:
         # Orlan-10
         ("Orlan-10", 4, True, ["433000000-440000000", "900000000-920000000"], []),
         ("Orlan-10", 4, True, [], [130, 170]),
-        # False Alarms (Тільки звук або тільки радіо)
+        # False Alarms
         ("Crow (Ворона)", 5, False, [], [1200, 1600]),
         ("Gas Mower (Косарка)", 5, False, [], [80, 120]),
         ("Public WiFi Hotspot", 6, False, ["2400000000-2483000000"], []),
         ("GSM 900 Link", 6, False, ["935000000-960000000"], []),
     ]
 
-    print("--- START SEEDING ---")
+    logger.info("Початок наповнення бази даних")
 
-    # Додавання класів об'єктів
     for class_name in classes_to_add:
-        print(f"Adding class: {class_name}")
+        logger.debug(f"Додавання класу: {class_name}")
         db.add_class(ObjectClass(id=None, name=class_name))
         time.sleep(0.1)
 
     time.sleep(1)  # Затримка для завершення транзакцій перед додаванням об'єктів
 
-    # Додавання сигнатур об'єктів (Detection Objects)
     for name, c_id, dangerous, rf, sound in signatures_data:
-        print(f"Adding signature: {name} (Dangerous: {dangerous})")
+        logger.debug(f"Додавання сигнатури: {name}")
 
-        # Створюємо DTO для передачі в сервіс БД
         obj = DetectionObject(
             id=None,
             name=name,
             class_id=c_id,
-            object_class="",  # Поле буде автоматично заповнене сервісом бази даних
+            object_class="",  # Поле буде автоматично заповнене сервісом БД
             is_dangerous=dangerous,
             rf_params_hz=rf,
             sound_params_hz=sound,
@@ -97,8 +82,7 @@ def run_seeding() -> None:
         db.add_object(obj)
         time.sleep(0.1)
 
-    print("--- SEEDING FINISHED ---")
-    print("Wait 2 seconds and close...")
+    logger.info("Наповнення бази даних завершено. Завершення через 2 секунди...")
     QTimer.singleShot(2000, loop.quit)
     loop.exec()
 

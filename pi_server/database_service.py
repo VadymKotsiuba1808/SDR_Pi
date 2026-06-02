@@ -25,9 +25,12 @@ from sqlalchemy.orm import (
 )
 from sqlalchemy.pool import StaticPool
 
+from app.core.logging_config import get_logger
 from app.models.detection_object import DetectionObject
 from app.models.object_class import ObjectClass
 from app.models.service_response import DbOperation, ServiceResponse, StatusCode
+
+logger = get_logger(__name__)
 
 DB_CONNECTION_STRING: str = "sqlite:///./sdr_pi.db"
 
@@ -38,10 +41,10 @@ class ObjectClassEntity(Base):
     """
     Сутність бази даних для категорій об'єктів.
 
-    Attributes:
-        id (int): Унікальний ідентифікатор класу.
-        name (str): Унікальна назва класу (наприклад, 'UAV', 'Bird').
-        signatures (relationship): Список сигнатур, що належать до цього класу.
+    **Attributes:**
+    - `id` (int): Унікальний ідентифікатор класу.
+    - `name` (str): Унікальна назва класу (наприклад, 'UAV', 'Bird').
+    - `signatures` (relationship): Список сигнатур, що належать до цього класу.
     """
 
     __tablename__ = "object_classes"
@@ -54,14 +57,14 @@ class Signature(Base):
     """
     Сутність бази даних для сигнатур (еталонів) об'єктів.
 
-    Attributes:
-        id (int): Унікальний ідентифікатор сигнатури.
-        name (str): Назва моделі або типу об'єкта.
-        class_id (int): ID пов'язаного класу об'єктів.
-        is_dangerous (bool): Прапорець небезпечності об'єкта.
-        rf_params (list[str]): Список параметрів радіочастот.
-        sound_params (list[int]): Список звукових параметрів.
-        object_class_rel (relationship): Посилання на об'єкт класу.
+    **Attributes:**
+    - `id` (int): Унікальний ідентифікатор сигнатури.
+    - `name` (str): Назва моделі або типу об'єкта.
+    - `class_id` (int): ID пов'язаного класу об'єктів.
+    - `is_dangerous` (bool): Прапорець небезпечності об'єкта.
+    - `rf_params` (list[str]): Список параметрів радіочастот.
+    - `sound_params` (list[int]): Список звукових параметрів.
+    - `object_class_rel` (relationship): Посилання на об'єкт класу.
     """
 
     __tablename__ = "signatures"
@@ -81,11 +84,6 @@ class DBWorker(QRunnable):
     Виконавець завдань бази даних у фоновому потоці.
 
     Цей клас дозволяє запускати операції з БД без блокування головного GUI потоку.
-
-    Args:
-        func (Callable): Функція, яку необхідно виконати.
-        *args: Позиційні аргументи для функції.
-        **kwargs: Іменовані аргументи для функції.
     """
 
     def __init__(self, func: Callable[..., None], *args: Any, **kwargs: Any) -> None:
@@ -96,35 +94,25 @@ class DBWorker(QRunnable):
 
     @pyqtSlot()
     def run(self) -> None:
-        """Виконує передану функцію та обробляє можливі винятки."""
         try:
             self.func(*self.args, **self.kwargs)
         except Exception as e:
-            print(f"[DB Worker Error] {e}")
+            logger.error(f"[DB Worker Error] {e}")
 
 
 class DatabaseService(QObject):
     """
     Головний сервіс для взаємодії з базою даних.
 
-    Використовує асинхронну обробку запитів через QThreadPool та надсилає
-    результати через сигнал request_finished.
+    Використовує асинхронну обробку запитів через `QThreadPool` та надсилає
+    результати через сигнал `request_finished`.
     """
 
-    # Сигнал для сповіщення про завершення будь-якої операції з БД
     request_finished = pyqtSignal(ServiceResponse)
 
     def __init__(
         self, db_url: Optional[str] = None, parent: Optional[QObject] = None
     ) -> None:
-        """
-        Ініціалізує сервіс бази даних.
-
-        Args:
-            db_url (str, optional): URL для підключення до БД.
-                Якщо не вказано, використовується DB_CONNECTION_STRING.
-            parent (QObject, optional): Батьківський об'єкт Qt.
-        """
         super().__init__(parent)
         self.threadpool: QThreadPool = QThreadPool()
 
@@ -142,116 +130,57 @@ class DatabaseService(QObject):
         listen(self.engine, "connect", self._enable_wal)
         Base.metadata.create_all(self.engine)
         self.Session: sessionmaker[Session] = sessionmaker(bind=self.engine)
-        print(f"[DB] Service started on {self.db_url}")
+        logger.info(f"[DB] Service started on {self.db_url}")
 
     @staticmethod
     def _enable_wal(dbapi_connection, connection_record):
-        """
-        Увімкнення режиму WAL (Write-Ahead Logging) для SQLite.
-
-        Це покращує продуктивність при одночасному читанні та записі.
-        """
+        # Увімкнення режиму WAL для SQLite для покращення продуктивності
         cursor = dbapi_connection.cursor()
         try:
             cursor.execute("PRAGMA journal_mode=WAL")
             cursor.execute("PRAGMA synchronous=NORMAL")
         except Exception:
-            # WAL може не підтримуватися для баз даних у пам'яті
             pass
         finally:
             cursor.close()
 
     def request_objects_page(self, page: int = 1, page_size: int = 10) -> None:
-        """
-        Запит сторінки об'єктів (сигнатур).
-
-        Args:
-            page (int): Номер сторінки (починаючи з 1).
-            page_size (int): Кількість елементів на сторінці.
-        """
         worker = DBWorker(self._fetch_page_task, page, page_size)
         self.threadpool.start(worker)
 
     def request_all_objects(self) -> None:
-        """Запит усіх об'єктів (сигнатур) з бази даних."""
         worker = DBWorker(self._fetch_all_task)
         self.threadpool.start(worker)
 
     def add_object(self, obj_data: DetectionObject) -> None:
-        """
-        Додавання нової сигнатури об'єкта.
-
-        Args:
-            obj_data (DetectionObject): Дані нового об'єкта.
-        """
         worker = DBWorker(self._add_object_task, obj_data)
         self.threadpool.start(worker)
 
     def update_object(self, obj_data: DetectionObject) -> None:
-        """
-        Оновлення існуючої сигнатури об'єкта.
-
-        Args:
-            obj_data (DetectionObject): Оновлені дані об'єкта (обов'язково з ID).
-        """
         worker = DBWorker(self._update_object_task, obj_data)
         self.threadpool.start(worker)
 
     def delete_object(self, object_id: int) -> None:
-        """
-        Видалення сигнатури об'єкта за ID.
-
-        Args:
-            object_id (int): Ідентифікатор об'єкта для видалення.
-        """
         worker = DBWorker(self._delete_object_task, object_id)
         self.threadpool.start(worker)
 
     def request_classes(self) -> None:
-        """Запит усіх доступних класів об'єктів."""
         worker = DBWorker(self._fetch_classes_task)
         self.threadpool.start(worker)
 
     def add_class(self, class_data: ObjectClass) -> None:
-        """
-        Додавання нового класу об'єктів.
-
-        Args:
-            class_data (ObjectClass): Дані нового класу.
-        """
         worker = DBWorker(self._add_class_task, class_data)
         self.threadpool.start(worker)
 
     def update_class(self, class_data: ObjectClass) -> None:
-        """
-        Оновлення існуючого класу об'єктів.
-
-        Args:
-            class_data (ObjectClass): Оновлені дані класу (обов'язково з ID).
-        """
         worker = DBWorker(self._update_class_task, class_data)
         self.threadpool.start(worker)
 
     def delete_class(self, class_id: int) -> None:
-        """
-        Видалення класу об'єктів за ID.
-
-        Args:
-            class_id (int): Ідентифікатор класу для видалення.
-        """
         worker = DBWorker(self._delete_class_task, class_id)
         self.threadpool.start(worker)
 
     def _signature_to_dto(self, s: Signature) -> DetectionObject:
-        """
-        Перетворює сутність Signature у DTO об'єкт DetectionObject.
-
-        Args:
-            s (Signature): Сутність бази даних.
-
-        Returns:
-            DetectionObject: Об'єкт передачі даних.
-        """
         return DetectionObject(
             id=s.id,
             name=str(s.name),
@@ -263,7 +192,6 @@ class DatabaseService(QObject):
         )
 
     def _fetch_all_task(self) -> None:
-        """Завдання для завантаження всіх об'єктів у фоновому потоці."""
         session: Session = self.Session()
 
         resp = ServiceResponse(
@@ -289,7 +217,7 @@ class DatabaseService(QObject):
             resp.data = {"items": items_data, "count": count}
 
         except Exception as e:
-            print(f"[DB Error Fetch All] {e}")
+            logger.error(f"[DB Error Fetch All] {e}")
             resp.message = f"Error fetching all objects: {str(e)}"
 
         finally:
@@ -297,7 +225,6 @@ class DatabaseService(QObject):
             self.request_finished.emit(resp)
 
     def _fetch_page_task(self, page: int, page_size: int) -> None:
-        """Завдання для завантаження сторінки об'єктів у фоновому потоці."""
         session: Session = self.Session()
         resp = ServiceResponse(
             operation=DbOperation.GET_OBJECTS_PAGE,
@@ -339,7 +266,6 @@ class DatabaseService(QObject):
             self.request_finished.emit(resp)
 
     def _fetch_classes_task(self) -> None:
-        """Завдання для завантаження всіх класів у фоновому потоці."""
         session: Session = self.Session()
         resp = ServiceResponse(
             operation=DbOperation.GET_CLASSES,
@@ -364,7 +290,6 @@ class DatabaseService(QObject):
             self.request_finished.emit(resp)
 
     def _add_object_task(self, obj_data: DetectionObject) -> None:
-        """Завдання для додавання об'єкта у фоновому потоці."""
         session: Session = self.Session()
         resp = ServiceResponse(
             operation=DbOperation.ADD_OBJECT,
@@ -439,7 +364,6 @@ class DatabaseService(QObject):
             self.request_finished.emit(resp)
 
     def _update_object_task(self, obj_data: DetectionObject) -> None:
-        """Завдання для оновлення об'єкта у фоновому потоці."""
         session: Session = self.Session()
         resp = ServiceResponse(
             operation=DbOperation.UPDATE_OBJECT,
@@ -483,7 +407,6 @@ class DatabaseService(QObject):
             self.request_finished.emit(resp)
 
     def _delete_object_task(self, object_id: int) -> None:
-        """Завдання для видалення об'єкта у фоновому потоці."""
         session: Session = self.Session()
         resp = ServiceResponse(
             operation=DbOperation.DELETE_OBJECT,
@@ -512,7 +435,6 @@ class DatabaseService(QObject):
             self.request_finished.emit(resp)
 
     def _add_class_task(self, class_data: ObjectClass) -> None:
-        """Завдання для додавання класу у фоновому потоці."""
         session: Session = self.Session()
         resp = ServiceResponse(
             operation=DbOperation.ADD_CLASS,
@@ -553,7 +475,6 @@ class DatabaseService(QObject):
             self.request_finished.emit(resp)
 
     def _update_class_task(self, class_data: ObjectClass) -> None:
-        """Завдання для оновлення класу у фоновому потоці."""
         session: Session = self.Session()
         resp = ServiceResponse(
             operation=DbOperation.UPDATE_CLASS,
@@ -602,7 +523,6 @@ class DatabaseService(QObject):
             self.request_finished.emit(resp)
 
     def _delete_class_task(self, class_id: int) -> None:
-        """Завдання для видалення класу у фоновому потоці."""
         session: Session = self.Session()
         resp = ServiceResponse(
             operation=DbOperation.DELETE_CLASS,

@@ -18,16 +18,13 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from app.core.logging_config import get_logger
+
+logger = get_logger(__name__)
+
 
 def make_window_stretched(widget: QDialog) -> None:
-    """Розтягує вікно на весь первинний екран.
-
-    Встановлює прапорці вікна, вмикає захват розміру та розгортає віджет на
-    всю доступну геометрію основного монітора.
-
-    Args:
-        widget: Віджет (зазвичай QDialog або QMainWindow), який потрібно розтягнути.
-    """
+    """Розтягує вікно на весь первинний екран."""
     widget.setSizeGripEnabled(True)
     widget.setModal(True)
     widget.setWindowFlags(Qt.WindowType.Window)
@@ -52,13 +49,7 @@ class ScaledComboBox(QComboBox):
         style_data: Optional[dict] = None,
         old_combo_to_forward_to: Optional[QComboBox] = None,
     ) -> None:
-        """Ініціалізація ScaledComboBox.
-
-        Args:
-            parent: Батьківський віджет.
-            style_data: Словник з налаштуваннями стилів (кольорів, рамок).
-            old_combo_to_forward_to: Оригінальний QComboBox, сигнали якого потрібно дзеркалити.
-        """
+        """Ініціалізація ScaledComboBox."""
         super().__init__(parent)
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
@@ -75,18 +66,14 @@ class ScaledComboBox(QComboBox):
                 "border": "1px solid #888888",
             }
 
-        print(f"[ScaledComboBox] Ініціалізовано для {self.objectName()}")
+        logger.debug(f"[ScaledComboBox] Ініціалізовано для {self.objectName()}")
 
     def showPopup(self) -> None:
-        """Перевизначений метод для показу кастомного меню замість стандартного попапа."""
+        """Показ кастомного меню замість стандартного попапа."""
         self.create_custom_menu()
 
     def mousePressEvent(self, e: Optional[QMouseEvent]) -> None:
-        """Обробка натискання миші для виклику кастомного меню.
-
-        Args:
-            e: Подія миші.
-        """
+        """Обробка натискання миші для виклику кастомного меню."""
         if e and e.button() == Qt.MouseButton.LeftButton:
             self.create_custom_menu()
         else:
@@ -133,21 +120,13 @@ class ScaledComboBox(QComboBox):
 
     @pyqtSlot(int)
     def set_selection(self, index: int) -> None:
-        """Встановлює вибраний елемент та передає подію прихованому комбобоксу.
-
-        !!! note
-            Це важливо для підтримки існуючих підключень до сигналів
-            оригінального віджета, який був створений у Qt Designer.
-
-        Args:
-            index: Індекс вибраного елемента.
-        """
+        """Встановлює вибраний елемент та передає подію прихованому комбобоксу."""
         self.blockSignals(True)
         self.setCurrentIndex(index)
         self.blockSignals(False)
 
         if self.hidden_combo:
-            print(
+            logger.debug(
                 f"[ScaledComboBox] Передача індексу {index} до прихованого комбобокса"
             )
             self.hidden_combo.setCurrentIndex(index)
@@ -156,37 +135,27 @@ class ScaledComboBox(QComboBox):
 def enable_auto_scaling(
     window: QMainWindow, base_width: int = 1920, base_height: int = 1080
 ) -> None:
-    """Вмикає автоматичне масштабування для головного вікна.
-
-    Ця функція переміщує центральний віджет вікна в QGraphicsScene, яка потім
-    масштабується під фактичну роздільну здатність екрана. Також виконується
-    заміна стандартних QComboBox на ScaledComboBox для коректного відображення.
-
-    Args:
-        window: Головне вікно програми.
-        base_width: Базова ширина, на яку розрахований дизайн (за замовчуванням 1920).
-        base_height: Базова висота, на яку розрахований дизайн (за замовчуванням 1080).
-    """
+    """Вмикає автоматичне масштабування для головного вікна."""
     original_widget = window.centralWidget()
     if not original_widget:
-        print("[AutoScaler] Помилка: Немає centralWidget.")
+        logger.error("[AutoScaler] Помилка: Немає centralWidget.")
         return
 
-    print("[AutoScaler] Запуск масштабування...")
+    logger.debug("[AutoScaler] Запуск масштабування...")
 
     all_comboboxes = list(original_widget.findChildren(QComboBox))
-    print(f"[AutoScaler] Знайдено {len(all_comboboxes)} QComboBox для заміни.")
+    logger.debug(f"[AutoScaler] Знайдено {len(all_comboboxes)} QComboBox для заміни.")
 
     for old_combo in all_comboboxes:
         if isinstance(old_combo, ScaledComboBox):
             continue
 
-        print(f"[AutoScaler] Замінюю {old_combo.objectName()}...")
+        logger.debug(f"[AutoScaler] Замінюю {old_combo.objectName()}...")
 
         # Зчитуємо стилі для передачі в новий комбобокс
         combo_view = old_combo.view()
         if combo_view is None:
-            print(
+            logger.error(
                 f"[AutoScaler] Помилка: Не вдалося отримати view для {old_combo.objectName()}"
             )
             continue
@@ -218,7 +187,7 @@ def enable_auto_scaling(
             border_style = match.group(1).strip()
         style_data["border"] = border_style
 
-        print(f"[AutoScaler]   -> Зчитані стилі: {style_data}")
+        logger.debug(f"[AutoScaler]   -> Зчитані стилі: {style_data}")
 
         # Створюємо ScaledComboBox, який буде проксі-віджетом для старого
         parent = old_combo.parentWidget()
@@ -240,7 +209,7 @@ def enable_auto_scaling(
 
         if window_ui is not None and hasattr(window_ui, attr_name):
             setattr(window_ui, attr_name, new_combo)
-            print(f"[AutoScaler]   -> Оновлено атрибут 'window.ui.{attr_name}'")
+            logger.debug(f"[AutoScaler]   -> Оновлено атрибут 'window.ui.{attr_name}'")
 
         # Ховаємо старий віджет, але не видаляємо, бо він потрібен як джерело сигналів
         old_combo.setVisible(False)
@@ -259,7 +228,7 @@ def enable_auto_scaling(
 
     pr_screen = QGuiApplication.primaryScreen()
     if pr_screen is None:
-        print("[AutoScaler] Помилка: Не вдалося отримати primaryScreen.")
+        logger.error("[AutoScaler] Помилка: Не вдалося отримати primaryScreen.")
         return
 
     screen_rect = pr_screen.geometry()
@@ -267,7 +236,7 @@ def enable_auto_scaling(
     scale_y = screen_rect.height() / base_height
     scale = min(scale_x, scale_y)
 
-    print(
+    logger.debug(
         f"[AutoScaler] Екран: {screen_rect.width()}x{screen_rect.height()}. Масштаб: {scale}"
     )
 

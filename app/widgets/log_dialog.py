@@ -13,6 +13,7 @@ from PyQt6.QtWidgets import (
 )
 
 from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
+from app.core.logging_config import get_logger
 from app.core.mixins import TestUIOptimizationMixin
 from app.models.detection_background import DetectionBackground
 from app.models.detection_event import DetectionEvent
@@ -31,6 +32,8 @@ from app.ui.ui_log_dialog import Ui_LogDialog
 from app.utils.convert_measurement_unit import convert_hz_to_mhz
 from app.utils.ui_utils import update_element_styles
 from app.widgets.static_chart_widget import StaticChartWidget
+
+logger = get_logger(__name__)
 
 
 class LogDialog(QDialog, TestUIOptimizationMixin):
@@ -59,17 +62,8 @@ class LogDialog(QDialog, TestUIOptimizationMixin):
         settings_service: LangSettings,
         parent: Optional[QWidget] = None,
     ) -> None:
-        """Ініціалізує вікно логів.
-
-        Args:
-            log_service (LogService): Екземпляр сервісу логів.
-            background_service (DetectionBackgroundService): Екземпляр сервісу фонів.
-            classes (List[ObjectClass]): Список класів для фільтрації.
-            settings_service (LangSettings): Екземпляр сервісу налаштувань.
-            parent (Optional[QWidget]): Батьківський віджет.
-        """
+        """Ініціалізує вікно логів."""
         super().__init__(parent)
-        # Використовуємо FramelessWindowHint для стилістичної відповідності решті інтерфейсу
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
 
         self.log_service = log_service
@@ -82,34 +76,24 @@ class LogDialog(QDialog, TestUIOptimizationMixin):
         self._adjust_fields()
         self._connect_handlers()
 
-        # Автоматично завантажуємо першу доступну сесію, якщо вона є
         if self.ui.cmbSessions.count() > 0:
             self._on_session_changed()
 
         self._load_language()
-        print("[LogDialog] Initialized.")
+        logger.info("Initialized.")
         self.apply_test_ui_optimization()
 
     def changeEvent(self, a0: QEvent | None) -> None:
-        """Обробляє зміну подій, зокрема зміну мови.
-
-        Args:
-            a0 (QEvent | None): Подія, що змінила стан віджета.
-        """
+        """Обробляє зміну мови та інші події."""
         event = a0
         if event and event.type() == QEvent.Type.LanguageChange:
             if DEV_COMPILED_UI_USING_ENABLED:
-                print("[LogDialog] Language change detected, updating UI...")
+                logger.debug("Language change detected, updating UI...")
                 self.ui.retranslateUi(self)
         else:
             super().changeEvent(event)
 
     def _load_ui(self) -> None:
-        """Завантажує інтерфейс з UI-файлу або скомпільованого класу.
-
-        Використовує константу DEV_COMPILED_UI_USING_ENABLED для перемикання між
-        динамічним завантаженням .ui та використанням згенерованого Python коду.
-        """
         if DEV_COMPILED_UI_USING_ENABLED:
             self.ui = Ui_LogDialog()
             self.ui.setupUi(self)
@@ -118,7 +102,6 @@ class LogDialog(QDialog, TestUIOptimizationMixin):
             self.ui = cast(Ui_LogDialog, self)
 
     def _setup_state_variables(self) -> None:
-        """Ініціалізує змінні стану вікна."""
         self.translator = QTranslator()
         self.all_entries: List[LogEntry] = []
         self.filtered_entries: List[LogEntry] = []
@@ -127,17 +110,15 @@ class LogDialog(QDialog, TestUIOptimizationMixin):
         self.current_bg_index: int = 0
 
     def _adjust_fields(self) -> None:
-        """Налаштовує початковий стан полів та віджетів."""
         self._populate_class_cmb()
         self._setup_table_style()
         self._init_charts()
         self._load_sessions_list()
 
-        # Панель контролю фону прихована за замовчуванням, доки не обрано спектральний графік
+        # Панель контролю фону прихована за замовчуванням
         self.ui.grpBackgroundControl.setVisible(False)
 
     def _populate_class_cmb(self) -> None:
-        """Заповнює випадаючий список класів об'єктів для фільтрації."""
         self.ui.cmbFilterClass.clear()
         self.ui.cmbFilterClass.addItem(self.tr("All"))
         for class_obj in self.classes:
@@ -145,11 +126,7 @@ class LogDialog(QDialog, TestUIOptimizationMixin):
         self.ui.cmbFilterClass.setCurrentIndex(0)
 
     def _setup_table_style(self) -> None:
-        """Налаштовує зовнішній вигляд та поведінку таблиці логів.
-
-        Встановлює режими зміни розміру колонок, забороняє редагування комірок
-        та задає фіксовану ширину для деяких стовпців.
-        """
+        """Налаштовує вигляд та поведінку таблиці логів."""
         t = self.ui.tableLogs
         t.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         t.setWordWrap(True)
@@ -167,7 +144,6 @@ class LogDialog(QDialog, TestUIOptimizationMixin):
             t.setColumnWidth(7, 100)
 
     def _init_charts(self) -> None:
-        """Ініціалізує віджети графіків на різних вкладках."""
         self.chart_gen = StaticChartWidget(self.settings_service)
         self.ui.layoutChartGen.addWidget(self.chart_gen)
 
@@ -179,16 +155,14 @@ class LogDialog(QDialog, TestUIOptimizationMixin):
         self.ui.layoutChartRadarSit.addWidget(self.chart_sit)
 
     def _load_sessions_list(self) -> None:
-        """Завантажує список доступних файлів сесій (jsonl) у випадаючий список."""
+        """Завантажує список доступних сесій у випадаючий список."""
         sessions = self.log_service.get_available_sessions()
-        # Сортуємо за назвою файлу (яка містить дату) у зворотному порядку для показу останніх сесій зверху
         sessions.sort(key=lambda s: s.filename, reverse=True)
         self.ui.cmbSessions.clear()
         for s in sessions:
             self.ui.cmbSessions.addItem(s.label, s.filename)
 
     def _connect_handlers(self) -> None:
-        """Підключає обробники сигналів для всіх елементів керування."""
         self.ui.btnClose.clicked.connect(self.accept)
         self.ui.cmbSessions.currentIndexChanged.connect(self._on_session_changed)
         self.ui.btnApplyFilters.clicked.connect(self._apply_filters)
@@ -209,7 +183,7 @@ class LogDialog(QDialog, TestUIOptimizationMixin):
         self.ui.btnBgNext.clicked.connect(self._next_background)
 
     def _load_language(self) -> None:
-        """Завантажує та встановлює файл перекладу для поточної мови."""
+        """Завантажує файл перекладу для поточної мови."""
         lang_code = self.settings_service.lang_code
         if lang_code is None:
             return
@@ -218,17 +192,13 @@ class LogDialog(QDialog, TestUIOptimizationMixin):
         if self.translator.load(path):
             QCoreApplication.installTranslator(self.translator)
         else:
-            print(f"[LogDialog] Error: Failed to load translation file: {path}")
+            logger.error(f"Failed to load translation file: {path}")
 
     def _on_session_changed(self) -> None:
-        """Обробляє вибір іншої сесії у випадаючому списку.
-
-        Завантажує дані з вибраного файлу та автоматично встановлює часові рамки
-        фільтрації відповідно до першого та останнього запису в сесії.
-        """
+        """Обробляє вибір іншої сесії."""
         fname = self.ui.cmbSessions.currentData()
         if fname:
-            print(f"[LogDialog] Loading session data form file: {fname}")
+            logger.info(f"Loading session data from file: {fname}")
             self.all_entries = self.log_service.load_session_data(fname)
             if self.all_entries:
                 try:
@@ -245,13 +215,8 @@ class LogDialog(QDialog, TestUIOptimizationMixin):
             self._apply_filters()
 
     def _apply_filters(self) -> None:
-        """Застосовує встановлені користувачем фільтри до списку логів.
-
-        Фільтрація відбувається за: назвою/ID, класом об'єкта, типом запису
-        (виявлення/помилка), дистанцією, кутом та часовим діапазоном.
-        Після фільтрації оновлює таблицю та графіки.
-        """
-        print("[LogDialog] Applying filters...")
+        """Застосовує встановлені фільтри до списку логів."""
+        logger.debug("Applying filters...")
         name_filter = self.ui.inpFilterName.text().lower()
         class_filter: str | None = None
         if self.ui.cmbFilterClass.currentIndex() != 0:
@@ -267,7 +232,6 @@ class LogDialog(QDialog, TestUIOptimizationMixin):
         res: List[LogEntry] = []
         for e in self.all_entries:
             payload = e.payload
-            # Перевірка часу - спільна для всіх типів записів
             try:
                 dt = datetime.fromisoformat(e.timestamp).time()
                 if not (time_start <= dt <= time_end):
@@ -275,19 +239,16 @@ class LogDialog(QDialog, TestUIOptimizationMixin):
             except ValueError:
                 pass
 
-            # Фільтр за типом (Всі / Тільки виявлення / Тільки помилкові)
             if type_idx == 1 and not is_detection(e):
                 continue
             if type_idx == 2 and not is_false_alarm(e):
                 continue
 
-            # Фільтр за класом об'єкта
             if class_filter:
                 obj_class = getattr(payload, "object_class", "")
                 if class_filter != obj_class.lower():
                     continue
 
-            # Пошук за назвою або ID
             if name_filter:
                 det_id = getattr(payload, "id", getattr(payload, "detection_id", ""))
                 name = getattr(payload, "name", "")
@@ -295,7 +256,6 @@ class LogDialog(QDialog, TestUIOptimizationMixin):
                 if name_filter not in search_text:
                     continue
 
-            # Специфічні фільтри для виявлень (дистанція та кут)
             if is_detection(e):
                 if not (dist_min <= e.payload.distance_km <= dist_max):
                     continue
@@ -305,7 +265,7 @@ class LogDialog(QDialog, TestUIOptimizationMixin):
             res.append(cast(LogEntry, e))
 
         self.filtered_entries = res
-        print(f"[LogDialog] Filter result: {len(res)} entries found.")
+        logger.info(f"Filter result: {len(res)} entries found.")
         self._populate_ui_with_data()
 
     def _reset_filters(self) -> None:
@@ -322,20 +282,13 @@ class LogDialog(QDialog, TestUIOptimizationMixin):
         self._apply_filters()
 
     def _populate_ui_with_data(self) -> None:
-        """Оновлює всі елементи інтерфейсу (таблицю, комбобокси, графіки) актуальними даними."""
         self._fill_table(self.filtered_entries)
         self._fill_objects_combo()
         self._fill_times_combo()
         self._on_tab_changed()
 
     def _get_false_ids(self) -> Set[str]:
-        """Повертає набір ID виявлень, які були позначені як помилкові в поточній сесії.
-
-        Це необхідно для візуального виділення таких записів у таблиці та на графіках.
-
-        Returns:
-            Set[str]: Набір унікальних ідентифікаторів помилкових спрацювань.
-        """
+        """Повертає ID помилкових спрацювань у поточній сесії."""
         return {
             e.payload.detection_id
             for e in self.all_entries
@@ -343,17 +296,9 @@ class LogDialog(QDialog, TestUIOptimizationMixin):
         }
 
     def _fill_table(self, entries: List[LogEntry]) -> None:
-        """Заповнює таблицю логів відфільтрованими даними.
-
-        Відображає час, тип, назву/ID, клас, частоту, координати та статус
-        підтвердження для кожного запису.
-
-        Args:
-            entries (List[LogEntry]): Список записів для відображення.
-        """
+        """Заповнює таблицю логів відфільтрованими даними."""
         t = self.ui.tableLogs
         t.setRowCount(0)
-        # Сортуємо записи за часом (від новіших до старіших)
         sorted_entries = sorted(entries, key=lambda x: x.timestamp, reverse=True)
         false_ids = self._get_false_ids()
 
@@ -369,7 +314,6 @@ class LogDialog(QDialog, TestUIOptimizationMixin):
             time_item = QTableWidgetItem(time_str)
 
             if is_detection(entry):
-                # Обчислюємо затримку між часом виявлення та часом запису в лог
                 d1 = datetime.fromisoformat(entry.payload.timestamp)
                 d2 = datetime.fromisoformat(entry.timestamp)
                 latency_ms = int((d2 - d1).total_seconds() * 1000)
@@ -413,7 +357,6 @@ class LogDialog(QDialog, TestUIOptimizationMixin):
                     ),
                 )
 
-                # Візуально виділяємо записи, які були позначені як помилкові
                 status_text = (
                     self.tr("NO") if detection_data.id in false_ids else self.tr("YES")
                 )
@@ -446,10 +389,7 @@ class LogDialog(QDialog, TestUIOptimizationMixin):
         t.resizeRowsToContents()
 
     def _fill_objects_combo(self) -> None:
-        """Заповнює випадаючий список об'єктів на вкладці аналізу окремого об'єкта.
-
-        Вибирає унікальні об'єкти (ID + Назва) з відфільтрованого списку логів.
-        """
+        """Заповнює випадаючий список об'єктів для аналізу."""
         current_id = self.ui.cmbTargetObject.currentData()
         self.ui.cmbTargetObject.clear()
         seen = set()
@@ -460,24 +400,19 @@ class LogDialog(QDialog, TestUIOptimizationMixin):
                     seen.add(key)
                     short_id = key[0][:6]
                     self.ui.cmbTargetObject.addItem(f"{key[1]} ({short_id})", key[0])
-        # Намагаємося зберегти вибір після оновлення даних
         if current_id:
             idx = self.ui.cmbTargetObject.findData(current_id)
             if idx >= 0:
                 self.ui.cmbTargetObject.setCurrentIndex(idx)
 
     def _fill_times_combo(self) -> None:
-        """Заповнює випадаючий список міток часу на вкладці оперативної обстановки.
-
-        Вибирає унікальні хвилини, в які відбувалися виявлення.
-        """
+        """Заповнює випадаючий список міток часу."""
         self.ui.cmbSituationTime.clear()
         timestamps = set()
         for e in self.filtered_entries:
             if is_detection(e):
                 try:
                     dt = datetime.fromisoformat(e.timestamp)
-                    # Групуємо події по хвилинах для спрощення перегляду "сцени"
                     time_key = dt.strftime("%Y-%m-%d %H:%M")
                     timestamps.add(time_key)
                 except ValueError:
@@ -487,7 +422,6 @@ class LogDialog(QDialog, TestUIOptimizationMixin):
             self.ui.cmbSituationTime.addItem(t)
 
     def _on_tab_changed(self) -> None:
-        """Обробляє перемикання вкладок у діалоговому вікні."""
         idx = self.ui.tabWidget.currentIndex()
         if idx == 1:
             self._update_general_tab()
@@ -497,7 +431,7 @@ class LogDialog(QDialog, TestUIOptimizationMixin):
             self._update_situation_tab()
 
     def _update_general_tab(self) -> None:
-        """Оновлює загальний графік (Статистика) на основі відфільтрованих даних."""
+        """Оновлює загальний графік статистики."""
         idx = self.ui.cmbChartTypeGeneral.currentIndex()
         t = "timeline" if idx == 0 else "bar"
         self.chart_gen.set_chart_type(t)
@@ -506,11 +440,7 @@ class LogDialog(QDialog, TestUIOptimizationMixin):
         self.chart_gen.set_data(detections, false_ids)
 
     def _update_object_tab(self) -> None:
-        """Оновлює вкладку аналізу конкретного об'єкта.
-
-        Відображає траєкторію, рівень сигналу або спектральні дані для обраного ID.
-        Також завантажує та відображає фони (backgrounds), якщо обрано спектральний тип графіка.
-        """
+        """Оновлює вкладку аналізу конкретного об'єкта."""
         target_id = self.ui.cmbTargetObject.currentData()
 
         if not target_id:
@@ -524,7 +454,6 @@ class LogDialog(QDialog, TestUIOptimizationMixin):
         t = types.get(idx, "path")
         self.chart_target.set_chart_type(t)
 
-        # Фони мають сенс тільки для спектральних графіків (спектр та водоспад)
         is_spectral = idx in [2, 3]
         self.ui.grpBackgroundControl.setVisible(is_spectral)
 
@@ -540,15 +469,11 @@ class LogDialog(QDialog, TestUIOptimizationMixin):
             return
 
         if is_spectral:
-            # Завантажуємо фони з БД для даного об'єкта, щоб порівняти їх з поточними даними спектру
-            print(f"[LogDialog] Loading backgrounds for object ID: {target_id}")
-
+            logger.debug(f"Loading backgrounds for object ID: {target_id}")
             self.current_object_backgrounds = (
                 self.background_service.get_backgrounds_by_target_id(target_id)
             )
-
             self.current_object_backgrounds.sort(key=lambda x: x.timestamp)
-
             self.current_bg_index = 0
             self._update_background_view()
         else:
@@ -558,10 +483,7 @@ class LogDialog(QDialog, TestUIOptimizationMixin):
         self.chart_target.set_data(track_events, false_ids)
 
     def _update_background_view(self) -> None:
-        """Оновлює інтерфейс керування фоном та відображає обраний фон на графіку.
-
-        Активує/деактивує кнопки навігації по фонах та оновлює інформаційний текст.
-        """
+        """Оновлює інтерфейс керування фоном."""
         count = len(self.current_object_backgrounds)
 
         if count == 0:
@@ -601,27 +523,21 @@ class LogDialog(QDialog, TestUIOptimizationMixin):
             self.chart_target.set_background(bg_item.spectral_data)
 
     def _prev_background(self) -> None:
-        """Перемикає на попередній доступний фон спектру."""
         if self.current_object_backgrounds:
             self.current_bg_index -= 1
             self._update_background_view()
 
     def _next_background(self) -> None:
-        """Перемикає на наступний доступний фон спектру."""
         if self.current_object_backgrounds:
             self.current_bg_index += 1
             self._update_background_view()
 
     def _clear_background_ui(self) -> None:
-        """Очищає список фонів та скидає відповідні елементи інтерфейсу."""
         self.current_object_backgrounds = []
         self._update_background_view()
 
     def _update_situation_tab(self) -> None:
-        """Оновлює вкладку оперативної обстановки (радарний знімок).
-
-        Відображає всі об'єкти, які були активні в обрану хвилину часу.
-        """
+        """Оновлює вкладку оперативної обстановки."""
         cmb = self.ui.cmbSituationTime
         time_str = cmb.currentText()
         self._update_situation_nav_buttons()
@@ -644,7 +560,6 @@ class LogDialog(QDialog, TestUIOptimizationMixin):
             except ValueError:
                 continue
 
-            # Порівнюємо рік, місяць, день, годину та хвилину
             if (
                 dt.year == sel_dt.year
                 and dt.month == sel_dt.month
@@ -658,7 +573,6 @@ class LogDialog(QDialog, TestUIOptimizationMixin):
         self.chart_sit.set_data(active_objects, false_ids)
 
     def _update_situation_nav_buttons(self) -> None:
-        """Оновлює стан кнопок навігації по часу на вкладці обстановки."""
         cmb = self.ui.cmbSituationTime
         btn_prev = self.ui.btnSituationPrev
         btn_next = self.ui.btnSituationNext
@@ -670,19 +584,13 @@ class LogDialog(QDialog, TestUIOptimizationMixin):
         update_element_styles(btn_next)
 
     def _prev_situation(self) -> None:
-        """Перемикає радарний знімок на одну часову мітку назад."""
         self._change_situation_index(-1)
 
     def _next_situation(self) -> None:
-        """Перемикає радарний знімок на одну часову мітку вперед."""
         self._change_situation_index(1)
 
     def _change_situation_index(self, step: int) -> None:
-        """Змінює поточний індекс часу в списку міток обстановки.
-
-        Args:
-            step (int): Крок зміни індексу (зазвичай 1 або -1).
-        """
+        """Змінює поточний індекс часу в обстановці."""
         cmb = self.ui.cmbSituationTime
         count = cmb.count()
         current = cmb.currentIndex()

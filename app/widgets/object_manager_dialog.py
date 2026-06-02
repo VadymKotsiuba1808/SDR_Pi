@@ -12,6 +12,7 @@ from PyQt6.QtWidgets import (
 )
 
 from app.core.constants import DEV_COMPILED_UI_USING_ENABLED, RF_PARAMS__DIVIDER
+from app.core.logging_config import get_logger
 from app.core.mixins import TestUIOptimizationMixin
 from app.models.detection_object import DetectionObject
 from app.models.object_class import ObjectClass
@@ -25,6 +26,8 @@ from app.utils.ui_utils import move_dialog_down
 from app.widgets.class_manager_dialog import ClassManagerDialog
 from app.widgets.object_editor_dialog import ObjectEditorDialog
 
+logger = get_logger(__name__)
+
 ALLOW_DB_OPERATIONS = [
     DbOperation.ADD_OBJECT,
     DbOperation.UPDATE_OBJECT,
@@ -36,7 +39,7 @@ ALLOW_DB_OPERATIONS = [
 
 class ObjectManagerDialog(QDialog, TestUIOptimizationMixin):
     """
-    Діалогове вікно керування об'єктами (База даних сигнатур).
+    **Діалогове вікно керування об'єктами** (База даних сигнатур).
 
     Дозволяє оператору переглядати, додавати, редагувати та видаляти
     інформацію про типи БПЛА та їх радіочастотні/акустичні сигнатури.
@@ -44,8 +47,8 @@ class ObjectManagerDialog(QDialog, TestUIOptimizationMixin):
     оптимізації роботи з великою базою даних через мережу.
     """
 
-    PAGE_SIZE = 15  # Кількість об'єктів на одній сторінці UI
-    PRELOAD_PAGES_COUNT = 6  # Скільки сторінок завантажувати за один мережевий запит
+    PAGE_SIZE = 15
+    PRELOAD_PAGES_COUNT = 6
 
     def __init__(
         self,
@@ -54,15 +57,6 @@ class ObjectManagerDialog(QDialog, TestUIOptimizationMixin):
         keyboard: KeyboardService,
         parent: Optional[QWidget] = None,
     ) -> None:
-        """
-        Ініціалізує менеджер об'єктів.
-
-        Args:
-            network_service (PiNetworkService): Сервіс для зв'язку з БД сервера.
-            settings_service (LangSettings): Налаштування мови та інтерфейсу.
-            keyboard (KeyboardService): Сервіс для роботи з віртуальною клавіатурою.
-            parent (Optional[QWidget]): Батьківське вікно.
-        """
         super().__init__(parent)
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
 
@@ -75,13 +69,11 @@ class ObjectManagerDialog(QDialog, TestUIOptimizationMixin):
         self._init_table()
         self._connect_handlers()
 
-        # Первинне завантаження даних
         self.refresh_data()
         self._load_language()
         self.apply_test_ui_optimization()
 
     def changeEvent(self, a0: QEvent | None) -> None:
-        """Обробник зміни системних параметрів (мова)."""
         event = a0
         if event and event.type() == QEvent.Type.LanguageChange:
             if DEV_COMPILED_UI_USING_ENABLED:
@@ -90,7 +82,6 @@ class ObjectManagerDialog(QDialog, TestUIOptimizationMixin):
             super().changeEvent(event)
 
     def _load_ui(self) -> None:
-        """Завантажує UI компоненти менеджеру."""
         if DEV_COMPILED_UI_USING_ENABLED:
             self.ui = Ui_ObjectManager()
             self.ui.setupUi(self)
@@ -99,12 +90,9 @@ class ObjectManagerDialog(QDialog, TestUIOptimizationMixin):
             self.ui = cast(Ui_ObjectManager, self)
 
     def _setup_state_variables(self) -> None:
-        """Ініціалізує внутрішні змінні для кешування та пагінації."""
         self.cached_objects: List[DetectionObject] = []
         self.current_page: int = 1
-        self.current_load: int = (
-            0  # Індекс поточного завантаженого чанку (порції сторінок)
-        )
+        self.current_load: int = 0  # Індекс поточного завантаженого чанку
         self.total_pages: int = 1
         self.total_items: int = 0
         self.translator = QTranslator()
@@ -113,20 +101,16 @@ class ObjectManagerDialog(QDialog, TestUIOptimizationMixin):
         self.edit_obj: Optional[DetectionObject] = None
 
     def _init_table(self) -> None:
-        """Налаштовує параметри таблиці відображення об'єктів."""
         header = self.ui.tableWidget.horizontalHeader()
         if header is not None:
-            # Розтягуємо першу колонку (Назва) на весь доступний простір
             header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
 
-        # Фіксована ширина для допоміжних колонок
-        self.ui.tableWidget.setColumnWidth(1, 100)  # Клас
-        self.ui.tableWidget.setColumnWidth(2, 100)  # Небезпека
-        self.ui.tableWidget.setColumnWidth(3, 150)  # RF параметри
-        self.ui.tableWidget.setColumnWidth(4, 150)  # Sound параметри
+        self.ui.tableWidget.setColumnWidth(1, 100)
+        self.ui.tableWidget.setColumnWidth(2, 100)
+        self.ui.tableWidget.setColumnWidth(3, 150)
+        self.ui.tableWidget.setColumnWidth(4, 150)
 
     def _connect_handlers(self) -> None:
-        """Підключає сигнали кнопок та мережеві відповіді."""
         self.ui.btnRefresh.clicked.connect(self._force_refresh)
         self.ui.btnManageClasses.clicked.connect(self._open_class_manager)
 
@@ -135,31 +119,23 @@ class ObjectManagerDialog(QDialog, TestUIOptimizationMixin):
         self.ui.btnDelete.clicked.connect(self._handle_delete)
         self.ui.btnClose.clicked.connect(self.reject)
 
-        # Подвійний клік по рядку відкриває редагування
         self.ui.tableWidget.doubleClicked.connect(self._open_edit_dialog)
 
-        # Навігація по сторінках
         self.ui.btnPrevPage.clicked.connect(self._prev_page)
         self.ui.btnNextPage.clicked.connect(self._next_page)
 
         self.network_service.request_finished.connect(self._handle_db_status)
 
     def refresh_data(self) -> None:
-        """
-        Оновлює вміст таблиці.
-
-        Перевіряє, чи є потрібна сторінка в локальному кеші. Якщо ні —
-        надсилає запит на сервер для завантаження нового чанку даних.
-        """
+        """Оновлює вміст таблиці (з кешу або через мережу)."""
         last_page_in_cache = self.current_load * self.PRELOAD_PAGES_COUNT
         first_page_in_cache = last_page_in_cache - self.PRELOAD_PAGES_COUNT + 1
 
-        # Перевірка наявності сторінки в поточному чанку кешу
         if (
             first_page_in_cache <= self.current_page <= last_page_in_cache
             and self.cached_objects
         ):
-            print(f"[ObjectManager] Page {self.current_page} found in cache.")
+            logger.debug(f"Page {self.current_page} found in cache.")
             start_index = self._calculate_start_index()
             if start_index < 0:
                 start_index = 0
@@ -169,17 +145,15 @@ class ObjectManagerDialog(QDialog, TestUIOptimizationMixin):
             ]
             self._populate_table(current_list)
         else:
-            # Розрахунок, який чанк (групу сторінок) потрібно завантажити
             self.current_load = math.ceil(self.current_page / self.PRELOAD_PAGES_COUNT)
             if self.current_load < 1:
                 self.current_load = 1
             limit = self.PAGE_SIZE * self.PRELOAD_PAGES_COUNT
 
-            print(f"[ObjectManager] Requesting DB Chunk #{self.current_load}...")
+            logger.info(f"Requesting DB Chunk #{self.current_load}...")
             self.network_service.request_db_objects_page(self.current_load, limit)
 
     def _load_language(self) -> None:
-        """Завантажує переклад (заглушка, оскільки UI використовує tr())."""
         lang_code = self.settings_service.lang_code
         if lang_code is None:
             return
@@ -199,24 +173,17 @@ class ObjectManagerDialog(QDialog, TestUIOptimizationMixin):
         return global_start - chunk_start
 
     def _prev_page(self) -> None:
-        """Перехід на попередню сторінку."""
         if self.current_page > 1:
             self.current_page -= 1
             self.refresh_data()
 
     def _next_page(self) -> None:
-        """Перехід на наступну сторінку."""
         if self.current_page < self.total_pages:
             self.current_page += 1
             self.refresh_data()
 
     def _handle_db_status(self, response: ServiceResponse) -> None:
-        """
-        Централізований обробник відповідей від бази даних.
-
-        Опрацьовує результати додавання, редагування, видалення та пагінації.
-        Також відповідає за відкриття редактора після успішного завантаження класів.
-        """
+        """Централізований обробник відповідей від бази даних."""
         if response.operation not in ALLOW_DB_OPERATIONS:
             return
 
@@ -251,7 +218,6 @@ class ObjectManagerDialog(QDialog, TestUIOptimizationMixin):
                 if isinstance(response.data, dict):
                     classes_raw = response.data.get("classes", [])
                     classes_list = [ObjectClass.from_dict(c) for c in classes_raw]
-                    # Якщо ми чекали на класи для відкриття редактора об'єкта
                     if self._waiting_classes_for_editor:
                         self._waiting_classes_for_editor = False
                         self._open_editor(classes_list)
@@ -262,7 +228,6 @@ class ObjectManagerDialog(QDialog, TestUIOptimizationMixin):
         current_load_chunk: int,
         total_items: int,
     ) -> None:
-        """Оновлює внутрішній стан після отримання нового чанку даних з мережі."""
         self.cached_objects = objects_list
         self.current_load = current_load_chunk
         self.total_pages = math.ceil(total_items / self.PAGE_SIZE)
@@ -272,7 +237,6 @@ class ObjectManagerDialog(QDialog, TestUIOptimizationMixin):
         self._populate_table(current_list)
 
     def _populate_table(self, objects_list: List[DetectionObject]) -> None:
-        """Перемальовує рядки таблиці на основі наданого списку об'єктів."""
         self.ui.lblPageInfo.setText(
             self.tr("Page {} of {}").format(self.current_page, self.total_pages)
         )
@@ -285,11 +249,9 @@ class ObjectManagerDialog(QDialog, TestUIOptimizationMixin):
             self._set_object_row(obj, row_idx)
 
     def _set_object_row(self, obj: DetectionObject, row_idx: int) -> None:
-        """Створює та заповнює елементами один рядок таблиці."""
         if row_idx >= self.ui.tableWidget.rowCount():
             self.ui.tableWidget.insertRow(row_idx)
 
-        # Колонки: Назва (з прихованим ID), Клас, Небезпека, RF, Sound
         name_item = QTableWidgetItem(obj.name)
         name_item.setData(Qt.ItemDataRole.UserRole, obj.id)
         self.ui.tableWidget.setItem(row_idx, 0, name_item)
@@ -301,7 +263,6 @@ class ObjectManagerDialog(QDialog, TestUIOptimizationMixin):
             dang_item.setForeground(Qt.GlobalColor.red)
         self.ui.tableWidget.setItem(row_idx, 2, dang_item)
 
-        # Форматування RF параметрів (діапазон частот)
         rf_str = "-"
         if obj.rf_params_hz:
             if len(obj.rf_params_hz) == 1:
@@ -313,7 +274,6 @@ class ObjectManagerDialog(QDialog, TestUIOptimizationMixin):
                 rf_str = self.tr("{} freq(s)").format(len(obj.rf_params_hz))
         self.ui.tableWidget.setItem(row_idx, 3, QTableWidgetItem(rf_str))
 
-        # Форматування параметрів звуку
         snd_str = "-"
         if obj.sound_params_hz:
             if len(obj.sound_params_hz) > 3:
@@ -335,7 +295,6 @@ class ObjectManagerDialog(QDialog, TestUIOptimizationMixin):
         return int(val) if val is not None else None
 
     def _open_class_manager(self) -> None:
-        """Відкриває діалог керування класами (категоріями) об'єктів."""
         dialog = ClassManagerDialog(
             self.network_service,
             self.settings_service,
@@ -344,11 +303,9 @@ class ObjectManagerDialog(QDialog, TestUIOptimizationMixin):
         )
         move_dialog_down(dialog, self.geometry(), 0)
         dialog.exec()
-        # Повне оновлення після редагування класів, оскільки вони впливають на відображення
         self._force_refresh()
 
     def _open_editor(self, classes_list: List[ObjectClass]) -> None:
-        """Відкриває вікно редагування або створення об'єкта."""
         dialog = ObjectEditorDialog(
             settings_service=self.settings_service,
             keyboard=self.keyboard_service,
@@ -368,13 +325,11 @@ class ObjectManagerDialog(QDialog, TestUIOptimizationMixin):
                     self.network_service.request_db_add_object(new_object)
 
     def _open_add_dialog(self) -> None:
-        """Ініціює процес додавання нового об'єкта."""
         self.edit_obj = None
         self._waiting_classes_for_editor = True
         self.network_service.request_db_classes()
 
     def _open_edit_dialog(self) -> None:
-        """Ініціює процес редагування вибраного об'єкта."""
         obj_id = self._get_selected_id()
         if not obj_id:
             QMessageBox.warning(
@@ -391,7 +346,6 @@ class ObjectManagerDialog(QDialog, TestUIOptimizationMixin):
         self.network_service.request_db_classes()
 
     def _handle_delete(self) -> None:
-        """Обробляє запит на видалення об'єкта з підтвердженням користувача."""
         obj_id = self._get_selected_id()
         if not obj_id:
             QMessageBox.warning(
@@ -409,12 +363,10 @@ class ObjectManagerDialog(QDialog, TestUIOptimizationMixin):
             self.network_service.request_db_delete_object(obj_id)
 
     def add_cache_obj(self, obj: DetectionObject) -> None:
-        """Додає об'єкт у початок локального кешу."""
         self.cached_objects.insert(0, obj)
         self.refresh_data()
 
     def update_cache_obj(self, new_obj: DetectionObject) -> None:
-        """Оновлює дані об'єкта в локальному кеші."""
         index = next(
             (i for i, x in enumerate(self.cached_objects) if x.id == new_obj.id), None
         )
@@ -423,7 +375,6 @@ class ObjectManagerDialog(QDialog, TestUIOptimizationMixin):
             self.refresh_data()
 
     def delete_cache_obj(self, obj_id: int) -> None:
-        """Видаляє об'єкт з локального кешу за ID."""
         index = next(
             (i for i, x in enumerate(self.cached_objects) if x.id == obj_id), None
         )

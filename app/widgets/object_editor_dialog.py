@@ -5,6 +5,7 @@ from PyQt6.QtCore import QCoreApplication, QEvent, Qt, QTranslator
 from PyQt6.QtWidgets import QDialog, QListWidget, QListWidgetItem, QMessageBox, QWidget
 
 from app.core.constants import DEV_COMPILED_UI_USING_ENABLED, RF_PARAMS__DIVIDER
+from app.core.logging_config import get_logger
 from app.core.mixins import TestUIOptimizationMixin
 from app.models.detection_object import DetectionObject
 from app.models.object_class import ObjectClass
@@ -13,6 +14,8 @@ from app.services.keyboard_service import KeyboardService
 from app.ui.ui_object_editor_dialog import Ui_ObjectEditorDialog
 from app.utils.convert_measurement_unit import convert_hz_to_mhz, convert_mhz_to_hz
 from app.widgets.keyboard_widget import KeyboardWidget
+
+logger = get_logger(__name__)
 
 
 class ObjectEditorDialog(QDialog, TestUIOptimizationMixin):
@@ -32,16 +35,7 @@ class ObjectEditorDialog(QDialog, TestUIOptimizationMixin):
         parent: Optional[QWidget] = None,
         object_data: Optional[DetectionObject] = None,
     ) -> None:
-        """
-        Ініціалізує редактор об'єкта.
-
-        Args:
-            settings_service (LangSettings): Сервіс налаштувань.
-            keyboard (KeyboardService): Сервіс віртуальної клавіатури.
-            known_classes (List[ObjectClass]): Список доступних категорій об'єктів.
-            parent (Optional[QWidget]): Батьківський віджет.
-            object_data (Optional[DetectionObject]): Дані існуючого об'єкта (якщо редагування).
-        """
+        """Ініціалізує редактор об'єкта."""
         super().__init__(parent)
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
 
@@ -66,7 +60,7 @@ class ObjectEditorDialog(QDialog, TestUIOptimizationMixin):
             self._toggle_rf_fields(self.ui.chkRFEnable.isChecked())
             self._toggle_sound_fields(self.ui.chkSoundEnable.isChecked())
 
-        print(f"[ObjectEditor] Initialized. Edit mode: {self.is_edit_mode}")
+        logger.info(f"Initialized. Edit mode: {self.is_edit_mode}")
         self.apply_test_ui_optimization()
 
     def changeEvent(self, a0: QEvent | None) -> None:
@@ -112,11 +106,9 @@ class ObjectEditorDialog(QDialog, TestUIOptimizationMixin):
         self.ui.btnSave.clicked.connect(self._handle_save)
         self.ui.btnCancel.clicked.connect(self.reject)
 
-        # Перемикачі режимів (RF/Sound)
         self.ui.chkRFEnable.toggled.connect(self._handle_toggle_rf_fields)
         self.ui.chkSoundEnable.toggled.connect(self._handle_toggle_sound_fields)
 
-        # Керування списками частот
         self.ui.btnAddRF.clicked.connect(self._add_rf_range)
         self.ui.btnDelRF.clicked.connect(self._del_rf_range)
         self.ui.btnAddSound.clicked.connect(self._add_sound_freq)
@@ -242,9 +234,7 @@ class ObjectEditorDialog(QDialog, TestUIOptimizationMixin):
         return self.new_object
 
     def _handle_toggle_rf_fields(self, enabled: bool) -> None:
-        """
-        Забезпечує взаємовиключення: при ввімкненні RF, Sound вимикається.
-        """
+        """Забезпечує взаємовиключення: при ввімкненні RF, Sound вимикається."""
         if enabled:
             self.ui.chkSoundEnable.blockSignals(True)
             self.ui.chkSoundEnable.setChecked(False)
@@ -253,9 +243,7 @@ class ObjectEditorDialog(QDialog, TestUIOptimizationMixin):
         self._toggle_rf_fields(enabled)
 
     def _handle_toggle_sound_fields(self, enabled: bool) -> None:
-        """
-        Забезпечує взаємовиключення: при ввімкненні Sound, RF вимикається.
-        """
+        """Забезпечує взаємовиключення: при ввімкненні Sound, RF вимикається."""
         if enabled:
             self.ui.chkRFEnable.blockSignals(True)
             self.ui.chkRFEnable.setChecked(False)
@@ -309,13 +297,9 @@ class ObjectEditorDialog(QDialog, TestUIOptimizationMixin):
         value_to_check: str | int,
         check_range: tuple[int, int] | None = None,
     ) -> bool:
-        """
-        Перевіряє наявність значення у списку та запобігає накладанню діапазонів.
-
-        !!! info "Алгоритм валідації"
-            Для RF діапазонів перевіряється умова `new_min <= ex_max and ex_min <= new_max`.
-            Якщо умова істинна — діапазони перетинаються, що заборонено для унікальності сигнатури.
-        """
+        """Перевіряє наявність значення у списку та запобігає накладанню діапазонів."""
+        # Для RF діапазонів перевіряється умова `new_min <= ex_max and ex_min <= new_max`.
+        # Якщо умова істинна — діапазони перетинаються, що заборонено для унікальності сигнатури.
         for i in range(list_widget.count()):
             item = list_widget.item(i)
             if item is None:

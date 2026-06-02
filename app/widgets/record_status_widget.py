@@ -23,12 +23,6 @@ class RecordingStatusWidget(QWidget):
     """
 
     def __init__(self, parent: Optional[QWidget] = None) -> None:
-        """
-        Ініціалізує віджет та ховає його до початку запису.
-
-        Args:
-            parent (Optional[QWidget]): Батьківський віджет.
-        """
         super().__init__(parent)
         self._load_ui()
         self.setVisible(False)
@@ -44,31 +38,18 @@ class RecordingStatusWidget(QWidget):
 
     @pyqtSlot(str)
     def update_duration(self, time_str: str) -> None:
-        """
-        Оновлює текстове значення таймера.
-
-        Args:
-            time_str (str): Час у форматі HH:MM:SS.
-        """
+        """Оновлює текстове значення таймера."""
         self.ui.duration_label.setText(time_str)
 
     @pyqtSlot(bool)
     def on_pause_toggled(self, is_paused: bool) -> None:
-        """
-        Змінює візуальний стан індикатора при паузі.
-
-        Args:
-            is_paused (bool): Чи призупинено запис.
-        """
+        """Змінює візуальний стан індикатора при паузі."""
         # Змінюємо властивість для активації QSS стилів (наприклад, колір крапки)
         self.ui.rec_label.setProperty("active", not is_paused)
         update_element_styles(self.ui.rec_label)
 
     def reset_state(self) -> None:
-        """
-        Скидає стан віджета до початкового.
-        Викликається при повній зупинці або завершенні запису.
-        """
+        """Скидає стан віджета до початкового."""
         self.setVisible(False)
         self.ui.pause_button.setChecked(False)
         self.update_duration("00:00:00")

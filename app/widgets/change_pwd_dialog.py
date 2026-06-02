@@ -19,15 +19,8 @@ class ChangePwdDialog(QDialog, TestUIOptimizationMixin):
     """
     Діалог зміни пароля користувача.
 
-    Цей клас надає інтерфейс для введення нового пароля, його підтвердження
-    та валідації перед збереженням у налаштуваннях.
-
-    Attributes:
-        settings_service (ChangePwdDialogSettings): Сервіс налаштувань.
-        keyboard_service (KeyboardService): Сервіс віртуальної клавіатури.
-        translator (QTranslator): Перекладач для локалізації інтерфейсу.
-        ui (Ui_ChangePwdDialog): Об'єкт згенерованого UI.
-        keyboard_widget (KeyboardWidget): Віджет віртуальної клавіатури.
+    Надає інтерфейс для введення нового пароля, його підтвердження
+    та валідації перед збереженням.
     """
 
     def __init__(
@@ -36,14 +29,7 @@ class ChangePwdDialog(QDialog, TestUIOptimizationMixin):
         keyboard: KeyboardService,
         parent: Optional[QWidget] = None,
     ) -> None:
-        """
-        Ініціалізує діалог зміни пароля.
-
-        Args:
-            settings: Об'єкт для роботи з налаштуваннями.
-            keyboard: Сервіс для керування віртуальною клавіатурою.
-            parent: Батьківський віджет.
-        """
+        """Ініціалізує діалог зміни пароля."""
         super().__init__(parent)
         # Використовуємо FramelessWindowHint для кастомного вигляду діалогу без системних рамок
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
@@ -61,12 +47,7 @@ class ChangePwdDialog(QDialog, TestUIOptimizationMixin):
         self.apply_test_ui_optimization()
 
     def changeEvent(self, a0: QEvent | None) -> None:
-        """
-        Обробляє події зміни стану віджета, зокрема зміну мови.
-
-        Args:
-            a0: Об'єкт події.
-        """
+        """Обробляє події зміни стану віджета (наприклад, мови)."""
         event = a0
         if event and event.type() == QEvent.Type.LanguageChange:
             if DEV_COMPILED_UI_USING_ENABLED:
@@ -75,9 +56,7 @@ class ChangePwdDialog(QDialog, TestUIOptimizationMixin):
             super().changeEvent(event)
 
     def _load_ui(self) -> None:
-        """
-        Завантажує інтерфейс користувача з .ui файлу або скомпільованого Python класу.
-        """
+        """Завантажує інтерфейс користувача."""
         if DEV_COMPILED_UI_USING_ENABLED:
             self.ui = Ui_ChangePwdDialog()
             self.ui.setupUi(self)
@@ -86,18 +65,14 @@ class ChangePwdDialog(QDialog, TestUIOptimizationMixin):
             self.ui = cast(Ui_ChangePwdDialog, self)
 
     def _adjust_fields(self) -> None:
-        """
-        Налаштовує додаткові елементи інтерфейсу, такі як віртуальна клавіатура.
-        """
+        """Налаштовує додаткові елементи інтерфейсу (клавіатуру)."""
         self.keyboard_widget = KeyboardWidget(
             self.settings_service, self.keyboard_service, parent=self
         )
         self.ui.keyboardLayout.addWidget(self.keyboard_widget)
 
     def _connect_handlers(self) -> None:
-        """
-        Підключає обробники сигналів для елементів керування.
-        """
+        """Підключає обробники сигналів."""
         self.ui.passwordLineEdit.textChanged.connect(self.change_password_status)
         self.ui.confirmPasswordLineEdit.textChanged.connect(self.change_password_status)
 
@@ -108,9 +83,7 @@ class ChangePwdDialog(QDialog, TestUIOptimizationMixin):
         self.ui.btnLogout.clicked.connect(self.reject)
 
     def _load_language(self) -> None:
-        """
-        Завантажує та встановлює переклад інтерфейсу відповідно до налаштувань.
-        """
+        """Завантажує та встановлює переклад інтерфейсу."""
         lang_code = self.settings_service.lang_code
 
         if lang_code is None:
@@ -123,9 +96,7 @@ class ChangePwdDialog(QDialog, TestUIOptimizationMixin):
             QCoreApplication.installTranslator(self.translator)
 
     def change_password_status(self) -> None:
-        """
-        Очищує повідомлення про помилки при зміні тексту в полях введення.
-        """
+        """Очищує повідомлення про помилки при зміні тексту."""
         sender = self.sender()
         if sender == self.ui.passwordLineEdit:
             self.ui.errorWidget_1.setVisible(False)
@@ -134,9 +105,7 @@ class ChangePwdDialog(QDialog, TestUIOptimizationMixin):
         self.ui.errorWidget_2.setVisible(False)
 
     def hide_unhide_password(self) -> None:
-        """
-        Змінює видимість пароля (echo mode) у відповідному полі введення.
-        """
+        """Змінює видимість пароля у полі введення."""
         button = self.sender()
 
         if not isinstance(button, QPushButton):
@@ -164,10 +133,7 @@ class ChangePwdDialog(QDialog, TestUIOptimizationMixin):
         update_element_styles(button)
 
     def handle_save_pwd(self) -> None:
-        """
-        Обробляє натискання кнопки збереження пароля.
-        Виконує валідацію та хешування пароля перед збереженням.
-        """
+        """Обробляє збереження пароля з валідацією та хешуванням."""
         password = self.ui.passwordLineEdit.text()
         confirmed_password = self.ui.confirmPasswordLineEdit.text()
 

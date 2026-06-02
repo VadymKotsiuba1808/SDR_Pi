@@ -19,6 +19,7 @@ from app.ui.components.chart_crosshair import PyGraphCrosshair
 
 class DynamicChartWidget(QWidget):
     """
+    ### DynamicChartWidget
     Віджет для відображення спектру та водоспаду в реальному часі.
 
     Використовує бібліотеку `pyqtgraph` для високоефективної візуалізації
@@ -31,12 +32,7 @@ class DynamicChartWidget(QWidget):
     DEFAULT_FFT: Final[int] = 512  # Базовий розмір вікна швидкого перетворення Фур'є
 
     def __init__(self, parent: Optional[QWidget] = None) -> None:
-        """
-        Ініціалізує графічне ядро та буфери даних.
-
-        Args:
-            parent (Optional[QWidget]): Батьківський віджет.
-        """
+        """Ініціалізує графічне ядро та буфери даних."""
         super().__init__(parent)
 
         self._init_global_config()
@@ -48,13 +44,11 @@ class DynamicChartWidget(QWidget):
         self.reset_view()
 
     def _init_global_config(self) -> None:
-        """Налаштовує глобальні параметри рендерингу pyqtgraph."""
         pg.setConfigOption("background", ChartTheme.DYN_BACKGROUND)
         pg.setConfigOption("foreground", ChartTheme.DYN_FOREGROUND)
         pg.setConfigOptions(antialias=True)  # Згладжування ліній спектру
 
     def _setup_ui(self) -> None:
-        """Створює основний контейнер для графіків."""
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setContentsMargins(0, 0, 0, 0)
 
@@ -63,7 +57,6 @@ class DynamicChartWidget(QWidget):
         self.main_layout.addWidget(self.win)
 
     def _setup_state_variables(self) -> None:
-        """Готує буфери пам'яті для зберігання історії сигналів."""
         self.current_source_type: SourceType = SourceType.RF
         self.history_size: int = self.DEFAULT_HISTORY
         self.fft_size: int = self.DEFAULT_FFT
@@ -77,8 +70,6 @@ class DynamicChartWidget(QWidget):
         )
 
     def _setup_plots(self) -> None:
-        """Ініціалізація та налаштування осей графіків Спектру та Водоспаду."""
-
         # --- 1. Спектр (Лінійний графік потужності) ---
         self.plot_spectrum: pg.PlotItem = self.win.addPlot(
             title=self.tr("Real-Time Spectrum")
@@ -107,7 +98,6 @@ class DynamicChartWidget(QWidget):
         self.cursor_waterfall = PyGraphCrosshair(self.plot_waterfall)
 
     def _setup_colormap(self) -> None:
-        """Налаштовує колірну схему водоспаду (Lookup Table) з теми оформлення."""
         pos = np.array(ChartTheme.WATERFALL_POS)
         color = np.array(ChartTheme.WATERFALL_COLORS, dtype=np.ubyte)
 
@@ -116,18 +106,12 @@ class DynamicChartWidget(QWidget):
         self.img_item.setLookupTable(color_map.getLookupTable(0.0, 1.0, 256))
 
     def _connect_handlers(self) -> None:
-        """Підключає обробники подій миші для інтерактивного перехрестя."""
         scene = self.win.scene()
         if scene is not None:
             scene.sigMouseMoved.connect(self._on_mouse_moved)
 
     def clear_charts(self) -> None:
-        """
-        Повністю очищує графіки та зануляє буфери пам'яті.
-
-        Використовується при зміні джерела сигналу або примусовому скиданні
-        користувачем, щоб запобігти накладанню старих даних на нові.
-        """
+        """Повністю очищує графіки та зануляє буфери пам'яті."""
         self.waterfall_buffer.fill(0)
         self.img_item.setImage(
             self.waterfall_buffer.T,
@@ -140,20 +124,7 @@ class DynamicChartWidget(QWidget):
         self.cursor_waterfall.hide()
 
     def update_data(self, chunk: StreamDataChunk) -> None:
-        """
-        Оновлює графіки новими даними FFT.
-
-        Метод виконує нормалізацію значень у децибели (dB), зсуває історію
-        водоспаду (`np.roll`) та перераховує сітку частот.
-
-        !!! note
-            Буфер водоспаду зберігається у `uint8` для оптимізації споживання RAM,
-            оскільки при великій глибині історії (наприклад, 1000+ рядків) `float32`
-            може суттєво сповільнити рендеринг.
-
-        Args:
-            chunk (StreamDataChunk): Контейнер з амплітудами та метаданими сигналу.
-        """
+        """Оновлює графіки новими даними FFT."""
         raw_data = chunk.data_magnitude
         current_len = len(raw_data)
 
@@ -186,23 +157,14 @@ class DynamicChartWidget(QWidget):
             self.img_item.setRect(rect)
 
     def set_hover_enabled(self, enabled: bool) -> None:
-        """
-        Керує видимістю інтерактивного перехрестя (Crosshair).
-
-        Args:
-            enabled (bool): Чи дозволено відображення курсора при наведенні.
-        """
+        """Керує видимістю інтерактивного перехрестя."""
         self.is_hover_enabled = enabled
         if not enabled:
             self.cursor_spectrum.hide()
             self.cursor_waterfall.hide()
 
     def reset_view(self) -> None:
-        """
-        Скидає межі графіків до початкового стану (авто-діапазон).
-
-        Використовує збережений кеш частот для коректного встановлення меж осей.
-        """
+        """Скидає межі графіків до початкового стану."""
         self.plot_spectrum.enableAutoRange()
         self.plot_waterfall.enableAutoRange()
         if self.freqs_cache is not None:
@@ -210,26 +172,13 @@ class DynamicChartWidget(QWidget):
             self.plot_waterfall.setYRange(0, self.history_size)
 
     def set_view_mode(self, mode: str) -> None:
-        """
-        Перемикає видимість компонентів (Тільки Спектр / Тільки Водоспад / Обидва).
-
-        Args:
-            mode (str): Режим відображення ("Spectrum", "Waterfall" або "Both").
-        """
+        """Перемикає видимість компонентів (Спектр / Водоспад / Обидва)."""
         mode = mode.lower()
         self.plot_spectrum.setVisible("spectrum" in mode or "both" in mode)
         self.plot_waterfall.setVisible("waterfall" in mode or "both" in mode)
 
     def _handle_resize(self, new_size: int) -> None:
-        """
-        Переініціалізує буфери при зміні розміру вхідних даних.
-
-        Це необхідно, коли сервер змінює параметри SDR (наприклад, Sample Rate або FFT size)
-        під час активної трансляції.
-
-        Args:
-            new_size (int): Новий розмір масиву FFT.
-        """
+        """Переініціалізує буфери при зміні розміру вхідних даних."""
         self.fft_size = new_size
         self.waterfall_buffer = np.zeros(
             (self.history_size, self.fft_size), dtype=np.uint8
@@ -237,20 +186,7 @@ class DynamicChartWidget(QWidget):
         self.img_item.resetTransform()
 
     def _calculate_frequencies(self, chunk: StreamDataChunk, size: int) -> np.ndarray:
-        """
-        Розраховує масив частот (вісь X) на основі параметрів сигналу.
-
-        !!! info
-            Для RF (Radio Frequency) вісь X базується на центральній частоті SDR,
-            а для SOUND — на стандартній шкалі від 0 до Nyquist.
-
-        Args:
-            chunk (StreamDataChunk): Дані потоку з метаданими.
-            size (int): Кількість точок FFT.
-
-        Returns:
-            np.ndarray: Масив значень частот для осі X.
-        """
+        """Розраховує масив частот (вісь X) на основі параметрів сигналу."""
         if chunk.stream_type == SourceType.RF:
             # Обчислення полоси навколо центральної частоти (I/Q дані)
             start = (chunk.center_freq_hz - chunk.sample_rate_hz / 2) / 1e6
@@ -272,25 +208,12 @@ class DynamicChartWidget(QWidget):
             return np.linspace(start, end, size)
 
     def _update_axis_labels(self, unit: str) -> None:
-        """
-        Оновлює підписи осей при зміні типу джерела.
-
-        Args:
-            unit (str): Одиниця виміру (наприклад, "MHz" або "Hz").
-        """
+        """Оновлює підписи осей при зміні типу джерела."""
         self.plot_spectrum.setLabel("bottom", self.tr("Frequency"), units=unit)
         self.plot_waterfall.setLabel("bottom", self.tr("Frequency"), units=unit)
 
     def _on_mouse_moved(self, pos: QPointF) -> None:
-        """
-        Обробник руху миші для оновлення координат Crosshair.
-
-        Визначає, над яким саме графіком (Спектр чи Водоспад) знаходиться курсор,
-        і оновлює відповідне перехрестя, ховаючи інше.
-
-        Args:
-            pos (QPointF): Позиція курсора в координатах сцени.
-        """
+        """Обробник руху миші для оновлення координат Crosshair."""
         if not self.is_hover_enabled or self.freqs_cache is None:
             return
 
@@ -317,15 +240,7 @@ class DynamicChartWidget(QWidget):
         scene_pos: QPointF,
         is_waterfall: bool,
     ) -> None:
-        """
-        Розраховує точні фізичні значення (Частота/Амплітуда) під курсором.
-
-        Args:
-            plot (pg.PlotItem): Графік, над яким знаходиться курсор.
-            cursor (PyGraphCrosshair): Об'єкт перехрестя для оновлення.
-            scene_pos (QPointF): Позиція миші в сцені.
-            is_waterfall (bool): Чи є графік водоспадом (впливає на формат виводу).
-        """
+        """Розраховує точні фізичні значення (Частота/Амплітуда) під курсором."""
         if plot.vb is None:
             return
 
@@ -361,15 +276,7 @@ class DynamicChartWidget(QWidget):
             cursor.update_position(x_freq, y_val, text)
 
     def _get_freq_index(self, freq_val: float) -> Optional[int]:
-        """
-        Знаходить індекс у масиві даних FFT, що відповідає заданій частоті.
-
-        Args:
-            freq_val (float): Значення частоти для пошуку.
-
-        Returns:
-            Optional[int]: Індекс у масиві або None, якщо частота поза межами видимості.
-        """
+        """Знаходить індекс у масиві даних FFT, що відповідає частоті."""
         if self.freqs_cache is None:
             return None
 

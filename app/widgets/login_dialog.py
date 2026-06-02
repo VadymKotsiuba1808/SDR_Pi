@@ -6,6 +6,7 @@ from PyQt6.QtGui import QCloseEvent
 from PyQt6.QtWidgets import QDialog, QLineEdit, QWidget
 
 from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
+from app.core.logging_config import get_logger
 from app.core.mixins import TestUIOptimizationMixin
 from app.protocols import LoginDialogSettings
 from app.services.keyboard_service import KeyboardService
@@ -17,13 +18,11 @@ from app.widgets.autosize_window import make_window_stretched
 from app.widgets.change_pwd_dialog import ChangePwdDialog
 from app.widgets.keyboard_widget import KeyboardWidget
 
+logger = get_logger(__name__)
+
 
 class LoginDialog(QDialog, TestUIOptimizationMixin):
-    """Клас діалогового вікна авторизації.
-
-    Відповідає за перевірку пароля власника (Owner) або безпарольний вхід оператора (Operator).
-    Також керує завантаженням мовних ресурсів та відображенням екранної клавіатури.
-    """
+    """Клас діалогового вікна авторизації."""
 
     def __init__(
         self,
@@ -31,15 +30,9 @@ class LoginDialog(QDialog, TestUIOptimizationMixin):
         keyboard: KeyboardService,
         parent: Optional[QWidget] = None,
     ) -> None:
-        """Ініціалізація діалогу авторизації.
-
-        Args:
-            settings: Об'єкт налаштувань програми.
-            keyboard: Сервіс керування екранною клавіатурою.
-            parent: Батьківський віджет.
-        """
+        """Ініціалізація діалогу авторизації."""
         super().__init__(parent)
-        print("[LoginDialog] Initializing login dialog...")
+        logger.debug("Initializing login dialog...")
 
         self.settings_service = settings
         self.keyboard_service = keyboard
@@ -53,28 +46,20 @@ class LoginDialog(QDialog, TestUIOptimizationMixin):
         self._load_language()
         self.apply_test_ui_optimization()
 
-        print("[LoginDialog] Initialization complete.")
+        logger.debug("Initialization complete.")
 
     def changeEvent(self, a0: QEvent | None) -> None:
-        """Обробка подій зміни стану віджета.
-
-        Використовується для динамічного оновлення перекладів інтерфейсу при зміні мови.
-        """
+        """Оновлення перекладів інтерфейсу при зміні мови."""
         event = a0
         if event and event.type() == QEvent.Type.LanguageChange:
             if DEV_COMPILED_UI_USING_ENABLED:
-                print("[LoginDialog] Language change detected, updating UI...")
+                logger.debug("Language change detected, updating UI...")
                 self.ui.retranslateUi(self)
         else:
             super().changeEvent(event)
 
     def _load_ui(self) -> None:
-        """Завантаження інтерфейсу користувача.
-
-        Залежно від налаштувань `DEV_COMPILED_UI_USING_ENABLED`, завантажує або
-        скомпілований Python-клас інтерфейсу, або динамічно завантажує .ui файл.
-        Це дозволяє пришвидшити розробку (через .ui) та оптимізувати продакшн (через .py).
-        """
+        """Завантаження інтерфейсу користувача."""
         if DEV_COMPILED_UI_USING_ENABLED:
             self.ui = Ui_LoginDialog()
             self.ui.setupUi(self)
@@ -94,21 +79,21 @@ class LoginDialog(QDialog, TestUIOptimizationMixin):
         self.auth_service.start_monitoring()
 
     def _adjust_fields(self) -> None:
-        """Коригування значень полів введення на основі поточних налаштувань."""
+        """Коригування значень полів введення."""
         role = self.settings_service.role
 
         self.ui.roleComboBox.setCurrentIndex(0 if role == "operator" else 1)
         self.ui.keyboardLayout.addWidget(self.keyboard_widget)
 
     def _connect_handlers(self) -> None:
-        """Підключення обробників сигналів до елементів інтерфейсу."""
+        """Підключення обробників сигналів."""
         self.ui.roleComboBox.currentIndexChanged.connect(self.toggle_password_field)
         self.ui.passwordLineEdit.textChanged.connect(self.change_password_status)
         self.ui.passwordHideBtn.clicked.connect(self.hide_unhide_password)
         self.ui.loginButton.clicked.connect(self.handle_login)
 
     def _load_language(self) -> None:
-        """Завантаження та встановлення перекладу для поточного вікна."""
+        """Завантаження та встановлення перекладу."""
         lang_code = self.settings_service.lang_code
 
         if lang_code is None:
@@ -120,14 +105,11 @@ class LoginDialog(QDialog, TestUIOptimizationMixin):
         if self.translator.load(path):
             QCoreApplication.installTranslator(self.translator)
         else:
-            print(f"[LoginDialog] Error: Failed to load translation file: {path}")
+            logger.error(f"Failed to load translation file: {path}")
 
     def on_usb_reset_request(self) -> None:
-        """Обробка запиту на скидання пароля через USB-ключ.
-
-        Викликається при успішній автентифікації фізичного USB-ключа.
-        """
-        print("[LoginDialog] USB Key detected. Opening password change dialog.")
+        """Обробка запиту на скидання пароля через USB-ключ."""
+        logger.info("USB Key detected. Opening password change dialog.")
         self.change_pwd_dialog = ChangePwdDialog(
             self.settings_service, self.keyboard_service
         )
@@ -135,21 +117,20 @@ class LoginDialog(QDialog, TestUIOptimizationMixin):
         self.change_pwd_dialog.showFullScreen()
 
     def toggle_password_field(self) -> None:
-        """Показ або приховування поля введення пароля залежно від обраної ролі."""
+        """Показ або приховування поля введення пароля."""
         current_index = self.ui.roleComboBox.currentIndex()
 
-        # Роль Owner (index 1) вимагає пароль, Operator (index 0) — ні.
         if current_index == 1:
             self.ui.passwordContainer.setVisible(True)
         else:
             self.ui.passwordContainer.setVisible(False)
 
     def change_password_status(self) -> None:
-        """Приховування повідомлення про невірний пароль при зміні тексту."""
+        """Приховування повідомлення про невірний пароль."""
         self.ui.passwordIncorrectLabel.setVisible(False)
 
     def hide_unhide_password(self) -> None:
-        """Перемикання видимості символів у полі введення пароля."""
+        """Перемикання видимості символів у полі пароля."""
         status = self.ui.passwordHideBtn.property("status")
 
         if status == "hidden":
@@ -159,18 +140,14 @@ class LoginDialog(QDialog, TestUIOptimizationMixin):
             self.ui.passwordHideBtn.setProperty("status", "hidden")
             self.ui.passwordLineEdit.setEchoMode(QLineEdit.EchoMode.Password)
 
-        # Оновлення стилів необхідне для зміни іконки кнопки (через QSS)
         update_element_styles(self.ui.passwordHideBtn)
 
     def handle_login(self) -> None:
-        """Обробка логіки входу в систему.
-
-        Перевіряє відповідність введеного пароля для ролі Owner або дозволяє вхід як Operator.
-        """
+        """Обробка логіки входу в систему."""
         index = self.ui.roleComboBox.currentIndex()
 
         if index == 0:
-            print("[LoginDialog] Logging in as Operator (no password required).")
+            logger.info("Logging in as Operator (no password required).")
             self.settings_service.role = "operator"
             self.accept_window()
             return
@@ -181,7 +158,7 @@ class LoginDialog(QDialog, TestUIOptimizationMixin):
 
             if verify_password(password, real_password_hash):
                 remember = self.ui.rememberCheckBox.isChecked()
-                print(f"[LoginDialog] Login successful. Remember me: {remember}")
+                logger.info(f"Login successful. Remember me: {remember}")
 
                 if remember:
                     self.settings_service.remember_me = remember
@@ -189,18 +166,14 @@ class LoginDialog(QDialog, TestUIOptimizationMixin):
                 self.settings_service.role = "owner"
                 self.accept_window()
             else:
-                print("[LoginDialog] Login failed: Incorrect password.")
+                logger.warning("Login failed: Incorrect password.")
                 self.ui.passwordIncorrectLabel.setVisible(True)
 
     def accept_window(self) -> None:
-        """Закриття вікна з позитивним результатом."""
         self.accept()
 
     def closeEvent(self, a0: QCloseEvent | None) -> None:
-        """Обробка закриття вікна.
-
-        Зупиняє моніторинг USB-порту перед закриттям для уникнення витоку ресурсів.
-        """
+        """Обробка закриття вікна."""
         event = a0
 
         if hasattr(self, "auth_service"):

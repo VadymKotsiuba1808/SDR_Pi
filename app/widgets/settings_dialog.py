@@ -11,12 +11,15 @@ from app.core.constants import (
     DEV_COMPILED_UI_USING_ENABLED,
     RELAY_NAMES_LIST,
 )
+from app.core.logging_config import get_logger
 from app.core.mixins import TestUIOptimizationMixin
 from app.models.settings import CleanRule
 from app.protocols import SettingsDialogSettings
 from app.ui.ui_settings_dialog import Ui_SettingsDialog
 from app.utils.system_utils import restart_process
 from app.utils.ui_utils import update_element_styles
+
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -60,12 +63,7 @@ class SettingsDialog(QDialog, TestUIOptimizationMixin):
         settings_service: SettingsDialogSettings,
         parent: Optional[QWidget] = None,
     ) -> None:
-        """Ініціалізує вікно налаштувань.
-
-        Args:
-            settings_service (SettingsDialogSettings): Сервіс для роботи з налаштуваннями.
-            parent (Optional[QWidget]): Батьківський віджет.
-        """
+        """Ініціалізує вікно налаштувань."""
         super().__init__(parent)
 
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
@@ -81,28 +79,20 @@ class SettingsDialog(QDialog, TestUIOptimizationMixin):
 
         self.apply_test_ui_optimization()
 
-        print("[Settings] Dialog initialized.")
+        logger.debug("Dialog initialized.")
 
     def changeEvent(self, a0: QEvent | None) -> None:
-        """Обробка подій зміни стану вікна, зокрема зміни мови.
-
-        Args:
-            a0 (QEvent | None): Об'єкт події.
-        """
+        """Обробка подій зміни стану вікна, зокрема зміни мови."""
         event = a0
         if event and event.type() == QEvent.Type.LanguageChange:
             if DEV_COMPILED_UI_USING_ENABLED:
-                print("[Settings] Language change detected, retranslating UI...")
+                logger.info("Language change detected, retranslating UI...")
                 self.ui.retranslateUi(self)
         else:
             super().changeEvent(event)
 
     def _load_ui(self) -> None:
-        """Завантажує інтерфейс користувача з .ui файлу або скомпільованого класу.
-
-        Використовує `uic.loadUi` для динамічного завантаження в режимі розробки
-        або `Ui_SettingsDialog` для стабільної роботи у скомпільованому стані.
-        """
+        """Завантажує інтерфейс користувача з .ui файлу або скомпільованого класу."""
         if DEV_COMPILED_UI_USING_ENABLED:
             self.ui = Ui_SettingsDialog()
             self.ui.setupUi(self)
@@ -111,11 +101,7 @@ class SettingsDialog(QDialog, TestUIOptimizationMixin):
             self.ui = cast(Ui_SettingsDialog, self)
 
     def _setup_state_variables(self) -> None:
-        """Ініціалізує внутрішні змінні стану діалогу.
-
-        Створює буфер для налаштувань очищення, щоб зміни можна було скасувати
-        без впливу на основний сервіс до натискання кнопки 'Зберегти'.
-        """
+        """Ініціалізує внутрішні змінні стану діалогу."""
         self.translator = QTranslator()
 
         self.new_settings: Optional[SettingsData] = None
@@ -151,10 +137,7 @@ class SettingsDialog(QDialog, TestUIOptimizationMixin):
             self._load_clean_settings_to_ui(0)
 
     def _populate_relay_cmb(self) -> None:
-        """Генерує всі можливі комбінації реле для вибору в ComboBox.
-
-        Це дозволяє користувачеві обирати довільну групу реле (наприклад, "RELAY_1, RELAY_2").
-        """
+        """Генерує всі можливі комбінації реле для вибору в ComboBox."""
         self.ui.cmbRelay.clear()
         self.ui.cmbRelay.blockSignals(True)
 
@@ -205,16 +188,12 @@ class SettingsDialog(QDialog, TestUIOptimizationMixin):
         path = f"app/i18n/qm/app_{lang_code}.qm"
         if self.translator.load(path):
             QCoreApplication.installTranslator(self.translator)
-            print(f"[Settings] Loaded translation: {path}")
+            logger.info(f"Loaded translation: {path}")
         else:
-            print(f"[Settings] Error: Failed to load translation file: {path}")
+            logger.error(f"Failed to load translation file: {path}")
 
     def _on_clean_target_changed(self, index: int) -> None:
-        """Зберігає поточні дані в буфер і завантажує нові при зміні папки.
-
-        Args:
-            index (int): Новий вибраний індекс у ComboBox.
-        """
+        """Зберігає поточні дані в буфер і завантажує нові при зміні папки."""
         if index < 0:
             return
 
@@ -232,11 +211,7 @@ class SettingsDialog(QDialog, TestUIOptimizationMixin):
             self.clean_settings_buffer[self.current_clean_target_key] = rule
 
     def _load_clean_settings_to_ui(self, index: int) -> None:
-        """Відображає налаштування очищення з буфера для вибраної цілі.
-
-        Args:
-            index (int): Індекс елемента у ComboBox.
-        """
+        """Відображає налаштування очищення з буфера для вибраної цілі."""
         target_key = self.ui.cmbCleanTarget.itemData(index)
         self.current_clean_target_key = target_key
 
@@ -262,29 +237,18 @@ class SettingsDialog(QDialog, TestUIOptimizationMixin):
         self.ui.inpCleanDays.blockSignals(False)
 
     def _handle_clean_enabled_toggled(self, is_checked: bool) -> None:
-        """Керує доступністю поля введення кількості днів очищення.
-
-        Args:
-            is_checked (bool): Стан CheckBox 'Увімкнено'.
-        """
+        """Керує доступністю поля введення кількості днів очищення."""
         self.ui.inpCleanDays.setEnabled(is_checked)
         update_element_styles(self.ui.inpCleanDays)
 
     def handle_auto_stop_enabled(self, isChecked: bool) -> None:
-        """Керує доступністю поля інтервалу автостопу джаммера.
-
-        Args:
-            isChecked (bool): Стан CheckBox автостопу.
-        """
+        """Керує доступністю поля інтервалу автостопу джаммера."""
         self.ui.inpJammerStopInterval.setEnabled(isChecked)
         update_element_styles(self.ui.inpJammerStopInterval)
 
     def restart_app(self) -> None:
-        """Ініціює перезапуск програми.
-
-        Вимикає 'Запам'ятати мене', щоб користувач міг увійти під іншим обліковим записом.
-        """
-        print("[Settings] Initiating application restart...")
+        """Ініціює перезапуск програми."""
+        logger.info("Initiating application restart...")
         self.settings_service.remember_me = False
         self.setEnabled(False)
 
@@ -314,13 +278,9 @@ class SettingsDialog(QDialog, TestUIOptimizationMixin):
             clean_settings=self.clean_settings_buffer,
         )
 
-        print(f"[Settings] Configuration saved: {self.new_settings}")
+        logger.info(f"Configuration saved: {self.new_settings}")
         self.accept()
 
     def get_settings(self) -> Optional[SettingsData]:
-        """Повертає об'єкт з новими налаштуваннями, якщо вони були збережені.
-
-        Returns:
-            Optional[SettingsData]: Нові налаштування або None, якщо діалог скасовано.
-        """
+        """Повертає об'єкт з новими налаштуваннями, якщо вони були збережені."""
         return self.new_settings

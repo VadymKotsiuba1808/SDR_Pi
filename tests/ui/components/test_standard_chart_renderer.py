@@ -1,9 +1,9 @@
-"""
-Тести для компонентів рендерингу (Standard Chart Renderer).
-"""
+"""Юніт-тести для компонента StandardChartRenderer."""
+
+from typing import List, Tuple
 
 import pytest
-from PyQt6.QtCore import QRect
+from PyQt6.QtCore import QPointF, QRect
 from PyQt6.QtGui import QPainter, QPixmap
 
 from app.models.detection_event import DetectionEvent
@@ -12,11 +12,11 @@ from app.ui.components.standard_chart_renderer import StandardChartRenderer
 
 
 @pytest.fixture
-def chart_renderer():
+def chart_renderer() -> StandardChartRenderer:
     return StandardChartRenderer()
 
 
-def create_mock_events():
+def create_mock_events() -> List[DetectionEvent]:
     return [
         DetectionEvent(
             id="1",
@@ -32,31 +32,32 @@ def create_mock_events():
     ]
 
 
-def test_render_polar(chart_renderer):
-    """Тест малювання полярного графіка (Radar/Path)."""
+def test_render_polar(chart_renderer: StandardChartRenderer, qtbot) -> None:
+    """Перевіряє рендеринг полярного графіка (Radar/Path)."""
     img = QPixmap(500, 500)
     painter = QPainter(img)
     rect = QRect(0, 0, 500, 500)
     data = create_mock_events()
-    interactive = []
+    interactive: List[Tuple[QPointF, DetectionEvent]] = []
 
     chart_renderer.render_polar(
         painter, rect, data, highlight_ids=set(), interactive_points=interactive
     )
     painter.end()
 
-    # Перевіряємо, що точка додана в інтерактивний список
-    assert len(interactive) == 1
-    assert interactive[0][1].id == "1"
+    assert len(interactive) == 1, "One interactive point should be added"
+    assert interactive[0][1].id == "1", (
+        "Event ID in the interactive point should be '1'"
+    )
 
 
-def test_render_cartesian(chart_renderer):
-    """Тест малювання декартового графіка (Timeline)."""
+def test_render_cartesian(chart_renderer: StandardChartRenderer, qtbot) -> None:
+    """Перевіряє рендеринг декартового графіка (Timeline)."""
     img = QPixmap(500, 500)
     painter = QPainter(img)
     rect = QRect(0, 0, 500, 500)
     data = create_mock_events()
-    interactive = []
+    interactive: List[Tuple[QPointF, DetectionEvent]] = []
 
     chart_renderer.render_cartesian(
         painter,
@@ -68,11 +69,11 @@ def test_render_cartesian(chart_renderer):
     )
     painter.end()
 
-    assert len(interactive) == 1
+    assert len(interactive) == 1, "Timeline should generate an interactive point"
 
 
-def test_render_bar(chart_renderer):
-    """Тест малювання стовпчастої діаграми."""
+def test_render_bar(chart_renderer: StandardChartRenderer, qtbot) -> None:
+    """Перевіряє рендеринг гістограми розподілу за класами (smoke test)."""
     img = QPixmap(500, 500)
     painter = QPainter(img)
     rect = QRect(0, 0, 500, 500)
@@ -80,4 +81,3 @@ def test_render_bar(chart_renderer):
 
     chart_renderer.render_bar(painter, rect, data)
     painter.end()
-    # Якщо не впало - добре

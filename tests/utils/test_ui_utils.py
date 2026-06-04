@@ -1,6 +1,4 @@
-"""
-Тести для UI утиліт (ui_utils).
-"""
+"""Юніт-тести для перевірки утиліт UI."""
 
 from PyQt6.QtCore import QRect
 from PyQt6.QtWidgets import QWidget
@@ -9,15 +7,16 @@ from app.utils.ui_utils import move_dialog_down, update_element_styles
 
 
 def test_update_element_styles(qtbot):
-    """Тест оновлення стилів елемента."""
+    """Перевіряє, що функція оновлення стилів викликається без винятків."""
     widget = QWidget()
     qtbot.addWidget(widget)
-    # Перевіряємо, що функція викликається без помилок
+
+    # Перевіряємо стабільність механізму unpolish/polish PyQt на віджеті
     update_element_styles(widget)
 
 
 def test_move_dialog_down(qtbot):
-    """Тест переміщення діалогу вниз відносно батька."""
+    """Перевіряє коректність позиціонування діалогового вікна відносно батьківської області."""
     dialog = QWidget()
     dialog.setFixedSize(100, 50)
     qtbot.addWidget(dialog)
@@ -25,7 +24,9 @@ def test_move_dialog_down(qtbot):
     parent_geo = QRect(0, 0, 500, 500)
     move_dialog_down(dialog, parent_geo, offset_y=100)
 
-    # x = (500 - 100) // 2 = 200
-    # y = 100
-    assert dialog.x() == 200, f"Expected x=200, got {dialog.x()}"
-    assert dialog.y() == 100, f"Expected y=100, got {dialog.y()}"
+    # Очікувані координати: центрування по X та заданий відступ по Y
+    expected_x = 200  # (500 - 100) // 2
+    expected_y = 100
+
+    assert dialog.x() == expected_x, f"Expected x={expected_x}, got {dialog.x()}"
+    assert dialog.y() == expected_y, f"Expected y={expected_y}, got {dialog.y()}"

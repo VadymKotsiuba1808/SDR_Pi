@@ -1,6 +1,4 @@
-"""
-Тести для сервісу глушилки (JammerService).
-"""
+"""Юніт-тести для JammerService."""
 
 from unittest.mock import MagicMock
 
@@ -32,54 +30,52 @@ def jammer_service(mock_pi_network, mock_jammer_settings):
 
 
 def test_jammer_start(jammer_service, mock_pi_network, mock_jammer_settings):
-    """Тест запуску глушилки."""
     jammer_service.start()
 
     assert jammer_service.is_active is True, "Jammer should be active after start()"
     assert jammer_service.start_time is not None, (
-        "start_time should be set after start()"
+        "Start time should be set after start()"
     )
     mock_pi_network.request_alarm_start.assert_called_once_with(["K1", "K2"])
 
 
 def test_jammer_stop(jammer_service, mock_pi_network):
-    """Тест зупинки глушилки."""
     jammer_service.start()
     jammer_service.stop()
 
     assert jammer_service.is_active is False, "Jammer should not be active after stop()"
     assert jammer_service.start_time is None, (
-        "start_time should be cleared after stop()"
+        "Start time should be cleared after stop()"
     )
     mock_pi_network.request_alarm_stop.assert_called_once()
 
 
 def test_jammer_auto_stop(jammer_service, mock_jammer_settings, qtbot):
-    """Тест автоматичної зупинки за таймером (через емуляцію сигналу)."""
     mock_jammer_settings.is_jammer_auto_stop_enabled = True
-    mock_jammer_settings.jammer_auto_stop_interval_s = 60  # Великий інтервал
+    mock_jammer_settings.jammer_auto_stop_interval_s = 60
 
     jammer_service.start()
 
-    assert jammer_service.auto_stop_timer.isActive(), "Auto-stop timer should be active"
+    assert jammer_service.auto_stop_timer.isActive(), (
+        "Auto-stop timer should be running"
+    )
     assert jammer_service.is_active is True, "Jammer should be active"
 
-    # Емулюємо сигнал таймера замість реального очікування
+    # Емулюємо сигнал таймера для перевірки реакції без реального очікування
     jammer_service.auto_stop_timer.timeout.emit()
 
-    assert jammer_service.is_active is False, "Jammer should stop after timer signal"
+    assert jammer_service.is_active is False, "Jammer should stop by timer signal"
 
 
 def test_get_formatted_time(jammer_service):
-    """Тест форматування часу роботи."""
     assert jammer_service.get_formatted_time() == "00:00:00", (
-        "Default time should be 00:00:00"
+        "Initial time should be 00:00:00"
     )
 
     jammer_service.start()
-    # Штучно зміщуємо час старту на 1 годину 5 хвилин 10 секунд назад
+    # Штучно зміщуємо час старту на 01:05:10 назад для перевірки розрахунку
     jammer_service.start_time = QDateTime.currentDateTime().addSecs(-(3600 + 300 + 10))
 
     assert jammer_service.get_formatted_time() == "01:05:10", (
-        "Formatted time mismatch after start"
+        "Mismatch of formatted time after start"
     )

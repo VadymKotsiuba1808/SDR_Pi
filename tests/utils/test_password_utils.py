@@ -1,40 +1,32 @@
-"""
-Тести для утиліт паролів.
-"""
+"""Модуль тестів для утиліт роботи з паролями."""
 
 from app.utils.password_utils import hash_password, verify_password
 
 
 def test_hash_password() -> None:
-    """
-    Тест хешування пароля.
-    """
     password = "test_password"
     hashed = hash_password(password)
-    assert hashed != password
-    assert len(hashed) > 0
+    assert hashed != password, "Hash should not match the plain password"
+    assert len(hashed) > 0, "Hash should not be empty"
 
 
 def test_verify_password_correct() -> None:
-    """
-    Тест успішної перевірки пароля.
-    """
     password = "secret_password"
     hashed = hash_password(password)
-    assert verify_password(password, hashed) is True
+    assert verify_password(password, hashed) is True, (
+        "Valid password should be verified"
+    )
 
 
 def test_verify_password_incorrect() -> None:
-    """
-    Тест перевірки з неправильним паролем.
-    """
     password = "correct_password"
     hashed = hash_password(password)
-    assert verify_password("wrong_password", hashed) is False
+    assert verify_password("wrong_password", hashed) is False, (
+        "Invalid password should be rejected"
+    )
 
 
 def test_verify_password_invalid_hash() -> None:
-    """
-    Тест перевірки з пошкодженим хешем.
-    """
-    assert verify_password("password", "invalid_hash") is False
+    assert verify_password("password", "invalid_hash") is False, (
+        "Invalid hash should return False"
+    )

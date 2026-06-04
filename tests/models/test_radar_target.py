@@ -1,6 +1,4 @@
-"""
-Тести для моделі RadarTarget.
-"""
+"""Модульні тести для моделі RadarTarget."""
 
 from datetime import datetime, timedelta
 
@@ -9,7 +7,8 @@ from app.models.radar_target import RadarTarget
 from app.models.source_type import SourceType
 
 
-def create_fake_event(dist=1.0, angle=45.0):
+def create_fake_event(dist: float = 1.0, angle: float = 45.0) -> DetectionEvent:
+    """Створює фіктивну подію виявлення для тестів."""
     return DetectionEvent(
         id="t1",
         type=SourceType.RF,
@@ -23,8 +22,7 @@ def create_fake_event(dist=1.0, angle=45.0):
     )
 
 
-def test_radar_target_initialization():
-    """Тест ініціалізації RadarTarget."""
+def test_radar_target_initialization() -> None:
     event = create_fake_event()
     target = RadarTarget(event=event, visual_index=1)
 
@@ -33,8 +31,7 @@ def test_radar_target_initialization():
     assert target.anchor_event == event
 
 
-def test_radar_target_update_stationary():
-    """Тест оновлення цілі без суттєвого руху."""
+def test_radar_target_update_stationary() -> None:
     event1 = create_fake_event(dist=1.0, angle=45.0)
     target = RadarTarget(event=event1, visual_index=1)
 
@@ -43,11 +40,10 @@ def test_radar_target_update_stationary():
     target.update(event2)
 
     assert target.event == event2
-    assert target.anchor_event == event1  # Якір не змінився
+    assert target.anchor_event == event1
 
 
-def test_radar_target_update_moved():
-    """Тест оновлення цілі при суттєвому русі."""
+def test_radar_target_update_moved() -> None:
     event1 = create_fake_event(dist=1.0, angle=45.0)
     target = RadarTarget(event=event1, visual_index=1)
 
@@ -56,11 +52,10 @@ def test_radar_target_update_moved():
     target.update(event2)
 
     assert target.event == event2
-    assert target.anchor_event == event2  # Якір оновився
+    assert target.anchor_event == event2
 
 
-def test_radar_target_expiration():
-    """Тест перевірки застарілості цілі."""
+def test_radar_target_expiration() -> None:
     event = create_fake_event()
     target = RadarTarget(event=event, visual_index=1)
 
@@ -71,8 +66,7 @@ def test_radar_target_expiration():
     assert target.is_expired(ttl_seconds=15) is False
 
 
-def test_radar_target_stationary_check():
-    """Тест перевірки нерухомості."""
+def test_radar_target_stationary_check() -> None:
     event = create_fake_event()
     target = RadarTarget(event=event, visual_index=1)
 

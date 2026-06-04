@@ -80,7 +80,9 @@ def test_initial_load(log_dialog: LogDialog, mock_log_service: MagicMock) -> Non
     assert log_dialog.ui.cmbSessions.currentText() == "30.05.2026 12:00"
 
     assert log_dialog.ui.tableLogs.rowCount() == 1
-    assert "Target" in log_dialog.ui.tableLogs.item(0, 2).text()
+    item = log_dialog.ui.tableLogs.item(0, 2)
+    assert item is not None, "Log table should have an item at row 0, col 2"
+    assert "Target" in item.text()
 
 
 def test_tab_switching(log_dialog: LogDialog, qtbot: Any) -> None:

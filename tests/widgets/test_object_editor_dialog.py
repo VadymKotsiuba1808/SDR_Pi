@@ -125,6 +125,7 @@ def test_add_rf_range(object_editor_add: ObjectEditorDialog, qtbot) -> None:
 
     assert object_editor_add.ui.lstRFFreqs.count() == 1
     item = object_editor_add.ui.lstRFFreqs.item(0)
+    assert item is not None, "RF frequency list should have an item"
     assert "2400" in item.text() and "2500" in item.text()
 
     data = item.data(Qt.ItemDataRole.UserRole)

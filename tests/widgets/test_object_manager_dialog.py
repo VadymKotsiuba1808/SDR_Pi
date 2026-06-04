@@ -88,13 +88,17 @@ def test_populate_table_on_response(object_manager: ObjectManagerDialog) -> None
     object_manager._handle_db_status(response)
 
     assert object_manager.ui.tableWidget.rowCount() == 1
-    assert object_manager.ui.tableWidget.item(0, 0).text() == "Mavic"
-    assert object_manager.ui.tableWidget.item(0, 1).text() == "Drone"
+    item00 = object_manager.ui.tableWidget.item(0, 0)
+    assert item00 is not None, "Table item at 0,0 should exist"
+    assert item00.text() == "Mavic"
 
-    assert (
-        object_manager.ui.tableWidget.item(0, 2).foreground().color().name()
-        == "#ff0000"
-    )
+    item01 = object_manager.ui.tableWidget.item(0, 1)
+    assert item01 is not None, "Table item at 0,1 should exist"
+    assert item01.text() == "Drone"
+
+    item02 = object_manager.ui.tableWidget.item(0, 2)
+    assert item02 is not None, "Table item at 0,2 should exist"
+    assert item02.foreground().color().name() == "#ff0000"
 
 
 def test_delete_object_request(

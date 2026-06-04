@@ -28,18 +28,22 @@ def test_db_add_and_get_classes(db_service: DatabaseService, qtbot: QtBot) -> No
     with qtbot.wait_signal(db_service.request_finished) as blocker:
         db_service.add_class(new_class)
 
+    assert blocker.args, "Signal request_finished was not emitted"
     resp = blocker.args[0]
     assert resp.operation == DbOperation.ADD_CLASS, "Operation should be ADD_CLASS"
     assert resp.status == StatusCode.CREATED, (
         f"Expected CREATED status, got {resp.status} ({resp.message})"
     )
+    assert resp.data, "Response data should not be None"
     assert resp.data["name"] == "UAV", "Class name mismatch in response"
 
     with qtbot.wait_signal(db_service.request_finished) as blocker:
         db_service.request_classes()
 
+    assert blocker.args, "Signal request_finished was not emitted"
     resp = blocker.args[0]
     assert resp.status == StatusCode.OK, "Expected OK status for request_classes"
+    assert resp.data, "Response data should not be None"
     assert len(resp.data["classes"]) == 1, (
         f"Expected 1 class, got {len(resp.data['classes'])}"
     )
@@ -64,10 +68,12 @@ def test_db_add_object(db_service: DatabaseService, qtbot: QtBot) -> None:
     with qtbot.wait_signal(db_service.request_finished) as blocker:
         db_service.add_object(obj)
 
+    assert blocker.args, "Signal request_finished was not emitted"
     resp = blocker.args[0]
     assert resp.status == StatusCode.CREATED, (
         f"Expected CREATED status, got {resp.status} ({resp.message})"
     )
+    assert resp.data, "Response data should not be None"
     assert resp.data["name"] == "Mavic 3", "Object name mismatch"
     assert resp.data["object_class"] == "Drone", "Object class mismatch"
 
@@ -87,8 +93,10 @@ def test_db_pagination(db_service: DatabaseService, qtbot: QtBot) -> None:
     with qtbot.wait_signal(db_service.request_finished) as blocker:
         db_service.request_objects_page(page=1, page_size=2)
 
+    assert blocker.args, "Signal request_finished was not emitted"
     resp = blocker.args[0]
     assert resp.status == StatusCode.OK, "Expected OK status for pagination"
+    assert resp.data, "Response data should not be None"
     assert len(resp.data["items"]) == 2, (
         f"Expected 2 items on page, got {len(resp.data['items'])}"
     )
@@ -105,8 +113,9 @@ def test_db_delete_class_with_usage_fails(
     with qtbot.wait_signal(db_service.request_finished) as blocker:
         db_service.add_class(ObjectClass(id=None, name="Danger"))
 
+    assert blocker.args, "Signal request_finished was not emitted"
     class_data = blocker.args[0].data
-    assert class_data is not None, "Class data should not be None after creation"
+    assert class_data, "Class data should not be None after creation"
     class_id = class_data["id"]
 
     with qtbot.wait_signal(db_service.request_finished):
@@ -119,10 +128,12 @@ def test_db_delete_class_with_usage_fails(
     with qtbot.wait_signal(db_service.request_finished) as blocker:
         db_service.delete_class(class_id)
 
+    assert blocker.args, "Signal request_finished was not emitted"
     resp = blocker.args[0]
     assert resp.status == StatusCode.CONFLICT, (
         f"Should return CONFLICT when deleting used class, got {resp.status}"
     )
+    assert resp.message, "Response message should not be empty"
     assert "used by" in resp.message.lower(), (
         f"Error message should mention usage, got: {resp.message}"
     )

@@ -9,6 +9,7 @@
 import json
 from unittest.mock import patch
 
+import numpy as np
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QDialog, QMessageBox
 
@@ -17,6 +18,10 @@ from app.models.detection_event import DetectionEvent
 from app.models.detection_object import DetectionObject
 from app.models.log_entries import LogEntry, LogType
 from app.models.object_class import ObjectClass
+from app.models.service_response import DbOperation, ServiceResponse, StatusCode
+from app.models.source_type import SourceType
+from app.services.detection_background_service import DetectionBackgroundService
+from app.services.log_service import LogService
 from app.widgets.log_dialog import LogDialog
 from app.widgets.main_window import MainWindow
 from app.widgets.object_editor_dialog import ObjectEditorDialog
@@ -24,41 +29,27 @@ from app.widgets.object_manager_dialog import ObjectManagerDialog
 
 
 def test_object_manager_add_and_delete_flow(app_services, qtbot, e2e_server) -> None:
-    """
-    Тестує повний цикл додавання та видалення об'єкта в Менеджері Об'єктів.
-
-    Сценарій 10:
-    1. Відкриття діалогу менеджера об'єктів та завантаження даних.
-    2. Створення нового об'єкта через редактор (з імітацією вибору).
-    3. Відображення нового об'єкта в таблиці після додавання.
-    4. Видалення об'єкта та його зникнення з інтерфейсу.
-
-    Args:
-        app_services: Словник з ініціалізованими сервісами додатку.
-        qtbot: Об'єкт для імітації дій користувача та очікування сигналів.
-        e2e_server: Фікстура, що забезпечує роботу тестового сервера.
-    """
+    """Тестує повний цикл додавання та видалення об'єкта в Менеджері Об'єктів."""
     settings = app_services["settings"]
     settings.role = "owner"
     main_win = MainWindow(settings, app_services["keyboard"], app_services["system"])
     qtbot.addWidget(main_win)
     main_win.show()
 
+    # Очікуємо активацію сенсора (імітація підключення до сервера)
     qtbot.wait_until(
         lambda: main_win.ui.sensor_indicator.property("isActive") is True, timeout=5000
     )
 
-    # 1. Відкриваємо Object Manager
     obj_mgr = ObjectManagerDialog(
         main_win.pi_network, settings, app_services["keyboard"]
     )
     qtbot.addWidget(obj_mgr)
     obj_mgr.show()
 
-    # Чекаємо завантаження даних
+    # Очікуємо завантаження першої сторінки даних
     qtbot.wait_until(lambda: obj_mgr.ui.lblPageInfo.text() != "", timeout=3000)
 
-    # 2. Додаємо об'єкт через редактор
     new_obj = DetectionObject(
         id=10,
         name="E2E Drone",
@@ -69,7 +60,8 @@ def test_object_manager_add_and_delete_flow(app_services, qtbot, e2e_server) -> 
         sound_params_hz=[],
     )
 
-    # Замість виклику exec() ми безпосередньо відправляємо запит до мережі
+    # Імітуємо успішне редагування об'єкта без відкриття модального вікна,
+    # оскільки exec() блокує потік виконання тесту.
     with patch.object(
         ObjectEditorDialog, "exec", return_value=QDialog.DialogCode.Accepted
     ):
@@ -80,7 +72,7 @@ def test_object_manager_add_and_delete_flow(app_services, qtbot, e2e_server) -> 
 
     obj_mgr.network_service.request_db_add_object(new_obj)
 
-    # 3. Перевіряємо, що об'єкт з'явився у кеші/таблиці
+    # Перевірка появи об'єкта в локальному кеші та UI таблиці
     qtbot.wait_until(
         lambda: any(o.name == "E2E Drone" for o in obj_mgr.cached_objects), timeout=3000
     )
@@ -94,7 +86,7 @@ def test_object_manager_add_and_delete_flow(app_services, qtbot, e2e_server) -> 
             break
     assert found, "Added object should be visible in table"
 
-    # 4. Видаляємо об'єкт
+    # Видалення об'єкта з підтвердженням у діалоговому вікні
     with patch(
         "PyQt6.QtWidgets.QMessageBox.question",
         return_value=QMessageBox.StandardButton.Yes,
@@ -103,7 +95,6 @@ def test_object_manager_add_and_delete_flow(app_services, qtbot, e2e_server) -> 
 
     obj_mgr._force_refresh()
 
-    # 5. Перевіряємо, що об'єкт зник
     qtbot.wait_until(
         lambda: not any(o.name == "E2E Drone" for o in obj_mgr.cached_objects),
         timeout=3000,
@@ -112,25 +103,10 @@ def test_object_manager_add_and_delete_flow(app_services, qtbot, e2e_server) -> 
 
 
 def test_log_history_view_flow(app_services, qtbot, e2e_server, tmp_path) -> None:
-    """
-    Тестує перегляд історії сесій та виявлень у журналі подій.
-
-    Сценарій 11:
-    1. Створення тимчасового файлу сесії з одним записом про виявлення.
-    2. Відкриття діалогу логів та перевірка завантаження сесій.
-    3. Перевірка відображення запису в таблиці логів.
-
-    Args:
-        app_services: Словник з ініціалізованими сервісами додатку.
-        qtbot: Об'єкт для імітації дій користувача.
-        e2e_server: Фікстура тестового сервера.
-        tmp_path: Фікстура для створення тимчасових директорій.
-    """
+    """Тестує перегляд історії сесій та виявлень у журналі подій."""
     logs_dir = tmp_path / "logs"
     logs_dir.mkdir()
     log_file = logs_dir / "session_2026-05-30_12-00-00.jsonl"
-
-    from app.models.source_type import SourceType
 
     det = DetectionEvent(
         id="test_id",
@@ -148,13 +124,12 @@ def test_log_history_view_flow(app_services, qtbot, e2e_server, tmp_path) -> Non
         payload=det,
         timestamp="2026-05-30T12:00:00",
     )
+    # Записуємо тестову подію у форматі JSONL для LogService
     with open(log_file, "w", encoding="utf-8") as f:
         f.write(json.dumps(entry.to_dict()) + "\n")
 
     settings = app_services["settings"]
     main_win = MainWindow(settings, app_services["keyboard"], app_services["system"])
-
-    from app.services.log_service import LogService
 
     mock_log_service = LogService(logs_dir=str(logs_dir))
 
@@ -167,12 +142,12 @@ def test_log_history_view_flow(app_services, qtbot, e2e_server, tmp_path) -> Non
     qtbot.addWidget(log_dlg)
     log_dlg.show()
 
-    # 2. Перевіряємо завантаження сесій
+    # Перевіряємо, чи з'явилася сесія у випадаючому списку
     qtbot.wait_until(lambda: log_dlg.ui.cmbSessions.count() > 0, timeout=3000)
     current_text = log_dlg.ui.cmbSessions.currentText()
     assert "30.05.2026" in current_text or "2026-05-30" in current_text
 
-    # 3. Перевіряємо відображення в таблиці
+    # Перевірка наявності запису про виявлення в таблиці логів
     qtbot.wait_until(lambda: log_dlg.ui.tableLogs.rowCount() > 0, timeout=3000)
     found = False
     for r in range(log_dlg.ui.tableLogs.rowCount()):
@@ -184,23 +159,7 @@ def test_log_history_view_flow(app_services, qtbot, e2e_server, tmp_path) -> Non
 
 
 def test_background_scan_view_in_logs(app_services, qtbot, tmp_path) -> None:
-    """
-    Тестує відображення спектрального аналізу фонових даних у журналі.
-
-    Сценарій 12:
-    1. Підготовка даних виявлення та відповідних спектральних даних фону.
-    2. Відкриття діалогу логів та перехід на вкладку спектру.
-    3. Перевірка коректності відображення інформації про фонові скани.
-
-    Args:
-        app_services: Словник сервісів.
-        qtbot: Об'єкт для UI-тестування.
-        tmp_path: Тимчасовий шлях для файлів логів.
-    """
-    import numpy as np
-
-    from app.models.source_type import SourceType
-
+    """Тестує відображення спектрального аналізу фонових даних у журналі."""
     logs_dir = tmp_path / "logs"
     logs_dir.mkdir()
     log_file = logs_dir / "session_bg_test.jsonl"
@@ -208,8 +167,6 @@ def test_background_scan_view_in_logs(app_services, qtbot, tmp_path) -> None:
 
     bg_logs_dir = tmp_path / "bg_logs"
     bg_logs_dir.mkdir()
-
-    from app.services.detection_background_service import DetectionBackgroundService
 
     bg_service = DetectionBackgroundService(logs_dir=str(bg_logs_dir))
 
@@ -237,6 +194,7 @@ def test_background_scan_view_in_logs(app_services, qtbot, tmp_path) -> None:
     if main_win is None:
         raise Exception("MainWindow failed to initialize")
 
+    # Створюємо фіктивні спектральні дані
     spec = SpectralData(
         center_freq_hz=2400e6,
         sample_rate_hz=20e6,
@@ -247,8 +205,6 @@ def test_background_scan_view_in_logs(app_services, qtbot, tmp_path) -> None:
         id=target_id, timestamp="2026-05-30T13:00:00", spectral_data=spec
     )
     bg_service.add_background(bg_data)
-
-    from app.services.log_service import LogService
 
     mock_log_service = LogService(logs_dir=str(logs_dir))
 
@@ -261,10 +217,12 @@ def test_background_scan_view_in_logs(app_services, qtbot, tmp_path) -> None:
     qtbot.addWidget(log_dlg)
     log_dlg.show()
 
-    log_dlg.ui.tabWidget.setCurrentIndex(2)  # Вкладка "Об'єкт"
+    # Перемикаємося на вкладку детального аналізу об'єкта
+    log_dlg.ui.tabWidget.setCurrentIndex(2)
     qtbot.wait_until(lambda: log_dlg.ui.cmbTargetObject.count() > 0, timeout=3000)
-    log_dlg.ui.cmbTargetType.setCurrentIndex(2)  # Спектр
+    log_dlg.ui.cmbTargetType.setCurrentIndex(2)  # Вибір відображення спектру
 
+    # Перевіряємо, чи активувалася панель керування фоновими сканами
     assert log_dlg.ui.grpBackgroundControl.isVisible() is True
     info_text = log_dlg.ui.lblBgInfo.text()
     import re
@@ -273,18 +231,7 @@ def test_background_scan_view_in_logs(app_services, qtbot, tmp_path) -> None:
 
 
 def test_object_editor_validation_flow(app_services, qtbot, e2e_server) -> None:
-    """
-    Тестує валідацію вхідних даних у діалозі редагування об'єкта.
-
-    Сценарій 13:
-    1. Перевірка заборони збереження об'єкта з порожнім ім'ям.
-    2. Перевірка валідації дублікатів частотних діапазонів RF.
-
-    Args:
-        app_services: Словник сервісів.
-        qtbot: Об'єкт для UI-тестування.
-        e2e_server: Фікстура сервера.
-    """
+    """Тестує валідацію вхідних даних у діалозі редагування об'єкта."""
     settings = app_services["settings"]
     settings.role = "owner"
     main_win = MainWindow(settings, app_services["keyboard"], app_services["system"])
@@ -302,8 +249,6 @@ def test_object_editor_validation_flow(app_services, qtbot, e2e_server) -> None:
         sound_params_hz=[],
     )
 
-    from app.widgets.object_editor_dialog import ObjectEditorDialog
-
     editor = ObjectEditorDialog(
         settings_service=settings,
         keyboard=app_services["keyboard"],
@@ -313,12 +258,12 @@ def test_object_editor_validation_flow(app_services, qtbot, e2e_server) -> None:
     qtbot.addWidget(editor)
     editor.show()
 
-    # 1. Спроба зберегти порожнє ім'я
+    # Спроба зберегти порожнє ім'я має викликати попередження
     with patch("PyQt6.QtWidgets.QMessageBox.warning") as mock_warn:
         qtbot.mouseClick(editor.ui.btnSave, Qt.MouseButton.LeftButton)
         assert mock_warn.called, "Should show warning for empty name"
 
-    # 2. Перевірка на дублікат діапазону
+    # Валідація на дублікати: додаємо один і той самий діапазон двічі
     qtbot.keyClicks(editor.ui.inpName, "Valid Name")
     editor.ui.chkRFEnable.setChecked(True)
     editor.ui.inpRFMin.setValue(2400.0)
@@ -333,35 +278,20 @@ def test_object_editor_validation_flow(app_services, qtbot, e2e_server) -> None:
 
 
 def test_server_error_handling_flow(app_services, qtbot, e2e_server) -> None:
-    """
-    Тестує реакцію клієнта на помилки сервера (HTTP 500).
-
-    Сценарій 19:
-    1. Відкриття менеджера об'єктів.
-    2. Імітація відповіді сервера з кодом помилки INTERNAL_ERROR.
-    3. Перевірка появи критичного повідомлення про помилку в інтерфейсі.
-
-    Args:
-        app_services: Словник сервісів.
-        qtbot: Об'єкт для UI-тестування.
-        e2e_server: Фікстура сервера.
-    """
+    """Тестує реакцію клієнта на помилки сервера (HTTP 500)."""
     settings = app_services["settings"]
     settings.role = "owner"
     main_win = MainWindow(settings, app_services["keyboard"], app_services["system"])
     qtbot.addWidget(main_win)
     main_win.show()
 
-    # 1. Відкриваємо менеджер
     obj_mgr = ObjectManagerDialog(
         main_win.pi_network, settings, app_services["keyboard"]
     )
     qtbot.addWidget(obj_mgr)
     obj_mgr.show()
 
-    # 2. Мокаємо сервер так, щоб він повернув помилку на наступний запит
-    from app.models.service_response import DbOperation, ServiceResponse, StatusCode
-
+    # Створюємо об'єкт помилки сервера
     error_resp = ServiceResponse(
         operation=DbOperation.GET_OBJECTS_PAGE,
         status=StatusCode.INTERNAL_ERROR,
@@ -369,13 +299,12 @@ def test_server_error_handling_flow(app_services, qtbot, e2e_server) -> None:
         data={},
     )
 
-    # 3. Перевіряємо відображення повідомлення про помилку
-    # Коли приходить пакет db_operation_result з помилкою, діалог має показати QMessageBox
+    # При отриманні INTERNAL_ERROR через сигнал, MainWindow або активний діалог
+    # повинні показати критичне повідомлення користувачеву.
     with patch("PyQt6.QtWidgets.QMessageBox.critical") as mock_error:
         main_win.pi_network.request_finished.emit(error_resp)
         qtbot.wait_until(lambda: mock_error.called, timeout=2000)
 
-    # Перевіряємо заголовок або текст (ServiceResponse підставляє дефолтний текст для 500)
     assert mock_error.called
     error_text = mock_error.call_args[0][2]
     assert (

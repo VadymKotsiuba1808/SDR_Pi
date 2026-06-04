@@ -1,9 +1,12 @@
-"""
-Тести для DatabaseService (pi_server).
-Використовується SQLite в пам'яті для ізоляції.
+"""Модуль з тестами для сервісу бази даних (DatabaseService).
+
+Ці тести перевіряють основні операції з БД: додавання/отримання класів,
+об'єктів, пагінацію та обмеження цілісності. Для забезпечення ізоляції
+та швидкості виконання використовується SQLite у пам'яті.
 """
 
 import pytest
+from pytestqt.qtbot import QtBot
 
 from app.models.detection_object import DetectionObject
 from app.models.object_class import ObjectClass
@@ -12,15 +15,14 @@ from pi_server.database_service import DatabaseService
 
 
 @pytest.fixture
-def db_service(qtbot):
-    """Фікстура для ініціалізації DatabaseService з БД в пам'яті."""
-    # Використовуємо sqlite:///:memory: для тестів
+def db_service(qtbot: QtBot) -> DatabaseService:
+    """Створює екземпляр DatabaseService з БД у пам'яті."""
     service = DatabaseService(db_url="sqlite:///:memory:")
     return service
 
 
-def test_db_add_and_get_classes(db_service, qtbot):
-    """Тест додавання та отримання класів об'єктів."""
+def test_db_add_and_get_classes(db_service: DatabaseService, qtbot: QtBot) -> None:
+    """Перевіряє успішне додавання та отримання списку класів об'єктів."""
     new_class = ObjectClass(id=None, name="UAV")
 
     with qtbot.wait_signal(db_service.request_finished) as blocker:
@@ -33,7 +35,6 @@ def test_db_add_and_get_classes(db_service, qtbot):
     )
     assert resp.data["name"] == "UAV", "Class name mismatch in response"
 
-    # Перевіряємо отримання списку класів
     with qtbot.wait_signal(db_service.request_finished) as blocker:
         db_service.request_classes()
 
@@ -45,16 +46,15 @@ def test_db_add_and_get_classes(db_service, qtbot):
     assert resp.data["classes"][0]["name"] == "UAV", "Retrieved class name mismatch"
 
 
-def test_db_add_object(db_service, qtbot):
-    """Тест додавання об'єкта (сигнатури)."""
-    # Спочатку додаємо клас і чекаємо на завершення
+def test_db_add_object(db_service: DatabaseService, qtbot: QtBot) -> None:
+    """Перевіряє додавання нового об'єкта (сигнатури) до бази даних."""
     with qtbot.wait_signal(db_service.request_finished):
         db_service.add_class(ObjectClass(id=None, name="Drone"))
 
     obj = DetectionObject(
         id=None,
         name="Mavic 3",
-        class_id=0,  # Буде знайдено за назвою класу "Drone"
+        class_id=0,  # Пошук за назвою класу "Drone"
         object_class="Drone",
         is_dangerous=True,
         rf_params_hz=["2.4GHz"],
@@ -72,12 +72,11 @@ def test_db_add_object(db_service, qtbot):
     assert resp.data["object_class"] == "Drone", "Object class mismatch"
 
 
-def test_db_pagination(db_service, qtbot):
-    """Тест пагінації об'єктів."""
+def test_db_pagination(db_service: DatabaseService, qtbot: QtBot) -> None:
+    """Перевіряє роботу механізму пагінації об'єктів."""
     with qtbot.wait_signal(db_service.request_finished):
         db_service.add_class(ObjectClass(id=None, name="TestClass"))
 
-    # Додаємо 5 об'єктів послідовно
     for i in range(5):
         obj = DetectionObject(
             id=None, name=f"Obj {i}", class_id=0, object_class="TestClass"
@@ -85,7 +84,6 @@ def test_db_pagination(db_service, qtbot):
         with qtbot.wait_signal(db_service.request_finished):
             db_service.add_object(obj)
 
-    # Запитуємо першу сторінку (розмір 2)
     with qtbot.wait_signal(db_service.request_finished) as blocker:
         db_service.request_objects_page(page=1, page_size=2)
 
@@ -100,9 +98,10 @@ def test_db_pagination(db_service, qtbot):
     )
 
 
-def test_db_delete_class_with_usage_fails(db_service, qtbot):
-    """Тест: неможливо видалити клас, який використовується об'єктами."""
-    # 1. Створюємо клас та об'єкт послідовно
+def test_db_delete_class_with_usage_fails(
+    db_service: DatabaseService, qtbot: QtBot
+) -> None:
+    """Перевіряє заборону видалення класу, до якого прив'язані об'єкти."""
     with qtbot.wait_signal(db_service.request_finished) as blocker:
         db_service.add_class(ObjectClass(id=None, name="Danger"))
 
@@ -117,7 +116,6 @@ def test_db_delete_class_with_usage_fails(db_service, qtbot):
             )
         )
 
-    # 2. Спробуємо видалити клас
     with qtbot.wait_signal(db_service.request_finished) as blocker:
         db_service.delete_class(class_id)
 

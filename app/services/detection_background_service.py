@@ -50,7 +50,7 @@ class DetectionBackgroundService:
                 with open(self._current_file, "a", encoding="utf-8") as f:
                     f.write(json.dumps(bg.to_dict(), ensure_ascii=False) + "\n")
         except Exception as e:
-            logger.error(f"Помилка запису фону: {e}")
+            logger.error(f"Error recording background: {e}")
 
     def get_backgrounds_by_target_id(self, target_id: str) -> List[DetectionBackground]:
         """Шукає всі історичні записи фону для конкретного ID детекції."""
@@ -78,7 +78,7 @@ class DetectionBackgroundService:
                         except (json.JSONDecodeError, ValueError):
                             continue
             except Exception as e:
-                logger.error(f"Помилка читання файлу {filename}: {e}")
+                logger.error(f"Error reading file {filename}: {e}")
 
         results.sort(key=lambda x: x.timestamp)
         return results

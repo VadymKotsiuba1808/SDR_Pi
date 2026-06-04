@@ -15,7 +15,7 @@ def run_seeding() -> None:
     app = QCoreApplication(sys.argv)
 
     if not app:
-        logger.error("Не вдалося створити екземпляр QCoreApplication.")
+        logger.error("Failed to create QCoreApplication instance.")
         return
 
     db = DatabaseService()
@@ -57,17 +57,17 @@ def run_seeding() -> None:
         ("GSM 900 Link", 6, False, ["935000000-960000000"], []),
     ]
 
-    logger.info("Початок наповнення бази даних")
+    logger.info("Starting database seeding")
 
     for class_name in classes_to_add:
-        logger.debug(f"Додавання класу: {class_name}")
+        logger.debug(f"Adding class: {class_name}")
         db.add_class(ObjectClass(id=None, name=class_name))
         time.sleep(0.1)
 
     time.sleep(1)  # Затримка для завершення транзакцій перед додаванням об'єктів
 
     for name, c_id, dangerous, rf, sound in signatures_data:
-        logger.debug(f"Додавання сигнатури: {name}")
+        logger.debug(f"Adding signature: {name}")
 
         obj = DetectionObject(
             id=None,
@@ -82,7 +82,7 @@ def run_seeding() -> None:
         db.add_object(obj)
         time.sleep(0.1)
 
-    logger.info("Наповнення бази даних завершено. Завершення через 2 секунди...")
+    logger.info("Database seeding completed. Shutting down in 2 seconds...")
     QTimer.singleShot(2000, loop.quit)
     loop.exec()
 

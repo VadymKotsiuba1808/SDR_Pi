@@ -82,7 +82,7 @@ class KeyboardWidget(QWidget):
         if self.translator.load(path):
             QCoreApplication.installTranslator(self.translator)
         else:
-            logger.error(f"Не вдалося завантажити файл перекладу: {path}")
+            logger.error(f"Failed to load translation file: {path}")
 
     def update_ui_silent(self, layout_code: str) -> None:
         """Оновлює мову у ComboBox без виклику сигналів."""

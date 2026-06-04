@@ -66,7 +66,7 @@ class ScaledComboBox(QComboBox):
                 "border": "1px solid #888888",
             }
 
-        logger.debug(f"[ScaledComboBox] Ініціалізовано для {self.objectName()}")
+        logger.debug(f"[ScaledComboBox] Initialized for {self.objectName()}")
 
     def showPopup(self) -> None:
         """Показ кастомного меню замість стандартного попапа."""
@@ -127,7 +127,7 @@ class ScaledComboBox(QComboBox):
 
         if self.hidden_combo:
             logger.debug(
-                f"[ScaledComboBox] Передача індексу {index} до прихованого комбобокса"
+                f"[ScaledComboBox] Forwarding index {index} to hidden combobox"
             )
             self.hidden_combo.setCurrentIndex(index)
 
@@ -138,25 +138,27 @@ def enable_auto_scaling(
     """Вмикає автоматичне масштабування для головного вікна."""
     original_widget = window.centralWidget()
     if not original_widget:
-        logger.error("[AutoScaler] Помилка: Немає centralWidget.")
+        logger.error("[AutoScaler] Error: No centralWidget found.")
         return
 
-    logger.debug("[AutoScaler] Запуск масштабування...")
+    logger.debug("[AutoScaler] Starting auto-scaling...")
 
     all_comboboxes = list(original_widget.findChildren(QComboBox))
-    logger.debug(f"[AutoScaler] Знайдено {len(all_comboboxes)} QComboBox для заміни.")
+    logger.debug(
+        f"[AutoScaler] Found {len(all_comboboxes)} QComboBoxes for replacement."
+    )
 
     for old_combo in all_comboboxes:
         if isinstance(old_combo, ScaledComboBox):
             continue
 
-        logger.debug(f"[AutoScaler] Замінюю {old_combo.objectName()}...")
+        logger.debug(f"[AutoScaler] Replacing {old_combo.objectName()}...")
 
         # Зчитуємо стилі для передачі в новий комбобокс
         combo_view = old_combo.view()
         if combo_view is None:
             logger.error(
-                f"[AutoScaler] Помилка: Не вдалося отримати view для {old_combo.objectName()}"
+                f"[AutoScaler] Error: Could not get view for {old_combo.objectName()}"
             )
             continue
 
@@ -187,7 +189,7 @@ def enable_auto_scaling(
             border_style = match.group(1).strip()
         style_data["border"] = border_style
 
-        logger.debug(f"[AutoScaler]   -> Зчитані стилі: {style_data}")
+        logger.debug(f"[AutoScaler]   -> Styles read: {style_data}")
 
         # Створюємо ScaledComboBox, який буде проксі-віджетом для старого
         parent = old_combo.parentWidget()
@@ -209,7 +211,7 @@ def enable_auto_scaling(
 
         if window_ui is not None and hasattr(window_ui, attr_name):
             setattr(window_ui, attr_name, new_combo)
-            logger.debug(f"[AutoScaler]   -> Оновлено атрибут 'window.ui.{attr_name}'")
+            logger.debug(f"[AutoScaler]   -> Updated attribute 'window.ui.{attr_name}'")
 
         # Ховаємо старий віджет, але не видаляємо, бо він потрібен як джерело сигналів
         old_combo.setVisible(False)
@@ -228,7 +230,7 @@ def enable_auto_scaling(
 
     pr_screen = QGuiApplication.primaryScreen()
     if pr_screen is None:
-        logger.error("[AutoScaler] Помилка: Не вдалося отримати primaryScreen.")
+        logger.error("[AutoScaler] Error: Could not get primaryScreen.")
         return
 
     screen_rect = pr_screen.geometry()
@@ -237,7 +239,7 @@ def enable_auto_scaling(
     scale = min(scale_x, scale_y)
 
     logger.debug(
-        f"[AutoScaler] Екран: {screen_rect.width()}x{screen_rect.height()}. Масштаб: {scale}"
+        f"[AutoScaler] Screen: {screen_rect.width()}x{screen_rect.height()}. Scale: {scale}"
     )
 
     view.scale(scale, scale)

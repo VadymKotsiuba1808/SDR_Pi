@@ -1008,7 +1008,7 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
             filename = f"{MEDIA_DIR_PATH}/screenshot_{QDateTime.currentDateTime().toString('yyyy-MM-dd_hh-mm-ss')}.png"
             os.makedirs(os.path.dirname(filename), exist_ok=True)
             screenshot.save(filename, "png")
-            self.logger.info(f"Скріншот збережено: {filename}")
+            self.logger.info(f"Screenshot saved: {filename}")
         else:
             self.disabled_media_btns()
 

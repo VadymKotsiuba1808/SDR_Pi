@@ -41,7 +41,7 @@ class JammerService(QObject):
         if self.is_active:
             return
 
-        logger.info("Активація Jammer-а")
+        logger.info("Activating Jammer")
         self.is_active = True
         self.start_time = QDateTime.currentDateTime()
 
@@ -50,7 +50,7 @@ class JammerService(QObject):
         if self.settings.is_jammer_auto_stop_enabled:
             msec = int(self.settings.jammer_auto_stop_interval_s * 1000)
             self.auto_stop_timer.start(msec)
-            logger.debug(f"Таймер авто-стопу запущено на {msec} мс")
+            logger.debug(f"Auto-stop timer started for {msec} ms")
 
         self.state_changed.emit(True)
 
@@ -59,7 +59,7 @@ class JammerService(QObject):
         if not self.is_active:
             return
 
-        logger.info("Деактивація Jammer-а")
+        logger.info("Deactivating Jammer")
         self.is_active = False
         self.start_time = None
 
@@ -81,7 +81,7 @@ class JammerService(QObject):
                 QDateTime.currentDateTime()
             )
             if sec <= 0:
-                logger.info("Інтервал авто-стопу вичерпано")
+                logger.info("Auto-stop interval reached")
                 self.stop()
                 return
 

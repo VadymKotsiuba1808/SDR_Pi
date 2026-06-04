@@ -30,14 +30,14 @@ class NetworkSignalService(QObject):
         wifi_signal = self._get_wifi_signal()
 
         if wifi_signal is not None and wifi_signal > 0:
-            logger.debug(f"WiFi сигнал: {wifi_signal}%")
+            logger.debug(f"WiFi signal: {wifi_signal}%")
             return wifi_signal
 
         if self._has_wired_connection():
-            logger.debug("Виявлено дротове з'єднання: 100%")
+            logger.debug("Wired connection detected: 100%")
             return 100
 
-        logger.debug("З'єднання відсутнє: 0%")
+        logger.debug("No connection: 0%")
         return 0
 
     def _get_wifi_signal(self) -> Optional[int]:
@@ -48,7 +48,7 @@ class NetworkSignalService(QObject):
             elif self.system_service.is_linux:
                 return self._get_linux_wifi_signal()
         except Exception as e:
-            logger.error(f"Помилка зчитування WiFi сигналу: {e}")
+            logger.error(f"Error reading WiFi signal: {e}")
 
         return None
 
@@ -80,14 +80,14 @@ class NetworkSignalService(QObject):
 
         except subprocess.CalledProcessError as e:
             logger.warning(
-                f"netsh повернув помилку {e.returncode} - WiFi ймовірно вимкнено"
+                f"netsh returned error {e.returncode} - WiFi probably disabled"
             )
         except FileNotFoundError:
-            logger.error("Утиліту netsh не знайдено")
+            logger.error("netsh utility not found")
         except subprocess.TimeoutExpired:
-            logger.warning("Таймаут netsh")
+            logger.warning("netsh timeout")
         except Exception as e:
-            logger.error(f"Помилка Windows WiFi: {e}")
+            logger.error(f"Windows WiFi error: {e}")
 
         return None
 
@@ -110,11 +110,11 @@ class NetworkSignalService(QObject):
                             return signal
 
         except FileNotFoundError:
-            logger.debug("nmcli недоступний, спроба iwconfig...")
+            logger.debug("nmcli unavailable, trying iwconfig...")
         except subprocess.CalledProcessError:
             pass
         except Exception as e:
-            logger.error(f"Помилка nmcli: {e}")
+            logger.error(f"nmcli error: {e}")
 
         try:
             output = subprocess.check_output(
@@ -135,11 +135,11 @@ class NetworkSignalService(QObject):
                 return max(0, min(100, quality))
 
         except FileNotFoundError:
-            logger.debug("iwconfig недоступний")
+            logger.debug("iwconfig unavailable")
         except subprocess.CalledProcessError:
             pass
         except Exception as e:
-            logger.error(f"Помилка iwconfig: {e}")
+            logger.error(f"iwconfig error: {e}")
 
         try:
             with open("/proc/net/wireless", "r") as f:
@@ -152,7 +152,7 @@ class NetworkSignalService(QObject):
                             quality = int(float(link))
                             return min(100, int((quality / 70.0) * 100))
         except Exception as e:
-            logger.error(f"Помилка читання /proc/net/wireless: {e}")
+            logger.error(f"Error reading /proc/net/wireless: {e}")
 
         return None
 

@@ -111,7 +111,7 @@ class ChartMonitorDialog(QDialog, TestUIOptimizationMixin):
     def _handle_source_change(self, index: int) -> None:
         """Обробник зміни джерела (RF <-> Sound)."""
         self._change_source(index)
-        logger.info(f"Зміна джерела даних на: {self.stream_type}")
+        logger.info(f"Changing data source to: {self.stream_type}")
 
         if not self.is_paused:
             self._start_stream_for_current_source()
@@ -144,14 +144,14 @@ class ChartMonitorDialog(QDialog, TestUIOptimizationMixin):
             self.chart_widget.set_hover_enabled(is_paused)
 
         self.is_paused = is_paused
-        logger.info(f"Пауза моніторингу: {is_paused}")
+        logger.info(f"Monitoring pause: {is_paused}")
 
         if not is_paused:
             self._start_stream_for_current_source()
 
     def _start_stream_for_current_source(self) -> None:
         """Запускає потік RAW-даних для вибраного джерела."""
-        logger.debug(f"Запит на запуск потоку: {self.stream_type}")
+        logger.debug(f"Requesting stream start for: {self.stream_type}")
         if self.stream_type == SourceType.SOUND:
             self.network_service.request_rf_data_end()
             self.network_service.request_sound_data_start()
@@ -170,7 +170,7 @@ class ChartMonitorDialog(QDialog, TestUIOptimizationMixin):
 
     def closeEvent(self, a0: QCloseEvent | None) -> None:
         """Зупиняє потоки даних при закритті вікна."""
-        logger.info("Закриття діалогу моніторингу")
+        logger.info("Closing monitoring dialog")
         event = a0
 
         if not self.is_paused:

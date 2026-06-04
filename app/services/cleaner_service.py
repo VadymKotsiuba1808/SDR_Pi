@@ -87,7 +87,7 @@ class CleanerService:
                 )
 
     def clean_sdr_data(self) -> None:
-        logger.info("Запуск очистки старих даних...")
+        logger.info("Starting cleanup of old data...")
         now = time.time()
 
         for target in self.targets:
@@ -111,6 +111,6 @@ class CleanerService:
                         file_mtime = os.path.getmtime(filepath)
                         if file_mtime < cutoff:
                             os.remove(filepath)
-                            logger.info(f"Видалено старий файл: {filename}")
+                            logger.info(f"Deleted old file: {filename}")
                     except Exception as e:
-                        logger.error(f"Помилка видалення {filename}: {e}")
+                        logger.error(f"Error deleting {filename}: {e}")

@@ -119,7 +119,7 @@ class SettingsService(QObject):
         self.settings_changed.emit()
 
     def _reload_from_file(self) -> None:
-        logger.info("Виявлено зовнішню зміну конфігурації, перезавантаження...")
+        logger.info("External configuration change detected, reloading...")
         self._settings.sync()
 
         if self._load_all_settings(check_if_changed=True):

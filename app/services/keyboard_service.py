@@ -68,7 +68,7 @@ class KeyboardService:
             listener = self.pynput_keyboard.Listener(on_press=self._on_key_press)
             listener.start()
         else:
-            logger.warning("ОС не підтримується або модулі клавіатури не завантажені.")
+            logger.warning("OS not supported or keyboard modules not loaded.")
 
     def _on_key_press(self, key: Any) -> None:
         """Обробник натискання клавіш для Linux (Alt+Shift)."""
@@ -104,7 +104,7 @@ class KeyboardService:
         elif self.system_service.is_linux:
             self._set_linux_layout()
         else:
-            logger.warning("Поточна операційна система не підтримується.")
+            logger.warning("Current operating system is not supported.")
 
     def _set_windows_layout(self) -> None:
         """Змінює розкладку в Windows через Win32 API."""
@@ -112,7 +112,7 @@ class KeyboardService:
             lid = self.layouts_win[self.current_layout]
 
             if self.win32api is None or self.win32gui is None:
-                logger.error("Модулі Windows API не завантажені.")
+                logger.error("Windows API modules not loaded.")
                 return
 
             # Завантажуємо розкладку (KLF_ACTIVATE = 1)
@@ -127,7 +127,7 @@ class KeyboardService:
                 self.win32api.PostMessage(hwnd, 0x0050, 0, lang_id_int)
 
         except Exception as e:
-            logger.error(f"Помилка Windows API: {e}")
+            logger.error(f"Windows API error: {e}")
 
     def _set_linux_layout(self) -> None:
         """Змінює розкладку в Linux за допомогою утиліти setxkbmap."""
@@ -147,4 +147,4 @@ class KeyboardService:
             subprocess.Popen(cmd)
 
         except Exception as e:
-            logger.error(f"Не вдалося змінити розкладку Linux: {e}")
+            logger.error(f"Failed to change Linux layout: {e}")

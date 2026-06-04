@@ -1,8 +1,7 @@
-"""
-Тести для сервісу мережевої взаємодії (PiNetworkService).
-"""
+"""Юніт-тести для PiNetworkService."""
 
 import json
+from collections.abc import Generator
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -15,10 +14,8 @@ from app.services.pi_network_service import PiNetworkService
 
 
 @pytest.fixture
-def mock_settings():
-    """
-    Фікстура для макета налаштувань мережі.
-    """
+def mock_settings() -> MagicMock:
+    """Створює макет налаштувань для тестування."""
     settings = MagicMock()
     settings.pi_target_ip = "127.0.0.1"
     settings.pi_target_port = 6000
@@ -26,15 +23,14 @@ def mock_settings():
 
 
 @pytest.fixture
-def network_service(mock_settings):
-    """
-    Фікстура для ініціалізації PiNetworkService з мок-сокетом.
-    """
-    # Патчимо клас QTcpSocket, але зберігаємо оригінальні Enum (SocketState)
+def network_service(
+    mock_settings: MagicMock,
+) -> Generator[tuple[PiNetworkService, MagicMock], None, None]:
+    """Ініціалізує PiNetworkService з підміненим QTcpSocket."""
+    # Зберігаємо оригінальні Enum для коректної перевірки станів
     with patch("app.services.pi_network_service.QTcpSocket") as mock_socket_class:
         mock_socket_class.SocketState = QTcpSocket.SocketState
         mock_socket = mock_socket_class.return_value
-        # Встановлюємо стан за замовчуванням
         mock_socket.state.return_value = QTcpSocket.SocketState.ConnectedState
 
         service = PiNetworkService(mock_settings)
@@ -42,18 +38,16 @@ def network_service(mock_settings):
         yield service, mock_socket
 
 
-def test_send_packet_success(network_service) -> None:
-    """
-    Тест успішної відправки пакету.
-    """
+def test_send_packet_success(
+    network_service: tuple[PiNetworkService, MagicMock],
+) -> None:
+    """Перевіряє успішну відправку JSON-пакета."""
     service, mock_socket = network_service
-    # Стан вже встановлено в ConnectedState у фікстурі
 
     action = "test_action"
     data = {"param": "value"}
     service.send_packet(action, data)
 
-    # Перевіряємо, що write був викликаний
     assert mock_socket.write.called
     args, _ = mock_socket.write.call_args
     sent_payload = json.loads(args[0].decode("utf-8").strip())
@@ -63,10 +57,11 @@ def test_send_packet_success(network_service) -> None:
     assert "timestamp" in sent_payload
 
 
-def test_send_packet_no_connection(network_service, caplog) -> None:
-    """
-    Тест відправки пакету при відсутності з'єднання.
-    """
+def test_send_packet_no_connection(
+    network_service: tuple[PiNetworkService, MagicMock],
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Перевіряє обробку відсутності з'єднання при відправці."""
     service, mock_socket = network_service
     mock_socket.state.return_value = QTcpSocket.SocketState.UnconnectedState
 
@@ -77,10 +72,10 @@ def test_send_packet_no_connection(network_service, caplog) -> None:
     assert not mock_socket.write.called
 
 
-def test_read_data_gps_signal(network_service, qtbot) -> None:
-    """
-    Тест отримання даних GPS та емісії відповідного сигналу.
-    """
+def test_read_data_gps_signal(
+    network_service: tuple[PiNetworkService, MagicMock], qtbot
+) -> None:
+    """Перевіряє обробку вхідних GPS-даних."""
     service, mock_socket = network_service
 
     payload = {
@@ -94,7 +89,6 @@ def test_read_data_gps_signal(network_service, qtbot) -> None:
     }
     json_bytes = (json.dumps(payload) + "\n").encode("utf-8")
 
-    # Налаштовуємо ланцюжок викликів для readLine().trimmed().data()
     mock_line = MagicMock()
     mock_line.data.return_value = json_bytes
     mock_socket.canReadLine.side_effect = [True, False]
@@ -109,10 +103,10 @@ def test_read_data_gps_signal(network_service, qtbot) -> None:
     assert received_gps.lon == 30.52
 
 
-def test_read_data_detection_signal(network_service, qtbot) -> None:
-    """
-    Тест отримання події детекції.
-    """
+def test_read_data_detection_signal(
+    network_service: tuple[PiNetworkService, MagicMock], qtbot
+) -> None:
+    """Перевіряє обробку події детекції."""
     service, mock_socket = network_service
 
     payload = {
@@ -141,10 +135,10 @@ def test_read_data_detection_signal(network_service, qtbot) -> None:
     assert event.frequency_hz == 433920000
 
 
-def test_read_data_db_result(network_service, qtbot) -> None:
-    """
-    Тест отримання результату операції з БД.
-    """
+def test_read_data_db_result(
+    network_service: tuple[PiNetworkService, MagicMock], qtbot
+) -> None:
+    """Перевіряє обробку результату операції з БД."""
     service, mock_socket = network_service
 
     payload = {
@@ -172,20 +166,15 @@ def test_read_data_db_result(network_service, qtbot) -> None:
     assert response.status == StatusCode.CREATED
 
 
-def test_request_methods(network_service) -> None:
-    """
-    Тест виклику спеціалізованих методів запитів (проксі до send_packet).
-    """
+def test_request_methods(network_service: tuple[PiNetworkService, MagicMock]) -> None:
+    """Перевіряє допоміжні методи запитів."""
     service, mock_socket = network_service
-    # Стан ConnectedState встановлено у фікстурі
 
-    # Тестуємо запит GPS
     service.request_remote_gps()
     assert mock_socket.write.called
     args, _ = mock_socket.write.call_args
     assert b"get_gps" in args[0]
 
-    # Тестуємо запит видалення об'єкта
     service.request_db_delete_object(42)
     args, _ = mock_socket.write.call_args
     sent_payload = json.loads(args[0].decode("utf-8").strip())

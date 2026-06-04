@@ -1,9 +1,7 @@
-"""
-Тести для головної точки входу (main.py).
-Перевіряє логіку ініціалізації сервісів та вибору початкового вікна.
-"""
+"""Тести для головної точки входу (main.py)."""
 
 import asyncio
+from typing import Any
 from unittest.mock import patch
 
 import qasync
@@ -13,22 +11,32 @@ from main import main
 
 
 class SafeFuture:
-    """Обгортка над Future, яка ігнорує повторні виклики set_result."""
+    """
+    Обгортка над `asyncio.Future` для безпечного встановлення результату.
 
-    def __init__(self, loop):
+    Запобігає виникненню `InvalidStateError`, якщо спробувати встановити
+    результат для `Future`, який вже завершений.
+    """
+
+    def __init__(self, loop: asyncio.AbstractEventLoop) -> None:
+        """Ініціалізує об'єкт SafeFuture."""
         self.f = loop.create_future()
 
-    def set_result(self, result):
+    def set_result(self, result: Any) -> None:
+        """Встановлює результат, якщо Future ще не завершений."""
         if not self.f.done():
             self.f.set_result(result)
 
     def __await__(self):
+        """Дозволяє використовувати об'єкт в конструкціях await."""
         return self.f.__await__()
 
 
 class TestMainEntrypoint:
     """
-    Клас з тестами для функції main.
+    Тести для перевірки логіки ініціалізації додатку та входу в систему.
+
+    Перевіряє коректність вибору початкового вікна за різних сценаріїв.
     """
 
     @patch("main.SettingsService")
@@ -51,10 +59,7 @@ class TestMainEntrypoint:
         mock_settings_cls,
         qapp,
     ) -> None:
-        """
-        Перевіряє, що якщо remember_me=True, MainWindow відкривається відразу.
-        """
-        # Arrange
+        """Перевіряє автоматичний вхід при активованій опції 'Запам'ятати мене'."""
         loop = qasync.QEventLoop(qapp)
         asyncio.set_event_loop(loop)
 
@@ -63,16 +68,13 @@ class TestMainEntrypoint:
 
         mock_cleaner = mock_cleaner_cls.return_value
 
-        # Мокаємо Future, щоб завершити await future відразу
         with patch("asyncio.Future") as mock_future_cls:
             f_exit = SafeFuture(loop)
             f_exit.set_result(None)
             mock_future_cls.return_value = f_exit
 
-            # Act
             loop.run_until_complete(main(qapp))
 
-        # Assert
         mock_cleaner.clean_sdr_data.assert_called_once()
         mock_login_dlg_cls.assert_not_called()
         mock_main_window_cls.assert_called_once()
@@ -99,11 +101,7 @@ class TestMainEntrypoint:
         mock_settings_cls,
         qapp,
     ) -> None:
-        """
-        Перевіряє, що якщо remember_me=False, спочатку показується LoginDialog.
-        При Accepted відкривається MainWindow.
-        """
-        # Arrange
+        """Перевіряє перехід до головного вікна після успішної автентифікації."""
         loop = qasync.QEventLoop(qapp)
         asyncio.set_event_loop(loop)
 
@@ -112,9 +110,6 @@ class TestMainEntrypoint:
 
         mock_login_dlg = mock_login_dlg_cls.return_value
 
-        # Налаштовуємо послідовність Future:
-        # 1. future (для exit)
-        # 2. dialog_finished_future (результат діалогу)
         with patch("asyncio.Future") as mock_future_cls:
             f_exit = SafeFuture(loop)
             f_exit.set_result(None)
@@ -124,10 +119,8 @@ class TestMainEntrypoint:
 
             mock_future_cls.side_effect = [f_exit, f_dialog]
 
-            # Act
             loop.run_until_complete(main(qapp))
 
-        # Assert
         mock_login_dlg_cls.assert_called_once()
         mock_login_dlg.showFullScreen.assert_called_once()
         mock_stretched.assert_called_once_with(mock_login_dlg)
@@ -155,10 +148,7 @@ class TestMainEntrypoint:
         mock_settings_cls,
         qapp,
     ) -> None:
-        """
-        Перевіряє, що якщо логін відхилено, MainWindow не відкривається, а програма виходить.
-        """
-        # Arrange
+        """Перевіряє завершення програми при відхиленні входу."""
         loop = qasync.QEventLoop(qapp)
         asyncio.set_event_loop(loop)
 
@@ -167,19 +157,14 @@ class TestMainEntrypoint:
 
         with patch("asyncio.Future") as mock_future_cls:
             f_exit = SafeFuture(loop)
-            # f_exit не завершуємо, бо до await future не дійдемо при Rejected
-
             f_dialog = SafeFuture(loop)
             f_dialog.set_result(QDialog.DialogCode.Rejected)
 
             mock_future_cls.side_effect = [f_exit, f_dialog]
 
-            # Перехоплюємо quit()
             with patch.object(qapp, "quit") as mock_quit:
-                # Act
                 loop.run_until_complete(main(qapp))
 
-                # Assert
                 mock_login_dlg_cls.assert_called_once()
                 mock_main_window_cls.assert_not_called()
                 mock_quit.assert_called_once()

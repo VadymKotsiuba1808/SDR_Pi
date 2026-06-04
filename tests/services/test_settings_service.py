@@ -1,5 +1,8 @@
 """
 Тести для сервісу налаштувань.
+
+Цей модуль містить тести для `SettingsService`, що забезпечує коректність збереження,
+завантаження та синхронізації налаштувань програми.
 """
 
 from pathlib import Path
@@ -14,25 +17,19 @@ from app.services.settings_service import SettingsService
 
 @pytest.fixture
 def temp_config(tmp_path: Path) -> Path:
-    """
-    Фікстура для створення тимчасового файлу конфігурації.
-    """
+    """Шлях до тимчасового файлу конфігурації."""
     config_file = tmp_path / "test_config.ini"
     return config_file
 
 
 @pytest.fixture
 def settings_service(temp_config: Path) -> SettingsService:
-    """
-    Фікстура для ініціалізації SettingsService з тимчасовим файлом.
-    """
+    """Ініціалізація SettingsService з тимчасовим файлом."""
     return SettingsService(config_path=temp_config)
 
 
 def test_initial_defaults(settings_service: SettingsService) -> None:
-    """
-    Тест значень за замовчуванням.
-    """
+    """Перевірка значень налаштувань за замовчуванням."""
     assert settings_service.pi_target_ip == "10.0.0.1"
     assert settings_service.pi_target_port == 6000
     assert settings_service.role == "operator"
@@ -40,22 +37,18 @@ def test_initial_defaults(settings_service: SettingsService) -> None:
 
 
 def test_set_and_save(settings_service: SettingsService, temp_config: Path) -> None:
-    """
-    Тест збереження налаштувань у файл.
-    """
+    """Перевірка збереження налаштувань у файл."""
     new_ip = "192.168.1.100"
     settings_service.pi_target_ip = new_ip
     settings_service.sync()
 
-    # Створюємо новий екземпляр, щоб перевірити, чи зчитаються дані з файлу
+    # Створюємо новий екземпляр для перевірки персистентності
     new_service = SettingsService(config_path=temp_config)
     assert new_service.pi_target_ip == new_ip
 
 
 def test_settings_changed_signal(settings_service: SettingsService, qtbot) -> None:
-    """
-    Тест виклику сигналу при зміні налаштувань.
-    """
+    """Перевірка сигналу settings_changed при зміні параметрів."""
     with qtbot.waitSignal(settings_service.settings_changed, timeout=1000):
         settings_service.pi_target_port = 8080
 
@@ -63,25 +56,19 @@ def test_settings_changed_signal(settings_service: SettingsService, qtbot) -> No
 def test_complex_types_list(
     settings_service: SettingsService, temp_config: Path
 ) -> None:
-    """
-    Тест обробки списків (radio_range_mhz).
-    """
+    """Перевірка коректної обробки списків."""
     new_range = [200, 800]
     settings_service.radio_range_mhz = new_range
     settings_service.sync()
 
     new_service = SettingsService(config_path=temp_config)
-    # QSettings може повертати список рядків або цілих чисел залежно від того, як він зберігся.
-    # SettingsService має це обробляти, але давайте перевіримо значення.
     assert list(new_service.radio_range_mhz) == new_range
 
 
 def test_complex_types_dict_clean_settings(
     settings_service: SettingsService, temp_config: Path
 ) -> None:
-    """
-    Тест обробки складного словника (clean_settings).
-    """
+    """Перевірка обробки складних структур даних (словників)."""
     clean_rule = CleanRule(enabled=True, days=30)
     settings_service.clean_settings = {CLEAN_TARGET_NAME.LOGS: clean_rule}
     settings_service.sync()
@@ -95,16 +82,13 @@ def test_complex_types_dict_clean_settings(
 def test_reload_from_file(
     settings_service: SettingsService, temp_config: Path, qtbot
 ) -> None:
-    """
-    Тест перезавантаження налаштувань при зміні файлу ззовні.
-    """
-    # Змінюємо файл через QSettings напряму (імітація зовнішньої зміни)
+    """Перевірка автоматичного перезавантаження при зміні файлу."""
+    # Імітуємо зовнішню зміну конфігурації
     external_settings = QSettings(str(temp_config), QSettings.Format.IniFormat)
     external_settings.setValue("auth/role", "owner")
     external_settings.sync()
 
-    # Оскільки QFileSystemWatcher працює асинхронно, чекаємо сигналу або вручну викликаємо reload
-    # Для надійності тесту викликаємо метод безпосередньо, але перевіряємо, що сигнал теж працює
+    # Очікуємо сигнал про зміну налаштувань
     with qtbot.waitSignal(settings_service.settings_changed, timeout=2000):
         settings_service._reload_from_file()
 

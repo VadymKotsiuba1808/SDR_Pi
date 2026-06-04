@@ -1,18 +1,10 @@
-"""Тести для моделі DetectionObject.
-
-Цей модуль містить набір тестів для перевірки функціональності моделі
-DetectionObject, зокрема серіалізації та десеріалізації даних.
-"""
+"""Тести для моделі DetectionObject."""
 
 from app.models.detection_object import DetectionObject
 
 
 def test_detection_object_serialization() -> None:
-    """Перевіряє коректність серіалізації та десеріалізації DetectionObject.
-
-    Тест ініціалізує об'єкт з повного словника даних, перевіряє правильність
-    заповнення атрибутів та звіряє результат методу `to_dict()` з вихідними даними.
-    """
+    # Arrange
     data = {
         "id": 10,
         "name": "Mavic 3",
@@ -22,25 +14,24 @@ def test_detection_object_serialization() -> None:
         "rf_params_hz": ["2400-2483.5"],
         "sound_params_hz": [1000, 2000],
     }
+
+    # Act
     obj = DetectionObject.from_dict(data)
 
-    assert obj.id == 10, "ID об'єкта має бути 10"
-    assert obj.name == "Mavic 3", "Назва об'єкта має бути 'Mavic 3'"
-    assert obj.is_dangerous is True, "Об'єкт має бути позначений як небезпечний"
-    assert obj.rf_params_hz == ["2400-2483.5"], "РЧ параметри мають збігатися"
-    assert obj.to_dict() == data, (
-        "Серіалізований об'єкт має збігатися з вхідними даними"
-    )
+    # Assert
+    assert obj.id == 10, "Object ID should be 10"
+    assert obj.name == "Mavic 3", "Object name should be 'Mavic 3'"
+    assert obj.is_dangerous is True, "Object should be marked as dangerous"
+    assert obj.rf_params_hz == ["2400-2483.5"], "RF parameters should match"
+    assert obj.to_dict() == data, "Serialized object should match the input data"
 
 
 def test_detection_object_from_dict_minimal() -> None:
-    """Перевіряє десеріалізацію DetectionObject з порожнім або мінімальним словником.
-
-    Тест підтверджує, що модель коректно обробляє відсутність даних,
-    встановлюючи значення за замовчуванням для обов'язкових полів.
-    """
+    # Act
     obj = DetectionObject.from_dict({})
-    assert obj.id is None, "ID має бути None для порожніх даних"
-    assert obj.name == "Unnamed", "Назва за замовчуванням має бути 'Unnamed'"
-    assert obj.class_id == 0, "ID класу за замовчуванням має бути 0"
-    assert obj.rf_params_hz == [], "Список РЧ параметрів має бути порожнім"
+
+    # Assert
+    assert obj.id is None, "ID should be None for empty data"
+    assert obj.name == "Unnamed", "Default name should be 'Unnamed'"
+    assert obj.class_id == 0, "Default class ID should be 0"
+    assert obj.rf_params_hz == [], "RF parameters list should be empty"

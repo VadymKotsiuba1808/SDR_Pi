@@ -1,9 +1,4 @@
-"""Інтеграційні тести для взаємодії Desktop Client <-> Pi Server.
-
-Цей модуль містить тести, що перевіряють повний цикл обміну даними через TCP сокети
-між клієнтською частиною (app) та серверною частиною (pi_server), включаючи
-роботу з базою даних, передачу телеметрії та апаратних команд.
-"""
+"""Інтеграційні тести взаємодії Desktop Client <-> Pi Server."""
 
 import pytest
 
@@ -15,39 +10,28 @@ from pi_server.pi_server_service import PiServerService
 
 
 class MockSettings:
-    """Мок-об'єкт для налаштувань мережевого сервісу.
-
-    Використовується для імітації об'єкта конфігурації, який очікує PiNetworkService.
+    """
+    ### MockSettings
+    Мок-об'єкт для налаштувань мережевого сервісу.
     """
 
     def __init__(self, ip: str, port: int) -> None:
-        """Ініціалізація налаштувань.
-
-        Args:
-            ip: IP-адреса сервера.
-            port: Порт сервера.
-        """
+        """Ініціалізація налаштувань."""
         self.pi_target_ip = ip
         self.pi_target_port = port
 
 
 @pytest.fixture
 def server_instance(qtbot):
-    """Фікстура для запуску реального екземпляра Pi Server в ізольованому середовищі.
-
-    Створює сервер з базою даних у пам'яті та динамічно виділеним портом для
-    уникнення конфліктів при паралельному запуску тестів.
-
-    Yields:
-        PiServerService: Запущений екземпляр сервера.
-    """
-    # Використовуємо SQLite в пам'яті для ізоляції тестів та швидкості
+    """Запуск реального екземпляра Pi Server в ізольованому середовищі."""
+    # Використовуємо SQLite в пам'яті для ізоляції тестів
     db = DatabaseService(db_url="sqlite:///:memory:")
-    # port=0 дозволяє ОС автоматично виділити будь-який вільний порт
+
+    # port=0 дозволяє ОС автоматично виділити вільний порт
     srv = PiServerService(port=0, db_service=db)
     srv.start()
 
-    # Чекаємо, поки сервер почне слухати, щоб отримати фактично виділений порт
+    # Чекаємо, поки сервер почне слухати
     qtbot.wait_until(
         lambda: srv.server.isListening() if srv.server else False, timeout=2000
     )
@@ -58,20 +42,14 @@ def server_instance(qtbot):
 
 @pytest.fixture
 def client_instance(server_instance, qtbot):
-    """Фікстура для ініціалізації клієнтського мережевого сервісу.
-
-    Створює PiNetworkService та підключає його до запущеного server_instance.
-
-    Yields:
-        PiNetworkService: Підключений екземпляр клієнтського сервісу.
-    """
+    """Ініціалізація та підключення клієнтського мережевого сервісу."""
     port = server_instance.server.serverPort()
     settings = MockSettings(ip="127.0.0.1", port=port)
 
     client = PiNetworkService(settings=settings)
     client.start()
 
-    # Чекаємо на успішне встановлення TCP-з'єднання перед початком тесту
+    # Очікуємо стабільного TCP-з'єднання
     qtbot.wait_until(
         lambda: (
             client.socket is not None
@@ -89,11 +67,11 @@ def test_integration_connection_established(client_instance) -> None:
     assert (
         client_instance.socket.state()
         == client_instance.socket.SocketState.ConnectedState
-    ), "Клієнт повинен мати статус з'єднання ConnectedState"
+    ), "Client should have connection status ConnectedState"
 
 
 def test_integration_db_get_classes_empty(client_instance, qtbot) -> None:
-    """Перевірка отримання порожнього списку класів об'єктів при першому запиті."""
+    """Перевірка отримання порожнього списку класів при першому запиті."""
     with qtbot.wait_signal(client_instance.request_finished, timeout=3000) as blocker:
         client_instance.request_db_classes()
 
@@ -105,10 +83,10 @@ def test_integration_db_get_classes_empty(client_instance, qtbot) -> None:
 
 
 def test_integration_db_add_and_list_class(client_instance, qtbot) -> None:
-    """Перевірка повного циклу додавання нового класу об'єктів та його верифікація."""
+    """Перевірка циклу додавання нового класу об'єктів та його верифікація."""
     new_class = ObjectClass(id=None, name="IntegrationTest")
 
-    # 1. Відправляємо запит на додавання класу
+    # Створення нового класу в БД
     with qtbot.wait_signal(client_instance.request_finished, timeout=3000) as blocker:
         client_instance.request_db_add_class(new_class)
 
@@ -117,7 +95,7 @@ def test_integration_db_add_and_list_class(client_instance, qtbot) -> None:
     assert add_resp.data["name"] == "IntegrationTest"
     class_id = add_resp.data["id"]
 
-    # 2. Запитуємо оновлений список класів для підтвердження збереження в БД
+    # Перевірка збереження у списку
     with qtbot.wait_signal(client_instance.request_finished, timeout=3000) as blocker:
         client_instance.request_db_classes()
 
@@ -145,9 +123,8 @@ def test_integration_server_events(server_instance, client_instance, qtbot) -> N
         frequency_hz=2400000000,
     )
 
-    # Очікуємо сигнал від клієнта, коли він отримає та обробить пакет від сервера
+    # Очікуємо сигнал про отримання події
     with qtbot.wait_signal(client_instance.detection_received, timeout=3000) as blocker:
-        # Сервер ініціює відправку події (Push-модель)
         server_instance.send_detection_event(fake_event)
 
     received_event = blocker.args[0]
@@ -156,11 +133,11 @@ def test_integration_server_events(server_instance, client_instance, qtbot) -> N
 
 
 def test_integration_db_object_crud_cycle(client_instance, qtbot) -> None:
-    """Перевірка повного CRUD-циклу для об'єктів детекції через мережу."""
-    # 1. Підготовка: додаємо необхідний клас
+    """Перевірка повного CRUD-циклу для об'єктів детекції."""
+    # Підготовка: додаємо клас
     with qtbot.wait_signal(client_instance.request_finished):
         client_instance.request_db_add_class(ObjectClass(id=None, name="CRUD_Test"))
-    class_id = 1  # У порожній базі перший ID завжди 1
+    class_id = 1
 
     from app.models.detection_object import DetectionObject
 
@@ -168,12 +145,12 @@ def test_integration_db_object_crud_cycle(client_instance, qtbot) -> None:
         id=None, name="Initial Name", class_id=class_id, object_class="CRUD_Test"
     )
 
-    # 2. CREATE: Створення об'єкта
+    # CREATE
     with qtbot.wait_signal(client_instance.request_finished) as blocker:
         client_instance.request_db_add_object(obj)
     obj_id = blocker.args[0].data["id"]
 
-    # 3. UPDATE: Оновлення об'єкта
+    # UPDATE
     updated_obj = DetectionObject(
         id=obj_id, name="Updated Name", class_id=class_id, object_class="CRUD_Test"
     )
@@ -182,7 +159,7 @@ def test_integration_db_object_crud_cycle(client_instance, qtbot) -> None:
     assert blocker.args[0].status == StatusCode.OK
     assert blocker.args[0].data["name"] == "Updated Name"
 
-    # 4. DELETE: Видалення об'єкта
+    # DELETE
     with qtbot.wait_signal(client_instance.request_finished) as blocker:
         client_instance.request_db_delete_object(obj_id)
     assert blocker.args[0].status == StatusCode.OK
@@ -190,13 +167,13 @@ def test_integration_db_object_crud_cycle(client_instance, qtbot) -> None:
 
 
 def test_integration_db_pagination(client_instance, qtbot) -> None:
-    """Перевірка коректності роботи пагінації при запиті великої кількості об'єктів."""
+    """Перевірка коректності роботи пагінації об'єктів."""
     with qtbot.wait_signal(client_instance.request_finished):
         client_instance.request_db_add_class(ObjectClass(id=None, name="PageTest"))
 
     from app.models.detection_object import DetectionObject
 
-    # Наповнюємо базу тестовими даними (3 об'єкти)
+    # Наповнення тестовими даними
     for i in range(3):
         with qtbot.wait_signal(client_instance.request_finished):
             client_instance.request_db_add_object(
@@ -205,7 +182,7 @@ def test_integration_db_pagination(client_instance, qtbot) -> None:
                 )
             )
 
-    # Запитуємо першу сторінку з лімітом у 2 елементи
+    # Запит першої сторінки
     with qtbot.wait_signal(client_instance.request_finished) as blocker:
         client_instance.request_db_objects_page(page=1, page_size=2)
 
@@ -215,15 +192,14 @@ def test_integration_db_pagination(client_instance, qtbot) -> None:
 
 
 def test_integration_db_class_rename(client_instance, qtbot) -> None:
-    """Перевірка операції перейменування класу об'єктів через мережевий запит."""
-    # 1. Створюємо клас з початковою назвою
+    """Перевірка операції перейменування класу об'єктів."""
     with qtbot.wait_signal(client_instance.request_finished):
         client_instance.request_db_add_class(ObjectClass(id=None, name="OldName"))
 
     old_cls = ObjectClass(id=1, name="OldName")
     new_cls = ObjectClass(id=1, name="NewName")
 
-    # 2. Виконуємо операцію перейменування
+    # Запит на зміну метаданих
     with qtbot.wait_signal(client_instance.request_finished) as blocker:
         client_instance.request_db_rename_class(old_cls, new_cls)
 
@@ -232,13 +208,12 @@ def test_integration_db_class_rename(client_instance, qtbot) -> None:
 
 
 def test_integration_telemetry_gps(server_instance, client_instance, qtbot) -> None:
-    """Перевірка передачі та обробки телеметрії GPS від сервера до клієнта."""
+    """Перевірка передачі та обробки телеметрії GPS."""
     from app.models.gps_data import GPSData
 
     fake_gps = GPSData(lat=50.45, lon=30.52, strength=85)
 
     with qtbot.wait_signal(client_instance.gps_received, timeout=3000) as blocker:
-        # Імітуємо отримання координат GPS модулем сервера
         server_instance.send_gps_data(fake_gps)
 
     received_gps = blocker.args[0]
@@ -248,20 +223,18 @@ def test_integration_telemetry_gps(server_instance, client_instance, qtbot) -> N
 
 
 def test_integration_hardware_commands(server_instance, client_instance, qtbot) -> None:
-    """Перевірка успішного проходження апаратних команд від клієнта до заліза сервера."""
+    """Перевірка проходження апаратних команд від клієнта до сервера."""
     from unittest.mock import MagicMock
 
-    # Створюємо мок-обробник для перехоплення команд, що йдуть "на залізо"
+    # Перехоплення викликів до драйверів
     mock_handler = MagicMock()
-    # Підміняємо внутрішній метод сервера для верифікації викликів
     server_instance._handle_hardware_command = mock_handler
 
-    # 1. Тест команди активації тривоги (Alarm)
+    # 1. Активація Alarm
     client_instance.request_alarm_start(["relay1", "relay2"])
 
-    # Оскільки обмін асинхронний, чекаємо виклику обробника на стороні сервера
     qtbot.wait_until(lambda: mock_handler.called, timeout=2000)
-    assert mock_handler.called, "Сервер повинен отримати команду start_alarm"
+    assert mock_handler.called
 
     args = mock_handler.call_args
     assert args[0][0] == "start_alarm"
@@ -269,19 +242,19 @@ def test_integration_hardware_commands(server_instance, client_instance, qtbot) 
 
     mock_handler.reset_mock()
 
-    # 2. Тест звіту про помилкову тривогу (False Alarm)
+    # 2. Помилкова детекція (False Alarm)
     client_instance.report_false_alarm("event_123")
     qtbot.wait_until(lambda: mock_handler.called, timeout=2000)
-    assert mock_handler.called, "Сервер повинен отримати команду false_alarm"
+    assert mock_handler.called
     assert mock_handler.call_args[0][0] == "false_alarm"
     assert mock_handler.call_args[0][1]["event_id"] == "event_123"
 
     mock_handler.reset_mock()
 
-    # 3. Тест налаштування діапазону частот радіомоніторингу
+    # 3. Налаштування діапазону частот SDR
     client_instance.set_rf_range([900, 930])
     qtbot.wait_until(lambda: mock_handler.called, timeout=2000)
-    assert mock_handler.called, "Сервер повинен отримати команду set_rf_range"
+    assert mock_handler.called
     assert mock_handler.call_args[0][0] == "set_rf_range"
     assert mock_handler.call_args[0][1]["range"] == [900, 930]
 
@@ -293,9 +266,8 @@ def test_integration_gps_request_cycle(server_instance, client_instance, qtbot) 
     mock_handler = MagicMock()
     server_instance._handle_hardware_command = mock_handler
 
-    # Клієнт запитує примусове оновлення GPS
     client_instance.request_remote_gps()
 
     qtbot.wait_until(lambda: mock_handler.called, timeout=2000)
-    assert mock_handler.called, "Сервер повинен отримати команду get_gps"
+    assert mock_handler.called
     assert mock_handler.call_args[0][0] == "get_gps"

@@ -1,10 +1,4 @@
-"""
-Модуль для тестування моделей фонового спектру.
-
-Цей модуль містить юніт-тести для перевірки серіалізації та десеріалізації
-класів `DetectionBackground` та `SpectralData`. Це критично для забезпечення
-коректного обміну даними між сервером та клієнтом через JSON.
-"""
+"""Модуль для тестування моделей фонового спектру."""
 
 import numpy as np
 
@@ -12,13 +6,7 @@ from app.models.detection_background import DetectionBackground, SpectralData
 
 
 def test_spectral_data_serialization() -> None:
-    """
-    Тест серіалізації та десеріалізації SpectralData.
-
-    Перевіряє, чи правильно конвертуються NumPy масиви у списки для JSON
-    та чи зберігаються числові параметри після повного циклу перетворення.
-    """
-    # Створюємо тестову матрицю амплітуд (uint8 для економії місця)
+    """Тест серіалізації та десеріалізації SpectralData."""
     mag = np.array([[1, 2], [3, 4]], dtype=np.uint8)
     data = {
         "center_freq_hz": 2400e6,
@@ -27,28 +15,17 @@ def test_spectral_data_serialization() -> None:
         "data_magnitude": mag.tolist(),
     }
 
-    # Створюємо об'єкт зі словника (імітація отримання JSON)
     obj = SpectralData.from_dict(data)
 
-    # Перевіряємо цілісність даних
-    assert obj.center_freq_hz == 2400e6, (
-        "Центральна частота повинна відповідати вхідним даним"
-    )
+    assert obj.center_freq_hz == 2400e6, "Center frequency should match the input data"
     assert np.array_equal(obj.data_magnitude, mag), (
-        "Матриця амплітуд повинна бути ідентичною оригінальному масиву"
+        "Magnitude matrix should be identical to the original array"
     )
-    assert obj.to_dict() == data, (
-        "Результуючий словник повинен збігатися з вхідними даними"
-    )
+    assert obj.to_dict() == data, "Resulting dictionary should match the input data"
 
 
 def test_detection_background_serialization() -> None:
-    """
-    Тест серіалізації та десеріалізації DetectionBackground.
-
-    Перевіряє вкладену серіалізацію (DetectionBackground -> SpectralData)
-    та правильність обробки метаданих запису.
-    """
+    """Тест серіалізації та десеріалізації DetectionBackground."""
     spec_data = {
         "center_freq_hz": 433e6,
         "sample_rate_hz": 2e6,
@@ -61,14 +38,12 @@ def test_detection_background_serialization() -> None:
         "spectral_data": spec_data,
     }
 
-    # Десеріалізація всього об'єкта фону
     obj = DetectionBackground.from_dict(data)
 
-    # Перевіряємо ідентифікатори та вкладені дані
-    assert obj.id == "bg-001", "ID фонового запису має бути збережений"
+    assert obj.id == "bg-001", "Background record ID should be preserved"
     assert obj.spectral_data.center_freq_hz == 433e6, (
-        "Вкладені спектральні дані повинні бути коректно ініціалізовані"
+        "Nested spectral data should be correctly initialized"
     )
     assert obj.to_dict() == data, (
-        "Повний цикл серіалізації повинен повертати ідентичний словник"
+        "Full serialization cycle should return an identical dictionary"
     )

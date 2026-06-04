@@ -1,6 +1,4 @@
-"""
-Тести для модуля автоматичного масштабування (Autosize Window).
-"""
+"""Тести для модуля автоматичного масштабування (Autosize Window)."""
 
 from unittest.mock import MagicMock, patch
 
@@ -10,20 +8,16 @@ from app.widgets.autosize_window import ScaledComboBox, enable_auto_scaling
 
 
 def test_enable_auto_scaling_smoke(qtbot):
-    """
-    Базовий тест (smoke test) для перевірки того, що функція масштабування
-    не викликає критичних помилок на стандартному вікні.
-    """
+    """Перевіряє базову працездатність авто-масштабування."""
     window = QMainWindow()
     central = QWidget()
     window.setCentralWidget(central)
 
-    # Додаємо комбобокс для перевірки заміни
     combo = QComboBox(central)
     combo.setObjectName("testCombo")
     combo.addItem("Item 1")
 
-    # Мокаємо первинний екран для стабільності на різних системах
+    # Мокаємо первинний екран для стабільності
     with patch("PyQt6.QtGui.QGuiApplication.primaryScreen") as mock_screen:
         mock_rect = MagicMock()
         mock_rect.width.return_value = 1920
@@ -32,18 +26,16 @@ def test_enable_auto_scaling_smoke(qtbot):
 
         enable_auto_scaling(window)
 
-    # Перевіряємо, що старий віджет сховано
     assert combo.isVisible() is False
 
-    # Перевіряємо, що в сцені з'явився новий віджет (ScaledComboBox)
-    # Оскільки функція змінює centralWidget вікна на QGraphicsView
     from PyQt6.QtWidgets import QGraphicsView
 
+    # Перевіряємо заміну centralWidget на QGraphicsView
     assert isinstance(window.centralWidget(), QGraphicsView)
 
 
 def test_scaled_combo_box_init():
-    """Тест ініціалізації ScaledComboBox."""
+    """Перевіряє ініціалізацію ScaledComboBox."""
     old_combo = QComboBox()
     style = {"background": "red", "color": "white", "border": "none"}
 

@@ -1,6 +1,4 @@
-"""
-Тести для віджета статичних графіків (StaticChartWidget).
-"""
+"""Тестування StaticChartWidget."""
 
 from unittest.mock import MagicMock
 
@@ -13,6 +11,7 @@ from app.widgets.static_chart_widget import StaticChartWidget
 
 @pytest.fixture
 def mock_settings():
+    """Створює мок-об'єкт налаштувань."""
     settings = MagicMock()
     settings.lang_code = "uk"
     return settings
@@ -20,13 +19,14 @@ def mock_settings():
 
 @pytest.fixture
 def static_chart(qtbot, mock_settings):
-    """Фікстура для ініціалізації StaticChartWidget."""
+    """Ініціалізує StaticChartWidget."""
     widget = StaticChartWidget(mock_settings)
     qtbot.addWidget(widget)
     return widget
 
 
 def create_mock_events():
+    """Створює список тестових подій."""
     return [
         DetectionEvent(
             id="1",
@@ -54,24 +54,25 @@ def create_mock_events():
 
 
 def test_initial_state(static_chart):
-    """Тест початкового стану віджета."""
+    """Перевіряє початковий стан віджета."""
     assert static_chart.chart_type == "timeline"
     assert len(static_chart.data) == 0
 
 
 def test_set_data(static_chart):
-    """Тест встановлення даних для відображення."""
+    """Перевіряє встановлення даних у віджет."""
     events = create_mock_events()
     static_chart.set_data(events, highlight_ids={"1"})
 
     assert len(static_chart.data) == 2
     assert "1" in static_chart.highlight_ids
-    # Дані мають бути відсортовані за часом
-    assert static_chart.data[0].id == "1"
+    assert static_chart.data[0].id == "1", (
+        "Events must be sorted chronologically for correct timeline rendering"
+    )
 
 
 def test_set_chart_type(static_chart):
-    """Тест зміни типу графіка."""
+    """Перевіряє зміну типу відображення графіка."""
     static_chart.set_chart_type("spectrum")
     assert static_chart.chart_type == "spectrum"
 
@@ -80,20 +81,17 @@ def test_set_chart_type(static_chart):
 
 
 def test_get_active_event(static_chart):
-    """Тест визначення активної події (для маркера)."""
+    """Перевіряє логіку визначення активної події."""
     events = create_mock_events()
     static_chart.set_data(events)
 
-    # Якщо нічого не підсвічено, активна - остання
     assert static_chart._get_active_event().id == "2"
 
-    # Якщо підсвічено - активна підсвічена
     static_chart.set_data(events, highlight_ids={"1"})
     assert static_chart._get_active_event().id == "1"
 
 
 def test_paint_event_no_data(static_chart, qtbot):
-    """Тест відсутності крашів при малюванні без даних."""
+    """Перевіряє стійкість віджета до відсутності даних."""
     static_chart.update()
-    # Просто перевіряємо, що метод викликається без винятків
     qtbot.waitExposed(static_chart)

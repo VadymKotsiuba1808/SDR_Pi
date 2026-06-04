@@ -11,7 +11,7 @@ logger = get_logger(__name__)
 
 def signal_handler(sig, frame) -> None:
     """Обробник сигналів для коректного завершення роботи програми."""
-    logger.info("Зупинка сервера...")
+    logger.info("Stopping server...")
     QCoreApplication.quit()
 
 
@@ -24,10 +24,10 @@ def main() -> None:
     port = 6000
     server_service = PiServerService(port=port)
 
-    logger.info("Ініціалізація DatabaseService та TCP сервера...")
+    logger.info("Initializing DatabaseService and TCP server...")
     server_service.start()
 
-    logger.info(f"Сервер запущено на порту {port}. Очікування клієнтів...")
+    logger.info(f"Server started on port {port}. Waiting for clients...")
 
     sys.exit(app.exec())
 

@@ -37,15 +37,15 @@ def test_server_starts_and_stops(mock_db: MagicMock) -> None:
     srv = PiServerService(port=0, db_service=mock_db)
     srv.start()
     assert srv.server is not None, "Server should be initialized"
-    assert srv.server.isListening(), "Server should be listening to the port after start"
+    assert srv.server.isListening(), (
+        "Server should be listening to the port after start"
+    )
 
     port = srv.server.serverPort()
     assert port > 0, f"Server should be bound to a valid port, got {port}"
 
     srv.stop()
-    assert not srv.server.isListening(), (
-        "Server should stop listening after stop"
-    )
+    assert not srv.server.isListening(), "Server should stop listening after stop"
 
 
 def test_client_connection(server: PiServerService, qtbot) -> None:

@@ -1,6 +1,6 @@
-from enum import Enum
+from enum import StrEnum
 
 
-class SourceType(Enum):
+class SourceType(StrEnum):
     RF = "RF"
     SOUND = "Sound"

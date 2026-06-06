@@ -158,9 +158,7 @@ class SettingsService(QObject):
         serialized: Dict[str, dict] = {}
         for target, rule in value.items():
             key_str = target.value if isinstance(target, Enum) else str(target)
-
-            rule_dict = rule.to_dict()
-            serialized[key_str] = rule_dict
+            serialized[key_str] = rule.to_dict()
 
         return serialized
 

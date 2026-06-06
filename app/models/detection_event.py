@@ -27,10 +27,20 @@ class DetectionEvent:
     def from_dict(data: dict) -> "DetectionEvent":
         """Парсинг вхідного словника JSON у об'єкт."""
 
-        raw_type = data.get("type", SourceType.RF)
-        if raw_type not in [SourceType.RF, SourceType.SOUND]:
+        raw_type_val = data.get("type", SourceType.RF)
+        raw_type = SourceType.RF
+        if isinstance(raw_type_val, SourceType):
+            raw_type = raw_type_val
+        elif isinstance(raw_type_val, str):
+            try:
+                raw_type = SourceType(raw_type_val)
+            except ValueError:
+                try:
+                    raw_type = SourceType[raw_type_val.upper()]
+                except KeyError:
+                    raw_type = SourceType.RF
+        else:
             raw_type = SourceType.RF
-
         obj_class = data.get("object_class", data.get("class", "unknown"))
 
         return DetectionEvent(

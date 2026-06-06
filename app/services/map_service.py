@@ -16,7 +16,7 @@ from app.core.constants import (
 from app.protocols import MapServiceSettings
 
 
-class MapTypes(Enum):
+class MapTypes(str, Enum):
     ROAD = "streets-v2"
     # SATELLITE = "satellite-v2"
     HYBRID = "hybrid"

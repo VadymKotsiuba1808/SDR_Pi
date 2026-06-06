@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import StrEnum
 from typing import List
 
 """
@@ -57,7 +57,7 @@ BACKGROUND_LOGS_DIR_PATH: str = "./logs/backgrounds"
 MEDIA_DIR_PATH: str = "./media"
 
 
-class CLEAN_TARGET_NAME(Enum):
+class CLEAN_TARGET_NAME(StrEnum):
     """Категорії для очищення даних"""
 
     LOGS = "logs"

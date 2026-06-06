@@ -69,7 +69,6 @@ class CleanerService:
             cutoff = now - (days * 86400)
 
             if not os.path.exists(folder):
-
                 continue
 
             for filename in os.listdir(folder):

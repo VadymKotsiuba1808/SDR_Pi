@@ -1,0 +1,24 @@
+[Unit]
+Description=SDR Pi PyQt6 Interface
+# Чекаємо, поки завантажиться графічна оболонка X11
+After=graphical.target 
+Wants=graphical.target
+
+[Service]
+Type=simple
+User=admin
+WorkingDirectory=/home/admin/SDR_Pi
+
+# Вказуємо для X11, куди малювати вікно
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=/home/pi/.Xauthority
+
+# Вказуємо шлях до python всередині .venv, щоб не було конфліктів з системними бібліотеками
+ExecStart=/home/admin/SDR_Pi/.venv/bin/python main.py
+
+# Автоматичний перезапуск, якщо програма впала (наприклад, через помилку SDR)
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=graphical.target

@@ -10,7 +10,7 @@ exclude = [
     ".git",
     "resources_rc.py",
     "resources.qrc",
-
+    "app/ui/ui_*.py",
 ]
 
 [tool.ruff.lint]
@@ -29,6 +29,7 @@ python_version = "3.11"
 exclude = [".venv", "venv"]
 
 ignore_missing_imports = true
+explicit_package_bases = true
 
 # --- НАЛАШТУВАННЯ DEPTRY (Залежності) ---
 [tool.deptry]
@@ -39,3 +40,8 @@ DEP002 = ["bcrypt", "python-xlib"]
 
 [tool.deptry.package_module_name_map]
 pywin32 = ["win32api", "win32gui", "win32con"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+timeout = 15

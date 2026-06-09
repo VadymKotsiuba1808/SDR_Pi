@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Any, Dict, Optional
 
 from PyQt6.QtCore import QObject, QTimer, pyqtSignal, pyqtSlot
-from PyQt6.QtNetwork import QHostAddress, QTcpServer, QTcpSocket
+from PyQt6.QtNetwork import QTcpServer, QTcpSocket
 
 from app.models.detection_background import DetectionBackground
 from app.models.detection_event import DetectionEvent
@@ -51,36 +51,12 @@ class PiNetworkService(QObject):
         self.reconnect_timer.timeout.connect(self._try_connect)
 
     def start(self) -> None:
-        self._start_client()
+        self._try_connect()
 
     def stop(self) -> None:
         self.reconnect_timer.stop()
-        if self.server:
-            self.server.close()
         if self.socket:
             self.socket.close()
-
-    @pyqtSlot()
-    def _handle_new_connection(self) -> None:
-        if self.socket:
-            self.socket.close()
-
-        if self.server is None:
-            print("[PiNet] Error: Server not initialized.")
-            return
-        self.socket = self.server.nextPendingConnection()
-
-        if self.socket is None:
-            print("[PiNet] Error: Failed to get pending connection.")
-            return
-        print(f"[PiNet] Client connected: {self.socket.peerAddress().toString()}")
-
-        self.connection_status_changed.emit(True)
-        self.socket.readyRead.connect(self._read_data)
-        self.socket.disconnected.connect(self._handle_disconnected)
-
-    def _start_client(self) -> None:
-        self._try_connect()
 
     @pyqtSlot()
     def _try_connect(self) -> None:
@@ -131,10 +107,11 @@ class PiNetworkService(QObject):
         self._schedule_reconnect()
 
     def _schedule_reconnect(self):
-        if self.socket:
-            self.socket.abort()
-            self.socket.deleteLater()
+        sock = self.socket
+        if sock:
             self.socket = None
+            sock.abort()
+            sock.deleteLater()
 
         if not self.reconnect_timer.isActive():
             print("[PiNet] Scheduling reconnect in 3s...")

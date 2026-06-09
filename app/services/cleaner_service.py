@@ -24,22 +24,41 @@ class CleanerService:
     Клас для автоматичної очистки пам'яті.
     """
 
-    def __init__(self, settings_service: CleanerServiceSettings):
+    def __init__(
+        self,
+        settings_service: CleanerServiceSettings,
+        paths_override: dict | None = None,
+    ):
         super().__init__()
         self.settings_service = settings_service
 
         self.targets: List[CleanTarget] = []
+
+        # Використовуємо кастомні шляхи, якщо вони передані (для тестів)
+        logs_path = (
+            paths_override.get("logs", LOGS_DIR_PATH)
+            if paths_override
+            else LOGS_DIR_PATH
+        )
+        bg_logs_path = (
+            paths_override.get("bg_logs", BACKGROUND_LOGS_DIR_PATH)
+            if paths_override
+            else BACKGROUND_LOGS_DIR_PATH
+        )
+        media_path = (
+            paths_override.get("media", MEDIA_DIR_PATH)
+            if paths_override
+            else MEDIA_DIR_PATH
+        )
 
         clean_settings = self.settings_service.clean_settings
         if CLEAN_TARGET_NAME.LOGS in clean_settings:
             target_settings = clean_settings[CLEAN_TARGET_NAME.LOGS]
             if target_settings.enabled:
                 days = target_settings.days
+                self.targets.append(CleanTarget(logs_path, days, [".json", ".jsonl"]))
                 self.targets.append(
-                    CleanTarget(LOGS_DIR_PATH, days, [".json", ".jsonl"])
-                )
-                self.targets.append(
-                    CleanTarget(BACKGROUND_LOGS_DIR_PATH, days, [".json", ".jsonl"])
+                    CleanTarget(bg_logs_path, days, [".json", ".jsonl"])
                 )
 
         if CLEAN_TARGET_NAME.SCREENSHOTS in clean_settings:
@@ -47,7 +66,7 @@ class CleanerService:
             if target_settings.enabled:
                 days = target_settings.days
                 self.targets.append(
-                    CleanTarget(MEDIA_DIR_PATH, days, [".png", ".jpg", ".jpeg"])
+                    CleanTarget(media_path, days, [".png", ".jpg", ".jpeg"])
                 )
 
         if CLEAN_TARGET_NAME.SCREEN_RECORDS in clean_settings:
@@ -55,7 +74,7 @@ class CleanerService:
             if target_settings.enabled:
                 days = target_settings.days
                 self.targets.append(
-                    CleanTarget(MEDIA_DIR_PATH, days, [".mp4", ".avi", ".mkv"])
+                    CleanTarget(media_path, days, [".mp4", ".avi", ".mkv"])
                 )
 
     def clean_sdr_data(self):

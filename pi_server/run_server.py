@@ -3,7 +3,7 @@ import sys
 
 from PyQt6.QtCore import QCoreApplication
 
-from temp.pi_server_service import PiServerService
+from pi_server.pi_server_service import PiServerService
 
 
 def signal_handler(sig, frame):

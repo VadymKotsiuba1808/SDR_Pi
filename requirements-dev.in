@@ -5,3 +5,7 @@ black
 ruff
 mypy
 pre-commit
+pytest
+pytest-qt
+pytest-timeout
+pytest-cov

@@ -11,7 +11,7 @@ from app.models.detection_object import DetectionObject
 from app.models.gps_data import GPSData
 from app.models.object_class import ObjectClass
 from app.models.service_response import ServiceResponse, StatusCode
-from temp.database_service import DatabaseService
+from pi_server.database_service import DatabaseService
 
 
 class PiServerService(QObject):
@@ -20,14 +20,19 @@ class PiServerService(QObject):
     Приймає підключення від Desktop-клієнта, обробляє команди та керує периферією.
     """
 
-    def __init__(self, port: int = 6000, parent: Optional[QObject] = None) -> None:
+    def __init__(
+        self,
+        port: int = 6000,
+        db_service: Optional[DatabaseService] = None,
+        parent: Optional[QObject] = None,
+    ) -> None:
         super().__init__(parent)
         self.port = port
         self.server: Optional[QTcpServer] = None
         self.client_socket: Optional[QTcpSocket] = None
 
         # --- ПІДКЛЮЧЕННЯ БД ---
-        self.db = DatabaseService()
+        self.db = db_service or DatabaseService()
 
         # 2. Підключаємо єдиний сигнал результату
         self.db.request_finished.connect(self.send_db_response)
@@ -46,7 +51,12 @@ class PiServerService(QObject):
     def stop(self) -> None:
         if self.client_socket:
             self.client_socket.disconnectFromHost()
-            if self.client_socket.state() != QTcpSocket.SocketState.UnconnectedState:
+
+            if (
+                self.client_socket
+                and self.client_socket.state()
+                != QTcpSocket.SocketState.UnconnectedState
+            ):
                 self.client_socket.waitForDisconnected(1000)
 
         if self.server:

@@ -50,6 +50,7 @@ from app.core.constants import (
 )
 from app.core.detection_manager import DetectionManager
 from app.core.map_view_logic import MapViewLogic
+from app.core.mixins import TestUIOptimizationMixin
 from app.models.detection_background import DetectionBackground
 from app.models.detection_event import DetectionEvent
 from app.models.gps_data import GPSData
@@ -86,7 +87,7 @@ DEFAULT_START_COORDS = [49.43440, 27.00543]
 SIGNAL_LEVELS_COUNT = 4
 
 
-class MainWindow(QMainWindow):
+class MainWindow(QMainWindow, TestUIOptimizationMixin):
     """
     Головне вікно програми (Controller).
     Зв'язує графічний інтерфейс (View) з сервісами та логікою.
@@ -129,10 +130,7 @@ class MainWindow(QMainWindow):
         self.ui.Radar.installEventFilter(self)
 
         self.check_free_memory(800)
-
-        # FIXME -
-        # TODO - Видалити рефреш
-        # self.refresh_map()
+        self.apply_test_ui_optimization()
 
         print("[MainWindow] Initialization complete.")
 
@@ -1171,6 +1169,8 @@ class MainWindow(QMainWindow):
     def restart_app(self) -> None:
         print("[MainWindow] Logout requested. Restarting application...")
         self.settings_service.remember_me = False
+        self.settings_service.role = "operator"
+        self.settings_service.sync()
         self.setEnabled(False)
         restart_process()
 

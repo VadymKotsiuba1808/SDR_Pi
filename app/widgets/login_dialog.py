@@ -11,6 +11,7 @@ from PyQt6.QtGui import QCloseEvent
 from PyQt6.QtWidgets import QDialog, QLineEdit, QWidget
 
 from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
+from app.core.mixins import TestUIOptimizationMixin
 from app.protocols import LoginDialogSettings
 from app.services.keyboard_service import KeyboardService
 from app.services.usb_auth_service import UsbAuthService
@@ -22,7 +23,7 @@ from app.widgets.change_pwd_dialog import ChangePwdDialog
 from app.widgets.keyboard_widget import KeyboardWidget
 
 
-class LoginDialog(QDialog):
+class LoginDialog(QDialog, TestUIOptimizationMixin):
     def __init__(
         self,
         settings: LoginDialogSettings,
@@ -42,6 +43,8 @@ class LoginDialog(QDialog):
 
         self.toggle_password_field()
         self._load_language()
+        self.apply_test_ui_optimization()
+
         print("[LoginDialog] Initialization complete.")
 
     def changeEvent(self, a0: QEvent | None) -> None:
@@ -156,7 +159,7 @@ class LoginDialog(QDialog):
                 self.ui.passwordIncorrectLabel.setVisible(True)
 
     def accept_window(self) -> None:
-        self.finished.emit(QDialog.DialogCode.Accepted)
+        self.accept()
 
     def closeEvent(self, a0: QCloseEvent | None) -> None:
         event = a0

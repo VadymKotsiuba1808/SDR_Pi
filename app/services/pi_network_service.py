@@ -1,19 +1,19 @@
 import json
 from datetime import datetime
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
-from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot, QByteArray, QTimer
-from PyQt6.QtNetwork import QTcpServer, QTcpSocket, QHostAddress
+from PyQt6.QtCore import QObject, QTimer, pyqtSignal, pyqtSlot
+from PyQt6.QtNetwork import QHostAddress, QTcpServer, QTcpSocket
 
-from app.protocols import NetworkServiceSettings
-from app.models.source_type import SourceType
+from app.models.detection_background import DetectionBackground
 from app.models.detection_event import DetectionEvent
 from app.models.detection_object import DetectionObject
-from app.models.object_class import ObjectClass
 from app.models.gps_data import GPSData
-from app.models.stream_data import StreamDataChunk
-from app.models.detection_background import DetectionBackground
+from app.models.object_class import ObjectClass
 from app.models.service_response import ServiceResponse
+from app.models.source_type import SourceType
+from app.models.stream_data import StreamDataChunk
+from app.protocols import NetworkServiceSettings
 
 
 class PiNetworkService(QObject):
@@ -65,7 +65,14 @@ class PiNetworkService(QObject):
         if self.socket:
             self.socket.close()
 
+        if self.server is None:
+            print("[PiNet] Error: Server not initialized.")
+            return
         self.socket = self.server.nextPendingConnection()
+
+        if self.socket is None:
+            print("[PiNet] Error: Failed to get pending connection.")
+            return
         print(f"[PiNet] Client connected: {self.socket.peerAddress().toString()}")
 
         self.connection_status_changed.emit(True)
@@ -142,7 +149,7 @@ class PiNetworkService(QObject):
         while self.socket.canReadLine():
             line = self.socket.readLine().trimmed()
             try:
-                json_str = bytes(line).decode("utf-8")
+                json_str = line.data().decode("utf-8")
                 if not json_str:
                     continue
 
@@ -158,16 +165,16 @@ class PiNetworkService(QObject):
                     bg_obj = DetectionBackground.from_dict(data)
                     self.background_received.emit(bg_obj)
                 elif action == "gps_position":
-                    obj = GPSData.from_dict(data)
-                    self.gps_received.emit(obj)
+                    gps_obj = GPSData.from_dict(data)
+                    self.gps_received.emit(gps_obj)
 
                 elif action == "rf_stream":
-                    obj = StreamDataChunk.from_dict(data, SourceType.RF)
-                    self.rf_data_received.emit(obj)
+                    rf_stream_obj = StreamDataChunk.from_dict(data, SourceType.RF)
+                    self.rf_data_received.emit(rf_stream_obj)
 
                 elif action == "sound_stream":
-                    obj = StreamDataChunk.from_dict(data, SourceType.SOUND)
-                    self.sound_data_received.emit(obj)
+                    sound_stream_obj = StreamDataChunk.from_dict(data, SourceType.SOUND)
+                    self.sound_data_received.emit(sound_stream_obj)
 
                 elif action == "db_operation_result":
                     response_obj = ServiceResponse.from_dict(data)
@@ -194,7 +201,7 @@ class PiNetworkService(QObject):
             }
             try:
                 msg = (json.dumps(payload) + "\n").encode("utf-8")
-                self.socket.write(QByteArray(msg))
+                self.socket.write(msg)
                 self.socket.flush()
             except Exception as e:
                 print(f"[PiNet] Send Error: {e}")
@@ -235,7 +242,7 @@ class PiNetworkService(QObject):
         print("[PiNet] Stopping relays working...")
         self.send_packet("stop_alarm")
 
-    def set_rf_range(self, rf_range: list[float]):
+    def set_rf_range(self, rf_range: list[int]) -> None:
         print(f"[PiNet] Setting RF range: {rf_range}")
         self.send_packet("set_rf_range", {"range": rf_range})
 

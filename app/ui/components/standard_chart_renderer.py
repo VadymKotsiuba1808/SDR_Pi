@@ -1,14 +1,14 @@
 import math
-from typing import List, Dict, Tuple
-from datetime import datetime
 from collections import Counter
+from datetime import datetime
+from typing import Dict, List
 
-from PyQt6.QtGui import QPainter, QPen, QBrush, QFont, QColor
-from PyQt6.QtCore import QPointF, Qt, QRect
+from PyQt6.QtCore import QPointF, QRect, Qt
+from PyQt6.QtGui import QBrush, QColor, QFont, QPainter, QPen
 
+from app.core.chart_theme import ChartTheme
 from app.core.mixins import TranslatorMixin
 from app.models.detection_event import DetectionEvent
-from app.core.chart_theme import ChartTheme
 from app.utils.chart_math import ChartMath
 
 
@@ -118,6 +118,7 @@ class StandardChartRenderer(TranslatorMixin):
         t_start = datetime.fromisoformat(sorted_data[0].timestamp).timestamp()
         t_end = datetime.fromisoformat(sorted_data[-1].timestamp).timestamp()
         duration = t_end - t_start or 1.0
+        nice_step: float | None = None
 
         if mode == "timeline":
             max_data_dist = (
@@ -127,14 +128,17 @@ class StandardChartRenderer(TranslatorMixin):
                 max_data_dist, target_ticks=10
             )
             num_ticks = actual_ticks
-            if nice_step < 1:
-                label_formatter = lambda v: self.tr("{:.1f}km").format(v)
-            else:
-                label_formatter = lambda v: self.tr("{}km").format(int(v))
         else:
             y_max = 1.0
             num_ticks = 10
-            label_formatter = lambda v: self.tr("{}%").format(int(v * 100))
+
+        def label_formatter(v):
+            if mode == "timeline":
+                if nice_step and nice_step < 1:
+                    return self.tr("{:.1f}km").format(v)
+                return self.tr("{}km").format(int(v))
+            else:
+                return self.tr("{}%").format(int(v * 100))
 
         self._draw_cartesian_grid(
             p, plot_rect, y_max, t_start, t_end, duration, num_ticks, label_formatter
@@ -225,7 +229,7 @@ class StandardChartRenderer(TranslatorMixin):
     def _group_by_id(
         self, data: List[DetectionEvent]
     ) -> Dict[str, List[DetectionEvent]]:
-        grouped = {}
+        grouped: Dict[str, List[DetectionEvent]] = {}
         for d in data:
             if d.id not in grouped:
                 grouped[d.id] = []

@@ -1,18 +1,18 @@
 from dataclasses import dataclass, field
-from typing import Optional, List, Dict
 from itertools import combinations
+from typing import Dict, List, Optional, cast
 
-from PyQt6.QtWidgets import QDialog, QWidget
-from PyQt6.QtCore import Qt, QEvent, QTranslator, QCoreApplication
 from PyQt6 import uic
+from PyQt6.QtCore import QCoreApplication, QEvent, Qt, QTranslator
+from PyQt6.QtWidgets import QDialog, QWidget
 
-from app.protocols import SettingsDialogSettings
 from app.core.constants import (
+    CLEAN_TARGET_NAME,
     DEV_COMPILED_UI_USING_ENABLED,
     RELAY_NAMES_LIST,
-    CLEAN_TARGET_NAME,
 )
 from app.models.settings import CleanRule
+from app.protocols import SettingsDialogSettings
 from app.ui.ui_settings_dialog import Ui_SettingsDialog
 from app.utils.system_utils import restart_process
 from app.utils.ui_utils import update_element_styles
@@ -30,7 +30,7 @@ class SettingsData:
     is_jammer_auto_stop_enabled: bool = False
     jammer_auto_stop_interval_s: int = 900
 
-    clean_settings: Dict[str, CleanRule] = field(default_factory=dict)
+    clean_settings: Dict[CLEAN_TARGET_NAME, CleanRule] = field(default_factory=dict)
 
 
 RELAYS_DIVIDER = ", "
@@ -62,8 +62,9 @@ class SettingsDialog(QDialog):
 
         print("[Settings] Dialog initialized.")
 
-    def changeEvent(self, event: QEvent) -> None:
-        if event.type() == QEvent.Type.LanguageChange:
+    def changeEvent(self, a0: QEvent | None) -> None:
+        event = a0
+        if event and event.type() == QEvent.Type.LanguageChange:
             if DEV_COMPILED_UI_USING_ENABLED:
                 print("[Settings] Language change detected, retranslating UI...")
                 self.ui.retranslateUi(self)
@@ -76,9 +77,9 @@ class SettingsDialog(QDialog):
             self.ui.setupUi(self)
         else:
             uic.loadUi("app/ui/settings_dialog.ui", self)
-            self.ui = self
+            self.ui = cast(Ui_SettingsDialog, self)
 
-    def _setup_state_variables(self):
+    def _setup_state_variables(self) -> None:
         self.translator = QTranslator()
 
         self.new_settings: Optional[SettingsData] = None

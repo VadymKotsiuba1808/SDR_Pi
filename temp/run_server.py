@@ -1,5 +1,6 @@
-import sys
 import signal
+import sys
+
 from PyQt6.QtCore import QCoreApplication
 
 from temp.pi_server_service import PiServerService
@@ -20,10 +21,10 @@ def main():
     port = 6000
     server_service = PiServerService(port=port)
 
-    print(f"[ServerRunner] Ініціалізація DatabaseService та TCP сервера...")
+    print("[ServerRunner] Ініціалізація DatabaseService та TCP сервера...")
     server_service.start()
 
-    print(f"[ServerRunner] Сервер запущено. Очікування клієнтів...")
+    print("[ServerRunner] Сервер запущено. Очікування клієнтів...")
 
     # Запускаємо Event Loop
     sys.exit(app.exec())

@@ -1,6 +1,6 @@
 import pyqtgraph as pg
-from PyQt6.QtGui import QPainter, QPen, QBrush
-from PyQt6.QtCore import Qt, QRect
+from PyQt6.QtCore import QRect, Qt
+from PyQt6.QtGui import QBrush, QPainter, QPen
 
 from app.core.chart_theme import ChartTheme
 from app.models.chart_models import CursorState
@@ -31,7 +31,7 @@ class QPainterCrosshair:
         if self.state.show_horizontal:
             p.drawLine(bounds.left(), int(y), bounds.right(), int(y))
 
-        if self.state.highlight_point:
+        if self.state.highlight_point is not None:
             p.setBrush(self.pen.color())
             p.setPen(Qt.PenStyle.NoPen)
             p.drawEllipse(self.state.highlight_point, 4, 4)

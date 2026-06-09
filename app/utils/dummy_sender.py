@@ -1,29 +1,28 @@
-import sys
 import json
 import math
 import random
-import uuid
+import sys
 import time
-import numpy as np
+import uuid
 from datetime import datetime
-from typing import Optional, Dict, Any, List, Set
+from typing import Any, Dict, List, Optional, Set
 
+import numpy as np
 from PyQt6.QtCore import (
     QCoreApplication,
     QObject,
-    pyqtSlot,
-    QByteArray,
     QTimer,
+    pyqtSlot,
 )
-from PyQt6.QtNetwork import QTcpServer, QTcpSocket, QHostAddress
+from PyQt6.QtNetwork import QHostAddress, QTcpServer, QTcpSocket
 
 # --- MOCK IMPORTS (Адаптуйте під структуру проекту) ---
-from app.core.constants import DB_OFFSET, UINT8_MIN, UINT8_MAX
-from temp.database_service import DatabaseService
+from app.core.constants import DB_OFFSET, UINT8_MAX, UINT8_MIN
 from app.models.detection_object import DetectionObject
-from app.models.object_class import ObjectClass
 from app.models.gps_data import GPSData
-from app.models.service_response import ServiceResponse, DbOperation
+from app.models.object_class import ObjectClass
+from app.models.service_response import DbOperation, ServiceResponse
+from temp.database_service import DatabaseService
 
 # --- КОНФІГУРАЦІЯ СИМУЛЯЦІЇ ---
 SIMULATION_RADIUS_METERS = 85000  # 85 км
@@ -311,7 +310,8 @@ class AdvancedNetworkUtility(QObject):
         # 2. Оновлення симуляції (якщо це успішна зміна об'єктів або перше завантаження)
         if response.is_success:
             if response.operation == DbOperation.GET_ALL_OBJECTS:
-                self._on_templates_loaded(response.data)
+                if isinstance(response.data, dict):
+                    self._on_templates_loaded(response.data)
 
             elif response.operation in [
                 DbOperation.ADD_OBJECT,
@@ -340,13 +340,19 @@ class AdvancedNetworkUtility(QObject):
             print("[NetService] Dropping old connection.")
             self.client_socket.close()
 
-        self.client_socket = self.server.nextPendingConnection()
-        print(
-            f"[NetService] Client connected: {self.client_socket.peerAddress().toString()}"
-        )
+        if self.server is None:
+            print("[NetService] ERROR: Server not initialized.")
+            return
 
-        self.client_socket.readyRead.connect(self._read_socket_data)
-        self.client_socket.disconnected.connect(self._on_client_disconnected)
+        self.client_socket = self.server.nextPendingConnection()
+
+        if self.client_socket is not None:
+            print(
+                f"[NetService] Client connected: {self.client_socket.peerAddress().toString()}"
+            )
+
+            self.client_socket.readyRead.connect(self._read_socket_data)
+            self.client_socket.disconnected.connect(self._on_client_disconnected)
 
         print("[NetService] New session started. Clearing False Alarm blacklist.")
         self.session_blacklist.clear()
@@ -377,7 +383,7 @@ class AdvancedNetworkUtility(QObject):
         while self.client_socket.canReadLine():
             line = self.client_socket.readLine().trimmed()
             try:
-                line_str = bytes(line).decode("utf-8")
+                line_str = line.data().decode("utf-8")
                 if not line_str:
                     continue
 
@@ -442,10 +448,10 @@ class AdvancedNetworkUtility(QObject):
 
         # --- HARDWARE CONTROL ---
         if action == "start_alarm":
-            print(f"[NetService] HARDWARE: Relays ON")
+            print("[NetService] HARDWARE: Relays ON")
             return
         if action == "stop_alarm":
-            print(f"[NetService] HARDWARE: Relays OFF")
+            print("[NetService] HARDWARE: Relays OFF")
             return
 
         # --- DB PROXY COMMANDS (Updated for new Logic) ---
@@ -467,7 +473,11 @@ class AdvancedNetworkUtility(QObject):
                 self.db.update_object(DetectionObject.from_dict(obj_data))
 
         elif action == "db_request_delete":
-            self.db.delete_object(data.get("id"))
+            id_to_delete = data.get("id")
+
+            if id_to_delete:
+                id_to_delete = int(id_to_delete)
+                self.db.delete_object(id_to_delete)
 
         elif action == "db_request_classes":
             self.db.request_classes()
@@ -491,7 +501,11 @@ class AdvancedNetworkUtility(QObject):
                     self.db.update_class(cls_obj)
 
         elif action == "db_request_delete_class":
-            self.db.delete_class(data.get("id"))
+            id_to_delete = data.get("id")
+
+            if id_to_delete:
+                id_to_delete = int(id_to_delete)
+                self.db.delete_class(id_to_delete)
 
     def _check_stream_timer(self):
         """Вмикає або вимикає швидкий таймер залежно від потреби."""
@@ -594,7 +608,6 @@ class AdvancedNetworkUtility(QObject):
     def _generate_mock_sound_data(self) -> Dict[str, Any]:
         """Генерує фейковий спектр для звуку (uint8)."""
         fft_size = 512
-        x = np.linspace(0, 100, fft_size)
 
         noise_db = -80 + np.random.normal(0, 2, fft_size)
 
@@ -641,7 +654,7 @@ class AdvancedNetworkUtility(QObject):
 
         try:
             msg = json.dumps(payload) + "\n"
-            self.client_socket.write(QByteArray(msg.encode("utf-8")))
+            self.client_socket.write(msg.encode("utf-8"))
             self.client_socket.flush()
         except Exception as e:
             print(f"[NetService] Send Error: {e}")

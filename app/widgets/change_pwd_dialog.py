@@ -1,17 +1,17 @@
-from typing import Optional
+from typing import Optional, cast
 
-from PyQt6.QtWidgets import QDialog, QLineEdit, QWidget, QPushButton
-from PyQt6.QtCore import QCoreApplication, QEvent, QTranslator, Qt
 from PyQt6 import uic
+from PyQt6.QtCore import QCoreApplication, QEvent, Qt, QTranslator
+from PyQt6.QtWidgets import QDialog, QLineEdit, QPushButton, QWidget
 
-from app.protocols import ChangePwdDialogSettings
 from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
-from app.ui.ui_change_pwd_dialog import Ui_ChangePwdDialog
-from app.widgets.keyboard_widget import KeyboardWidget
+from app.protocols import ChangePwdDialogSettings
 from app.services.keyboard_service import KeyboardService
-from app.validators.password_validator import PasswordValidator
+from app.ui.ui_change_pwd_dialog import Ui_ChangePwdDialog
 from app.utils.password_utils import hash_password
 from app.utils.ui_utils import update_element_styles
+from app.validators.password_validator import PasswordValidator
+from app.widgets.keyboard_widget import KeyboardWidget
 
 
 class ChangePwdDialog(QDialog):
@@ -40,8 +40,9 @@ class ChangePwdDialog(QDialog):
         self._connect_handlers()
         self._load_language()
 
-    def changeEvent(self, event: QEvent) -> None:
-        if event.type() == QEvent.Type.LanguageChange:
+    def changeEvent(self, a0: QEvent | None) -> None:
+        event = a0
+        if event and event.type() == QEvent.Type.LanguageChange:
             if DEV_COMPILED_UI_USING_ENABLED:
                 print("[ChangePwdDialog] Language change detected, updating UI...")
                 self.ui.retranslateUi(self)
@@ -54,7 +55,7 @@ class ChangePwdDialog(QDialog):
             self.ui.setupUi(self)
         else:
             uic.loadUi("app/ui/change_pwd_dialog.ui", self)
-            self.ui = self
+            self.ui = cast(Ui_ChangePwdDialog, self)
 
     def _adjust_fields(self) -> None:
         self.keyboard_widget = KeyboardWidget(
@@ -95,7 +96,11 @@ class ChangePwdDialog(QDialog):
         self.ui.errorWidget_2.setVisible(False)
 
     def hide_unhide_password(self) -> None:
-        button: QPushButton = self.sender()
+        button = self.sender()
+
+        if not isinstance(button, QPushButton):
+            return
+
         target_line_edit: Optional[QLineEdit] = None
 
         if button == self.ui.passwordHideBtn:

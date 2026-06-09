@@ -9,6 +9,14 @@
     "reportUnknownMemberType": "none",
     "reportMissingTypeStubs": "none"
   },
+  "python.analysis.indexing": true,
+  "python.analysis.packageIndexDepths": [
+    {
+      "name": "PyQt6",
+      "depth": 5
+    }
+  ],
+  "python.analysis.userFileIndexingLimit": -1,
 
   "[python]": {
     "editor.defaultFormatter": "charliermarsh.ruff",

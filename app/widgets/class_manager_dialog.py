@@ -1,23 +1,22 @@
-from typing import Optional, List
+from typing import List, Optional, cast
 
+from PyQt6 import uic
+from PyQt6.QtCore import QCoreApplication, QEvent, Qt, QTranslator
 from PyQt6.QtWidgets import (
     QDialog,
     QListWidgetItem,
     QMessageBox,
     QWidget,
 )
-from PyQt6 import uic
-from PyQt6.QtCore import Qt, QEvent, QTranslator, QCoreApplication
 
 from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
-from app.ui.ui_class_manager_dialog import Ui_ClassManagerDialog
-from app.widgets.keyboard_widget import KeyboardWidget
+from app.models.object_class import ObjectClass
+from app.models.service_response import DbOperation, ServiceResponse
+from app.protocols import LangSettings
 from app.services.keyboard_service import KeyboardService
 from app.services.pi_network_service import PiNetworkService
-from app.models.object_class import ObjectClass
-from app.models.service_response import ServiceResponse, DbOperation
-from app.protocols import LangSettings
-
+from app.ui.ui_class_manager_dialog import Ui_ClassManagerDialog
+from app.widgets.keyboard_widget import KeyboardWidget
 
 ALLOW_DB_OPERATIONS = [
     DbOperation.ADD_CLASS,
@@ -28,7 +27,6 @@ ALLOW_DB_OPERATIONS = [
 
 
 class ClassManagerDialog(QDialog):
-
     def __init__(
         self,
         network_service: PiNetworkService,
@@ -49,8 +47,9 @@ class ClassManagerDialog(QDialog):
         self._connect_handlers()
         self._load_language()
 
-    def changeEvent(self, event: QEvent) -> None:
-        if event.type() == QEvent.Type.LanguageChange:
+    def changeEvent(self, a0: QEvent | None) -> None:
+        event = a0
+        if event and event.type() == QEvent.Type.LanguageChange:
             if DEV_COMPILED_UI_USING_ENABLED:
                 self.ui.retranslateUi(self)
         else:
@@ -61,9 +60,8 @@ class ClassManagerDialog(QDialog):
             self.ui = Ui_ClassManagerDialog()
             self.ui.setupUi(self)
         else:
-            ui_path = "app/ui/class_manager_dialog.ui"
-            uic.loadUi(ui_path, self)
-            self.ui = self
+            uic.loadUi("app/ui/class_manager_dialog.ui", self)
+            self.ui = cast(Ui_ClassManagerDialog, self)
 
     def _setup_state_variables(self) -> None:
         self.translator = QTranslator()
@@ -111,11 +109,11 @@ class ClassManagerDialog(QDialog):
     def _refresh_list(self) -> None:
         self._waiting_classes = True
         self.network_service.request_db_classes()
-        print(f"[ClassManager] Loaded classes.")
+        print("[ClassManager] Loaded classes.")
 
     def _handle_db_status(self, response: ServiceResponse) -> None:
 
-        if not (response.operation in ALLOW_DB_OPERATIONS):
+        if response.operation not in ALLOW_DB_OPERATIONS:
             return
 
         if response.is_error:
@@ -132,20 +130,24 @@ class ClassManagerDialog(QDialog):
 
         match response.operation:
             case DbOperation.ADD_CLASS:
-                self.add_cache_class(ObjectClass.from_dict(response.data))
+                if response.data:
+                    self.add_cache_class(ObjectClass.from_dict(response.data))
             case DbOperation.UPDATE_CLASS | DbOperation.RENAME_CLASS:
-                self.update_cache_class(ObjectClass.from_dict(response.data))
+                if response.data:
+                    self.update_cache_class(ObjectClass.from_dict(response.data))
             case DbOperation.DELETE_CLASS:
-                id = response.data.get("id")
-                if id:
-                    self.delete_cache_class(id)
+                if isinstance(response.data, dict):
+                    id = response.data.get("id")
+                    if id:
+                        self.delete_cache_class(id)
             case DbOperation.GET_CLASSES:
-                classes_raw = response.data.get("classes", [])
-                classes_list = [ObjectClass.from_dict(c) for c in classes_raw]
+                if isinstance(response.data, dict):
+                    classes_raw = response.data.get("classes", [])
+                    classes_list = [ObjectClass.from_dict(c) for c in classes_raw]
 
-                if self._waiting_classes:
-                    self._waiting_classes = False
-                    self._populate_list(classes_list)
+                    if self._waiting_classes:
+                        self._waiting_classes = False
+                        self._populate_list(classes_list)
 
         print(f"[ObjectManager] DB Operation '{response.operation}': ...")
 
@@ -166,7 +168,6 @@ class ClassManagerDialog(QDialog):
         selected_items = self.ui.lstClasses.selectedItems()
 
         if selected_items:
-
             item = selected_items[0]
             old_name = item.text()
 

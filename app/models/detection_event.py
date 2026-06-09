@@ -4,20 +4,17 @@ type: Джерело детекції -> ТІЛЬКИ "RF" або "Sound".
 object_class: Клас об'єкта -> "drone", "bird", "mavic_3" тощо.
 """
 
-from dataclasses import dataclass
 import uuid
+from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
-import numpy as np
 
 from app.models.source_type import SourceType
 
 
 @dataclass
 class DetectionEvent:
-
     id: str
-    type: str  # "RF" або "Sound"
+    type: SourceType  # "RF" або "Sound"
     name: str
     object_class: str
     confidence: float
@@ -30,10 +27,20 @@ class DetectionEvent:
     def from_dict(data: dict) -> "DetectionEvent":
         """Парсинг вхідного словника JSON у об'єкт."""
 
-        raw_type = data.get("type", SourceType.RF)
-        if raw_type not in [SourceType.RF, SourceType.SOUND]:
+        raw_type_val = data.get("type", SourceType.RF)
+        raw_type = SourceType.RF
+        if isinstance(raw_type_val, SourceType):
+            raw_type = raw_type_val
+        elif isinstance(raw_type_val, str):
+            try:
+                raw_type = SourceType(raw_type_val)
+            except ValueError:
+                try:
+                    raw_type = SourceType[raw_type_val.upper()]
+                except KeyError:
+                    raw_type = SourceType.RF
+        else:
             raw_type = SourceType.RF
-
         obj_class = data.get("object_class", data.get("class", "unknown"))
 
         return DetectionEvent(
@@ -51,7 +58,7 @@ class DetectionEvent:
     def to_dict(self) -> dict:
         return {
             "id": self.id,
-            "type": self.type,
+            "type": self.type.value if hasattr(self.type, "value") else self.type,
             "name": self.name,
             "object_class": self.object_class,
             "confidence": self.confidence,

@@ -1,98 +1,86 @@
-import os
 import math
-import asyncio
-from typing import Optional, List, Dict, Any, cast
+import os
+from typing import Any, Dict, List, Optional, cast
 
-from PyQt6.QtWidgets import (
-    QMainWindow,
-    QDialog,
-    QMessageBox,
-    QFileDialog,
-    QWidget,
-    QPushButton,
-    QSpinBox,
-    QApplication,
-)
+from PyQt6 import uic
 from PyQt6.QtCore import (
-    QTimer,
-    QDateTime,
-    Qt,
-    QPointF,
-    QEvent,
     QCoreApplication,
-    QTranslator,
-    pyqtSlot,
-    QUrl,
+    QDateTime,
+    QEvent,
+    QObject,
+    QPointF,
     QStorageInfo,
+    Qt,
+    QTimer,
+    QTranslator,
+    QUrl,
+    pyqtSlot,
 )
 from PyQt6.QtGui import (
-    QPixmap,
-    QDesktopServices,
-    QShowEvent,
     QCloseEvent,
-    QTransform,
+    QDesktopServices,
+    QMouseEvent,
     QPainter,
+    QPixmap,
+    QResizeEvent,
+    QShowEvent,
+    QTransform,
 )
-from PyQt6 import uic
+from PyQt6.QtWidgets import (
+    QApplication,
+    QDialog,
+    QFileDialog,
+    QMainWindow,
+    QMessageBox,
+    QPushButton,
+    QSpinBox,
+    QWidget,
+)
 from qasync import asyncSlot
 
-
-from app.ui.ui_main_window import Ui_MainWindow
-from app.ui.components.radar_renderer import RadarRenderer
-from app.assets import resources_rc
-
-
-from app.protocols import OSService
+from app.assets import resources_rc  # noqa: F401
 from app.core.constants import (
     DEV_COMPILED_UI_USING_ENABLED,
     MEDIA_DIR_PATH,
+    MIN_DISTANCE_THRESHOLD,
+    STATIONARY_SECONDS,
     TIMER_INTERVAL_RADAR_ANIM,
     TIMER_INTERVAL_TIME_UPDATE,
     TIMER_INTERVAL_WIFI_UPDATE,
-    STATIONARY_SECONDS,
-    MIN_DISTANCE_THRESHOLD,
 )
-
-
-from app.widgets.set_map_dialog import SetMapDialog
-from app.widgets.autosize_window import make_scalable
-from app.widgets.log_dialog import LogDialog
-from app.widgets.record_status_widget import RecordingStatusWidget
-from app.widgets.object_manager_dialog import ObjectManagerDialog
-from app.widgets.settings_dialog import SettingsDialog
-from app.widgets.chart_monitor_dialog import ChartMonitorDialog
-
-
-from app.services.pi_network_service import PiNetworkService
-from app.services.settings_service import SettingsService
-from app.services.map_service import MapService, MapTypes
-from app.services.keyboard_service import KeyboardService
-from app.services.recording_service import RecordingService
-from app.services.media_player_service import MediaPlayerService
-from app.services.log_service import LogService
-from app.services.jammer_service import JammerService
-from app.services.detection_background_service import DetectionBackgroundService
-from app.services.network_signal_service import NetworkSignalService
-
-
 from app.core.detection_manager import DetectionManager
 from app.core.map_view_logic import MapViewLogic
-
-from app.models.source_type import SourceType
-from app.models.detection_event import DetectionEvent
-from app.models.object_class import ObjectClass
-from app.models.log_entries import LogEntry, LogType, FalseAlarmPayload
-from app.models.gps_data import GPSData
 from app.models.detection_background import DetectionBackground
-from app.models.service_response import ServiceResponse, DbOperation
+from app.models.detection_event import DetectionEvent
+from app.models.gps_data import GPSData
+from app.models.log_entries import FalseAlarmPayload, LogEntry, LogType
 from app.models.map_settings import CustomMapSettings
-
-
-from app.utils.ui_utils import update_element_styles, move_dialog_down
-from app.utils.system_utils import restart_process
-from app.utils.geo_utils import calculate_distance
+from app.models.object_class import ObjectClass
+from app.models.service_response import DbOperation, ServiceResponse
+from app.models.source_type import SourceType
+from app.protocols import OSService
+from app.services.detection_background_service import DetectionBackgroundService
+from app.services.jammer_service import JammerService
+from app.services.keyboard_service import KeyboardService
+from app.services.log_service import LogService
+from app.services.map_service import MapService, MapTypes
+from app.services.media_player_service import MediaPlayerService
+from app.services.network_signal_service import NetworkSignalService
+from app.services.pi_network_service import PiNetworkService
+from app.services.recording_service import RecordingService
+from app.services.settings_service import SettingsService
+from app.ui.components.radar_renderer import RadarRenderer
+from app.ui.ui_main_window import Ui_MainWindow
 from app.utils.convert_measurement_unit import convert_hz_to_mhz
-
+from app.utils.geo_utils import calculate_distance
+from app.utils.system_utils import restart_process
+from app.utils.ui_utils import move_dialog_down, update_element_styles
+from app.widgets.chart_monitor_dialog import ChartMonitorDialog
+from app.widgets.log_dialog import LogDialog
+from app.widgets.object_manager_dialog import ObjectManagerDialog
+from app.widgets.record_status_widget import RecordingStatusWidget
+from app.widgets.set_map_dialog import SetMapDialog
+from app.widgets.settings_dialog import SettingsDialog
 
 DEFAULT_START_COORDS = [49.43440, 27.00543]
 SIGNAL_LEVELS_COUNT = 4
@@ -149,7 +137,8 @@ class MainWindow(QMainWindow):
         print("[MainWindow] Initialization complete.")
 
     # region --- Init ---
-    def showEvent(self, event: QShowEvent) -> None:
+    def showEvent(self, a0: QShowEvent | None) -> None:
+        event = a0
 
         super().showEvent(event)
         # self.ui.map_background_label.setScaledContents(False)
@@ -160,24 +149,37 @@ class MainWindow(QMainWindow):
             Qt.TransformationMode.FastTransformation,
         )
 
-    def resizeEvent(self, event) -> None:
-        self._update_map_geometry()
+    def resizeEvent(self, a0: QResizeEvent | None) -> None:
+        event = a0
+
+        if event:
+            self._update_map_geometry()
+
         super().resizeEvent(event)
 
-    def changeEvent(self, event: QEvent) -> None:
-        if event.type() == QEvent.Type.LanguageChange:
+    def changeEvent(self, a0: QEvent | None) -> None:
+        event = a0
+
+        if event and event.type() == QEvent.Type.LanguageChange:
             if DEV_COMPILED_UI_USING_ENABLED:
                 print("[MainWindow] Language change detected, updating UI...")
                 self.ui.retranslateUi(self)
         else:
             super().changeEvent(event)
 
-    def eventFilter(self, source, event):
-        if source == self.ui.Radar and event.type() == QEvent.Type.MouseButtonPress:
+    def eventFilter(self, a0: QObject | None, a1: QEvent | None) -> bool:
+        source = a0
+        event = a1
+
+        if source is None or event is None:
+            return super().eventFilter(source, event)
+
+        if source == self.ui.Radar and isinstance(event, QMouseEvent):
             if event.button() == Qt.MouseButton.LeftButton:
                 pos = event.pos()
                 self.handle_radar_click(pos.x(), pos.y())
                 return True
+
         return super().eventFilter(source, event)
 
     def _load_ui(self) -> None:
@@ -186,7 +188,7 @@ class MainWindow(QMainWindow):
             self.ui.setupUi(self)
         else:
             uic.loadUi("app/ui/main_window.ui", self)
-            self.ui = self
+            self.ui = cast(Ui_MainWindow, self)
 
     def _setup_state_variables(self) -> None:
 
@@ -321,12 +323,7 @@ class MainWindow(QMainWindow):
 
     def _setup_timers(self) -> None:
         self.timer_1sec = QTimer(self)
-        self.timer_1sec.timeout.connect(
-            lambda: (
-                self.update_time_and_date(),
-                self.update_false_alarm_button_state(),
-            )
-        )
+        self.timer_1sec.timeout.connect(self._on_1sec_timeout)
         self.timer_1sec.start(TIMER_INTERVAL_TIME_UPDATE)
 
         self.timer_radar = QTimer(self)
@@ -341,8 +338,12 @@ class MainWindow(QMainWindow):
         self.timer_gps.timeout.connect(self.request_gps)
         self.timer_gps.start(self.settings_service.gps_interval_s * 1000)
 
-    @asyncSlot()
-    async def _start_async_tasks(self) -> None:
+    def _on_1sec_timeout(self) -> None:
+        """Обробник щосекундного таймера."""
+        self.update_time_and_date()
+        self.update_false_alarm_button_state
+
+    def _start_async_tasks(self) -> None:
         """
         Запускає всі фонові асинхронні задачі.
         """
@@ -352,6 +353,12 @@ class MainWindow(QMainWindow):
     def _update_map_geometry(self) -> None:
         radar_rect = self.ui.RadarFrame.geometry()
         parent_widget = self.ui.map_background_label.parent()
+
+        if not isinstance(parent_widget, QWidget):
+            print(
+                "[MainWindow] Warning: Map background parent widget not found or is not a QWidget."
+            )
+            return
 
         self.add_sizes_map_k = MapViewLogic.calculate_map_expansion_coefficients(
             radar_rect=radar_rect,
@@ -395,7 +402,6 @@ class MainWindow(QMainWindow):
         available_mb = round(available_bytes / 1024 / 1024, 0)
 
         if available_bytes < min_video_space:
-
             QMessageBox.warning(
                 self,
                 self.tr("Not enough disk space"),
@@ -569,7 +575,7 @@ class MainWindow(QMainWindow):
         )
         if distance >= MIN_DISTANCE_THRESHOLD or self.force_gps_update:
             self.current_coords = [new_lat, new_lon]
-            self.refresh_map()
+            QTimer.singleShot(0, self.refresh_map)
             self.force_gps_update = False
             print(f"[MainWindow] Map refreshed. Distance moved: {distance:.2f} m")
         else:
@@ -605,7 +611,7 @@ class MainWindow(QMainWindow):
         btn = cast(QPushButton, self.sender())
 
         if not btn.isChecked():
-            self.refresh_map()
+            QTimer.singleShot(0, self.refresh_map)
             return
 
         self.open_set_map_dialog()
@@ -670,10 +676,11 @@ class MainWindow(QMainWindow):
         if response.is_error:
             return
 
-        classes_raw = response.data.get("classes", [])
-        classes = [ObjectClass.from_dict(c) for c in classes_raw]
+        if isinstance(response.data, dict):
+            classes_raw = response.data.get("classes", [])
+            classes = [ObjectClass.from_dict(c) for c in classes_raw]
 
-        self.open_logs_dialog(classes)
+            self.open_logs_dialog(classes)
 
     def request_classes_and_open_logs_dialog(self):
         self.pi_network.request_finished.connect(self._on_classes_received_for_logs)
@@ -713,7 +720,7 @@ class MainWindow(QMainWindow):
             self.settings_service.zoom = self.calculate_optimal_zoom(new_radius)
             self.ui.radarRadiusSpinbox.setMaximum(new_radius)
 
-            self.refresh_map()
+            QTimer.singleShot(0, self.refresh_map)
 
         if self.settings_service.gps_interval_s != new_interval:
             self.settings_service.gps_interval_s = new_interval
@@ -1169,7 +1176,8 @@ class MainWindow(QMainWindow):
 
     # endregion
 
-    def closeEvent(self, event: QCloseEvent) -> None:
+    def closeEvent(self, a0: QCloseEvent | None) -> None:
+        event = a0
         print("[MainWindow] Application closing...")
         QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         try:
@@ -1185,4 +1193,5 @@ class MainWindow(QMainWindow):
                 self.log_service.stop()
         finally:
             QApplication.restoreOverrideCursor()
-            event.accept()
+            if event:
+                event.accept()

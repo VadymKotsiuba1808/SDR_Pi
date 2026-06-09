@@ -1,5 +1,5 @@
+from enum import StrEnum
 from typing import List
-from enum import Enum
 
 """
 Файл зі статичними константами, які користувач не зможе напряму змінювати,
@@ -57,7 +57,7 @@ BACKGROUND_LOGS_DIR_PATH: str = "./logs/backgrounds"
 MEDIA_DIR_PATH: str = "./media"
 
 
-class CLEAN_TARGET_NAME(Enum):
+class CLEAN_TARGET_NAME(StrEnum):
     """Категорії для очищення даних"""
 
     LOGS = "logs"

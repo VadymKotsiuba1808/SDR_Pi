@@ -3,7 +3,9 @@
 Визначає абстрактні контракти для сервісів та компонентів переважно саме для налаштувань. Дозволяє використовувати Dependency Injection.
 """
 
-from typing import Protocol, Dict
+from typing import Dict, Protocol
+
+from app.core.constants import CLEAN_TARGET_NAME
 from app.services.settings_service import CleanRule
 
 
@@ -13,7 +15,7 @@ class LangSettings(Protocol):
 
 class MapServiceSettings(Protocol):
     api_key: str
-    radar_max_radius_km: int
+    radar_max_radius_km: float
     zoom: int
 
 
@@ -30,7 +32,7 @@ class ChangePwdDialogSettings(Protocol):
 
 
 class SetMapDialogSettings(Protocol):
-    radar_max_radius_km: int
+    radar_max_radius_km: float
     lang_code: str
 
 
@@ -50,12 +52,12 @@ class SettingsDialogSettings(Protocol):
     radar_max_radius_km: float
     gps_interval_s: int
     detection_ttl_s: int
-    main_relays: str
+    main_relays: list[str]
     is_jammer_auto_start_enabled: bool
     is_jammer_auto_stop_enabled: bool
     jammer_auto_stop_interval_s: int
     remember_me: bool
-    clean_settings: Dict[str, CleanRule]
+    clean_settings: Dict[CLEAN_TARGET_NAME, CleanRule]
 
 
 class DetectionManagerSettings(Protocol):
@@ -63,7 +65,7 @@ class DetectionManagerSettings(Protocol):
 
 
 class CleanerServiceSettings(Protocol):
-    clean_settings: Dict[str, CleanRule]
+    clean_settings: Dict[CLEAN_TARGET_NAME, CleanRule]
 
 
 class OSService(Protocol):

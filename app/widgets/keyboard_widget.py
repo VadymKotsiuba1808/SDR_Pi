@@ -3,14 +3,16 @@
 Відображає поточну мову (UA/EN) та дозволяє змінювати її через GUI.
 """
 
-from PyQt6.QtWidgets import QWidget
+from typing import cast
+
 from PyQt6 import uic
-from PyQt6.QtCore import QEvent, QCoreApplication, QTranslator
+from PyQt6.QtCore import QCoreApplication, QEvent, QTranslator
+from PyQt6.QtWidgets import QWidget
 
 from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
-from app.ui.ui_keyboard_widget import Ui_KeyboardWidget
-from app.services.keyboard_service import KeyboardService
 from app.protocols import LangSettings
+from app.services.keyboard_service import KeyboardService
+from app.ui.ui_keyboard_widget import Ui_KeyboardWidget
 
 
 class KeyboardWidget(QWidget):
@@ -35,8 +37,9 @@ class KeyboardWidget(QWidget):
 
         self._load_language()
 
-    def changeEvent(self, event):
-        if event.type() == QEvent.Type.LanguageChange:
+    def changeEvent(self, a0: QEvent | None) -> None:
+        event = a0
+        if event and event.type() == QEvent.Type.LanguageChange:
             if DEV_COMPILED_UI_USING_ENABLED:
                 print("Зміна мови, оновлюю UI...")
                 self.ui.retranslateUi(self)
@@ -49,7 +52,7 @@ class KeyboardWidget(QWidget):
             self.ui.setupUi(self)
         else:
             uic.loadUi("app/ui/keyboard_widget.ui", self)
-            self.ui = self
+            self.ui = cast(Ui_KeyboardWidget, self)
 
     def _setup_state_variables(self):
         self.translator = QTranslator()
@@ -64,7 +67,7 @@ class KeyboardWidget(QWidget):
     def _load_language(self):
         lang_code = self.settings_service.lang_code
 
-        if lang_code == None:
+        if lang_code is None:
             return
 
         QCoreApplication.removeTranslator(self.translator)

@@ -1,22 +1,21 @@
-from typing import List, Set, Optional, Tuple
 import math
 from datetime import datetime
+from typing import List, Optional, Set, Tuple
 
-from PyQt6.QtWidgets import QWidget, QToolTip
-from PyQt6.QtGui import QPainter, QPaintEvent, QMouseEvent
-from PyQt6.QtCore import QRect, Qt, QPointF
+from PyQt6.QtCore import QPointF, QRect, Qt
+from PyQt6.QtGui import QMouseEvent, QPainter, QPaintEvent
+from PyQt6.QtWidgets import QToolTip, QWidget
 
-from app.models.detection_event import DetectionEvent
-from app.models.detection_background import SpectralData
-from app.models.source_type import SourceType
-from app.protocols import LangSettings
 from app.core.chart_theme import ChartTheme
 from app.models.chart_models import CursorState
-from app.utils.convert_measurement_unit import convert_hz_to_mhz
-
+from app.models.detection_background import SpectralData
+from app.models.detection_event import DetectionEvent
+from app.models.source_type import SourceType
+from app.protocols import LangSettings
 from app.ui.components.chart_crosshair import QPainterCrosshair
 from app.ui.components.spectral_renderer import SpectralChartRenderer
 from app.ui.components.standard_chart_renderer import StandardChartRenderer
+from app.utils.convert_measurement_unit import convert_hz_to_mhz
 
 
 class StaticChartWidget(QWidget):
@@ -77,7 +76,8 @@ class StaticChartWidget(QWidget):
                     return d
         return self.data[-1]
 
-    def paintEvent(self, event: QPaintEvent) -> None:
+    def paintEvent(self, a0: QPaintEvent | None) -> None:
+        event = a0
         p = QPainter(self)
         p.setRenderHint(QPainter.RenderHint.Antialiasing)
         p.fillRect(self.rect(), ChartTheme.BG)
@@ -130,7 +130,15 @@ class StaticChartWidget(QWidget):
         elif self.chart_type == "bar":
             self.standard_renderer.render_bar(p, self.rect(), self.data)
 
-    def mouseMoveEvent(self, event: QMouseEvent) -> None:
+        super().paintEvent(event)
+
+    def mouseMoveEvent(self, a0: QMouseEvent | None) -> None:
+        event = a0
+
+        if event is None:
+            super().mouseMoveEvent(event)
+            return
+
         pos = event.pos()
 
         if self.chart_type in ["spectrum", "waterfall"]:

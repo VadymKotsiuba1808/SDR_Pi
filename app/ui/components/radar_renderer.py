@@ -1,8 +1,8 @@
 import math
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
-from PyQt6.QtGui import QPainter, QPen, QColor, QFont, QPixmap, QConicalGradient
-from PyQt6.QtCore import Qt, QPointF, QRect
+from PyQt6.QtCore import QPointF, QRect, Qt
+from PyQt6.QtGui import QColor, QConicalGradient, QFont, QPainter, QPen, QPixmap
 
 from app.models.radar_target import RadarTarget
 
@@ -22,11 +22,11 @@ class RadarRenderer:
     """
 
     def __init__(self):
-        self.radar_angle = 0
+        self.radar_angle: int = 0
 
         # Кеш для обробки кліків
-        self._last_scale = 1.0
-        self._last_center = (0, 0)
+        self._last_scale: float = 1.0
+        self._last_center: tuple[float, float] = (0, 0)
         self._current_targets: List[RadarTarget] = []
 
     def draw_detections(

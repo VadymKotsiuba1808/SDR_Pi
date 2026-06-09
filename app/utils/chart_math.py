@@ -1,8 +1,9 @@
 import math
+from typing import Dict, List, Optional, Tuple
+
 import numpy as np
-from typing import Tuple, Dict, List, Optional
-from PyQt6.QtGui import QImage, QColor, QLinearGradient, QPainter, QBrush
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QBrush, QColor, QImage, QLinearGradient, QPainter
 
 from app.core.chart_theme import ChartTheme
 from app.core.constants import UINT8_MAX, VISUAL_NOISE_FLOOR_UINT8
@@ -55,7 +56,7 @@ class ChartMath:
         """
         h, w = data.shape
         # Format_Indexed8 означає, що значення пікселя (uint8) - це індекс у таблиці кольорів
-        img = QImage(data.data, w, h, w, QImage.Format.Format_Indexed8)
+        img = QImage(data.data.tobytes(), w, h, w, QImage.Format.Format_Indexed8)
         img.setColorTable(cls._get_color_table())
         return img.copy()
 

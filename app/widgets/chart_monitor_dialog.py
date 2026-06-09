@@ -1,17 +1,17 @@
-from typing import Optional
+from typing import Optional, cast
 
-from PyQt6.QtGui import QCloseEvent
-from PyQt6.QtWidgets import QDialog, QWidget, QVBoxLayout
-from PyQt6.QtCore import Qt, QCoreApplication, QEvent, QTranslator, pyqtSlot
 from PyQt6 import uic
+from PyQt6.QtCore import QCoreApplication, QEvent, Qt, QTranslator, pyqtSlot
+from PyQt6.QtGui import QCloseEvent
+from PyQt6.QtWidgets import QDialog, QWidget
 
-from app.core.constants import DEV_COMPILED_UI_USING_ENABLED, VISUAL_NOISE_FLOOR_UINT8
-from app.protocols import LangSettings
-from app.ui.ui_chart_monitor_dialog import Ui_ChartMonitorDialog
+from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
 from app.models.source_type import SourceType
 from app.models.stream_data import StreamDataChunk
-from app.widgets.dynamic_chart_widget import DynamicChartWidget
+from app.protocols import LangSettings
 from app.services.pi_network_service import PiNetworkService
+from app.ui.ui_chart_monitor_dialog import Ui_ChartMonitorDialog
+from app.widgets.dynamic_chart_widget import DynamicChartWidget
 
 
 class ChartMonitorDialog(QDialog):
@@ -37,15 +37,17 @@ class ChartMonitorDialog(QDialog):
         self._init_chart_widget()
         self._connect_handlers()
 
-        self.chart_widget.set_hover_enabled(self.is_paused)
+        if self.chart_widget is not None:
+            self.chart_widget.set_hover_enabled(self.is_paused)
 
         print("[Monitor] Dialog initialized.")
 
         self._load_language()
         self._start_stream_for_current_source()
 
-    def changeEvent(self, event: QEvent) -> None:
-        if event.type() == QEvent.Type.LanguageChange:
+    def changeEvent(self, a0: QEvent | None) -> None:
+        event = a0
+        if event and event.type() == QEvent.Type.LanguageChange:
             if DEV_COMPILED_UI_USING_ENABLED:
                 print("[Settings] Language change detected, retranslating UI...")
                 self.ui.retranslateUi(self)
@@ -59,7 +61,7 @@ class ChartMonitorDialog(QDialog):
             pass
         else:
             uic.loadUi("app/ui/realtime_monitor.ui", self)
-            self.ui = self
+            self.ui = cast(Ui_ChartMonitorDialog, self)
 
     def _setup_variables(self):
         self.translator = QTranslator()
@@ -176,7 +178,9 @@ class ChartMonitorDialog(QDialog):
         if self.chart_widget:
             self.chart_widget.update_data(chunk)
 
-    def closeEvent(self, event: QCloseEvent) -> None:
+    def closeEvent(self, a0: QCloseEvent | None) -> None:
+        event = a0
+
         print("[Monitor] Closing dialog, stopping stream...")
 
         if self.is_paused:
@@ -187,4 +191,5 @@ class ChartMonitorDialog(QDialog):
         else:
             self.network_service.request_sound_data_end()
 
-        event.accept()
+        if event:
+            event.accept()

@@ -1,7 +1,6 @@
 from dataclasses import dataclass
-from typing import Any, Optional, Union, Dict
-from enum import IntEnum, Enum
-from PyQt6.QtCore import QCoreApplication
+from enum import Enum, IntEnum
+from typing import Any, Optional, Union
 
 from app.core.mixins import TranslatorMixin
 

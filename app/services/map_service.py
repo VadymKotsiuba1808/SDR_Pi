@@ -1,8 +1,8 @@
-import math
 import asyncio
-from io import BytesIO
+import math
 from enum import Enum
-from typing import List, Tuple, Optional, Any, Union, Dict
+from io import BytesIO
+from typing import Any, Dict, List, Optional, Tuple
 
 import httpx
 from PIL import Image, ImageDraw
@@ -12,12 +12,11 @@ from app.core.constants import (
     DEV_TILE_DIVIDER_ENABLED,
     MAPS_API_URL,
     MAPS_IMG_FORMAT,
-    MAPS_IMG_FORMAT,
 )
 from app.protocols import MapServiceSettings
 
 
-class MapTypes(Enum):
+class MapTypes(str, Enum):
     ROAD = "streets-v2"
     # SATELLITE = "satellite-v2"
     HYBRID = "hybrid"
@@ -87,7 +86,7 @@ class MapService:
         coord: List[float],
         map_type: MapTypes,
         add_sizes_k: List[float] = [1, 1],
-    ) -> Optional[List[Union[QPixmap, float]]]:
+    ) -> Optional[Tuple[QPixmap, float]]:
 
         if not self.settings_service.api_key:
             print("[MapService] Error: API key missing.")
@@ -103,12 +102,11 @@ class MapService:
         )
 
         try:
-
             full_img = await self._fetch_and_stitch_tiles(geo_data, map_type)
 
             pixmap = self._crop_and_convert(full_img, geo_data)
 
-            return [pixmap, geo_data["km_per_pixel"]]
+            return (pixmap, geo_data["km_per_pixel"])
 
         except Exception as e:
             print(f"[MapService] Critical Map Error: {e}")

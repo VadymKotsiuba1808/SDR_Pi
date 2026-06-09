@@ -1,4 +1,4 @@
-from PyQt6.QtCore import QObject, QTimer, QDateTime, pyqtSignal
+from PyQt6.QtCore import QDateTime, QObject, QTimer, pyqtSignal
 
 from app.protocols import JammerServiceSettings
 from app.services.pi_network_service import PiNetworkService
@@ -14,7 +14,7 @@ class JammerService(QObject):
         self.pi_network = pi_network
         self.settings = settings_service
         self.is_active = False
-        self.start_time = None
+        self.start_time: QDateTime | None = None
 
         self.auto_stop_timer = QTimer()
         self.auto_stop_timer.setSingleShot(True)
@@ -30,7 +30,7 @@ class JammerService(QObject):
         self.pi_network.request_alarm_start(self.settings.main_relays)
 
         if self.settings.is_jammer_auto_stop_enabled:
-            msec = self.settings.jammer_auto_stop_interval_s * 1000
+            msec = int(self.settings.jammer_auto_stop_interval_s * 1000)
             self.auto_stop_timer.start(msec)
 
         self.state_changed.emit(True)
@@ -69,7 +69,7 @@ class JammerService(QObject):
 
     def get_formatted_time(self) -> str:
 
-        if not self.start_time or not self.is_active:
+        if self.start_time is None or not self.is_active:
             return "00:00:00"
 
         secs = self.start_time.secsTo(QDateTime.currentDateTime())

@@ -1,20 +1,19 @@
+from typing import Final, Optional
+
 import numpy as np
 import pyqtgraph as pg
-from typing import Optional, Final
+from PyQt6.QtCore import QPointF
+from PyQt6.QtWidgets import QVBoxLayout, QWidget
 
-from PyQt6.QtWidgets import QWidget, QVBoxLayout
-from PyQt6.QtCore import Qt, QPointF
-
+from app.core.chart_theme import ChartTheme
 from app.core.constants import (
     DB_OFFSET,
-    VISUAL_MIN_DB,
     UINT8_MAX,
+    VISUAL_MIN_DB,
     VISUAL_NOISE_FLOOR_UINT8,
 )
 from app.models.source_type import SourceType
 from app.models.stream_data import StreamDataChunk
-from app.core.chart_theme import ChartTheme
-
 from app.ui.components.chart_crosshair import PyGraphCrosshair
 
 
@@ -104,7 +103,9 @@ class DynamicChartWidget(QWidget):
         self.img_item.setLookupTable(color_map.getLookupTable(0.0, 1.0, 256))
 
     def _connect_handlers(self) -> None:
-        self.win.scene().sigMouseMoved.connect(self._on_mouse_moved)
+        scene = self.win.scene()
+        if scene is not None:
+            scene.sigMouseMoved.connect(self._on_mouse_moved)
 
     def clear_charts(self) -> None:
         """Повністю очищує графіки та буфери."""
@@ -224,6 +225,9 @@ class DynamicChartWidget(QWidget):
         scene_pos: QPointF,
         is_waterfall: bool,
     ) -> None:
+        if plot.vb is None:
+            return
+
         mouse_point = plot.vb.mapSceneToView(scene_pos)
         x_freq = mouse_point.x()
         y_val = mouse_point.y()

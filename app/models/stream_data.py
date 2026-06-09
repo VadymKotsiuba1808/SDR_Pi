@@ -1,6 +1,9 @@
-from dataclasses import dataclass
-import numpy as np
 import time
+from dataclasses import dataclass
+
+import numpy as np
+
+from app.models.source_type import SourceType
 
 
 @dataclass
@@ -9,7 +12,7 @@ class StreamDataChunk:
     Пакет даних, що приходить від SDR або мікрофона в реальному часі.
     """
 
-    stream_type: str  # з SourceType
+    stream_type: SourceType  # з SourceType
     # Переводиться у db за формулою dB=value_uint8−DB_OFFSET(у constants)
     # Містить лише дані про силу сигналу
     data_magnitude: np.ndarray
@@ -18,7 +21,7 @@ class StreamDataChunk:
     timestamp: float  # Час отримання пакету
 
     @staticmethod
-    def from_dict(data: dict, type: str) -> "StreamDataChunk":
+    def from_dict(data: dict, type: SourceType) -> "StreamDataChunk":
         """Парсинг вхідного словника JSON у об'єкт."""
 
         raw_list = data.get("data_magnitude", [])
@@ -34,7 +37,9 @@ class StreamDataChunk:
 
     def to_dict(self) -> dict:
         return {
-            "stream_type": self.stream_type,
+            "stream_type": self.stream_type.value
+            if hasattr(self.stream_type, "value")
+            else self.stream_type,
             "data_magnitude": self.data_magnitude.tolist(),
             "center_freq_hz": self.center_freq_hz,
             "sample_rate_hz": self.sample_rate_hz,

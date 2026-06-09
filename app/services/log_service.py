@@ -1,14 +1,13 @@
-import os
 import json
+import os
 import threading
-import time
+from dataclasses import asdict, dataclass
 from datetime import datetime
 from itertools import groupby
-from dataclasses import dataclass, asdict
 from typing import List, Optional
 
-from app.models.log_entries import LogEntry
 from app.core.constants import LOGS_DIR_PATH
+from app.models.log_entries import LogEntry
 
 
 @dataclass
@@ -50,8 +49,6 @@ class LogService:
 
         self._current_log_filename = f"session_{timestamp}.jsonl"
 
-        full_path = os.path.join(LOGS_DIR_PATH, self._current_log_filename)
-
         print(f"[LogService] Session rotated: {self._current_log_filename}")
 
     def add_log(self, entry: LogEntry) -> None:
@@ -86,6 +83,9 @@ class LogService:
 
             if log_date != self._current_session_date:
                 self._rotate_session_to_date(log_date)
+
+            if not self._current_log_filename:
+                break
 
             if not self._append_batch_to_disk(self._current_log_filename, batch):
                 with self._lock:
@@ -156,7 +156,7 @@ class LogService:
         self._flush_buffer()
 
     def get_available_sessions(self) -> List[LogSession]:
-        sessions = []
+        sessions: List[LogSession] = []
         if not os.path.exists(LOGS_DIR_PATH):
             return sessions
 

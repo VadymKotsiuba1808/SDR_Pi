@@ -1,12 +1,9 @@
-import sys
 import os
+import sys
 import time
-import random
-from datetime import datetime
-from typing import Optional, List, Dict, Any, Callable
-from dataclasses import dataclass
+from typing import List, Optional
 
-from PyQt6.QtCore import QCoreApplication, QTimer, QObject, pyqtSlot
+from PyQt6.QtCore import QCoreApplication, QObject, QTimer
 
 # ==========================================
 # 1. SETUP PATHS & MOCKS
@@ -37,10 +34,10 @@ class SettingsService:
 
 
 try:
-    from app.services.pi_network_service import PiNetworkService
     from app.models.detection_object import DetectionObject
     from app.models.object_class import ObjectClass
-    from app.models.service_response import ServiceResponse, DbOperation, StatusCode
+    from app.models.service_response import DbOperation, ServiceResponse, StatusCode
+    from app.services.pi_network_service import PiNetworkService
 except ImportError as e:
     print(f"{C.FAIL}CRITICAL IMPORT ERROR: {e}{C.ENDC}")
     sys.exit(1)
@@ -225,7 +222,8 @@ class MegaTestOrchestrator(QObject):
             # print(f"Ignored packet (Step inactive): {response.operation}")
             return
 
-        print(f"[PiNet] {response.operation.value} -> {response.status.value}")
+        if isinstance(response.operation, DbOperation):
+            print(f"[PiNet] {response.operation.value} -> {response.status.value}")
 
         verifier = self._get_verifier()
         if verifier:
@@ -263,7 +261,7 @@ class MegaTestOrchestrator(QObject):
         obj = DetectionObject(
             id=0,
             name=self.ctx.obj_name_1,
-            class_id=self.ctx.class_id_1,
+            class_id=self.ctx.class_id_1 or 0,
             object_class="Unknown",
             is_dangerous=True,
             rf_params_hz=["433.92"],
@@ -275,7 +273,7 @@ class MegaTestOrchestrator(QObject):
         obj = DetectionObject(
             id=self.ctx.obj_id_1,
             name=self.ctx.obj_name_1 + "_UPD",
-            class_id=self.ctx.class_id_1,
+            class_id=self.ctx.class_id_1 or 0,
             object_class="Unknown",
             is_dangerous=False,
             rf_params_hz=["915.0"],
@@ -284,7 +282,8 @@ class MegaTestOrchestrator(QObject):
         self.service.request_db_update_object(obj)
 
     def req_delete_class_in_use(self):
-        self.service.request_db_delete_class(self.ctx.class_id_1)
+        if self.ctx.class_id_1 is not None:
+            self.service.request_db_delete_class(self.ctx.class_id_1)
 
     def req_update_fake_obj(self):
         obj = DetectionObject(
@@ -297,13 +296,16 @@ class MegaTestOrchestrator(QObject):
 
     def req_del_obj_1(self):
         print(f"   -> Requesting delete for ID: {self.ctx.obj_id_1}")
-        self.service.request_db_delete_object(self.ctx.obj_id_1)
+        if self.ctx.obj_id_1 is not None:
+            self.service.request_db_delete_object(self.ctx.obj_id_1)
 
     def req_del_class_1(self):
-        self.service.request_db_delete_class(self.ctx.class_id_1)
+        if self.ctx.class_id_1 is not None:
+            self.service.request_db_delete_class(self.ctx.class_id_1)
 
     def req_del_class_2(self):
-        self.service.request_db_delete_class(self.ctx.class_id_2)
+        if self.ctx.class_id_2 is not None:
+            self.service.request_db_delete_class(self.ctx.class_id_2)
 
     # ==========================================
     # VERIFIERS
@@ -311,19 +313,21 @@ class MegaTestOrchestrator(QObject):
 
     def ver_create_class_1(self, r: ServiceResponse):
         if r.operation == DbOperation.ADD_CLASS and r.status == StatusCode.CREATED:
-            data = ObjectClass.from_dict(r.data)
-            self.ctx.class_id_1 = data.id
-            self.pass_step()
+            if isinstance(r.data, dict):
+                data = ObjectClass.from_dict(r.data)
+                self.ctx.class_id_1 = data.id
+                self.pass_step()
         elif r.is_error:
             self.fail_step(r.message)
 
     def ver_list_classes_has_1(self, r: ServiceResponse):
         if r.operation == DbOperation.GET_CLASSES and r.is_success:
-            classes = [ObjectClass.from_dict(c) for c in r.data.get("classes", [])]
-            if any(c.id == self.ctx.class_id_1 for c in classes):
-                self.pass_step()
-            else:
-                self.fail_step("Class 1 not found in list")
+            if isinstance(r.data, dict):
+                classes = [ObjectClass.from_dict(c) for c in r.data.get("classes", [])]
+                if any(c.id == self.ctx.class_id_1 for c in classes):
+                    self.pass_step()
+                else:
+                    self.fail_step("Class 1 not found in list")
 
     def ver_rename_class_1(self, r: ServiceResponse):
         if (
@@ -336,8 +340,9 @@ class MegaTestOrchestrator(QObject):
 
     def ver_create_class_2(self, r: ServiceResponse):
         if r.operation == DbOperation.ADD_CLASS and r.status == StatusCode.CREATED:
-            self.ctx.class_id_2 = ObjectClass.from_dict(r.data).id
-            self.pass_step()
+            if isinstance(r.data, dict):
+                self.ctx.class_id_2 = ObjectClass.from_dict(r.data).id
+                self.pass_step()
         elif r.is_error:
             self.fail_step(r.message)
 
@@ -350,8 +355,9 @@ class MegaTestOrchestrator(QObject):
 
     def ver_create_obj_1(self, r: ServiceResponse):
         if r.operation == DbOperation.ADD_OBJECT and r.status == StatusCode.CREATED:
-            self.ctx.obj_id_1 = DetectionObject.from_dict(r.data).id
-            self.pass_step()
+            if isinstance(r.data, dict):
+                self.ctx.obj_id_1 = DetectionObject.from_dict(r.data).id
+                self.pass_step()
         elif r.is_error:
             self.fail_step(r.message)
 

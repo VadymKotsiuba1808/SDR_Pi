@@ -1,28 +1,28 @@
-from typing import Optional, List
 import math
+from typing import List, Optional, cast
 
 from PyQt6 import uic
+from PyQt6.QtCore import QCoreApplication, QEvent, Qt, QTranslator
 from PyQt6.QtWidgets import (
     QDialog,
-    QTableWidgetItem,
-    QMessageBox,
     QHeaderView,
+    QMessageBox,
+    QTableWidgetItem,
     QWidget,
 )
-from PyQt6.QtCore import Qt, QEvent, QCoreApplication, QTranslator
 
 from app.core.constants import DEV_COMPILED_UI_USING_ENABLED, RF_PARAMS__DIVIDER
-from app.protocols import LangSettings
-from app.widgets.object_editor_dialog import ObjectEditorDialog
-from app.widgets.class_manager_dialog import ClassManagerDialog
-from app.services.pi_network_service import PiNetworkService
-from app.services.keyboard_service import KeyboardService
 from app.models.detection_object import DetectionObject
 from app.models.object_class import ObjectClass
-from app.models.service_response import ServiceResponse, DbOperation, StatusCode
+from app.models.service_response import DbOperation, ServiceResponse
+from app.protocols import LangSettings
+from app.services.keyboard_service import KeyboardService
+from app.services.pi_network_service import PiNetworkService
 from app.ui.ui_object_manager_dialog import Ui_ObjectManager
-from app.utils.ui_utils import move_dialog_down
 from app.utils.convert_measurement_unit import convert_hz_to_mhz
+from app.utils.ui_utils import move_dialog_down
+from app.widgets.class_manager_dialog import ClassManagerDialog
+from app.widgets.object_editor_dialog import ObjectEditorDialog
 
 ALLOW_DB_OPERATIONS = [
     DbOperation.ADD_OBJECT,
@@ -63,8 +63,9 @@ class ObjectManagerDialog(QDialog):
         self.refresh_data()
         self._load_language()
 
-    def changeEvent(self, event: QEvent) -> None:
-        if event.type() == QEvent.Type.LanguageChange:
+    def changeEvent(self, a0: QEvent | None) -> None:
+        event = a0
+        if event and event.type() == QEvent.Type.LanguageChange:
             if DEV_COMPILED_UI_USING_ENABLED:
                 self.ui.retranslateUi(self)
         else:
@@ -75,9 +76,8 @@ class ObjectManagerDialog(QDialog):
             self.ui = Ui_ObjectManager()
             self.ui.setupUi(self)
         else:
-            ui_path = "app/ui/object_manager_dialog.ui"
-            uic.loadUi(ui_path, self)
-            self.ui = self
+            uic.loadUi("app/ui/object_manager_dialog.ui", self)
+            self.ui = cast(Ui_ObjectManager, self)
 
     def _setup_state_variables(self) -> None:
         self.cached_objects: List[DetectionObject] = []
@@ -92,7 +92,9 @@ class ObjectManagerDialog(QDialog):
 
     def _init_table(self) -> None:
         header = self.ui.tableWidget.horizontalHeader()
-        header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        if header is not None:
+            header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+
         self.ui.tableWidget.setColumnWidth(1, 100)
         self.ui.tableWidget.setColumnWidth(2, 100)
         self.ui.tableWidget.setColumnWidth(3, 150)
@@ -174,7 +176,7 @@ class ObjectManagerDialog(QDialog):
 
     def _handle_db_status(self, response: ServiceResponse) -> None:
 
-        if not (response.operation in ALLOW_DB_OPERATIONS):
+        if response.operation not in ALLOW_DB_OPERATIONS:
             return
 
         if response.is_error:
@@ -191,28 +193,33 @@ class ObjectManagerDialog(QDialog):
 
         match response.operation:
             case DbOperation.ADD_OBJECT:
-                self.add_cache_obj(DetectionObject.from_dict(response.data))
+                if response.data:
+                    self.add_cache_obj(DetectionObject.from_dict(response.data))
             case DbOperation.UPDATE_OBJECT:
-                self.update_cache_obj(DetectionObject.from_dict(response.data))
+                if response.data:
+                    self.update_cache_obj(DetectionObject.from_dict(response.data))
             case DbOperation.DELETE_OBJECT:
-                id = response.data.get("id")
-                if id:
-                    self.delete_cache_obj(id)
+                if isinstance(response.data, dict):
+                    id = response.data.get("id")
+                    if id:
+                        self.delete_cache_obj(id)
             case DbOperation.GET_OBJECTS_PAGE:
-                items = response.data.get("items")
-                page = response.data.get("page")
-                total = response.data.get("total")
-                if items and total and page:
-                    obj_list = [DetectionObject.from_dict(item) for item in items]
+                if isinstance(response.data, dict):
+                    items = response.data.get("items")
+                    page = response.data.get("page")
+                    total = response.data.get("total")
+                    if items and total and page:
+                        obj_list = [DetectionObject.from_dict(item) for item in items]
 
-                    self._populate_table_from_db(obj_list, page, total)
+                        self._populate_table_from_db(obj_list, page, total)
             case DbOperation.GET_CLASSES:
-                classes_raw = response.data.get("classes", [])
-                classes_list = [ObjectClass.from_dict(c) for c in classes_raw]
+                if isinstance(response.data, dict):
+                    classes_raw = response.data.get("classes", [])
+                    classes_list = [ObjectClass.from_dict(c) for c in classes_raw]
 
-                if self._waiting_classes_for_editor:
-                    self._waiting_classes_for_editor = False
-                    self._open_editor(classes_list)
+                    if self._waiting_classes_for_editor:
+                        self._waiting_classes_for_editor = False
+                        self._open_editor(classes_list)
 
         print(f"[ObjectManager] DB Operation '{response.operation}': ...")
 
@@ -273,8 +280,8 @@ class ObjectManagerDialog(QDialog):
         if rf_list:
             if len(rf_list) == 1:
                 rf_arr = rf_list[0].split(RF_PARAMS__DIVIDER)
-                min = round(convert_hz_to_mhz(rf_arr[0]), 1)
-                max = round(convert_hz_to_mhz(rf_arr[1]), 1)
+                min = round(convert_hz_to_mhz(float(rf_arr[0])), 1)
+                max = round(convert_hz_to_mhz(float(rf_arr[1])), 1)
                 rf_str = self.tr("{}-{} MHz").format(min, max)
             else:
                 rf_str = self.tr("{} freq(s)").format(len(rf_list))
@@ -298,6 +305,10 @@ class ObjectManagerDialog(QDialog):
             return None
         row = selected_items[0].row()
         item = self.ui.tableWidget.item(row, 0)
+
+        if item is None:
+            return None
+
         val = item.data(Qt.ItemDataRole.UserRole)
         return int(val) if val is not None else None
 

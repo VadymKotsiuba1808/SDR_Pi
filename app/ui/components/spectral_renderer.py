@@ -1,30 +1,30 @@
 import math
-import numpy as np
 from typing import Optional
 
+import numpy as np
+from PyQt6.QtCore import QPoint, QPointF, QRect, Qt
 from PyQt6.QtGui import (
+    QBrush,
+    QColor,
+    QFont,
+    QLinearGradient,
     QPainter,
     QPen,
-    QBrush,
     QPolygonF,
-    QLinearGradient,
-    QFont,
-    QColor,
 )
-from PyQt6.QtCore import QRect, Qt, QPointF
 
-from app.core.mixins import TranslatorMixin
+from app.core.chart_theme import ChartTheme
 from app.core.constants import (
     DB_OFFSET,
-    VISUAL_MIN_DB,
     VISUAL_MAX_DB,
+    VISUAL_MIN_DB,
     VISUAL_RANGE_DB,
 )
-from app.models.detection_event import DetectionEvent
-from app.models.detection_background import SpectralData
-from app.models.source_type import SourceType
+from app.core.mixins import TranslatorMixin
 from app.models.chart_models import CursorState
-from app.core.chart_theme import ChartTheme
+from app.models.detection_background import SpectralData
+from app.models.detection_event import DetectionEvent
+from app.models.source_type import SourceType
 from app.utils.chart_math import ChartMath
 from app.utils.convert_measurement_unit import convert_hz_to_mhz
 
@@ -131,14 +131,14 @@ class SpectralChartRenderer(TranslatorMixin):
 
     def calculate_cursor(
         self,
-        pos: QPointF,
+        pos: QPoint,
         rect: QRect,
         background: SpectralData,
         chart_type: str,
         event: Optional[DetectionEvent] = None,
     ) -> CursorState:
 
-        check_pos = pos.toPoint() if hasattr(pos, "toPoint") else pos
+        check_pos = pos
 
         if not rect.contains(check_pos) or not background:
             return CursorState(visible=False)
@@ -260,7 +260,7 @@ class SpectralChartRenderer(TranslatorMixin):
         p.drawPolyline(poly)
 
     def _draw_grid(
-        self, p: QPainter, rect: QRect, data: SpectralData, type: str, mode: str
+        self, p: QPainter, rect: QRect, data: SpectralData, type: SourceType, mode: str
     ):
         p.setFont(QFont("Arial", 8))
         grid_pen = QPen(ChartTheme.GRID_FAINT, 1, Qt.PenStyle.DashLine)
@@ -300,7 +300,7 @@ class SpectralChartRenderer(TranslatorMixin):
         steps_y = 6
         for i in range(steps_y):
             ratio = i / (steps_y - 1)
-            y = 0
+            y: float = 0
             label = ""
 
             if mode == "dbm":

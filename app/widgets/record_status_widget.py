@@ -3,10 +3,11 @@
 Показує індикатор (червона крапка/таймер), коли йде запис екрану.
 """
 
-from PyQt6.QtWidgets import QWidget
-from PyQt6.QtCore import pyqtSlot, QSize
-from PyQt6.QtGui import QIcon
+from typing import cast
+
 from PyQt6 import uic
+from PyQt6.QtCore import pyqtSlot
+from PyQt6.QtWidgets import QWidget
 
 from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
 from app.ui.ui_record_status_widget import Ui_RecordingStatusWidget
@@ -27,7 +28,7 @@ class RecordingStatusWidget(QWidget):
             self.ui.setupUi(self)
         else:
             uic.loadUi("app/ui/record_status_widget.ui", self)
-            self.ui = self
+            self.ui = cast(Ui_RecordingStatusWidget, self)
 
     @pyqtSlot(str)
     def update_duration(self, time_str):

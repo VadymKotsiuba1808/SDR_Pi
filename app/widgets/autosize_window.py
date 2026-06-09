@@ -4,140 +4,21 @@
 """
 
 import re
+
+from PyQt6.QtCore import Qt, pyqtSlot
+from PyQt6.QtGui import (
+    QAction,
+    QGuiApplication,
+    QMouseEvent,
+    QPalette,
+)
 from PyQt6.QtWidgets import (
+    QComboBox,
     QGraphicsScene,
     QGraphicsView,
-    QWidget,
-    QApplication,
-    QVBoxLayout,
-    QDialog,
     QMainWindow,
-    QComboBox,
     QMenu,
 )
-from PyQt6.QtGui import QPainter, QGuiApplication, QResizeEvent, QAction, QPalette
-from PyQt6.QtCore import Qt, QRectF, QSize, pyqtSlot
-import types
-
-
-def make_scalable(base_class):
-    """
-    Фабрика класів: створює клас-обгортку, який масштабує
-    внутрішній віджет (з фіксованим розміром)
-    для заповнення всього доступного простору вікна.
-
-    Працює з QMainWindow, QDialog, QWidget.
-    """
-
-    class ScalableWindow(base_class):
-        def __init__(self, widget_to_scale):
-            super().__init__()
-
-            self.ui_widget = widget_to_scale
-            # Зберігаємо базові розміри
-            self.base_width = self.ui_widget.width()
-            self.base_height = self.ui_widget.height()
-
-            # Встановлюємо сцену з розмірами нашого віджета
-            self.scene = QGraphicsScene(0, 0, self.base_width, self.base_height)
-            self.proxy = self.scene.addWidget(self.ui_widget)
-
-            self.view = QGraphicsView(self.scene)
-            self.view.setRenderHint(QPainter.RenderHint.Antialiasing, True)
-            self.view.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform, True)
-
-            # Вимикаємо смуги прокрутки, оскільки ми масштабуємо
-            self.view.setHorizontalScrollBarPolicy(
-                Qt.ScrollBarPolicy.ScrollBarAlwaysOff
-            )
-            self.view.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-
-            # Встановлюємо прозорий фон для QGraphicsView
-            self.view.setStyleSheet("background: transparent")
-
-            # Якщо 'base_class' є QDialog, ми повинні з'єднати сигнали.
-            if base_class is QDialog:
-                self.setWindowFlags(
-                    Qt.WindowType.Dialog | Qt.WindowType.FramelessWindowHint
-                )
-
-                # З'єднуємо сигнали "accepted" та "rejected"
-                # ВНУТРІШНЬОГО віджета (widget_to_scale)
-                # зі слотами "accept" та "reject"
-                # ЗОВНІШНЬОГО вікна (self).
-                if isinstance(widget_to_scale, QDialog):
-                    widget_to_scale.accepted.connect(self.accept)
-                    widget_to_scale.rejected.connect(self.reject)
-
-            # Розміщуємо QGraphicsView всередині обгортки
-            if hasattr(self, "setCentralWidget"):
-                # Шлях для QMainWindow
-                self.setCentralWidget(self.view)
-            else:
-                # Шлях для QDialog або QWidget
-                if self.layout() is None:
-                    lay = QVBoxLayout(self)
-                    self.setLayout(lay)
-
-                # Прибираємо відступи, щоб view заповнював усе вікно
-                self.layout().setContentsMargins(0, 0, 0, 0)
-                self.layout().addWidget(self.view)
-
-            # Встановлюємо початковий розмір обгортки
-            self.resize(self.base_width, self.base_height)
-
-        def resizeEvent(self, event):
-            # Перехоплюємо подію зміни розміру вікна
-            super().resizeEvent(event)
-            self.fitInView()
-
-        def fitInView(self):
-            # Ця функція тепер масштабує вміст до поточного розміру вікна
-
-            view_rect = self.view.viewport().rect()
-            if view_rect.isEmpty():
-                return
-
-            scene_rect = self.scene.sceneRect()
-
-            # Використовуємо вбудовану функцію Qt для ідеального масштабування
-            self.view.fitInView(scene_rect, Qt.AspectRatioMode.KeepAspectRatio)
-
-        def exec(self):
-            # Якщо викликається exec() (для QDialog),
-            # ми спочатку показуємо вікно на весь екран.
-            self.showFullScreen()
-            return super().exec()
-
-        def showEvent(self, event):
-            # Також викликаємо fitInView при першому показі
-            super().showEvent(event)
-            self.fitInView()
-
-        # --- ЗАМІНА: АВТОМАТИЧНА ПЕРЕАДРЕСАЦІЯ ---
-        def __getattr__(self, name):
-            """
-            Цей магічний метод автоматично викликається,
-            якщо атрибут 'name' не знайдено у ScalableWindow.
-            Він перенаправляє запит до внутрішнього ui_widget.
-
-            Це дозволяє викликати 'scalable_dialog.get_settings()'
-            безпосередньо.
-            """
-            try:
-                # Намагаємося отримати атрибут (метод або властивість)
-                # у внутрішнього віджета
-                return getattr(self.ui_widget, name)
-            except AttributeError:
-                # Якщо його немає і там, викликаємо стандартну помилку
-                raise AttributeError(
-                    f"'{type(self).__name__}' object (and its wrapped 'ui_widget') "
-                    f"has no attribute '{name}'"
-                )
-
-        # --- КІНЕЦЬ ЗАМІНИ ---
-
-    return ScalableWindow
 
 
 def make_window_stretched(widget):
@@ -146,64 +27,11 @@ def make_window_stretched(widget):
     widget.setModal(True)
 
     widget.setWindowFlags(Qt.WindowType.Window)
-    # або Qt.WindowType.Dialog | Qt.WindowType.FramelessWindowHint якщо хочеш без рамок
-    screen = QGuiApplication.primaryScreen().geometry()
-    widget.setGeometry(screen)
 
-
-def setup_auto_scaling(
-    window: QMainWindow, base_width: int = 1920, base_height: int = 1080
-):
-    print("[AutoScaling] --- Початок налаштування ---")
-    content_widget = window.centralwidget
-    print(f"[AutoScaling] centralwidget: {content_widget}")
-
-    if not content_widget:
-        print("[AutoScaling] ❌ Відсутній centralwidget!")
-        return
-
-    print(f"[AutoScaling] Вікно: {window.objectName() or '<без імені>'}")
-    print(f"[AutoScaling] Базовий розмір: {base_width}x{base_height}")
-
-    window._base_size = QSize(base_width, base_height)
-
-    window.setStyleSheet(
-        f"QMainWindow#{window.objectName()} {{ background-color: black; }}"
-    )
-    print("[AutoScaling] Застосовано чорний фон до QMainWindow")
-
-    def new_resizeEvent(self, event: QResizeEvent):
-        print(
-            f"[AutoScaling] resizeEvent → новий розмір: {event.size().width()}x{event.size().height()}"
-        )
-
-        window_size = event.size()
-        new_size = self._base_size.scaled(
-            window_size, Qt.AspectRatioMode.KeepAspectRatio
-        )
-
-        x = (window_size.width() - new_size.width()) / 2
-        y = (window_size.height() - new_size.height()) / 2
-
-        content_widget.setGeometry(int(x), int(y), new_size.width(), new_size.height())
-        print(
-            f"[AutoScaling] → centralwidget: pos=({int(x)}, {int(y)}), size={new_size.width()}x{new_size.height()}"
-        )
-
-    window.resizeEvent = types.MethodType(new_resizeEvent, window)
-    print("[AutoScaling] Перевизначено resizeEvent")
-
-    original_showEvent = window.showEvent
-
-    def new_showEvent(self, event):
-        print("[AutoScaling] showEvent → виклик початкового масштабування")
-        original_showEvent(event)
-        self.resizeEvent(QResizeEvent(self.size(), self.size()))
-
-    window.showEvent = types.MethodType(new_showEvent, window)
-    print("[AutoScaling] Перевизначено showEvent")
-
-    print("[AutoScaling] --- Налаштування завершено ---\n")
+    pr_screen = QGuiApplication.primaryScreen()
+    if pr_screen is not None:
+        screen = pr_screen.geometry()
+        widget.setGeometry(screen)
 
 
 class ScaledComboBox(QComboBox):
@@ -238,8 +66,9 @@ class ScaledComboBox(QComboBox):
     def showPopup(self):
         self.create_custom_menu()
 
-    def mousePressEvent(self, event):
-        if event.button() == Qt.MouseButton.LeftButton:
+    def mousePressEvent(self, e: QMouseEvent | None) -> None:
+        event = e
+        if event and event.button() == Qt.MouseButton.LeftButton:
             self.create_custom_menu()
         else:
             super().mousePressEvent(event)
@@ -256,14 +85,14 @@ class ScaledComboBox(QComboBox):
         menu_stylesheet = f"""
             QMenu {{
                 font-size: {font_size}px;
-                background-color: {data['background']};
-                color: {data['color']};
-                border: {data['border']};
+                background-color: {data["background"]};
+                color: {data["color"]};
+                border: {data["border"]};
             }}
             QMenu::item {{ padding: 8px 20px 8px 20px; }}
             QMenu::item:selected {{
-                background-color: {data['selection-background']};
-                color: {data['selection-color']};
+                background-color: {data["selection-background"]};
+                color: {data["selection-color"]};
             }}
         """
         menu.setStyleSheet(menu_stylesheet)
@@ -300,9 +129,6 @@ class ScaledComboBox(QComboBox):
             self.hidden_combo.setCurrentIndex(index)
 
 
-# ---------------------------------------------------------------------
-# Крок 2: enable_auto_scaling тепер передає old_combo
-# ---------------------------------------------------------------------
 def enable_auto_scaling(
     window: QMainWindow, base_width: int = 1920, base_height: int = 1080
 ):
@@ -324,7 +150,14 @@ def enable_auto_scaling(
         print(f"[AutoScaler] Замінюю {old_combo.objectName()}...")
 
         # 1. Зчитуємо стилі
-        view_palette = old_combo.view().palette()
+        combo_view = old_combo.view()
+        if combo_view is None:
+            print(
+                f"[AutoScaler] Помилка: Не вдалося отримати view для {old_combo.objectName()}"
+            )
+            continue
+
+        view_palette = combo_view.palette()
         style_data = {
             "background": view_palette.color(QPalette.ColorRole.Base).name(),
             "color": view_palette.color(QPalette.ColorRole.Text).name(),
@@ -368,8 +201,10 @@ def enable_auto_scaling(
 
         # 4. Оновлюємо атрибут на 'window.ui'
         attr_name = old_combo.objectName()
-        if hasattr(window.ui, attr_name):
-            setattr(window.ui, attr_name, new_combo)
+        window_ui = getattr(window, "ui", None)
+
+        if window_ui is not None and hasattr(window_ui, attr_name):
+            setattr(window_ui, attr_name, new_combo)
             print(f"[AutoScaler]   -> Оновлено атрибут 'window.ui.{attr_name}'")
 
         # 5. (ВАЖЛИВО) Ховаємо старий, але НЕ видаляємо його
@@ -390,7 +225,12 @@ def enable_auto_scaling(
     scene.addWidget(original_widget)
     window.setCentralWidget(view)
 
-    screen_rect = QGuiApplication.primaryScreen().geometry()
+    pr_screen = QGuiApplication.primaryScreen()
+    if pr_screen is None:
+        print("[AutoScaler] Помилка: Не вдалося отримати primaryScreen.")
+        return
+
+    screen_rect = pr_screen.geometry()
     scale_x = screen_rect.width() / base_width
     scale_y = screen_rect.height() / base_height
     scale = min(scale_x, scale_y)

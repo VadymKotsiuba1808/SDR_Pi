@@ -1,17 +1,17 @@
-from typing import Optional, List, Dict, Any
+from typing import List, Optional, cast
 
-from PyQt6.QtWidgets import QDialog, QMessageBox, QListWidgetItem, QListWidget, QWidget
-from PyQt6.QtCore import Qt, QEvent, QCoreApplication, QTranslator, pyqtSignal
 from PyQt6 import uic
+from PyQt6.QtCore import QCoreApplication, QEvent, Qt, QTranslator
+from PyQt6.QtWidgets import QDialog, QListWidget, QListWidgetItem, QMessageBox, QWidget
 
 from app.core.constants import DEV_COMPILED_UI_USING_ENABLED, RF_PARAMS__DIVIDER
-from app.protocols import LangSettings
-from app.widgets.keyboard_widget import KeyboardWidget
-from app.services.keyboard_service import KeyboardService
 from app.models.detection_object import DetectionObject
 from app.models.object_class import ObjectClass
+from app.protocols import LangSettings
+from app.services.keyboard_service import KeyboardService
 from app.ui.ui_object_editor_dialog import Ui_ObjectEditorDialog
-from app.utils.convert_measurement_unit import convert_mhz_to_hz, convert_hz_to_mhz
+from app.utils.convert_measurement_unit import convert_hz_to_mhz, convert_mhz_to_hz
+from app.widgets.keyboard_widget import KeyboardWidget
 
 
 class ObjectEditorDialog(QDialog):
@@ -54,8 +54,9 @@ class ObjectEditorDialog(QDialog):
 
         print(f"[ObjectEditor] Initialized. Edit mode: {self.is_edit_mode}")
 
-    def changeEvent(self, event: QEvent) -> None:
-        if event.type() == QEvent.Type.LanguageChange:
+    def changeEvent(self, a0: QEvent | None) -> None:
+        event = a0
+        if event and event.type() == QEvent.Type.LanguageChange:
             if DEV_COMPILED_UI_USING_ENABLED:
                 self.ui.retranslateUi(self)
         else:
@@ -68,7 +69,7 @@ class ObjectEditorDialog(QDialog):
         else:
             ui_path = "app/ui/object_editor_dialog.ui"
             uic.loadUi(ui_path, self)
-            self.ui = self
+            self.ui = cast(Ui_ObjectEditorDialog, self)
 
     def _setup_state_variables(self) -> None:
         self.translator = QTranslator()
@@ -205,14 +206,18 @@ class ObjectEditorDialog(QDialog):
 
         obj_id = self.object_data.id if self.is_edit_mode and self.object_data else None
 
+        if rf_data is None and sound_data is None:
+            print("[ObjectEditor] Save failed: No RF or Sound data.")
+            return
+
         self.new_object = DetectionObject(
             id=obj_id,
             name=name,
             class_id=int(selected_class_id),
             object_class=selected_class_name,
             is_dangerous=self.ui.chkDangerous.isChecked(),
-            rf_params_hz=rf_data,
-            sound_params_hz=sound_data,
+            rf_params_hz=rf_data or [],
+            sound_params_hz=sound_data or [],
         )
 
         print(f"[ObjectEditor] Object saved: {name} (ClassID: {selected_class_id})")
@@ -293,6 +298,9 @@ class ObjectEditorDialog(QDialog):
 
         for i in range(list_widget.count()):
             item = list_widget.item(i)
+            if item is None:
+                continue
+
             existing_data = item.data(role)
 
             # Перевірка на повний дублікат
@@ -342,7 +350,7 @@ class ObjectEditorDialog(QDialog):
         raw_string = f"{f_min_hz}-{f_max_hz}"
 
         if self._check_is_duplicate(
-            self.ui.lstRFFreqs, raw_string, [f_min_hz, f_max_hz]
+            self.ui.lstRFFreqs, raw_string, (f_min_hz, f_max_hz)
         ):
             return
 
@@ -385,6 +393,9 @@ class ObjectEditorDialog(QDialog):
         if self.ui.chkRFEnable.isChecked():
             for i in range(self.ui.lstRFFreqs.count()):
                 item = self.ui.lstRFFreqs.item(i)
+                if item is None:
+                    continue
+
                 val = item.data(Qt.ItemDataRole.UserRole)
                 if val is not None:
                     data.append(str(val))
@@ -399,6 +410,9 @@ class ObjectEditorDialog(QDialog):
         if self.ui.chkSoundEnable.isChecked():
             for i in range(self.ui.lstSoundFreqs.count()):
                 item = self.ui.lstSoundFreqs.item(i)
+                if item is None:
+                    continue
+
                 val = item.data(Qt.ItemDataRole.UserRole)
                 if val is not None:
                     data.append(int(val))

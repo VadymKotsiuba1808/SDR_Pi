@@ -3,13 +3,13 @@
 Відповідає за валідацію, застосування змін на льоту та надання доступу до налаштувань для інших компонентів.
 """
 
-import os
-from pathlib import Path
-from PyQt6.QtCore import QObject, pyqtSignal, QSettings, QFileSystemWatcher
-from typing import NamedTuple, Any, Dict
 from enum import Enum
+from pathlib import Path
+from typing import Any, Dict, NamedTuple
 
-from app.core.constants import RELAY_NAMES_LIST, CLEAN_TARGET_NAME
+from PyQt6.QtCore import QFileSystemWatcher, QObject, QSettings, pyqtSignal
+
+from app.core.constants import CLEAN_TARGET_NAME, RELAY_NAMES_LIST
 from app.models.settings import CleanRule
 
 
@@ -20,7 +20,6 @@ class Setting(NamedTuple):
 
 
 class SettingsService(QObject):
-
     settings_changed = pyqtSignal()
 
     # Pinetwork
@@ -154,12 +153,10 @@ class SettingsService(QObject):
         if not isinstance(value, dict):
             return {}
 
-        serialized = {}
+        serialized: Dict[str, dict] = {}
         for target, rule in value.items():
             key_str = target.value if isinstance(target, Enum) else str(target)
-
-            rule_dict = rule.to_dict() if hasattr(rule, "to_dict") else rule
-            serialized[key_str] = rule_dict
+            serialized[key_str] = rule.to_dict()
 
         return serialized
 

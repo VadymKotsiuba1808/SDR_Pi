@@ -3,28 +3,27 @@
 Ініціалізує QApplication, та запускає авторизацію і головне вікно (MainWindow).
 """
 
-import sys
 import asyncio
-import qasync
-from PyQt6.QtWidgets import QApplication, QDialog, QMainWindow
+import sys
+from typing import Optional
 
-from app.widgets.main_window import MainWindow
-from app.widgets.login_dialog import LoginDialog
+import qasync
+from PyQt6.QtWidgets import QApplication, QDialog
+
+from app.services.cleaner_service import CleanerService
+from app.services.keyboard_service import KeyboardService
 from app.services.settings_service import SettingsService
 from app.services.system_service import SystemService
-from app.services.cleaner_service import CleanerService
-
-from app.services.keyboard_service import KeyboardService
-from app.widgets.autosize_window import (
-    make_window_stretched,
-    enable_auto_scaling,
-)
 from app.utils.async_utils import make_safe_set_result
+from app.widgets.autosize_window import (
+    enable_auto_scaling,
+    make_window_stretched,
+)
+from app.widgets.login_dialog import LoginDialog
+from app.widgets.main_window import MainWindow
 
 
-async def main():
-    app = QApplication.instance()
-
+async def main(app: QApplication) -> None:
     settings_service = SettingsService()
     system_service = SystemService()
     keyboard_service = KeyboardService(system_service)
@@ -32,20 +31,21 @@ async def main():
     clean_service = CleanerService(settings_service)
     clean_service.clean_sdr_data()
 
-    future = asyncio.Future()
+    login_dialog: Optional[LoginDialog] = None
+    future: asyncio.Future[None] = asyncio.Future()
     # Коректне закриття при виході з програми
     app.aboutToQuit.connect(lambda: future.set_result(None))
     remember_me = settings_service.remember_me
 
     result_code = None
 
-    if remember_me == False:
+    if not remember_me:
         # Вимикаємо автоматичне завершення програми після закриття останнього вікна
         app.setQuitOnLastWindowClosed(False)
         login_dialog = LoginDialog(settings=settings_service, keyboard=keyboard_service)
         make_window_stretched(login_dialog)
 
-        dialog_finished_future = asyncio.Future()
+        dialog_finished_future: asyncio.Future[int] = asyncio.Future()
 
         login_dialog.finished.connect(make_safe_set_result(dialog_finished_future))
 
@@ -54,9 +54,8 @@ async def main():
         result_code = await dialog_finished_future
 
     if (
-        result_code == QDialog.DialogCode.Accepted or remember_me == True
+        result_code == QDialog.DialogCode.Accepted or remember_me
     ):  # .Accepted це зазвичай 1
-
         app.setQuitOnLastWindowClosed(True)
         window = MainWindow(
             settings=settings_service, keyboard=keyboard_service, system=system_service
@@ -65,14 +64,15 @@ async def main():
         enable_auto_scaling(window)
         window.showFullScreen()
 
-        if remember_me == False:
+        if not remember_me and login_dialog is not None:
             await asyncio.sleep(0.05)
             login_dialog.close()
 
         await future
 
     else:
-        app.quit()
+        if app is not None:
+            app.quit()
 
 
 if __name__ == "__main__":
@@ -81,7 +81,7 @@ if __name__ == "__main__":
         loop = qasync.QEventLoop(app)
         asyncio.set_event_loop(loop)
 
-        loop.run_until_complete(main())
+        loop.run_until_complete(main(app))
 
     except asyncio.CancelledError:
         sys.exit(0)

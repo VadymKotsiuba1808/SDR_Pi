@@ -3,22 +3,23 @@
 Логіка вікна входу: обробка вводу пароля та перехід до головного вікна.
 """
 
-from typing import Optional
+from typing import Optional, cast
 
-from PyQt6.QtWidgets import QDialog, QLineEdit, QWidget
-from PyQt6.QtCore import QCoreApplication, QTranslator, QEvent, Qt
 from PyQt6 import uic
+from PyQt6.QtCore import QCoreApplication, QEvent, QTranslator
+from PyQt6.QtGui import QCloseEvent
+from PyQt6.QtWidgets import QDialog, QLineEdit, QWidget
 
 from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
-from app.ui.ui_login_dialog import Ui_LoginDialog
 from app.protocols import LoginDialogSettings
-from app.utils.password_utils import verify_password
-from app.utils.ui_utils import update_element_styles
-from app.widgets.keyboard_widget import KeyboardWidget
-from app.widgets.change_pwd_dialog import ChangePwdDialog
-from app.widgets.autosize_window import make_window_stretched
 from app.services.keyboard_service import KeyboardService
 from app.services.usb_auth_service import UsbAuthService
+from app.ui.ui_login_dialog import Ui_LoginDialog
+from app.utils.password_utils import verify_password
+from app.utils.ui_utils import update_element_styles
+from app.widgets.autosize_window import make_window_stretched
+from app.widgets.change_pwd_dialog import ChangePwdDialog
+from app.widgets.keyboard_widget import KeyboardWidget
 
 
 class LoginDialog(QDialog):
@@ -43,8 +44,9 @@ class LoginDialog(QDialog):
         self._load_language()
         print("[LoginDialog] Initialization complete.")
 
-    def changeEvent(self, event: QEvent) -> None:
-        if event.type() == QEvent.Type.LanguageChange:
+    def changeEvent(self, a0: QEvent | None) -> None:
+        event = a0
+        if event and event.type() == QEvent.Type.LanguageChange:
             if DEV_COMPILED_UI_USING_ENABLED:
                 print("[LoginDialog] Language change detected, updating UI...")
                 self.ui.retranslateUi(self)
@@ -57,7 +59,7 @@ class LoginDialog(QDialog):
             self.ui.setupUi(self)
         else:
             uic.loadUi("app/ui/login_dialog.ui", self)
-            self.ui = self
+            self.ui = cast(Ui_LoginDialog, self)
 
     def _setup_state_variables(self) -> None:
         self.translator = QTranslator()
@@ -156,9 +158,12 @@ class LoginDialog(QDialog):
     def accept_window(self) -> None:
         self.finished.emit(QDialog.DialogCode.Accepted)
 
-    def closeEvent(self, event: QEvent) -> None:
+    def closeEvent(self, a0: QCloseEvent | None) -> None:
+        event = a0
+
         if hasattr(self, "auth_service"):
             self.auth_service.stop_monitoring()
 
         self.done(QDialog.DialogCode.Rejected)
-        event.accept()
+        if event:
+            event.accept()

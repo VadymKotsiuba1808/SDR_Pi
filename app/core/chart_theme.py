@@ -1,4 +1,5 @@
-from typing import Final, Tuple
+from typing import Final
+
 from PyQt6.QtGui import QColor
 
 

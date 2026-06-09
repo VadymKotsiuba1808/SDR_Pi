@@ -3,12 +3,13 @@
 Реалізує функціонал захоплення відео з екрану (Screen Recording) та збереження у файл .mp4.
 """
 
-from PyQt6.QtCore import QThread, pyqtSignal, pyqtSlot, QElapsedTimer
-from vidgear.gears import WriteGear
-import numpy as np
-import mss
 import time
+
 import cv2
+import mss
+import numpy as np
+from PyQt6.QtCore import QElapsedTimer, QThread, pyqtSignal, pyqtSlot
+from vidgear.gears import WriteGear
 
 from app.protocols import OSService
 
@@ -30,6 +31,10 @@ class RecordingService(QThread):
         self.is_running = False
         self.is_paused = False
         self.filename = ""
+
+        self.prev_total_ms = 0
+        self.dif_time_ms = 0
+        self.pause_start = 0
 
         if self.system_service.is_windows:
             self.fps = 30
@@ -67,7 +72,6 @@ class RecordingService(QThread):
                 }
             )
         else:
-
             if use_hardware:
                 params.update(
                     {
@@ -94,7 +98,7 @@ class RecordingService(QThread):
         return params
 
     def run(self):
-        print(f"[Recorder] Thread started")
+        print("[Recorder] Thread started")
         self.is_running = True
 
         try:
@@ -131,7 +135,9 @@ class RecordingService(QThread):
                 params = self._get_ffmpeg_params(
                     self.record_width, self.record_height, use_hardware=True
                 )
-                self.writer = WriteGear(output=self.filename, logging=True, **params)
+                self.writer = WriteGear(
+                    output=self.filename, logging=True, output_params=params
+                )
             except Exception as e:
                 print(
                     f"[Recorder] Hardware encoding failed: {e}. Switching to Software."
@@ -144,16 +150,15 @@ class RecordingService(QThread):
                 params = self._get_ffmpeg_params(
                     self.record_width, self.record_height, use_hardware=False
                 )
-                self.writer = WriteGear(output=self.filename, logging=False, **params)
+                self.writer = WriteGear(
+                    output=self.filename, logging=False, output_params=params
+                )
             except Exception as e:
                 self.recording_error.emit(f"Writer Init Critical Error: {e}")
                 self.is_running = False
                 return
 
         self.start_time.start()
-        self.prev_total_ms = 0
-        self.dif_time_ms = 0
-        self.pause_start = 0
 
         self.recording_started.emit()
 
@@ -162,8 +167,6 @@ class RecordingService(QThread):
 
         try:
             while self.is_running:
-                now = time.perf_counter()
-
                 if self.is_paused:
                     time.sleep(0.1)
                     self.start_time_perf += 0.1
@@ -183,7 +186,6 @@ class RecordingService(QThread):
                     )
 
                 if self.writer:
-
                     self.writer.write(frame)
                     self.frames_written += 1
 

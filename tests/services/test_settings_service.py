@@ -33,7 +33,7 @@ def test_initial_defaults(settings_service: SettingsService) -> None:
     """
     Тест значень за замовчуванням.
     """
-    assert settings_service.pi_target_ip == "0.0.0.0"
+    assert settings_service.pi_target_ip == "10.0.0.1"
     assert settings_service.pi_target_port == 6000
     assert settings_service.role == "operator"
     assert settings_service.remember_me is False

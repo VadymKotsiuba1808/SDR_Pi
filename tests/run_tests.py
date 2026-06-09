@@ -11,6 +11,10 @@ from typing import Dict, List, Tuple
 # Налаштування UTF-8 кодування для Windows
 if sys.platform == "win32":
     os.system("chcp 65001 > nul")
+    if hasattr(sys.stdout, "reconfigure"):
+        getattr(sys.stdout, "reconfigure")(encoding="utf-8")
+    if hasattr(sys.stderr, "reconfigure"):
+        getattr(sys.stderr, "reconfigure")(encoding="utf-8")
 
 
 class Colors:

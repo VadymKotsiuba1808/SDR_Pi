@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any
 
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot, QByteArray, QTimer
 from PyQt6.QtNetwork import QTcpServer, QTcpSocket, QHostAddress
@@ -51,10 +51,7 @@ class PiNetworkService(QObject):
         self.reconnect_timer.timeout.connect(self._try_connect)
 
     def start(self) -> None:
-        if self.settings.pi_is_receiver:
-            self._start_server()
-        else:
-            self._start_client()
+        self._start_client()
 
     def stop(self) -> None:
         self.reconnect_timer.stop()
@@ -62,16 +59,6 @@ class PiNetworkService(QObject):
             self.server.close()
         if self.socket:
             self.socket.close()
-
-    def _start_server(self) -> None:
-        self.server = QTcpServer(self)
-        self.server.newConnection.connect(self._handle_new_connection)
-        port = self.settings.pi_target_port
-
-        if self.server.listen(QHostAddress.SpecialAddress.Any, port):
-            print(f"[PiNet] Server listening on port {port}")
-        else:
-            print(f"[PiNet] Server start error: {self.server.errorString()}")
 
     @pyqtSlot()
     def _handle_new_connection(self) -> None:
@@ -126,9 +113,8 @@ class PiNetworkService(QObject):
         self.connection_status_changed.emit(False)
         self.socket = None
 
-        if not self.settings.pi_is_receiver:
-            print("[PiNet] Will try to reconnect in 5s...")
-            self.reconnect_timer.start(5000)
+        print("[PiNet] Will try to reconnect in 5s...")
+        self.reconnect_timer.start(5000)
 
     @pyqtSlot()
     def _handle_error(self) -> None:
@@ -138,16 +124,15 @@ class PiNetworkService(QObject):
         self._schedule_reconnect()
 
     def _schedule_reconnect(self):
-        if not self.settings.pi_is_receiver:
-            if self.socket:
-                self.socket.abort()
-                self.socket.deleteLater()
-                self.socket = None
+        if self.socket:
+            self.socket.abort()
+            self.socket.deleteLater()
+            self.socket = None
 
-            if not self.reconnect_timer.isActive():
-                print("[PiNet] Scheduling reconnect in 3s...")
-                self.reconnect_timer.setSingleShot(True)
-                self.reconnect_timer.start(3000)
+        if not self.reconnect_timer.isActive():
+            print("[PiNet] Scheduling reconnect in 3s...")
+            self.reconnect_timer.setSingleShot(True)
+            self.reconnect_timer.start(3000)
 
     @pyqtSlot()
     def _read_data(self) -> None:

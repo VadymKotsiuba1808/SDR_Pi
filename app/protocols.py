@@ -37,7 +37,6 @@ class SetMapDialogSettings(Protocol):
 class NetworkServiceSettings(Protocol):
     pi_target_ip: str
     pi_target_port: int
-    pi_is_receiver: bool
 
 
 class JammerServiceSettings(Protocol):

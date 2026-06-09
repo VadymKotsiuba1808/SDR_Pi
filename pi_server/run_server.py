@@ -1,9 +1,10 @@
+import logging
 import signal
 import sys
 
 from PyQt6.QtCore import QCoreApplication
 
-from app.core.logging_config import get_logger
+from app.core.logging_config import get_logger, setup_logging
 from pi_server.pi_server_service import PiServerService
 
 logger = get_logger(__name__)
@@ -33,4 +34,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    setup_logging(level=logging.DEBUG)
     main()

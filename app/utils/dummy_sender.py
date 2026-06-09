@@ -1,3 +1,4 @@
+import logging
 import math
 import random
 import sys
@@ -15,7 +16,7 @@ from PyQt6.QtCore import (
 )
 
 from app.core.constants import DB_OFFSET, UINT8_MAX, UINT8_MIN
-from app.core.logging_config import get_logger
+from app.core.logging_config import get_logger, setup_logging
 from app.models.detection_object import DetectionObject
 from app.models.gps_data import GPSData
 from app.models.service_response import DbOperation, ServiceResponse
@@ -433,5 +434,6 @@ if __name__ == "__main__":
     app = QCoreApplication(sys.argv)
     service = AdvancedNetworkUtility(port=6000)
     service.start()
+    setup_logging(level=logging.DEBUG)
     logger.info("=== ADVANCED SIMULATION SERVER (REFACTORED) RUNNING ===")
     sys.exit(app.exec())

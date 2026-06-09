@@ -1,9 +1,10 @@
+import logging
 import sys
 import time
 
 from PyQt6.QtCore import QCoreApplication, QEventLoop, QTimer
 
-from app.core.logging_config import get_logger
+from app.core.logging_config import get_logger, setup_logging
 from app.models.detection_object import DetectionObject
 from app.models.object_class import ObjectClass
 from pi_server.database_service import DatabaseService
@@ -88,4 +89,5 @@ def run_seeding() -> None:
 
 
 if __name__ == "__main__":
+    setup_logging(level=logging.DEBUG)
     run_seeding()

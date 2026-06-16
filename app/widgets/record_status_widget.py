@@ -3,7 +3,7 @@
 Показує індикатор (червона крапка/таймер), коли йде запис екрану.
 """
 
-from typing import cast
+from typing import Optional, cast
 
 from PyQt6 import uic
 from PyQt6.QtCore import pyqtSlot
@@ -15,14 +15,20 @@ from app.utils.ui_utils import update_element_styles
 
 
 class RecordingStatusWidget(QWidget):
-    def __init__(self, parent=None):
+    """
+    Віджет статусу запису екрану.
+
+    Малий плаваючий індикатор, який відображає поточну тривалість запису
+    та стан (Запис/Пауза). Керується через `RecordingService`.
+    """
+
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
-
         self._load_ui()
-
         self.setVisible(False)
 
-    def _load_ui(self):
+    def _load_ui(self) -> None:
+        """Завантажує UI шаблон."""
         if DEV_COMPILED_UI_USING_ENABLED:
             self.ui = Ui_RecordingStatusWidget()
             self.ui.setupUi(self)
@@ -31,21 +37,19 @@ class RecordingStatusWidget(QWidget):
             self.ui = cast(Ui_RecordingStatusWidget, self)
 
     @pyqtSlot(str)
-    def update_duration(self, time_str):
+    def update_duration(self, time_str: str) -> None:
+        """Оновлює текстове значення таймера."""
         self.ui.duration_label.setText(time_str)
 
     @pyqtSlot(bool)
-    def on_pause_toggled(self, is_paused):
-
-        if is_paused:
-            self.ui.rec_label.setProperty("active", False)
-        else:
-            self.ui.rec_label.setProperty("active", True)
-
+    def on_pause_toggled(self, is_paused: bool) -> None:
+        """Змінює візуальний стан індикатора при паузі."""
+        # Змінюємо властивість для активації QSS стилів (наприклад, колір крапки)
+        self.ui.rec_label.setProperty("active", not is_paused)
         update_element_styles(self.ui.rec_label)
 
-    # Цей слот викликається з MainWindow, коли запис зупиняється
-    def reset_state(self):
+    def reset_state(self) -> None:
+        """Скидає стан віджета до початкового."""
         self.setVisible(False)
         self.ui.pause_button.setChecked(False)
         self.update_duration("00:00:00")

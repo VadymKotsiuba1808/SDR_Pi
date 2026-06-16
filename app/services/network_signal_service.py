@@ -5,58 +5,55 @@ from typing import Optional
 
 from PyQt6.QtCore import QObject
 
+from app.core.logging_config import get_logger
 from app.protocols import OSService
+
+logger = get_logger(__name__)
 
 
 class NetworkSignalService(QObject):
     """
-    Сервіс для отримання рівня мережевого сигналу (0-100%)
-    - WiFi: реальний відсоток сигналу
-    - Дротове з'єднання: 100%
-    - Без з'єднання: 0%
+    ### Сервіс моніторингу мережевого з'єднання
+
+    Забезпечує визначення якості WiFi-сигналу для Windows та Linux,
+    виявлення дротового підключення (Ethernet) та перевірку
+    фактичного доступу до мережі.
     """
 
-    # TODO - Перевірити пінгування при підключеній распберрі по Ethernet
     def __init__(self, system_service: OSService):
         super().__init__()
         self.system_service = system_service
 
     def get_signal_strength(self) -> int:
-        """
-        Повертає рівень сигналу 0-100%
-        Спочатку пробує WiFi, потім перевіряє дротове з'єднання
-        """
+        """Обчислює загальний рівень сигналу (0-100%)."""
 
         wifi_signal = self._get_wifi_signal()
 
         if wifi_signal is not None and wifi_signal > 0:
-            print(f"[Network] ✓ WiFi signal: {wifi_signal}%")
+            logger.debug(f"WiFi signal: {wifi_signal}%")
             return wifi_signal
 
         if self._has_wired_connection():
-            print("[Network] ✓ Wired connection detected: 100%")
+            logger.debug("Wired connection detected: 100%")
             return 100
 
-        print("[Network] ✗ No connection: 0%")
+        logger.debug("No connection: 0%")
         return 0
 
     def _get_wifi_signal(self) -> Optional[int]:
-        """
-        Отримує рівень WiFi сигналу
-        Повертає None якщо не вдалося визначити
-        """
+        """Отримує рівень WiFi сигналу залежно від ОС."""
         try:
             if self.system_service.is_windows:
                 return self._get_windows_wifi_signal()
             elif self.system_service.is_linux:
                 return self._get_linux_wifi_signal()
         except Exception as e:
-            print(f"[Network] ⚠️ Error reading WiFi signal: {e}")
+            logger.error(f"Error reading WiFi signal: {e}")
 
         return None
 
     def _get_windows_wifi_signal(self) -> Optional[int]:
-        """Windows: netsh wlan show interfaces"""
+        """Отримує рівень сигналу на Windows через netsh."""
         try:
             si = subprocess.STARTUPINFO()
             si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
@@ -82,20 +79,20 @@ class NetworkSignalService(QObject):
                     return int(match.group(1))
 
         except subprocess.CalledProcessError as e:
-            print(
-                f"[Network] netsh failed (code {e.returncode}) - WiFi likely disabled"
+            logger.warning(
+                f"netsh returned error {e.returncode} - WiFi probably disabled"
             )
         except FileNotFoundError:
-            print("[Network] netsh not found")
+            logger.error("netsh utility not found")
         except subprocess.TimeoutExpired:
-            print("[Network] netsh timeout")
+            logger.warning("netsh timeout")
         except Exception as e:
-            print(f"[Network] Windows WiFi error: {e}")
+            logger.error(f"Windows WiFi error: {e}")
 
         return None
 
     def _get_linux_wifi_signal(self) -> Optional[int]:
-        """Linux: nmcli або iwconfig"""
+        """Отримує рівень сигналу на Linux через nmcli, iwconfig або /proc."""
 
         try:
             output = subprocess.check_output(
@@ -113,11 +110,11 @@ class NetworkSignalService(QObject):
                             return signal
 
         except FileNotFoundError:
-            print("[Network] nmcli not available, trying iwconfig...")
+            logger.debug("nmcli unavailable, trying iwconfig...")
         except subprocess.CalledProcessError:
             pass
         except Exception as e:
-            print(f"[Network] nmcli error: {e}")
+            logger.error(f"nmcli error: {e}")
 
         try:
             output = subprocess.check_output(
@@ -134,16 +131,15 @@ class NetworkSignalService(QObject):
             match = re.search(r"Signal level[=:](-?\d+)\s*dBm", output)
             if match:
                 dbm = int(match.group(1))
-
                 quality = 2 * (dbm + 100)
                 return max(0, min(100, quality))
 
         except FileNotFoundError:
-            print("[Network] iwconfig not available")
+            logger.debug("iwconfig unavailable")
         except subprocess.CalledProcessError:
             pass
         except Exception as e:
-            print(f"[Network] iwconfig error: {e}")
+            logger.error(f"iwconfig error: {e}")
 
         try:
             with open("/proc/net/wireless", "r") as f:
@@ -154,24 +150,18 @@ class NetworkSignalService(QObject):
                         if len(parts) >= 3:
                             link = parts[2].rstrip(".")
                             quality = int(float(link))
-
                             return min(100, int((quality / 70.0) * 100))
         except Exception as e:
-            print(f"[Network] /proc/net/wireless error: {e}")
+            logger.error(f"Error reading /proc/net/wireless: {e}")
 
         return None
 
     def _has_wired_connection(self) -> bool:
-        """
-        Перевіряє наявність дротового з'єднання (Ethernet, USB тощо)
-        """
+        """Перевіряє наявність дротового з'єднання."""
         return self._check_internet_connectivity()
 
     def _check_internet_connectivity(self) -> bool:
-        """
-        Швидка перевірка інтернет з'єднання
-        Пробує підключитися до Google DNS (8.8.8.8:53)
-        """
+        """Швидка перевірка фактичного доступу до мережі через TCP до DNS."""
         try:
             socket.create_connection(("8.8.8.8", 53), timeout=2).close()
             return True
@@ -185,10 +175,7 @@ class NetworkSignalService(QObject):
             return False
 
     def get_connection_type(self) -> str:
-        """
-        Визначає тип підключення
-        Повертає: 'wifi', 'ethernet', або 'none'
-        """
+        """Визначає тип активного підключення (wifi, ethernet, none)."""
         wifi_signal = self._get_wifi_signal()
 
         if wifi_signal is not None and wifi_signal > 0:
@@ -200,13 +187,10 @@ class NetworkSignalService(QObject):
         return "none"
 
     def is_connected(self) -> bool:
-        """Перевіряє чи є будь-яке підключення до мережі"""
         return self.get_signal_strength() > 0
 
     def get_detailed_info(self) -> dict:
-        """
-        Повертає детальну інформацію про з'єднання
-        """
+        """Повертає розширену інформацію про стан мережі."""
         signal = self.get_signal_strength()
         conn_type = self.get_connection_type()
 

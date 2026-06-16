@@ -10,6 +10,7 @@ from PyQt6.QtWidgets import (
 )
 
 from app.core.constants import DEV_COMPILED_UI_USING_ENABLED
+from app.core.logging_config import get_logger
 from app.core.mixins import TestUIOptimizationMixin
 from app.models.object_class import ObjectClass
 from app.models.service_response import DbOperation, ServiceResponse
@@ -27,7 +28,23 @@ ALLOW_DB_OPERATIONS = [
 ]
 
 
+logger = get_logger(__name__)
+
+
 class ClassManagerDialog(QDialog, TestUIOptimizationMixin):
+    """
+    Діалогове вікно для керування класами об'єктів.
+
+    Забезпечує інтерфейс для CRUD операцій над класами об'єктів через мережевий сервіс.
+    Підтримує зміну мови та інтеграцію з віртуальною клавіатурою.
+
+    Attributes:
+        network_service (PiNetworkService): Сервіс для взаємодії з сервером.
+        settings_service (LangSettings): Сервіс налаштувань (мова тощо).
+        keyboard_service (KeyboardService): Сервіс віртуальної клавіатури.
+        ui (Ui_ClassManagerDialog): Згенерований або завантажений клас інтерфейсу.
+    """
+
     def __init__(
         self,
         network_service: PiNetworkService,
@@ -36,6 +53,7 @@ class ClassManagerDialog(QDialog, TestUIOptimizationMixin):
         parent: Optional[QWidget] = None,
     ) -> None:
         super().__init__(parent)
+        # Використовуємо FramelessWindowHint для кастомного дизайну без заголовків ОС
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
 
         self.network_service = network_service
@@ -99,6 +117,7 @@ class ClassManagerDialog(QDialog, TestUIOptimizationMixin):
             self.cached_classes = classes
 
         self.ui.lstClasses.clear()
+        # Сортуємо за назвою для зручності пошуку користувачем
         self.cached_classes.sort(key=lambda x: x.name)
 
         for c in self.cached_classes:
@@ -111,7 +130,7 @@ class ClassManagerDialog(QDialog, TestUIOptimizationMixin):
     def _refresh_list(self) -> None:
         self._waiting_classes = True
         self.network_service.request_db_classes()
-        print("[ClassManager] Loaded classes.")
+        logger.debug("[ClassManager] Loaded classes.")
 
     def _handle_db_status(self, response: ServiceResponse) -> None:
 
@@ -151,7 +170,7 @@ class ClassManagerDialog(QDialog, TestUIOptimizationMixin):
                         self._waiting_classes = False
                         self._populate_list(classes_list)
 
-        print(f"[ObjectManager] DB Operation '{response.operation}': ...")
+        logger.debug(f"[ObjectManager] DB Operation '{response.operation}': ...")
 
     def _on_item_clicked(self, item: QListWidgetItem) -> None:
         self.ui.inpClassName.setText(item.text())
@@ -170,13 +189,15 @@ class ClassManagerDialog(QDialog, TestUIOptimizationMixin):
         selected_items = self.ui.lstClasses.selectedItems()
 
         if selected_items:
+            # Режим редагування (перейменування)
             item = selected_items[0]
             old_name = item.text()
 
             if text == old_name:
                 return
 
-            print(f"[ClassManager] Renaming class '{old_name}' to '{text}'...")
+            logger.info(f"[ClassManager] Renaming class '{old_name}' to '{text}'...")
+            # Шукаємо об'єкт у кеші за назвою
             index = next(
                 (i for i, x in enumerate(self.cached_classes) if x.name == old_name),
                 None,
@@ -188,7 +209,8 @@ class ClassManagerDialog(QDialog, TestUIOptimizationMixin):
                 self.network_service.request_db_rename_class(old_class, new_class)
 
         else:
-            print(f"[ClassManager] Adding new class '{text}'...")
+            # Режим додавання
+            logger.info(f"[ClassManager] Adding new class '{text}'...")
 
             is_repeat = any(x.name == text for x in self.cached_classes)
 
@@ -223,7 +245,9 @@ class ClassManagerDialog(QDialog, TestUIOptimizationMixin):
         )
 
         if res == QMessageBox.StandardButton.Yes:
-            print(f"[ClassManager] Deleting class '{class_name}' (ID: {class_id})...")
+            logger.info(
+                f"[ClassManager] Deleting class '{class_name}' (ID: {class_id})..."
+            )
 
             self.network_service.request_db_delete_class(class_id)
 
@@ -232,6 +256,7 @@ class ClassManagerDialog(QDialog, TestUIOptimizationMixin):
         self._populate_list()
 
     def update_cache_class(self, new_class_obj: ObjectClass):
+        # Використовуємо next() з генератором для швидкого пошуку індексу за ID
         index = next(
             (i for i, x in enumerate(self.cached_classes) if x.id == new_class_obj.id),
             None,

@@ -1,24 +1,27 @@
+import logging
 import sys
 import time
 
 from PyQt6.QtCore import QCoreApplication, QEventLoop, QTimer
 
+from app.core.logging_config import get_logger, setup_logging
 from app.models.detection_object import DetectionObject
 from app.models.object_class import ObjectClass
 from pi_server.database_service import DatabaseService
 
+logger = get_logger(__name__)
 
-def run_seeding():
+
+def run_seeding() -> None:
     app = QCoreApplication(sys.argv)
 
     if not app:
-        print("Failed to create QCoreApplication instance.")
+        logger.error("Failed to create QCoreApplication instance.")
         return
 
     db = DatabaseService()
     loop = QEventLoop()
 
-    # Стан завантаження
     classes_to_add = [
         "Recon Drone",
         "Loitering Munition",
@@ -28,8 +31,7 @@ def run_seeding():
         "Interference",
     ]
 
-    # Словник сигнатур: (Назва, Class_ID, is_dangerous, rf_params, sound_params)
-    # Зверни увагу: для одного імені робимо два окремих записи
+    # (Назва, Class_ID, is_dangerous, rf_params, sound_params)
     signatures_data = [
         # DJI Mavic 3
         (
@@ -39,43 +41,40 @@ def run_seeding():
             ["2400000000-2483500000", "5725000000-5850000000"],
             [],
         ),
-        ("DJI Mavic 3", 1, True, [], [450.0, 600.0]),
+        ("DJI Mavic 3", 1, True, [], [450, 600]),
         # Shahed-136
         ("Shahed-136", 2, True, ["1575420000-1575420000", "1227600000-1227600000"], []),
-        ("Shahed-136", 2, True, [], [60.0, 95.0]),
+        ("Shahed-136", 2, True, [], [60, 95]),
         # FPV Drone
         ('FPV Drone 7"', 3, True, ["915000000-928000000", "5650000000-5900000000"], []),
-        ('FPV Drone 7"', 3, True, [], [850.0, 1100.0]),
+        ('FPV Drone 7"', 3, True, [], [850, 1100]),
         # Orlan-10
         ("Orlan-10", 4, True, ["433000000-440000000", "900000000-920000000"], []),
-        ("Orlan-10", 4, True, [], [130.0, 170.0]),
-        # False Alarms (Тільки звук або тільки радіо)
-        ("Crow (Ворона)", 5, False, [], [1200.0, 1600.0]),
-        ("Gas Mower (Косарка)", 5, False, [], [80.0, 120.0]),
+        ("Orlan-10", 4, True, [], [130, 170]),
+        # False Alarms
+        ("Crow (Ворона)", 5, False, [], [1200, 1600]),
+        ("Gas Mower (Косарка)", 5, False, [], [80, 120]),
         ("Public WiFi Hotspot", 6, False, ["2400000000-2483000000"], []),
         ("GSM 900 Link", 6, False, ["935000000-960000000"], []),
     ]
 
-    print("--- START SEEDING ---")
+    logger.info("Starting database seeding")
 
-    # 1. Додаємо класи
     for class_name in classes_to_add:
-        print(f"Adding class: {class_name}")
+        logger.debug(f"Adding class: {class_name}")
         db.add_class(ObjectClass(id=None, name=class_name))
-        time.sleep(0.1)  # Даємо час потокам відпрацювати
+        time.sleep(0.1)
 
-    time.sleep(1)  # Чекаємо завершення транзакцій класів
+    time.sleep(1)  # Затримка для завершення транзакцій перед додаванням об'єктів
 
-    # 2. Додаємо сигнатури
     for name, c_id, dangerous, rf, sound in signatures_data:
-        print(f"Adding signature: {name} (Dangerous: {dangerous})")
+        logger.debug(f"Adding signature: {name}")
 
-        # Створюємо DTO
         obj = DetectionObject(
             id=None,
             name=name,
             class_id=c_id,
-            object_class="",  # Сервіс сам підтягне ім'я по ID
+            object_class="",  # Поле буде автоматично заповнене сервісом БД
             is_dangerous=dangerous,
             rf_params_hz=rf,
             sound_params_hz=sound,
@@ -84,11 +83,11 @@ def run_seeding():
         db.add_object(obj)
         time.sleep(0.1)
 
-    print("--- SEEDING FINISHED ---")
-    print("Wait 2 seconds and close...")
+    logger.info("Database seeding completed. Shutting down in 2 seconds...")
     QTimer.singleShot(2000, loop.quit)
     loop.exec()
 
 
 if __name__ == "__main__":
+    setup_logging(level=logging.DEBUG)
     run_seeding()

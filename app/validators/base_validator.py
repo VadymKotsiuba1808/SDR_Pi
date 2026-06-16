@@ -1,33 +1,29 @@
-"""
-Базовий валідатор.
-Абстрактний клас, що визначає єдиний інтерфейс та методи (наприклад, `validate` та `get_errors`) для всіх механізмів перевірки вхідних даних у програмі.
-"""
-
 from abc import ABC, abstractmethod
+from typing import Any, Dict, List
 
 
 class BaseValidator(ABC):
     """
-    Абстрактний базовий клас (шаблон) для всіх валідаторів.
+    Абстрактний базовий клас для всіх валідаторів у системі.
+
+    Забезпечує спільний механізм для зберігання помилок та перевірки стану валідації.
     """
 
-    def __init__(self):
-        self._errors = {}
+    def __init__(self) -> None:
+        self._errors: Dict[str, List[str]] = {}
 
     @abstractmethod
-    def validate(self, data):
-        """Головний метод, який запускає всі перевірки."""
+    def validate(self, data: Any) -> bool:
+        """Запускає процес валідації та очищує попередні помилки."""
         self._errors.clear()
         return self._is_valid()
 
-    def _is_valid(self):
-        """Перевіряє, чи були помилки."""
+    def _is_valid(self) -> bool:
         for value in self._errors.values():
             if len(value) > 0:
                 return False
 
         return True
 
-    def get_errors(self):
-        """Повертає словник з усіма помилками валідації."""
+    def get_errors(self) -> Dict[str, List[str]]:
         return self._errors

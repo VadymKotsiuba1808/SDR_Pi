@@ -7,29 +7,25 @@ import numpy as np
 
 @dataclass
 class SpectralData:
-    """Важкі дані для спектрального аналізу"""
+    """Дані для спектрального аналізу.
 
-    # Центральна частота прийому в Герцах.
+    Містить параметри прийому та матрицю амплітуд для побудови
+    спектрограм та виявлення сигналів.
+
+    Attributes:
+        center_freq_hz: Центральна частота прийому (Гц).
+        sample_rate_hz: Смуга пропускання (Гц).
+        duration_sec: Тривалість запису (сек).
+        data_magnitude: Матриця амплітуд (спектрограма) типу uint8.
+    """
+
     center_freq_hz: float
-
-    # Смуга пропускання (ширина огляду) в Герцах.
     sample_rate_hz: float
-
-    # Тривалість запису у секундах.
     duration_sec: float
-
-    # Матриця амплітуд (спектрограма).
-    # Shape: (Rows, Cols) -> (Time, Frequency).
-    #   - Rows (висота): кількість пакетів у часі.
-    #   - Cols (ширина): кількість бінів FFT (наприклад, 1024).
-    #
-    # Тип: uint8 (0...255).
-    # Переводиться у db за формулою dB=value_uint8−DB_OFFSET(у constants)
     data_magnitude: np.ndarray
 
     @staticmethod
     def from_dict(data: dict) -> "SpectralData":
-
         mag_data = data.get("data_magnitude", [])
         if isinstance(mag_data, list):
             mag_data = np.array(mag_data, dtype=np.uint8)
@@ -56,8 +52,14 @@ class SpectralData:
 
 @dataclass
 class DetectionBackground:
-    """
-    Фоновий спектр.
+    """Фоновий спектр радіочастотного оточення.
+
+    Представляє зріз фону в певний момент часу для виявлення аномалій.
+
+    Attributes:
+        id: Унікальний ідентифікатор фонового запису.
+        timestamp: Часова мітка створення запису (ISO).
+        spectral_data: Спектральні дані фону.
     """
 
     id: str

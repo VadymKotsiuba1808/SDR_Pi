@@ -4,9 +4,11 @@ import sys
 
 
 class SystemService:
-    def __init__(self):
-        self.os = platform.system()  # "Windows", "Linux", "Darwin"
-        self.python_version = sys.version
-        self.is_windows = self.os == "Windows"
-        self.is_linux = self.os == "Linux"
-        self.app_dir = os.path.dirname(os.path.abspath(__file__))
+    """Сервіс для отримання інформації про операційну систему та оточення."""
+
+    def __init__(self) -> None:
+        self.os: str = platform.system()
+        self.python_version: str = sys.version
+        self.is_windows: bool = self.os == "Windows"
+        self.is_linux: bool = self.os == "Linux"
+        self.app_dir: str = os.path.dirname(os.path.abspath(__file__))

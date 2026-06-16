@@ -1,7 +1,6 @@
-"""
-Тести для діалогу логів (LogDialog).
-"""
+"""Модуль тестів для діалогу перегляду логів (LogDialog)."""
 
+from typing import Any, Generator
 from unittest.mock import MagicMock
 
 import pytest
@@ -15,7 +14,8 @@ from app.widgets.log_dialog import LogDialog
 
 
 @pytest.fixture
-def mock_log_service():
+def mock_log_service() -> MagicMock:
+    """Створює мок-об'єкт сервісу логів."""
     service = MagicMock()
     # Імітуємо наявність однієї сесії
     session = LogSession(filename="session_2026-05-30.jsonl", label="30.05.2026 12:00")
@@ -42,21 +42,30 @@ def mock_log_service():
 
 
 @pytest.fixture
-def mock_bg_service():
+def mock_bg_service() -> MagicMock:
+    """Створює мок-об'єкт сервісу фонових зображень."""
     return MagicMock()
 
 
 @pytest.fixture
-def mock_settings():
+def mock_settings() -> MagicMock:
+    """Створює мок-об'єкт налаштувань програми."""
     settings = MagicMock()
     settings.lang_code = "uk"
     return settings
 
 
 @pytest.fixture
-def log_dialog(qtbot, mock_log_service, mock_bg_service, mock_settings):
-    """Фікстура для ініціалізації LogDialog."""
-    classes = []  # Можна додати тестові класи за потреби
+def log_dialog(
+    qtbot: Any,
+    mock_log_service: MagicMock,
+    mock_bg_service: MagicMock,
+    mock_settings: MagicMock,
+) -> Generator[LogDialog, None, None]:
+    """Ініціалізує та повертає екземпляр LogDialog."""
+    from app.models.object_class import ObjectClass
+
+    classes: list[ObjectClass] = []
     dialog = LogDialog(mock_log_service, mock_bg_service, classes, mock_settings)
     qtbot.addWidget(dialog)
     yield dialog
@@ -65,40 +74,40 @@ def log_dialog(qtbot, mock_log_service, mock_bg_service, mock_settings):
     QCoreApplication.removeTranslator(dialog.translator)
 
 
-def test_initial_load(log_dialog, mock_log_service):
-    """Тест початкового завантаження сесій та даних."""
+def test_initial_load(log_dialog: LogDialog, mock_log_service: MagicMock) -> None:
+    """Перевіряє завантаження сесій та даних у таблицю."""
     assert log_dialog.ui.cmbSessions.count() == 1
     assert log_dialog.ui.cmbSessions.currentText() == "30.05.2026 12:00"
 
-    # Перевіряємо наповнення таблиці
     assert log_dialog.ui.tableLogs.rowCount() == 1
-    assert "Target" in log_dialog.ui.tableLogs.item(0, 2).text()
+    item = log_dialog.ui.tableLogs.item(0, 2)
+    assert item is not None, "Log table should have an item at row 0, col 2"
+    assert "Target" in item.text()
 
 
-def test_tab_switching(log_dialog, qtbot):
-    """Тест перемикання вкладок."""
-    # Перемикаємо на вкладку графіків
+def test_tab_switching(log_dialog: LogDialog, qtbot: Any) -> None:
+    """Перевіряє перемикання вкладок та оновлення графіків."""
     log_dialog.ui.tabWidget.setCurrentIndex(1)
     assert log_dialog.ui.tabWidget.currentIndex() == 1
 
-    # Має оновитися загальний графік
     assert log_dialog.chart_gen.data is not None
 
 
-def test_filter_by_name(log_dialog, qtbot):
-    """Тест фільтрації за назвою/ID."""
+def test_filter_by_name(log_dialog: LogDialog, qtbot: Any) -> None:
+    """Перевіряє фільтрацію логів за назвою."""
+    # Сценарій 1: Фільтр, що не дає результатів
     log_dialog.ui.inpFilterName.setText("NonExistent")
     qtbot.mouseClick(log_dialog.ui.btnApplyFilters, Qt.MouseButton.LeftButton)
-
     assert log_dialog.ui.tableLogs.rowCount() == 0
 
+    # Сценарій 2: Фільтр, що відповідає наявним даним
     log_dialog.ui.inpFilterName.setText("Target")
     qtbot.mouseClick(log_dialog.ui.btnApplyFilters, Qt.MouseButton.LeftButton)
     assert log_dialog.ui.tableLogs.rowCount() == 1
 
 
-def test_reset_filters(log_dialog, qtbot):
-    """Тест скидання фільтрів."""
+def test_reset_filters(log_dialog: LogDialog, qtbot: Any) -> None:
+    """Перевіряє скидання встановлених фільтрів."""
     log_dialog.ui.inpFilterName.setText("SomeFilter")
     log_dialog.ui.inpDistMin.setValue(100)
 
@@ -109,29 +118,29 @@ def test_reset_filters(log_dialog, qtbot):
     assert log_dialog.ui.tableLogs.rowCount() == 1
 
 
-def test_session_change_triggers_load(log_dialog, mock_log_service, qtbot):
-    """Тест зміни сесії в ComboBox."""
-    # Очищуємо дані
+def test_session_change_triggers_load(
+    log_dialog: LogDialog, mock_log_service: MagicMock, qtbot: Any
+) -> None:
+    """Перевіряє перевантаження даних при виборі іншої сесії."""
+    # Очищуємо дані перед тестом
     log_dialog.all_entries = []
 
-    # Додаємо нову сесію
+    # Додаємо нову сесію в ComboBox
     log_dialog.ui.cmbSessions.addItem("New Session", "new.jsonl")
     log_dialog.ui.cmbSessions.setCurrentIndex(1)
 
-    # Перевіряємо, що дані завантажились (LogService.load_session_data повертає 1 елемент у моку)
     assert len(log_dialog.all_entries) == 1
 
 
-def test_background_navigation_visibility(log_dialog):
-    """Тест видимості контролів фону залежно від типу графіка."""
-    log_dialog.ui.tabWidget.setCurrentIndex(2)  # Об'єкт
+def test_background_navigation_visibility(log_dialog: LogDialog) -> None:
+    """Перевіряє відображення панелі керування фоном."""
+    log_dialog.ui.tabWidget.setCurrentIndex(2)  # Вкладка "Аналіз об'єкта"
 
     # Режим "Шлях" (Path) - контроль фону має бути прихований
     log_dialog.ui.cmbTargetType.setCurrentIndex(0)
     assert log_dialog.ui.grpBackgroundControl.isHidden() is True
 
     # Режим "Спектр" (Spectrum) - має бути видимий
-    # Спочатку виберемо об'єкт, щоб логіка спрацювала
     if log_dialog.ui.cmbTargetObject.count() > 0:
         log_dialog.ui.cmbTargetObject.setCurrentIndex(0)
         log_dialog.ui.cmbTargetType.setCurrentIndex(2)

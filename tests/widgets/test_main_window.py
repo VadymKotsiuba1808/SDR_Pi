@@ -1,7 +1,10 @@
-"""
-Комплексні тести для головного вікна (MainWindow).
+"""Комплексні тести для головного вікна (MainWindow).
+
+Цей модуль містить набір тестів для перевірки ініціалізації, обробки сигналів,
+взаємодії з сервісами та оновлення UI у головному вікні програми.
 """
 
+from typing import Generator
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -15,7 +18,8 @@ from app.widgets.main_window import MainWindow
 
 
 @pytest.fixture
-def mock_settings():
+def mock_settings() -> MagicMock:
+    """Створює мок об'єкт налаштувань."""
     settings = MagicMock()
     settings.lang_code = "uk"
     settings.role = "owner"
@@ -28,12 +32,14 @@ def mock_settings():
 
 
 @pytest.fixture
-def mock_keyboard():
+def mock_keyboard() -> MagicMock:
+    """Створює мок об'єкт віртуальної клавіатури."""
     return MagicMock()
 
 
 @pytest.fixture
-def mock_system():
+def mock_system() -> MagicMock:
+    """Створює мок об'єкт системних утиліт."""
     system = MagicMock()
     system.is_windows = True
     system.is_linux = False
@@ -41,14 +47,14 @@ def mock_system():
 
 
 @pytest.fixture
-def main_window(qtbot, mock_settings, mock_keyboard, mock_system):
-    """Фікстура для ініціалізації MainWindow з моками всіх сервісів."""
+def main_window(
+    qtbot, mock_settings, mock_keyboard, mock_system
+) -> Generator[MainWindow, None, None]:
+    """Фікстура для ініціалізації MainWindow."""
 
-    # Налаштовуємо мок джаммера
     mock_jammer = patch("app.widgets.main_window.JammerService").start()
     mock_jammer.return_value.get_formatted_time.return_value = "00:00:00"
 
-    # Решта сервісів
     patch("app.widgets.main_window.MapService").start()
     patch("app.widgets.main_window.PiNetworkService").start()
     patch("app.widgets.main_window.LogService").start()
@@ -65,7 +71,6 @@ def main_window(qtbot, mock_settings, mock_keyboard, mock_system):
         qtbot.addWidget(window)
         yield window
 
-        # Зупиняємо таймери перед виходом, щоб вони не стріляли в інших тестах
         window.timer_1sec.stop()
         window.timer_radar.stop()
         window.timer_wifi.stop()
@@ -73,17 +78,18 @@ def main_window(qtbot, mock_settings, mock_keyboard, mock_system):
         patch.stopall()
 
 
-def test_initial_ui_state_owner(main_window, mock_settings):
-    """Тест початкового стану UI для ролі Owner."""
-    # Використовуємо isHidden() бо віджет може бути не 'visible' до реального відображення на екрані
+def test_initial_ui_state_owner(main_window, mock_settings) -> None:
+    """Перевірка початкового стану UI для ролі Owner."""
     assert main_window.ui.falseAlarmButton.isHidden() is False
     assert main_window.ui.menuButton.isHidden() is False
     assert main_window.ui.backToLoginButton.isHidden() is True
     assert main_window.ui.radarRadiusSpinbox.value() == 5.0
 
 
-def test_initial_ui_state_operator(qtbot, mock_settings, mock_keyboard, mock_system):
-    """Тест UI для ролі Operator."""
+def test_initial_ui_state_operator(
+    qtbot, mock_settings, mock_keyboard, mock_system
+) -> None:
+    """Перевірка обмеженого UI для ролі Operator."""
     mock_settings.role = "operator"
 
     with (
@@ -108,33 +114,29 @@ def test_initial_ui_state_operator(qtbot, mock_settings, mock_keyboard, mock_sys
         assert window.ui.backToLoginButton.isHidden() is False
 
 
-def test_change_language(main_window, mock_settings):
-    """Тест перемикання мови."""
-    # Перемикаємо на English (індекс 1)
+def test_change_language(main_window, mock_settings) -> None:
+    """Перевірка динамічного перемикання мови."""
     main_window.ui.langComboBox.setCurrentIndex(1)
     assert mock_settings.lang_code == "en"
 
-    # Перемикаємо назад на Українську (індекс 0)
     main_window.ui.langComboBox.setCurrentIndex(0)
     assert mock_settings.lang_code == "uk"
 
 
-def test_handle_gps_updates_coords(main_window, qtbot):
-    """Тест оновлення координат при отриманні GPS."""
+def test_handle_gps_updates_coords(main_window, qtbot) -> None:
+    """Перевірка оновлення координат GPS."""
     new_gps = GPSData(lat=50.0, lon=30.0, strength=90)
 
-    # Мокаємо refresh_map, щоб не робити реальних запитів
     with patch.object(main_window, "refresh_map") as mock_refresh:
         main_window.handle_gps(new_gps)
 
         assert main_window.current_coords == [50.0, 30.0]
-        # Чекаємо виклику QTimer.singleShot(0, ...)
         qtbot.waitUntil(lambda: mock_refresh.called, timeout=1000)
         assert main_window.ui.GPS_level.property("level") == 4
 
 
-def test_handle_detection_adds_to_manager_and_logs(main_window):
-    """Тест обробки події детекції."""
+def test_handle_detection_adds_to_manager_and_logs(main_window) -> None:
+    """Перевірка реєстрації події виявлення."""
     event = DetectionEvent(
         id="uav_1",
         type=SourceType.RF,
@@ -149,13 +151,12 @@ def test_handle_detection_adds_to_manager_and_logs(main_window):
 
     main_window.handle_detection(event)
 
-    # Перевіряємо виклики менеджерів
     main_window.detection_manager.add_detection.assert_called_once_with(event)
     main_window.log_service.add_log.assert_called_once()
 
 
-def test_jammer_auto_start(main_window, mock_settings):
-    """Тест автостарту глушилки при детекції."""
+def test_jammer_auto_start(main_window, mock_settings) -> None:
+    """Перевірка автоматичного запуску джаммера."""
     mock_settings.is_jammer_auto_start_enabled = True
     main_window.jammer_service.is_active = False
 
@@ -175,22 +176,19 @@ def test_jammer_auto_start(main_window, mock_settings):
     assert main_window.jammer_service.start.called
 
 
-def test_toggle_recording(main_window, qtbot):
-    """Тест запуску/зупинки запису екрану."""
-    # 1. Починаємо запис
+def test_toggle_recording(main_window, qtbot) -> None:
+    """Перевірка перемикання режиму запису."""
     main_window.recorder.is_running = False
     qtbot.mouseClick(main_window.ui.screenRecordButton, Qt.MouseButton.LeftButton)
     assert main_window.recorder.start_recording.called
 
-    # 2. Зупиняємо запис
     main_window.recorder.is_running = True
     qtbot.mouseClick(main_window.ui.screenRecordButton, Qt.MouseButton.LeftButton)
     assert main_window.recorder.stop_recording.called
 
 
-def test_alert_status_ui(main_window):
-    """Тест відображення статусу тривоги в UI."""
-    # Імітуємо наявність RF детекції
+def test_alert_status_ui(main_window) -> None:
+    """Перевірка індикаторів тривоги в UI."""
     mock_target = MagicMock()
     mock_target.event.type = SourceType.RF
     main_window.detection_manager.get_targets.return_value = [mock_target]
@@ -201,11 +199,10 @@ def test_alert_status_ui(main_window):
     assert main_window.ui.Sound_alert.property("alert") is False
 
 
-def test_open_settings_dialog(main_window, qtbot):
-    """Тест відкриття діалогу налаштувань."""
+def test_open_settings_dialog(main_window, qtbot) -> None:
+    """Перевірка відкриття діалогу налаштувань."""
     with patch(
         "app.widgets.main_window.SettingsDialog.exec",
         return_value=QDialog.DialogCode.Accepted,
     ):
         qtbot.mouseClick(main_window.ui.menuButton, Qt.MouseButton.LeftButton)
-        # Якщо exec був викликаний, значить логіка спрацювала

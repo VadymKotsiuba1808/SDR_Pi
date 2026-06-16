@@ -7,7 +7,10 @@ from app.core.mixins import TranslatorMixin
 
 class DbOperation(str, Enum):
     """
-    Перелік усіх можливих операцій з БД.
+    ### Перелік усіх можливих операцій з базою даних
+
+    Використовується для ідентифікації типу запиту між клієнтом та сервером.
+    Це дозволяє GUI коректно обробляти результати різних дій (додавання, видалення тощо).
     """
 
     # Objects
@@ -29,6 +32,13 @@ class DbOperation(str, Enum):
 
 
 class StatusCode(IntEnum):
+    """
+    ### Стандартні коди статусів відповідей сервісів
+
+    Наслідують логіку HTTP статус-кодів для забезпечення одноманітності
+    обробки відповідей як на рівні мережі, так і всередині бізнес-логіки.
+    """
+
     OK = 200
     CREATED = 201
     BAD_REQUEST = 400
@@ -39,11 +49,14 @@ class StatusCode(IntEnum):
 
 class StatusMessage(TranslatorMixin):
     """
-    Стандартні повідомлення для статус-кодів (динамічний переклад).
+    ### Стандартні повідомлення для кодів статусів
+
+    Підтримує локалізацію через `TranslatorMixin`.
     """
 
     @classmethod
     def get(cls, code: int) -> str:
+        """Отримує локалізоване повідомлення для конкретного коду статусу."""
         if code == StatusCode.OK:
             return cls.tr_s("Operation successful.")
         elif code == StatusCode.CREATED:
@@ -62,11 +75,15 @@ class StatusMessage(TranslatorMixin):
 
 class OperationTitle(TranslatorMixin):
     """
-    Стандартні заголовки для вікон (динамічний переклад).
+    ### Утиліта для отримання локалізованих заголовків операцій
+
+    Забезпечує консистентність заголовків діалогових вікон та повідомлень про помилки
+    у всьому додатку.
     """
 
     @classmethod
     def get_error(cls, op: Union[DbOperation, str]) -> str:
+        """Повертає заголовок помилки для вказаної операції."""
         match op:
             case DbOperation.ADD_OBJECT:
                 return cls.tr_s("Error adding object")
@@ -91,6 +108,7 @@ class OperationTitle(TranslatorMixin):
 
     @classmethod
     def get_success(cls, op: Union[DbOperation, str]) -> str:
+        """Повертає заголовок успіху для вказаної операції."""
         match op:
             case DbOperation.ADD_OBJECT:
                 return cls.tr_s("Object added")
@@ -114,6 +132,19 @@ class OperationTitle(TranslatorMixin):
 
 @dataclass
 class ServiceResponse:
+    """
+    ### Універсальна модель відповіді сервісів системи
+
+    Використовується для стандартизації обміну даними між компонентами додатку
+    та для десеріалізації відповідей від віддаленого сервера.
+
+    **Поля:**
+    - `status`: Статус операції (`StatusCode`).
+    - `message`: Текстове повідомлення (зазвичай детальне пояснення від сервера).
+    - `operation`: Тип операції, що виконувалася.
+    - `data`: Довільні дані відповіді (об'єкти, списки тощо).
+    """
+
     status: StatusCode
     message: str
     operation: Union[DbOperation, str] = DbOperation.UNKNOWN
@@ -128,19 +159,20 @@ class ServiceResponse:
         return int(self.status) >= 400
 
     def get_title(self) -> str:
-        """Автоматично підбирає заголовок залежно від статусу."""
+        """Автоматично підбирає заголовок залежно від статусу та типу операції."""
         if self.is_success:
             return OperationTitle.get_success(self.operation)
         return OperationTitle.get_error(self.operation)
 
     def get_message_or_default(self) -> str:
-        """Повертає message з сервера або дефолтний, якщо пустий."""
+        """Повертає повідомлення з відповіді або стандартне повідомлення для коду статусу."""
         msg = StatusMessage.get(self.status)
         if msg:
             return msg
         return self.message
 
     def to_dict(self) -> dict:
+        """Перетворює об'єкт відповіді у словник."""
         return {
             "status": int(self.status),
             "message": self.message,
@@ -154,6 +186,7 @@ class ServiceResponse:
 
     @staticmethod
     def from_dict(data: dict) -> "ServiceResponse":
+        """Створює об'єкт відповіді зі словника."""
         op_str = data.get("operation", "unknown")
         try:
             op = DbOperation(op_str)

@@ -6,16 +6,29 @@ from app.models.detection_event import DetectionEvent
 
 
 class LogType:
+    """Константи типів логів для забезпечення цілісності даних."""
+
     DETECTION = "detection"
     FALSE_ALARM = "false_alarm"
 
 
 @dataclass
 class FalseAlarmPayload:
+    """
+    Дані про хибне спрацювання.
+
+    Використовується, коли оператор позначає виявлений об'єкт як помилковий,
+    щоб уникнути подальших некоректних спрацювань алгоритму.
+
+    - **detection_id**: Унікальний ідентифікатор вихідної події виявлення.
+    - **name**: Назва або опис об'єкта, який спричинив помилку.
+    """
+
     detection_id: str
     name: str
 
     def to_dict(self) -> dict:
+        """Перетворює об'єкт у словник для JSON-серіалізації."""
         return {
             "detection_id": self.detection_id,
             "name": self.name,
@@ -23,6 +36,7 @@ class FalseAlarmPayload:
 
     @staticmethod
     def from_dict(data: dict) -> "FalseAlarmPayload":
+        """Створює екземпляр FalseAlarmPayload зі словника."""
         return FalseAlarmPayload(
             detection_id=data.get("detection_id", ""),
             name=data.get("name", "Unknown"),
@@ -35,7 +49,15 @@ T = TypeVar("T", bound=LogPayload)
 
 @dataclass
 class BaseLogEntry(Generic[T]):
-    """Базовий клас логу, який вміє підлаштовувати тип payload."""
+    """
+    Базовий клас логу з підтримкою різних типів payload.
+
+    Забезпечує уніфіковану структуру для всіх типів системних повідомлень.
+
+    - **type**: Строковий ідентифікатор типу логу (див. `LogType`).
+    - **payload**: Конкретні дані події, тип яких залежить від `type`.
+    - **timestamp**: Час створення запису в форматі ISO 8601.
+    """
 
     type: str
     payload: T
@@ -45,11 +67,13 @@ class BaseLogEntry(Generic[T]):
 class LogEntry(BaseLogEntry[Union[DetectionEvent, FalseAlarmPayload]]):
     """
     Головний клас запису в лог.
-    Відповідає структурі JSON: {type: "...", timestamp: "...", payload: {...}}
+
+    Цей клас використовується для обробки всіх вхідних та вихідних повідомлень журналу.
+    Відповідає структурі JSON: `{type: "...", timestamp: "...", payload: {...}}`.
     """
 
     def to_dict(self) -> dict:
-        """Серіалізація у JSON."""
+        """Серіалізація об'єкта у словник для мережевого обміну або збереження в БД."""
         payload_data = (
             self.payload.to_dict()
             if hasattr(self.payload, "to_dict")
@@ -64,7 +88,7 @@ class LogEntry(BaseLogEntry[Union[DetectionEvent, FalseAlarmPayload]]):
 
     @staticmethod
     def from_dict(data: dict) -> "LogEntry":
-        """Фабричний метод: створює правильний об'єкт залежно від type."""
+        """Фабричний метод для створення об'єкта залежно від поля `type`."""
         entry_type = data.get("type", LogType.DETECTION)
         timestamp = data.get("timestamp", datetime.now().isoformat())
         raw_payload = data.get("payload", {})
@@ -75,18 +99,19 @@ class LogEntry(BaseLogEntry[Union[DetectionEvent, FalseAlarmPayload]]):
         elif entry_type == LogType.FALSE_ALARM:
             payload_obj = FalseAlarmPayload.from_dict(raw_payload)
         else:
+            # Дефолтний випадок для забезпечення стійкості до невідомих типів
             payload_obj = DetectionEvent.from_dict(raw_payload)
 
         return LogEntry(type=entry_type, timestamp=timestamp, payload=payload_obj)
 
 
 def is_detection(log: BaseLogEntry[Any]) -> TypeGuard[BaseLogEntry[DetectionEvent]]:
-    """Вказує, що у цього логу payload є DetectionEvent."""
-    return log.type == "detection"
+    """Перевірка, чи є payload типом DetectionEvent."""
+    return log.type == LogType.DETECTION
 
 
 def is_false_alarm(
     log: BaseLogEntry[Any],
 ) -> TypeGuard[BaseLogEntry[FalseAlarmPayload]]:
-    """Вказує, що у цього логу payload є FalseAlarmPayload."""
-    return log.type == "false_alarm"
+    """Перевірка, чи є payload типом FalseAlarmPayload."""
+    return log.type == LogType.FALSE_ALARM

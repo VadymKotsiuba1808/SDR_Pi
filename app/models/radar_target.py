@@ -3,30 +3,39 @@ from datetime import datetime
 
 from app.models.detection_event import DetectionEvent
 
-MOVE_THRESHOLD_KM = 0.01  # 10 метрів
+# Поріг зміщення для визначення факту руху (10 метрів)
+MOVE_THRESHOLD_KM = 0.01
+# Поріг зміни кута для визначення факту руху (1 градус)
 ANGLE_THRESHOLD_DEG = 1.0
 
 
 @dataclass
 class RadarTarget:
     """
-    Клас-обгортка, що представляє одну активну ціль на радарі.
-    Зберігає саму подію, її візуальний номер та час останньої активності.
+    Представлення активної цілі на радарі.
+
+    Зберігає подію виявлення, візуальний індекс та часові мітки активності.
+    Використовується для фільтрації застарілих цілей та визначення статики.
+
+    - **event**: Поточна подія виявлення.
+    - **visual_index**: Порядковий номер цілі для UI.
+    - **last_seen**: Час останнього оновлення цілі.
+    - **last_moved_time**: Час останньої значущої зміни координат.
+    - **anchor_event**: "Опорна" подія для порівняння зміщення.
     """
 
     event: DetectionEvent
     visual_index: int
-    # first_seen: datetime = field(default_factory=datetime.now)
     last_seen: datetime = field(default_factory=datetime.now)
     last_moved_time: datetime = field(default_factory=datetime.now)
 
     anchor_event: DetectionEvent = field(init=False)
 
-    def __post_init__(self):
-        """Викликається автоматично після створення об'єкта dataclass."""
+    def __post_init__(self) -> None:
         self.anchor_event = self.event
 
-    def update(self, new_event: DetectionEvent):
+    def update(self, new_event: DetectionEvent) -> None:
+        """Оновлює стан цілі та перевіряє факт руху."""
         dist_diff = abs(self.anchor_event.distance_km - new_event.distance_km)
         angle_diff = abs(self.anchor_event.angle - new_event.angle)
 
@@ -38,12 +47,12 @@ class RadarTarget:
         self.event = new_event
 
     def is_stationary_for(self, seconds: float) -> bool:
-        """Повертає True, якщо об'єкт не рухався вказану кількість секунд."""
+        """Перевіряє, чи об'єкт нерухомий протягом вказаного часу."""
         delta = datetime.now() - self.last_moved_time
         return delta.total_seconds() >= seconds
 
     def is_expired(self, ttl_seconds: float) -> bool:
-        """Перевіряє, чи не застаріла ціль."""
+        """Перевіряє, чи застаріла ціль (Time-to-Live)."""
         age = (datetime.now() - self.last_seen).total_seconds()
         return age > ttl_seconds
 

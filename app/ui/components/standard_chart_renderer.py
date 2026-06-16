@@ -1,7 +1,7 @@
 import math
 from collections import Counter
 from datetime import datetime
-from typing import Dict, List
+from typing import Callable, Dict, List
 
 from PyQt6.QtCore import QPointF, QRect, Qt
 from PyQt6.QtGui import QBrush, QColor, QFont, QPainter, QPen
@@ -14,14 +14,26 @@ from app.utils.chart_math import ChartMath
 
 class StandardChartRenderer(TranslatorMixin):
     """
-    Рендерер для Timeline, Radar (Polar) та Bar chart.
-    Логіка відображення ідентична оригінальному StaticChartWidget.
+    Клас для візуалізації різних типів графіків (Timeline, Radar, Bar).
+
+    Цей клас інкапсулює логіку малювання, що дозволяє відокремити процес рендерингу
+    від віджетів. Він підтримує як полярні, так і декартові системи координат,
+    а також гістограми.
+
+    **Атрибути:**
+    - `LINE_WIDTH_NORMAL` (int): Стандартна товщина ліній траєкторії.
+    - `LINE_WIDTH_THIN` (int): Товщина ліній для розривів (пунктир).
+    - `DOT_RADIUS` (int): Радіус точки виявлення.
+    - `HIGHLIGHT_RADIUS_OFFSET` (int): Додатковий радіус для підсвічування обраного об'єкта.
+    - `HIGHLIGHT_FRAME_WIDTH` (int): Товщина рамки підсвічування.
+    - `TEXT_OFFSET_Y` (int): Вертикальне зміщення підписів об'єктів.
+    - `TIME_DIFF_S` (int): Поріг часу (в секундах), після якого лінія малюється пунктиром.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """Ініціалізація рендерера з параметрами за замовчуванням."""
         self._id_color_cache: Dict[str, QColor] = {}
 
-        # Константи з оригіналу
         self.LINE_WIDTH_NORMAL = 3
         self.LINE_WIDTH_THIN = 1
         self.DOT_RADIUS = 3
@@ -38,7 +50,7 @@ class StandardChartRenderer(TranslatorMixin):
         highlight_ids: set,
         interactive_points: list,
     ) -> None:
-        """Малює Radar/Path chart."""
+        """Малює графік у полярних координатах (Radar/Path chart)."""
         if not data:
             return
 
@@ -48,8 +60,6 @@ class StandardChartRenderer(TranslatorMixin):
 
         sorted_data = sorted(data, key=lambda x: x.timestamp)
         max_dist_val = max([d.distance_km for d in sorted_data]) if sorted_data else 1.0
-
-        # --- FIX: Додаємо 10% запасу ---
         max_dist_val *= 1.1
 
         view_max_dist, step, _ = ChartMath.calculate_nice_axis(
@@ -94,13 +104,12 @@ class StandardChartRenderer(TranslatorMixin):
         highlight_ids: set,
         interactive_points: list,
     ) -> None:
-        """Малює Timeline або Signal chart."""
+        """Малює графік у декартових координатах (Timeline або Signal chart)."""
         if not data:
             return
 
         w, h = full_rect.width(), full_rect.height()
 
-        # --- ORIGINAL MARGINS ---
         margin_left = 60.0
         margin_right = 30.0
         margin_top = 30.0
@@ -181,18 +190,14 @@ class StandardChartRenderer(TranslatorMixin):
     def render_bar(
         self, p: QPainter, full_rect: QRect, data: List[DetectionEvent]
     ) -> None:
-        """Малює Bar chart."""
+        """Малює гістограму розподілу об'єктів за класами."""
         if not data:
             return
 
-        # --- FIX: Group by Object ID first ---
         unique_objects = {}
         for d in data:
-            # Якщо id повторюється, ми просто перезаписуємо (або беремо останній/перший клас)
-            # Головне, що один ID рахується один раз
             unique_objects[d.id] = d.object_class
 
-        # Тепер рахуємо класи по унікальних об'єктах
         counts = Counter(unique_objects.values())
 
         if not counts:
@@ -224,11 +229,10 @@ class StandardChartRenderer(TranslatorMixin):
             p.drawText(int(x), int(y - 5), str(val))
             p.drawText(int(x), int(h - margin + 20), cls)
 
-    # --- INTERNAL HELPERS (Exact copy logic) ---
-
     def _group_by_id(
         self, data: List[DetectionEvent]
     ) -> Dict[str, List[DetectionEvent]]:
+        """Групує події виявлення за ідентифікатором об'єкта."""
         grouped: Dict[str, List[DetectionEvent]] = {}
         for d in data:
             if d.id not in grouped:
@@ -239,11 +243,12 @@ class StandardChartRenderer(TranslatorMixin):
     def _get_polar_pos(
         self, center: QPointF, radius: float, angle: float, dist: float, max_dist: float
     ) -> QPointF:
+        """Перетворює полярні координати у декартові для малювання."""
         rad = math.radians(angle - 90)
-        # Оригінальна логіка кліпінгу точок
         r_px = (dist / max_dist) * radius
         if r_px > radius:
             r_px = radius
+
         return QPointF(
             center.x() + r_px * math.cos(rad), center.y() + r_px * math.sin(rad)
         )
@@ -257,7 +262,8 @@ class StandardChartRenderer(TranslatorMixin):
         events: List[DetectionEvent],
         highlight_ids: set,
         draw_label: bool,
-    ):
+    ) -> None:
+        """Малює лінію траєкторії та маркери для одного об'єкта."""
         if not points:
             return
 
@@ -302,17 +308,16 @@ class StandardChartRenderer(TranslatorMixin):
             p.setBrush(QBrush(color))
             p.drawEllipse(pt, self.DOT_RADIUS, self.DOT_RADIUS)
 
-            text_col = ChartTheme.HIGHLIGHT if is_highlighted else ChartTheme.TEXT
-            p.setPen(text_col)
-            # p.drawText(int(pt.x() + 8), int(pt.y()), events[0].name)
-
             if is_highlighted:
                 p.setPen(QPen(ChartTheme.HIGHLIGHT, self.HIGHLIGHT_FRAME_WIDTH))
                 p.setBrush(Qt.BrushStyle.NoBrush)
                 radius_hl = self.DOT_RADIUS + self.HIGHLIGHT_RADIUS_OFFSET
                 p.drawEllipse(pt, radius_hl, radius_hl)
 
-    def _draw_label_rotated(self, p, points, text, is_highlighted):
+    def _draw_label_rotated(
+        self, p: QPainter, points: List[QPointF], text: str, is_highlighted: bool
+    ) -> None:
+        """Малює підпис об'єкта, повернутий вздовж його траєкторії."""
         mid_idx = len(points) // 2
         start_pt = points[0]
         end_pt = points[-1]
@@ -325,6 +330,7 @@ class StandardChartRenderer(TranslatorMixin):
         dx = p_b.x() - p_a.x()
         dy = p_b.y() - p_a.y()
         angle_deg = math.degrees(math.atan2(dy, dx))
+
         if 90 < abs(angle_deg) <= 180:
             angle_deg += 180
 
@@ -340,7 +346,10 @@ class StandardChartRenderer(TranslatorMixin):
         p.drawText(0, self.TEXT_OFFSET_Y, text)
         p.restore()
 
-    def _draw_polar_grid(self, p, center, radius, max_dist, step):
+    def _draw_polar_grid(
+        self, p: QPainter, center: QPointF, radius: float, max_dist: float, step: float
+    ) -> None:
+        """Малює сітку для полярного графіка (концентричні кола та осі)."""
         main_pen = QPen(ChartTheme.GRID, 1)
         sub_color = QColor(ChartTheme.GRID)
         sub_color.setAlpha(40)
@@ -362,15 +371,12 @@ class StandardChartRenderer(TranslatorMixin):
                 p.setPen(main_pen)
                 p.drawEllipse(center, r_current, r_current)
                 p.setPen(ChartTheme.TEXT)
-                p.drawText(
-                    int(center.x() + 5),
-                    int(center.y() - r_current + 10),
-                    (
-                        self.tr("{:.1f}km").format(val)
-                        if step < 1
-                        else self.tr("{}km").format(int(val))
-                    ),
+                label = (
+                    self.tr("{:.1f}km").format(val)
+                    if step < 1
+                    else self.tr("{}km").format(int(val))
                 )
+                p.drawText(int(center.x() + 5), int(center.y() - r_current + 10), label)
             else:
                 p.setPen(sub_pen)
                 p.drawEllipse(center, r_current, r_current)
@@ -386,8 +392,17 @@ class StandardChartRenderer(TranslatorMixin):
         )
 
     def _draw_cartesian_grid(
-        self, p, rect, y_max, t_start, t_end, duration, num_ticks, fmt
-    ):
+        self,
+        p: QPainter,
+        rect: tuple,
+        y_max: float,
+        t_start: float,
+        t_end: float,
+        duration: float,
+        num_ticks: int,
+        fmt: Callable[[float], str],
+    ) -> None:
+        """Малює сітку для декартового графіка (Timeline)."""
         (px, py, pw, ph) = rect
         p.setFont(QFont("Arial", 8))
         grid_pen = QPen(ChartTheme.GRID_FAINT, 1, Qt.PenStyle.DashLine)

@@ -12,6 +12,7 @@ from PyQt6.QtWidgets import (
 )
 
 from app.core.constants import DEV_COMPILED_UI_USING_ENABLED, RF_PARAMS__DIVIDER
+from app.core.logging_config import get_logger
 from app.core.mixins import TestUIOptimizationMixin
 from app.models.detection_object import DetectionObject
 from app.models.object_class import ObjectClass
@@ -25,6 +26,8 @@ from app.utils.ui_utils import move_dialog_down
 from app.widgets.class_manager_dialog import ClassManagerDialog
 from app.widgets.object_editor_dialog import ObjectEditorDialog
 
+logger = get_logger(__name__)
+
 ALLOW_DB_OPERATIONS = [
     DbOperation.ADD_OBJECT,
     DbOperation.UPDATE_OBJECT,
@@ -36,7 +39,12 @@ ALLOW_DB_OPERATIONS = [
 
 class ObjectManagerDialog(QDialog, TestUIOptimizationMixin):
     """
-    Діалогове вікно керування об'єктами (Object Manager).
+    **Діалогове вікно керування об'єктами** (База даних сигнатур).
+
+    Дозволяє оператору переглядати, додавати, редагувати та видаляти
+    інформацію про типи БПЛА та їх радіочастотні/акустичні сигнатури.
+    Використовує механізм сторінкової пагінації та кешування для
+    оптимізації роботи з великою базою даних через мережу.
     """
 
     PAGE_SIZE = 15
@@ -84,7 +92,7 @@ class ObjectManagerDialog(QDialog, TestUIOptimizationMixin):
     def _setup_state_variables(self) -> None:
         self.cached_objects: List[DetectionObject] = []
         self.current_page: int = 1
-        self.current_load: int = 0
+        self.current_load: int = 0  # Індекс поточного завантаженого чанку
         self.total_pages: int = 1
         self.total_items: int = 0
         self.translator = QTranslator()
@@ -104,7 +112,6 @@ class ObjectManagerDialog(QDialog, TestUIOptimizationMixin):
 
     def _connect_handlers(self) -> None:
         self.ui.btnRefresh.clicked.connect(self._force_refresh)
-
         self.ui.btnManageClasses.clicked.connect(self._open_class_manager)
 
         self.ui.btnAdd.clicked.connect(self._open_add_dialog)
@@ -120,6 +127,7 @@ class ObjectManagerDialog(QDialog, TestUIOptimizationMixin):
         self.network_service.request_finished.connect(self._handle_db_status)
 
     def refresh_data(self) -> None:
+        """Оновлює вміст таблиці (з кешу або через мережу)."""
         last_page_in_cache = self.current_load * self.PRELOAD_PAGES_COUNT
         first_page_in_cache = last_page_in_cache - self.PRELOAD_PAGES_COUNT + 1
 
@@ -127,9 +135,7 @@ class ObjectManagerDialog(QDialog, TestUIOptimizationMixin):
             first_page_in_cache <= self.current_page <= last_page_in_cache
             and self.cached_objects
         ):
-            print(
-                f"[ObjectManager] Page {self.current_page} found in cache. Rendering..."
-            )
+            logger.debug(f"Page {self.current_page} found in cache.")
             start_index = self._calculate_start_index()
             if start_index < 0:
                 start_index = 0
@@ -144,9 +150,7 @@ class ObjectManagerDialog(QDialog, TestUIOptimizationMixin):
                 self.current_load = 1
             limit = self.PAGE_SIZE * self.PRELOAD_PAGES_COUNT
 
-            print(
-                f"[ObjectManager] Requesting DB Chunk #{self.current_load} (Limit: {limit})..."
-            )
+            logger.info(f"Requesting DB Chunk #{self.current_load}...")
             self.network_service.request_db_objects_page(self.current_load, limit)
 
     def _load_language(self) -> None:
@@ -156,10 +160,12 @@ class ObjectManagerDialog(QDialog, TestUIOptimizationMixin):
         QCoreApplication.removeTranslator(self.translator)
 
     def _force_refresh(self) -> None:
+        """Очищує кеш та примусово перевантажує дані з сервера."""
         self.cached_objects = []
         self.refresh_data()
 
     def _calculate_start_index(self) -> int:
+        """Обчислює зсув (offset) всередині завантаженого чанку об'єктів для поточної сторінки."""
         global_start = (self.current_page - 1) * self.PAGE_SIZE
         chunk_start = (
             (self.current_load - 1) * self.PAGE_SIZE * self.PRELOAD_PAGES_COUNT
@@ -177,20 +183,16 @@ class ObjectManagerDialog(QDialog, TestUIOptimizationMixin):
             self.refresh_data()
 
     def _handle_db_status(self, response: ServiceResponse) -> None:
-
+        """Централізований обробник відповідей від бази даних."""
         if response.operation not in ALLOW_DB_OPERATIONS:
             return
 
         if response.is_error:
             if response.operation == DbOperation.GET_CLASSES:
-                if not self._waiting_classes_for_editor:
-                    return
                 self._waiting_classes_for_editor = False
-
-            title = response.get_title()
-            msg = response.get_message_or_default()
-
-            QMessageBox.critical(self, title, msg)
+            QMessageBox.critical(
+                self, response.get_title(), response.get_message_or_default()
+            )
             return
 
         match response.operation:
@@ -202,28 +204,23 @@ class ObjectManagerDialog(QDialog, TestUIOptimizationMixin):
                     self.update_cache_obj(DetectionObject.from_dict(response.data))
             case DbOperation.DELETE_OBJECT:
                 if isinstance(response.data, dict):
-                    id = response.data.get("id")
-                    if id:
-                        self.delete_cache_obj(id)
+                    obj_id = response.data.get("id")
+                    if obj_id:
+                        self.delete_cache_obj(obj_id)
             case DbOperation.GET_OBJECTS_PAGE:
                 if isinstance(response.data, dict):
-                    items = response.data.get("items")
-                    page = response.data.get("page")
-                    total = response.data.get("total")
-                    if items and total and page:
-                        obj_list = [DetectionObject.from_dict(item) for item in items]
-
-                        self._populate_table_from_db(obj_list, page, total)
+                    items = response.data.get("items", [])
+                    page = response.data.get("page", 1)
+                    total = response.data.get("total", 0)
+                    obj_list = [DetectionObject.from_dict(item) for item in items]
+                    self._populate_table_from_db(obj_list, page, total)
             case DbOperation.GET_CLASSES:
                 if isinstance(response.data, dict):
                     classes_raw = response.data.get("classes", [])
                     classes_list = [ObjectClass.from_dict(c) for c in classes_raw]
-
                     if self._waiting_classes_for_editor:
                         self._waiting_classes_for_editor = False
                         self._open_editor(classes_list)
-
-        print(f"[ObjectManager] DB Operation '{response.operation}': ...")
 
     def _populate_table_from_db(
         self,
@@ -231,9 +228,6 @@ class ObjectManagerDialog(QDialog, TestUIOptimizationMixin):
         current_load_chunk: int,
         total_items: int,
     ) -> None:
-        print(
-            f"[ObjectManager] Data received. Chunk: {current_load_chunk}, Total Items: {total_items}"
-        )
         self.cached_objects = objects_list
         self.current_load = current_load_chunk
         self.total_pages = math.ceil(total_items / self.PAGE_SIZE)
@@ -250,67 +244,53 @@ class ObjectManagerDialog(QDialog, TestUIOptimizationMixin):
         self.ui.btnNextPage.setEnabled(self.current_page < self.total_pages)
 
         self.ui.tableWidget.setRowCount(0)
-
         for obj in objects_list:
             row_idx = self.ui.tableWidget.rowCount()
             self._set_object_row(obj, row_idx)
 
-    def _set_object_row(self, obj: DetectionObject, row_idx: int):
-
+    def _set_object_row(self, obj: DetectionObject, row_idx: int) -> None:
         if row_idx >= self.ui.tableWidget.rowCount():
             self.ui.tableWidget.insertRow(row_idx)
 
-        # Назва
         name_item = QTableWidgetItem(obj.name)
-        name_item.setData(Qt.ItemDataRole.UserRole, obj.id)  # ID типу int
+        name_item.setData(Qt.ItemDataRole.UserRole, obj.id)
         self.ui.tableWidget.setItem(row_idx, 0, name_item)
-
-        # Клас
         self.ui.tableWidget.setItem(row_idx, 1, QTableWidgetItem(obj.object_class))
 
-        # Небезпека
         is_dang = obj.is_dangerous
         dang_item = QTableWidgetItem(self.tr("YES") if is_dang else self.tr("NO"))
         if is_dang:
             dang_item.setForeground(Qt.GlobalColor.red)
         self.ui.tableWidget.setItem(row_idx, 2, dang_item)
 
-        # --- RF (Радіо) ---
-        rf_list = obj.rf_params_hz
-
         rf_str = "-"
-        if rf_list:
-            if len(rf_list) == 1:
-                rf_arr = rf_list[0].split(RF_PARAMS__DIVIDER)
-                min = round(convert_hz_to_mhz(float(rf_arr[0])), 1)
-                max = round(convert_hz_to_mhz(float(rf_arr[1])), 1)
-                rf_str = self.tr("{}-{} MHz").format(min, max)
+        if obj.rf_params_hz:
+            if len(obj.rf_params_hz) == 1:
+                parts = obj.rf_params_hz[0].split(RF_PARAMS__DIVIDER)
+                min_f = round(convert_hz_to_mhz(float(parts[0])), 1)
+                max_f = round(convert_hz_to_mhz(float(parts[1])), 1)
+                rf_str = self.tr("{}-{} MHz").format(min_f, max_f)
             else:
-                rf_str = self.tr("{} freq(s)").format(len(rf_list))
-
+                rf_str = self.tr("{} freq(s)").format(len(obj.rf_params_hz))
         self.ui.tableWidget.setItem(row_idx, 3, QTableWidgetItem(rf_str))
 
-        # --- Sound ---
-        snd_list = obj.sound_params_hz
         snd_str = "-"
-        if snd_list:
-            if len(snd_list) > 3:
-                snd_str = self.tr("{} items").format(len(snd_list))
+        if obj.sound_params_hz:
+            if len(obj.sound_params_hz) > 3:
+                snd_str = self.tr("{} items").format(len(obj.sound_params_hz))
             else:
-                snd_str = ", ".join(map(str, snd_list)) + self.tr(" Hz")
-
+                snd_str = ", ".join(map(str, obj.sound_params_hz)) + self.tr(" Hz")
         self.ui.tableWidget.setItem(row_idx, 4, QTableWidgetItem(snd_str))
 
     def _get_selected_id(self) -> Optional[int]:
+        """Повертає унікальний ID виділеного у таблиці об'єкта."""
         selected_items = self.ui.tableWidget.selectedItems()
         if not selected_items:
             return None
         row = selected_items[0].row()
         item = self.ui.tableWidget.item(row, 0)
-
         if item is None:
             return None
-
         val = item.data(Qt.ItemDataRole.UserRole)
         return int(val) if val is not None else None
 
@@ -323,13 +303,9 @@ class ObjectManagerDialog(QDialog, TestUIOptimizationMixin):
         )
         move_dialog_down(dialog, self.geometry(), 0)
         dialog.exec()
-
-        print("[ObjectManager] Class manager closed. Refreshing data...")
-        self.cached_objects = []
-        self.refresh_data()
+        self._force_refresh()
 
     def _open_editor(self, classes_list: List[ObjectClass]) -> None:
-
         dialog = ObjectEditorDialog(
             settings_service=self.settings_service,
             keyboard=self.keyboard_service,
@@ -362,7 +338,6 @@ class ObjectManagerDialog(QDialog, TestUIOptimizationMixin):
             return
 
         target_obj = next((o for o in self.cached_objects if o.id == obj_id), None)
-
         if not target_obj:
             return
 
@@ -387,22 +362,22 @@ class ObjectManagerDialog(QDialog, TestUIOptimizationMixin):
         if confirm == QMessageBox.StandardButton.Yes:
             self.network_service.request_db_delete_object(obj_id)
 
-    def add_cache_obj(self, obj: DetectionObject):
+    def add_cache_obj(self, obj: DetectionObject) -> None:
         self.cached_objects.insert(0, obj)
         self.refresh_data()
 
-    def update_cache_obj(self, new_obj: DetectionObject):
+    def update_cache_obj(self, new_obj: DetectionObject) -> None:
         index = next(
             (i for i, x in enumerate(self.cached_objects) if x.id == new_obj.id), None
         )
-
         if index is not None:
             self.cached_objects[index] = new_obj
             self.refresh_data()
 
-    def delete_cache_obj(self, id: int):
-        index = next((i for i, x in enumerate(self.cached_objects) if x.id == id), None)
-
+    def delete_cache_obj(self, obj_id: int) -> None:
+        index = next(
+            (i for i, x in enumerate(self.cached_objects) if x.id == obj_id), None
+        )
         if index is not None:
             self.cached_objects.pop(index)
             self.refresh_data()

@@ -7,6 +7,7 @@ from PyQt6.QtGui import QMouseEvent, QPainter, QPaintEvent
 from PyQt6.QtWidgets import QToolTip, QWidget
 
 from app.core.chart_theme import ChartTheme
+from app.core.logging_config import get_logger
 from app.models.chart_models import CursorState
 from app.models.detection_background import SpectralData
 from app.models.detection_event import DetectionEvent
@@ -17,8 +18,23 @@ from app.ui.components.spectral_renderer import SpectralChartRenderer
 from app.ui.components.standard_chart_renderer import StandardChartRenderer
 from app.utils.convert_measurement_unit import convert_hz_to_mhz
 
+logger = get_logger(__name__)
+
 
 class StaticChartWidget(QWidget):
+    """
+    ### Віджет для відображення статичних графіків аналізу сигналів
+
+    Підтримує декілька режимів відображення:
+    - спектр (spectrum)
+    - водоспад (waterfall)
+    - шлях (path)
+    - радарний знімок (radar_snapshot)
+    - часова шкала (timeline)
+    - сигнал (signal)
+    - гістограма (bar)
+    """
+
     def __init__(
         self, settings_service: LangSettings, parent: Optional[QWidget] = None
     ) -> None:
@@ -45,12 +61,14 @@ class StaticChartWidget(QWidget):
     def set_data(
         self, data: List[DetectionEvent], highlight_ids: Optional[Set[str]] = None
     ) -> None:
+        """Встановлює дані для відображення на графіку."""
+        logger.info(f"Setting chart data: {len(data)} items")
         self.data = sorted(data, key=lambda x: x.timestamp)
         self.highlight_ids = highlight_ids or set()
         self.update()
 
     def set_background(self, spectral_data: Optional[SpectralData]) -> None:
-        """Встановлює дані фону для відображення на графіках спектру/водоспаду."""
+        """Встановлює дані фону для відображення на графіках."""
         self.current_background = spectral_data
 
         if self.chart_type in ["spectrum", "waterfall"] and self.current_background:
@@ -59,7 +77,9 @@ class StaticChartWidget(QWidget):
         self.update()
 
     def set_chart_type(self, t: str) -> None:
+        """Змінює тип графіка, що відображається."""
         if self.chart_type != t:
+            logger.info(f"Changing chart type to: {t}")
             self.chart_type = t
 
             if t in ["spectrum", "waterfall"] and self.current_background:
@@ -67,7 +87,7 @@ class StaticChartWidget(QWidget):
             self.update()
 
     def _get_active_event(self) -> Optional[DetectionEvent]:
-        """Повертає 'активну' подію (останню або підсвічену) для відображення маркера."""
+        """Повертає активну подію для відображення маркера."""
         if not self.data:
             return None
         if self.highlight_ids:
@@ -77,6 +97,7 @@ class StaticChartWidget(QWidget):
         return self.data[-1]
 
     def paintEvent(self, a0: QPaintEvent | None) -> None:
+        """Малює вміст віджета."""
         event = a0
         p = QPainter(self)
         p.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -94,7 +115,7 @@ class StaticChartWidget(QWidget):
             p.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, self.tr("No Data"))
             return
 
-        # --- ЛОГІКА МАЛЮВАННЯ СПЕКТРАЛЬНИХ ГРАФІКІВ ---
+        # Логіка малювання спектральних графіків
         if self.chart_type == "spectrum":
             active = self._get_active_event()
 
@@ -111,7 +132,7 @@ class StaticChartWidget(QWidget):
             )
             self.crosshair.draw(p, self.content_rect)
 
-        # --- СТАНДАРТНІ ГРАФІКИ ---
+        # Стандартні графіки
         elif self.chart_type in ["path", "radar_snapshot"]:
             self.standard_renderer.render_polar(
                 p, self.rect(), self.data, self.highlight_ids, self._interactive_points
@@ -133,6 +154,7 @@ class StaticChartWidget(QWidget):
         super().paintEvent(event)
 
     def mouseMoveEvent(self, a0: QMouseEvent | None) -> None:
+        """Обробляє рух миші для оновлення курсора та підказок."""
         event = a0
 
         if event is None:
@@ -170,6 +192,7 @@ class StaticChartWidget(QWidget):
         super().mouseMoveEvent(event)
 
     def _show_tooltip(self, global_pos, data: DetectionEvent) -> None:
+        """Відображає спливаючу підказку з інформацією про подію."""
         dt = datetime.fromisoformat(data.timestamp)
         time_str = dt.strftime("%H:%M:%S")
 

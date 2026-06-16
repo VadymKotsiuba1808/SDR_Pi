@@ -17,14 +17,15 @@ RADAR_TEXT_ANGLE_THRESHOLD_HIGH = 320
 
 
 class RadarRenderer:
-    """
-    Клас відповідає виключно за малювання (Rendering) елементів радара.
+    """Клас відповідає виключно за малювання (Rendering) елементів радара.
+
+    Цей клас інкапсулює всю логіку візуалізації об'єктів на радарній сітці,
+    включаючи обробку виходу за межі видимості, запобігання накладанню тексту
+    та анімацію сканування.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.radar_angle: int = 0
-
-        # Кеш для обробки кліків
         self._last_scale: float = 1.0
         self._last_center: tuple[float, float] = (0, 0)
         self._current_targets: List[RadarTarget] = []
@@ -35,9 +36,7 @@ class RadarRenderer:
         targets: List[RadarTarget],
         max_radius_km: float,
     ) -> QPixmap:
-        """
-        Малює точки виявлених об'єктів на копії базового зображення радара.
-        """
+        """Малює точки виявлених об'єктів на копії базового зображення радара."""
         if base_pixmap.isNull():
             return QPixmap()
 
@@ -66,7 +65,6 @@ class RadarRenderer:
 
         for target in sorted_targets:
             index_str = str(target.visual_index)
-
             pixel_dist = target.distance_km * scale
 
             is_out_of_bounds = pixel_dist > max_px_radius
@@ -127,7 +125,7 @@ class RadarRenderer:
     def _resolve_collision(
         self, current: QRect, occupied: List[QRect], bounds: QRect
     ) -> QRect:
-        """Намагається знайти вільне місце для тексту, зсуваючи його."""
+        """Шукає вільне місце для тексту, зсуваючи його при накладанні."""
         if not bounds.contains(current):
             current = self._fit_in_bounds(current, bounds)
 
@@ -170,7 +168,7 @@ class RadarRenderer:
         return current
 
     def _fit_in_bounds(self, rect: QRect, bounds: QRect) -> QRect:
-        """Зсуває rect так, щоб він був всередині bounds."""
+        """Вписує прямокутник повністю всередині заданих меж."""
         if rect.left() < bounds.left():
             rect.moveLeft(bounds.left())
         if rect.right() > bounds.right():
@@ -184,10 +182,7 @@ class RadarRenderer:
     def get_target_id_at_position(
         self, click_x: int, click_y: int, tolerance_px: int = 20
     ) -> Optional[int]:
-        """
-        Повертає ID цілі під курсором.
-        Використовує збережені під час draw_detections параметри масштабування.
-        """
+        """Визначає візуальний індекс цілі за координатами кліку."""
         center_x, center_y = self._last_center
         scale = self._last_scale
 
@@ -222,9 +217,7 @@ class RadarRenderer:
         return closest_target.visual_index
 
     def draw_scan_animation(self, size, has_detections: bool) -> QPixmap:
-        """
-        Малює прозорий pixmap з обертовим градієнтом (сканером).
-        """
+        """Малює шар з анімацією обертового променя радара."""
         self.radar_angle = (self.radar_angle + 6) % 360
 
         pixmap = QPixmap(size)

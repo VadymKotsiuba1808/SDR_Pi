@@ -4,12 +4,14 @@
 """
 
 import asyncio
+import logging
 import sys
 from typing import Optional
 
 import qasync
 from PyQt6.QtWidgets import QApplication, QDialog
 
+from app.core.logging_config import setup_logging
 from app.services.cleaner_service import CleanerService
 from app.services.keyboard_service import KeyboardService
 from app.services.settings_service import SettingsService
@@ -24,6 +26,9 @@ from app.widgets.main_window import MainWindow
 
 
 async def main(app: QApplication) -> None:
+    # Ініціалізація глобального логування
+    setup_logging(level=logging.DEBUG)
+
     settings_service = SettingsService()
     system_service = SystemService()
     keyboard_service = KeyboardService(system_service)

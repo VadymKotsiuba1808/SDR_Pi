@@ -1,13 +1,11 @@
-"""
-Тести для моделей спектральних даних (DetectionBackground, SpectralData).
-"""
+"""Модуль для тестування моделей фонового спектру."""
 
 import numpy as np
 
 from app.models.detection_background import DetectionBackground, SpectralData
 
 
-def test_spectral_data_serialization():
+def test_spectral_data_serialization() -> None:
     """Тест серіалізації та десеріалізації SpectralData."""
     mag = np.array([[1, 2], [3, 4]], dtype=np.uint8)
     data = {
@@ -18,12 +16,15 @@ def test_spectral_data_serialization():
     }
 
     obj = SpectralData.from_dict(data)
-    assert obj.center_freq_hz == 2400e6
-    assert np.array_equal(obj.data_magnitude, mag)
-    assert obj.to_dict() == data
+
+    assert obj.center_freq_hz == 2400e6, "Center frequency should match the input data"
+    assert np.array_equal(obj.data_magnitude, mag), (
+        "Magnitude matrix should be identical to the original array"
+    )
+    assert obj.to_dict() == data, "Resulting dictionary should match the input data"
 
 
-def test_detection_background_serialization():
+def test_detection_background_serialization() -> None:
     """Тест серіалізації та десеріалізації DetectionBackground."""
     spec_data = {
         "center_freq_hz": 433e6,
@@ -38,6 +39,11 @@ def test_detection_background_serialization():
     }
 
     obj = DetectionBackground.from_dict(data)
-    assert obj.id == "bg-001"
-    assert obj.spectral_data.center_freq_hz == 433e6
-    assert obj.to_dict() == data
+
+    assert obj.id == "bg-001", "Background record ID should be preserved"
+    assert obj.spectral_data.center_freq_hz == 433e6, (
+        "Nested spectral data should be correctly initialized"
+    )
+    assert obj.to_dict() == data, (
+        "Full serialization cycle should return an identical dictionary"
+    )

@@ -5,8 +5,7 @@
 from app.models.service_response import DbOperation, ServiceResponse, StatusCode
 
 
-def test_service_response_success():
-    """Тест успішної відповіді."""
+def test_service_response_success() -> None:
     resp = ServiceResponse(
         status=StatusCode.OK,
         message="Success",
@@ -14,34 +13,33 @@ def test_service_response_success():
         data={"classes": []},
     )
 
-    assert resp.is_success is True
-    assert resp.is_error is False
-    # В юніт-тестах без ініціалізованого QTranslator повертаються оригінальні рядки
-    assert resp.get_title() == "Success"
+    assert resp.is_success is True, "Response should be successful"
+    assert resp.is_error is False, "Response should not be an error"
+    assert resp.get_title() == "Success", "Title should match the passed message"
 
 
-def test_service_response_error():
-    """Тест відповіді з помилкою."""
+def test_service_response_error() -> None:
     resp = ServiceResponse(
         status=StatusCode.NOT_FOUND,
         message="Not found",
         operation=DbOperation.DELETE_OBJECT,
     )
 
-    assert resp.is_success is False
-    assert resp.is_error is True
-    assert "Error" in resp.get_title()
+    assert resp.is_success is False, "Response should not be successful"
+    assert resp.is_error is True, "Response should be an error"
+    assert "Error" in resp.get_title(), (
+        "Title should contain the word 'Error' for errors"
+    )
 
 
-def test_service_response_messages():
-    """Тест отримання повідомлень статусів."""
+def test_service_response_messages() -> None:
     resp = ServiceResponse(status=StatusCode.INTERNAL_ERROR, message="Boom")
-    # Має повернути стандартне повідомлення для 500 помилки
-    assert "Internal server error" in resp.get_message_or_default()
+    assert "Internal server error" in resp.get_message_or_default(), (
+        "Default message for server error should be returned"
+    )
 
 
-def test_service_response_serialization():
-    """Тест серіалізації ServiceResponse."""
+def test_service_response_serialization() -> None:
     data = {
         "status": 201,
         "message": "Created",
@@ -50,6 +48,6 @@ def test_service_response_serialization():
     }
 
     obj = ServiceResponse.from_dict(data)
-    assert obj.status == StatusCode.CREATED
-    assert obj.operation == DbOperation.ADD_OBJECT
-    assert obj.to_dict() == data
+    assert obj.status == StatusCode.CREATED, "Status should be CREATED (201)"
+    assert obj.operation == DbOperation.ADD_OBJECT, "Operation should be ADD_OBJECT"
+    assert obj.to_dict() == data, "Serialized object should match the input data"

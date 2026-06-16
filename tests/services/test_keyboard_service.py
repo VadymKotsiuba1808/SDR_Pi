@@ -1,7 +1,11 @@
 """
-Тести для сервісу розкладки клавіатури (KeyboardService).
+Модуль містить юніт-тести для KeyboardService.
+
+Ці тести перевіряють логіку керування розкладкою клавіатури, враховуючи
+платформозалежність (Windows/Linux) та коректність виклику системних API.
 """
 
+from typing import Dict, Generator
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -10,7 +14,8 @@ from app.services.keyboard_service import KeyboardService
 
 
 @pytest.fixture
-def mock_system_win():
+def mock_system_win() -> MagicMock:
+    """Створює мок-об'єкт системної інформації для Windows."""
     system = MagicMock()
     system.is_windows = True
     system.is_linux = False
@@ -18,7 +23,8 @@ def mock_system_win():
 
 
 @pytest.fixture
-def mock_system_linux():
+def mock_system_linux() -> MagicMock:
+    """Створює мок-об'єкт системної інформації для Linux."""
     system = MagicMock()
     system.is_windows = False
     system.is_linux = True
@@ -26,8 +32,8 @@ def mock_system_linux():
 
 
 @pytest.fixture
-def mock_modules():
-    """Фікстура для підміни системних модулів, щоб уникнути реальних імпортів."""
+def mock_modules() -> Generator[Dict[str, MagicMock], None, None]:
+    """Фікстура для підміни системних модулів."""
     mock_keyboard = MagicMock()
     mock_win32api = MagicMock()
     mock_win32gui = MagicMock()
@@ -49,29 +55,41 @@ def mock_modules():
         }
 
 
-def test_keyboard_initialization_win(mock_system_win, mock_modules):
-    """Тест ініціалізації на Windows."""
+def test_keyboard_initialization_win(
+    mock_system_win: MagicMock, mock_modules: Dict[str, MagicMock]
+) -> None:
+    """Перевіряє ініціалізацію KeyboardService на Windows."""
     service = KeyboardService(mock_system_win)
-    assert service.current_layout == "EN"
-    assert mock_modules["keyboard"].add_hotkey.called
+    assert service.current_layout == "EN", "Initial layout should be EN by default"
+    assert mock_modules["keyboard"].add_hotkey.called, (
+        "Hot key for switching should be registered"
+    )
 
 
-def test_keyboard_toggle_layout(mock_system_win, mock_modules):
-    """Тест перемикання розкладки."""
+def test_keyboard_toggle_layout(
+    mock_system_win: MagicMock, mock_modules: Dict[str, MagicMock]
+) -> None:
+    """Перевіряє циклічне перемикання розкладки."""
     service = KeyboardService(mock_system_win)
-    # Скидаємо виклик з ініціалізації
+    # Скидаємо виклик з ініціалізації, щоб перевірити саме наступний виклик toggle
     mock_modules["win32api"].LoadKeyboardLayout.reset_mock()
 
     service.toggle_layout()
-    assert service.current_layout == "UA"
-    assert mock_modules["win32api"].LoadKeyboardLayout.called
+    assert service.current_layout == "UA", "Layout should change to UA after switching"
+    assert mock_modules["win32api"].LoadKeyboardLayout.called, (
+        "Windows API should be called for UA"
+    )
 
     service.toggle_layout()
-    assert service.current_layout == "EN"
+    assert service.current_layout == "EN", (
+        "Layout should return to EN after second switch"
+    )
 
 
-def test_keyboard_callback(mock_system_win, mock_modules):
-    """Тест виклику callback при зміні розкладки."""
+def test_keyboard_callback(
+    mock_system_win: MagicMock, mock_modules: Dict[str, MagicMock]
+) -> None:
+    """Перевіряє виклик callback-функції при зміні розкладки."""
     callback = MagicMock()
     service = KeyboardService(mock_system_win, callback=callback)
     service.toggle_layout()
@@ -80,10 +98,10 @@ def test_keyboard_callback(mock_system_win, mock_modules):
 
 @pytest.mark.skipif(reason="Залежить від наявності бібліотек win32 на системі")
 def test_windows_layout_apply(mock_system_win: MagicMock) -> None:
-    """Тест виклику специфічних API Windows."""
+    """Перевіряє виклик специфічних API Windows для застосування розкладки."""
     service = KeyboardService(mock_system_win)
 
-    # Використовуємо кастування типів до Any, щоб Pylance дозволив підмінити модуль на Mock
+    # Використовуємо setattr, щоб підмінити динамічно імпортовані модулі моками
     mock_win32api = MagicMock()
     mock_win32gui = MagicMock()
 
@@ -93,5 +111,6 @@ def test_windows_layout_apply(mock_system_win: MagicMock) -> None:
     service.current_layout = "UA"
     service._set_windows_layout()
 
-    # Звертаємося до нашого локального mock_win32api, щоб уникнути помилки "not an attribute of None"
+    # Перевіряємо виклик з ідентифікатором української розкладки (0x0422)
+    # та прапором KLF_ACTIVATE (1)
     mock_win32api.LoadKeyboardLayout.assert_called_with("00000422", 1)

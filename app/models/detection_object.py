@@ -4,20 +4,27 @@ from typing import List, Optional
 
 @dataclass
 class DetectionObject:
-    """
-    Модель об'єкта для бази даних.
-    Оновлено для підтримки списків частот та перейменовано audio -> sound.
+    """Модель об'єкта виявлення для ідентифікації БПЛА та систем зв'язку.
+
+    Attributes:
+        id: Унікальний ідентифікатор (None для нових).
+        name: Назва об'єкта.
+        class_id: ID категорії об'єкта.
+        object_class: Текстова назва класу.
+        is_dangerous: Чи є об'єкт потенційно небезпечним.
+        rf_params_hz: Частотні діапазони "min-max" (Гц).
+        sound_params_hz: Характерні звукові частоти (Гц).
     """
 
-    id: Optional[int]  # Може бути None, якщо об'єкт новий
+    id: Optional[int]
     name: str
 
     class_id: int
-    object_class: str  # Популюється назвою класу
+    object_class: str
 
     is_dangerous: bool = False
-    rf_params_hz: List[str] = field(default_factory=list)  # Список рядків "min-max"
-    sound_params_hz: List[int] = field(default_factory=list)  # Список чисел
+    rf_params_hz: List[str] = field(default_factory=list)
+    sound_params_hz: List[int] = field(default_factory=list)
 
     @staticmethod
     def from_dict(data: dict) -> "DetectionObject":

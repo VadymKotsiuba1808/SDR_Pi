@@ -6,23 +6,19 @@ from PyQt6.QtGui import QPixmap
 
 class MapViewLogic:
     """
-    Клас для обробки логіки відображення мапи:
-    розрахунок масштабу та генерація обрізаного зображення (viewport).
+    ### MapViewLogic
+    Логіка відображення мапи: розрахунок масштабу та генерація фрагментів.
     """
 
     @staticmethod
     def calculate_scale_factor(
         radar_radius_km: float, radar_view_width_px: int, map_resolution_km_px: float
     ) -> float:
-        """
-        Розраховує коефіцієнт масштабування (scale_factor) між реальною мапою та відображенням на екрані.
-
-        """
+        """Розраховує коефіцієнт масштабування між фізичною мапою та екраном."""
         if radar_radius_km <= 0:
             return 0.0
 
         radar_view_radius_px = radar_view_width_px / 2.0
-
         target_px_per_km = radar_view_radius_px / radar_radius_km
 
         if map_resolution_km_px <= 0:
@@ -39,10 +35,7 @@ class MapViewLogic:
         radar_center_relative: QPointF,
         scale_factor: float,
     ) -> QPixmap:
-        """
-        Вирізає та масштабує частину мапи, щоб центр радара збігався з GPS-координатами.
-
-        """
+        """Створює фрагмент мапи для відображення у віджеті."""
         view_w = view_size.width()
         view_h = view_size.height()
 
@@ -84,9 +77,7 @@ class MapViewLogic:
     def calculate_map_expansion_coefficients(
         radar_rect: QRect, background_width: int, background_height: int
     ) -> list[float]:
-        """
-        Розраховує, наскільки треба розширити мапу, щоб вона займала фон повністю
-        """
+        """Розраховує коефіцієнти розширення мапи для заповнення фону."""
         if not radar_rect.width() or not radar_rect.height():
             return [1.0, 1.0]
 

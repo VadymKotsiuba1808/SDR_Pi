@@ -1,6 +1,4 @@
-"""
-Тести для моделей логів (LogEntry, LogType).
-"""
+"""Тести для моделей логів."""
 
 from app.models.detection_event import DetectionEvent
 from app.models.log_entries import (
@@ -13,8 +11,8 @@ from app.models.log_entries import (
 from app.models.source_type import SourceType
 
 
-def test_log_entry_detection_serialization():
-    """Тест серіалізації логу детекції."""
+def test_log_entry_detection_serialization() -> None:
+    """Тест серіалізації та десеріалізації логу детекції."""
     det = DetectionEvent(
         id="d1",
         type=SourceType.RF,
@@ -29,36 +27,51 @@ def test_log_entry_detection_serialization():
     entry = LogEntry(type=LogType.DETECTION, payload=det, timestamp="T1")
 
     data = entry.to_dict()
-    assert data["type"] == "detection"
-    assert data["payload"]["id"] == "d1"
 
-    # Десеріалізація
+    assert data["type"] == "detection", "Log type should be 'detection'"
+    assert data["payload"]["id"] == "d1", "Detection ID in payload should match"
+
     restored = LogEntry.from_dict(data)
-    assert restored.type == LogType.DETECTION
-    assert isinstance(restored.payload, DetectionEvent)
-    assert restored.payload.id == "d1"
-    assert is_detection(restored) is True
+
+    assert restored.type == LogType.DETECTION, "Restored log type should be DETECTION"
+    assert isinstance(restored.payload, DetectionEvent), (
+        "Payload should be an instance of DetectionEvent"
+    )
+    assert restored.payload.id == "d1", "Restored detection ID should match"
+    assert is_detection(restored) is True, "is_detection function should return True"
 
 
-def test_log_entry_false_alarm_serialization():
-    """Тест серіалізації логу помилкової тривоги."""
+def test_log_entry_false_alarm_serialization() -> None:
+    """Тест серіалізації та десеріалізації логу помилкової тривоги."""
     payload = FalseAlarmPayload(detection_id="e1", name="Drone")
     entry = LogEntry(type=LogType.FALSE_ALARM, payload=payload)
 
     data = entry.to_dict()
-    assert data["type"] == "false_alarm"
+
+    assert data["type"] == "false_alarm", "Log type should be 'false_alarm'"
 
     restored = LogEntry.from_dict(data)
-    assert restored.type == LogType.FALSE_ALARM
-    assert isinstance(restored.payload, FalseAlarmPayload)
-    assert restored.payload.detection_id == "e1"
-    assert is_false_alarm(restored) is True
+
+    assert restored.type == LogType.FALSE_ALARM, (
+        "Restored log type should be FALSE_ALARM"
+    )
+    assert isinstance(restored.payload, FalseAlarmPayload), (
+        "Payload should be an instance of FalseAlarmPayload"
+    )
+    assert restored.payload.detection_id == "e1", "Detection ID in payload should match"
+    assert is_false_alarm(restored) is True, (
+        "is_false_alarm function should return True"
+    )
 
 
-def test_log_entry_invalid_type():
-    """Тест обробки невідомого типу логу (має дефолтитись до DetectionEvent)."""
+def test_log_entry_invalid_type() -> None:
+    """Тест обробки невідомого типу логу."""
     data = {"type": "unknown_type", "payload": {"id": "test"}}
+
     entry = LogEntry.from_dict(data)
-    assert entry.type == "unknown_type"
-    assert isinstance(entry.payload, DetectionEvent)
-    assert entry.payload.id == "test"
+
+    assert entry.type == "unknown_type", "Type should be preserved as unknown"
+    assert isinstance(entry.payload, DetectionEvent), (
+        "Payload should default to DetectionEvent"
+    )
+    assert entry.payload.id == "test", "ID in default payload should match"

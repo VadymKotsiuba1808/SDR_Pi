@@ -25,9 +25,12 @@ from sqlalchemy.orm import (
 )
 from sqlalchemy.pool import StaticPool
 
+from app.core.logging_config import get_logger
 from app.models.detection_object import DetectionObject
 from app.models.object_class import ObjectClass
 from app.models.service_response import DbOperation, ServiceResponse, StatusCode
+
+logger = get_logger(__name__)
 
 DB_CONNECTION_STRING: str = "sqlite:///./sdr_pi.db"
 
@@ -35,6 +38,15 @@ Base: Any = declarative_base()
 
 
 class ObjectClassEntity(Base):
+    """
+    Сутність бази даних для категорій об'єктів.
+
+    **Attributes:**
+    - `id` (int): Унікальний ідентифікатор класу.
+    - `name` (str): Унікальна назва класу (наприклад, 'UAV', 'Bird').
+    - `signatures` (relationship): Список сигнатур, що належать до цього класу.
+    """
+
     __tablename__ = "object_classes"
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String, unique=True, nullable=False)
@@ -42,6 +54,19 @@ class ObjectClassEntity(Base):
 
 
 class Signature(Base):
+    """
+    Сутність бази даних для сигнатур (еталонів) об'єктів.
+
+    **Attributes:**
+    - `id` (int): Унікальний ідентифікатор сигнатури.
+    - `name` (str): Назва моделі або типу об'єкта.
+    - `class_id` (int): ID пов'язаного класу об'єктів.
+    - `is_dangerous` (bool): Прапорець небезпечності об'єкта.
+    - `rf_params` (list[str]): Список параметрів радіочастот.
+    - `sound_params` (list[int]): Список звукових параметрів.
+    - `object_class_rel` (relationship): Посилання на об'єкт класу.
+    """
+
     __tablename__ = "signatures"
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String, nullable=False)
@@ -55,6 +80,12 @@ class Signature(Base):
 
 
 class DBWorker(QRunnable):
+    """
+    Виконавець завдань бази даних у фоновому потоці.
+
+    Цей клас дозволяє запускати операції з БД без блокування головного GUI потоку.
+    """
+
     def __init__(self, func: Callable[..., None], *args: Any, **kwargs: Any) -> None:
         super().__init__()
         self.func = func
@@ -66,11 +97,17 @@ class DBWorker(QRunnable):
         try:
             self.func(*self.args, **self.kwargs)
         except Exception as e:
-            print(f"[DB Worker Error] {e}")
+            logger.error(f"[DB Worker Error] {e}")
 
 
 class DatabaseService(QObject):
-    # Єдиний сигнал для результату операцій
+    """
+    Головний сервіс для взаємодії з базою даних.
+
+    Використовує асинхронну обробку запитів через `QThreadPool` та надсилає
+    результати через сигнал `request_finished`.
+    """
+
     request_finished = pyqtSignal(ServiceResponse)
 
     def __init__(
@@ -93,21 +130,19 @@ class DatabaseService(QObject):
         listen(self.engine, "connect", self._enable_wal)
         Base.metadata.create_all(self.engine)
         self.Session: sessionmaker[Session] = sessionmaker(bind=self.engine)
-        print(f"[DB] Service started on {self.db_url}")
+        logger.info(f"[DB] Service started on {self.db_url}")
 
     @staticmethod
     def _enable_wal(dbapi_connection, connection_record):
+        # Увімкнення режиму WAL для SQLite для покращення продуктивності
         cursor = dbapi_connection.cursor()
         try:
             cursor.execute("PRAGMA journal_mode=WAL")
             cursor.execute("PRAGMA synchronous=NORMAL")
         except Exception:
-            # WAL may not be supported for :memory: databases
             pass
         finally:
             cursor.close()
-
-    # --- Public Methods ---
 
     def request_objects_page(self, page: int = 1, page_size: int = 10) -> None:
         worker = DBWorker(self._fetch_page_task, page, page_size)
@@ -145,7 +180,6 @@ class DatabaseService(QObject):
         worker = DBWorker(self._delete_class_task, class_id)
         self.threadpool.start(worker)
 
-    # --- Internal Tasks ---
     def _signature_to_dto(self, s: Signature) -> DetectionObject:
         return DetectionObject(
             id=s.id,
@@ -183,7 +217,7 @@ class DatabaseService(QObject):
             resp.data = {"items": items_data, "count": count}
 
         except Exception as e:
-            print(f"[DB Error Fetch All] {e}")
+            logger.error(f"[DB Error Fetch All] {e}")
             resp.message = f"Error fetching all objects: {str(e)}"
 
         finally:
@@ -254,8 +288,6 @@ class DatabaseService(QObject):
         finally:
             session.close()
             self.request_finished.emit(resp)
-
-    # --- CRUD TASKS ---
 
     def _add_object_task(self, obj_data: DetectionObject) -> None:
         session: Session = self.Session()

@@ -7,9 +7,19 @@ from app.models.chart_models import CursorState
 
 
 class QPainterCrosshair:
-    """Компонент, що відповідає виключно за малювання курсору."""
+    """Компонент, що відповідає виключно за малювання курсору.
 
-    def __init__(self):
+    Цей клас використовує `QPainter` для малювання ліній курсору, точок підсвічування
+    та спливаючих підказок (tooltips) на полотні.
+
+    Attributes:
+        pen (QPen): Перо для малювання основних ліній курсору.
+        text_pen (QPen): Перо для малювання тексту.
+        bg_brush (QBrush): Пензель для фону спливаючої підказки.
+        state (CursorState): Поточний стан курсору (позиція, видимість тощо).
+    """
+
+    def __init__(self) -> None:
         self.pen = QPen(ChartTheme.HIGHLIGHT, 1, Qt.PenStyle.DashLine)
         self.text_pen = QPen(ChartTheme.HIGHLIGHT)
         self.bg_brush = QBrush(ChartTheme.HIGHLIGHT_BG)
@@ -50,6 +60,7 @@ class QPainterCrosshair:
         box_w = tw + 10
         box_h = th + 4
 
+        # Перевірка виходу за межі області малювання
         if box_x + box_w > bounds.right():
             box_x = x - box_w - 10
         if box_y < bounds.top():
@@ -67,12 +78,18 @@ class QPainterCrosshair:
 
 
 class PyGraphCrosshair:
-    """
-    Курсор спеціально для pyqtgraph (DynamicChartWidget).
-    Керує pg.InfiniteLine та pg.TextItem.
+    """Курсор спеціально для інтеграції з pyqtgraph.
+
+    Цей клас керує об'єктами `pg.InfiniteLine` та `pg.TextItem` для відображення
+    курсору на графіках `DynamicChartWidget`.
+
+    Attributes:
+        v_line (pg.InfiniteLine): Вертикальна лінія курсору.
+        h_line (pg.InfiniteLine): Горизонтальна лінія курсору.
+        label (pg.TextItem): Текстова мітка з координатами або іншою інформацією.
     """
 
-    def __init__(self, plot_item: pg.PlotItem):
+    def __init__(self, plot_item: pg.PlotItem) -> None:
         self._plot_item = plot_item
 
         pen = pg.mkPen(
@@ -96,7 +113,6 @@ class PyGraphCrosshair:
         self.hide()
 
     def update_position(self, x: float, y: float, text: str) -> None:
-        """Оновлює позицію ліній та текст мітки."""
         self.v_line.setPos(x)
         self.h_line.setPos(y)
         self.label.setText(text)

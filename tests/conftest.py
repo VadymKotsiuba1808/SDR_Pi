@@ -1,18 +1,14 @@
-"""
-Глобальні фікстури та налаштування для всіх тестів.
-"""
+"""Конфігурація pytest та глобальні фікстури для ізоляції тестів."""
 
+from collections.abc import Generator
 from unittest.mock import MagicMock, patch
 
 import pytest
 
 
 @pytest.fixture(scope="session", autouse=True)
-def mock_system_modules():
-    """
-    Глобально підміняє системно-залежні модулі, щоб уникнути зависань
-    та побічних ефектів під час ініціалізації сервісів (наприклад, KeyboardService).
-    """
+def mock_system_modules() -> Generator[None, None, None]:
+    """Підміна системних модулів (keyboard, win32api) для ізоляції тестів."""
     with patch.dict(
         "sys.modules",
         {

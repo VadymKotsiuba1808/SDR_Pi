@@ -1,5 +1,5 @@
 """
-Тести для діалогу зміни пароля.
+Модуль містить тести для діалогу зміни пароля власника (`ChangePwdDialog`).
 """
 
 from unittest.mock import MagicMock
@@ -12,7 +12,6 @@ from app.widgets.change_pwd_dialog import ChangePwdDialog
 
 @pytest.fixture
 def mock_settings():
-    """Фікстура для макета налаштувань."""
     settings = MagicMock()
     settings.lang_code = "uk"
     settings.owner_password_hash = ""
@@ -21,7 +20,6 @@ def mock_settings():
 
 @pytest.fixture
 def mock_keyboard():
-    """Фікстура для макета сервісу клавіатури."""
     mock = MagicMock()
     mock.current_layout = "EN"
     return mock
@@ -29,18 +27,17 @@ def mock_keyboard():
 
 @pytest.fixture
 def change_pwd_dialog(qtbot, mock_settings, mock_keyboard):
-    """Фікстура для ініціалізації ChangePwdDialog з моками."""
     dialog = ChangePwdDialog(mock_settings, mock_keyboard)
     qtbot.addWidget(dialog)
     yield dialog
-    # Очищуємо транслятори
+    # Очищуємо транслятори для запобігання конфліктам між тестами
     from PyQt6.QtCore import QCoreApplication
 
     QCoreApplication.removeTranslator(dialog.translator)
 
 
 def test_ui_initialization(change_pwd_dialog):
-    """Тест ініціалізації інтерфейсу."""
+    """Перевіряє коректність початкового стану UI компонентів."""
     assert (
         change_pwd_dialog.ui.passwordLineEdit.echoMode() == QLineEdit.EchoMode.Password
     )
@@ -53,7 +50,7 @@ def test_ui_initialization(change_pwd_dialog):
 
 
 def test_password_mismatch(change_pwd_dialog, qtbot):
-    """Тест помилки при незбігу паролів."""
+    """Перевіряє відображення помилки при введенні різних паролів."""
     change_pwd_dialog.ui.passwordLineEdit.clear()
     change_pwd_dialog.ui.confirmPasswordLineEdit.clear()
 
@@ -70,7 +67,7 @@ def test_password_mismatch(change_pwd_dialog, qtbot):
 
 
 def test_password_validation_fail(change_pwd_dialog, qtbot):
-    """Тест провалу валідації (дуже короткий пароль)."""
+    """Перевіряє валідацію на мінімальну довжину пароля."""
     change_pwd_dialog.ui.passwordLineEdit.clear()
     change_pwd_dialog.ui.confirmPasswordLineEdit.clear()
 
@@ -87,7 +84,7 @@ def test_password_validation_fail(change_pwd_dialog, qtbot):
 
 
 def test_successful_password_change(change_pwd_dialog, mock_settings, qtbot):
-    """Тест успішної зміни пароля."""
+    """Перевіряє успішний процес зміни пароля власника."""
     change_pwd_dialog.ui.passwordLineEdit.clear()
     change_pwd_dialog.ui.confirmPasswordLineEdit.clear()
 
@@ -106,7 +103,7 @@ def test_successful_password_change(change_pwd_dialog, mock_settings, qtbot):
 
 
 def test_toggle_visibility(change_pwd_dialog, qtbot):
-    """Тест перемикання видимості паролів."""
+    """Перевіряє роботу кнопок перемикання видимості паролів."""
     # Перше поле
     assert (
         change_pwd_dialog.ui.passwordLineEdit.echoMode() == QLineEdit.EchoMode.Password

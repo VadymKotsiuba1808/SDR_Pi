@@ -49,6 +49,7 @@ from app.core.constants import (
     TIMER_INTERVAL_WIFI_UPDATE,
 )
 from app.core.detection_manager import DetectionManager
+from app.core.logging_config import get_logger
 from app.core.map_view_logic import MapViewLogic
 from app.core.mixins import TestUIOptimizationMixin
 from app.models.detection_background import DetectionBackground
@@ -90,8 +91,10 @@ SIGNAL_LEVELS_COUNT = 4
 class MainWindow(QMainWindow, TestUIOptimizationMixin):
     """
     Головне вікно програми (Controller).
-    Зв'язує графічний інтерфейс (View) з сервісами та логікою.
-    Обробляє навігацію та глобальні події.
+
+    - Виконує роль центрального вузла, який координує роботу всіх сервісів (мережа, мапи, логування, реле).
+    - Відображає дані користувачу.
+    - Керує перемиканням режимів (Радар/Мапа), обробкою детекцій та візуалізацією радіообстановки.
     """
 
     def __init__(
@@ -102,13 +105,14 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
         parent: Optional[QWidget] = None,
     ) -> None:
         super().__init__(parent)
+        self.logger = get_logger(__name__)
 
         self.settings_service = settings
         self.system_service = system
         self.keyboard_service = keyboard
 
         self._load_ui()
-        print("[MainWindow] Interface loaded.")
+        self.logger.info("Interface loaded.")
 
         self._setup_state_variables()
         self._init_recording_service()
@@ -119,9 +123,6 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
         self.update_wifi_signal_info()
         self.change_language()
 
-        # FIXME -
-        # TODO - розкоментувати
-        # self.update_gps_and_map()
         self._start_async_tasks()
 
         self.ui.Radar_Section.setAttribute(
@@ -132,15 +133,14 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
         self.check_free_memory(800)
         self.apply_test_ui_optimization()
 
-        print("[MainWindow] Initialization complete.")
+        self.logger.info("Initialization complete.")
 
     # region --- Init ---
     def showEvent(self, a0: QShowEvent | None) -> None:
         event = a0
-
         super().showEvent(event)
-        # self.ui.map_background_label.setScaledContents(False)
 
+        # Готуємо чисту картинку радара для подальшого малювання цілей
         self.radar_clean_pixmap = QPixmap(":/images/radar.png").scaled(
             self.ui.Radar.size(),
             Qt.AspectRatioMode.KeepAspectRatio,
@@ -149,18 +149,15 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
 
     def resizeEvent(self, a0: QResizeEvent | None) -> None:
         event = a0
-
         if event:
             self._update_map_geometry()
-
         super().resizeEvent(event)
 
     def changeEvent(self, a0: QEvent | None) -> None:
         event = a0
-
         if event and event.type() == QEvent.Type.LanguageChange:
             if DEV_COMPILED_UI_USING_ENABLED:
-                print("[MainWindow] Language change detected, updating UI...")
+                self.logger.debug("Language change detected, updating UI...")
                 self.ui.retranslateUi(self)
         else:
             super().changeEvent(event)
@@ -189,19 +186,13 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
             self.ui = cast(Ui_MainWindow, self)
 
     def _setup_state_variables(self) -> None:
-
         self.map_service = MapService(settings=self.settings_service)
-
-        # Індекс об'єкта, який зараз шукається/відображається
         self.searched_index: Optional[int] = None
-
         self.radar_renderer = RadarRenderer()
 
-        # Менеджер детекцій
         self.detection_manager = DetectionManager(self.settings_service, self)
         self.detection_manager.detections_changed.connect(self._update_detection_ui)
 
-        # Мережевий сервіс (Pi)
         self.pi_network = PiNetworkService(self.settings_service, self)
         self.pi_network.data_received.connect(self.handle_pi_data)
         self.pi_network.gps_received.connect(self.handle_gps)
@@ -213,12 +204,9 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
         self.pi_network.set_rf_range(self.settings_service.radio_range_mhz)
 
         self.network_signal_service = NetworkSignalService(self.system_service)
-
         self.log_service = LogService()
-
         self.detection_background_service = DetectionBackgroundService()
 
-        # Змінні карти
         self.current_map_type_index: int = 0
         self.map_types: List[MapTypes] = [e for e in MapTypes]
         self.current_coords: List[float] = DEFAULT_START_COORDS
@@ -228,7 +216,6 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
 
         self.custom_map_settings: Optional[CustomMapSettings] = None
 
-        # UI Стани
         self.is_radar_mode: bool = False
         self.is_alert: bool = False
         self.force_gps_update: bool = False
@@ -237,7 +224,6 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
         self.jammer_service.state_changed.connect(self.on_jammer_state_changed)
 
         self.translator = QTranslator()
-
         self.record_status_widget = RecordingStatusWidget(self)
 
         self.media_service = MediaPlayerService(self.system_service)
@@ -247,7 +233,6 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
 
     def _init_recording_service(self) -> None:
         self.recorder = RecordingService(self.system_service, self)
-
         self.recorder.recording_started.connect(self.on_recording_started)
         self.recorder.recording_stopped.connect(self.on_recording_stopped)
         self.recorder.recording_error.connect(self.show_error_message)
@@ -337,15 +322,11 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
         self.timer_gps.start(self.settings_service.gps_interval_s * 1000)
 
     def _on_1sec_timeout(self) -> None:
-        """Обробник щосекундного таймера."""
         self.update_time_and_date()
-        self.update_false_alarm_button_state
+        self.update_false_alarm_button_state()
 
     def _start_async_tasks(self) -> None:
-        """
-        Запускає всі фонові асинхронні задачі.
-        """
-        print("[MainWindow] Starting async background tasks (network)...")
+        self.logger.info("Starting async background tasks (network)...")
         self.pi_network.start()
 
     def _update_map_geometry(self) -> None:
@@ -353,9 +334,7 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
         parent_widget = self.ui.map_background_label.parent()
 
         if not isinstance(parent_widget, QWidget):
-            print(
-                "[MainWindow] Warning: Map background parent widget not found or is not a QWidget."
-            )
+            self.logger.warning("Map background parent widget not found.")
             return
 
         self.add_sizes_map_k = MapViewLogic.calculate_map_expansion_coefficients(
@@ -366,24 +345,22 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
 
     def load_language(self) -> None:
         lang_code = self.settings_service.lang_code
-
         if lang_code is None:
             return
 
         QCoreApplication.removeTranslator(self.translator)
-
         path = f"app/i18n/qm/app_{lang_code}.qm"
         if self.translator.load(path):
             QCoreApplication.installTranslator(self.translator)
         else:
-            print(f"[MainWindow] Error: Failed to load translation file: {path}")
+            self.logger.error(f"Failed to load translation file: {path}")
 
     def change_language(self) -> None:
         index = self.ui.langComboBox.currentIndex()
         new_lang_code = "en" if index == 1 else "uk"
 
         self.settings_service.lang_code = new_lang_code
-        print(f"[MainWindow] Language changed to: {new_lang_code}")
+        self.logger.info(f"Language changed to: {new_lang_code}")
 
         if DEV_COMPILED_UI_USING_ENABLED:
             self.load_language()
@@ -394,7 +371,6 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
 
     def check_free_memory(self, mb_space: int = 500) -> bool:
         storage = QStorageInfo("/")
-
         min_video_space = mb_space * 1024 * 1024
         available_bytes = storage.bytesAvailable()
         available_mb = round(available_bytes / 1024 / 1024, 0)
@@ -409,7 +385,6 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
                 ),
             )
             return False
-
         return True
 
     def handle_detection(self, detection: DetectionEvent):
@@ -429,7 +404,6 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
 
     def handle_radar_click(self, x, y):
         event_id = self.radar_renderer.get_target_id_at_position(x, y)
-
         if event_id:
             self.ui.index_search_edit.setText(str(event_id))
             self.perform_search()
@@ -441,18 +415,15 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
         self.update_alert_status()
 
     def update_radar(self) -> None:
-
         if not hasattr(self, "radar_clean_pixmap"):
             return
 
         targets = self.detection_manager.get_targets()
-
         final_pixmap = self.radar_renderer.draw_detections(
             base_pixmap=self.radar_clean_pixmap,
             targets=targets,
             max_radius_km=self.settings_service.radar_radius_km,
         )
-
         self.ui.Radar.setPixmap(final_pixmap)
 
     def update_detection_info(self) -> None:
@@ -461,15 +432,14 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
             return
 
         target_event = self.find_event_by_searched_index()
-
         if target_event:
-            if target_event.type == SourceType.RF:
-                freq_line = self.tr("{:.1f} MHz").format(
+            freq_line = (
+                self.tr("{:.1f} MHz").format(
                     convert_hz_to_mhz(target_event.frequency_hz)
                 )
-
-            else:
-                freq_line = self.tr("{:.0f} Hz").format(target_event.frequency_hz)
+                if target_event.type == SourceType.RF
+                else self.tr("{:.0f} Hz").format(target_event.frequency_hz)
+            )
 
             time_part = target_event.timestamp.split("T")[-1][:8]
             info = "\n".join(
@@ -504,7 +474,6 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
         for t in targets:
             if t.visual_index == self.searched_index:
                 return t.event
-
         return None
 
     def update_false_alarm_button_state(self) -> None:
@@ -513,24 +482,19 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
             return
 
         target_event = self.find_event_by_searched_index()
-
         if not target_event:
             self.ui.falseAlarmButton.setEnabled(False)
             return
 
         target = self.detection_manager.get_target_by_id(target_event.id)
-
         if target:
             is_stationary = target.is_stationary_for(STATIONARY_SECONDS)
-
             self.ui.falseAlarmButton.setEnabled(is_stationary)
-
         else:
             self.ui.falseAlarmButton.setEnabled(False)
 
     def update_alert_status(self) -> None:
         targets = self.detection_manager.get_targets()
-
         has_rf = any(t.event.type == SourceType.RF for t in targets)
         has_sound = any(t.event.type == SourceType.SOUND for t in targets)
 
@@ -538,8 +502,6 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
         self.ui.Sound_alert.setProperty("alert", has_sound)
         update_element_styles(self.ui.RF_alert)
         update_element_styles(self.ui.Sound_alert)
-
-        # self.ui.falseAlarmButton.setEnabled(self.detection_manager.has_detections())
 
     def handle_false_alarm(self) -> None:
         target_event = self.find_event_by_searched_index()
@@ -560,8 +522,7 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
 
     def update_gps_ui(self, data: GPSData) -> None:
         strength = data.strength
-        lat = data.lat
-        lon = data.lon
+        lat, lon = data.lat, data.lon
 
         if not lat or not lon:
             self.set_gps_ui_level(0)
@@ -571,22 +532,20 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
         distance = calculate_distance(
             self.current_coords[0], self.current_coords[1], new_lat, new_lon
         )
+
         if distance >= MIN_DISTANCE_THRESHOLD or self.force_gps_update:
             self.current_coords = [new_lat, new_lon]
             QTimer.singleShot(0, self.refresh_map)
             self.force_gps_update = False
-            print(f"[MainWindow] Map refreshed. Distance moved: {distance:.2f} m")
+            self.logger.debug(f"Map refreshed. Distance moved: {distance:.2f} m")
         else:
-            print(
-                f"[MainWindow] Update skipped. Distance change too small: {distance:.2f} m"
+            self.logger.debug(
+                f"Update skipped. Distance change too small: {distance:.2f} m"
             )
-
-        print(f"GPS Signal Strength: {strength}")
 
         gps_level = 0
         if strength:
             gps_level = math.ceil(strength / (100 / SIGNAL_LEVELS_COUNT))
-
         self.set_gps_ui_level(gps_level)
 
     def set_gps_ui_level(self, level: int) -> None:
@@ -596,7 +555,7 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
     @pyqtSlot(dict)
     def handle_gps(self, data: GPSData) -> None:
         self.update_gps_ui(data)
-        print(f"[MainWindow] GPS Received: {data.lat}, {data.lon}")
+        self.logger.debug(f"GPS Received: {data.lat}, {data.lon}")
 
     def handle_radar_radius_change(self) -> None:
         new_radar_radius = self.ui.radarRadiusSpinbox.value()
@@ -607,11 +566,9 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
 
     def handle_add_map(self) -> None:
         btn = cast(QPushButton, self.sender())
-
         if not btn.isChecked():
             QTimer.singleShot(0, self.refresh_map)
             return
-
         self.open_set_map_dialog()
 
     def open_set_map_dialog(self) -> None:
@@ -619,28 +576,20 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
             settings=self.settings_service, add_sizes_map_k=self.add_sizes_map_k
         )
 
-        # ScalableDialog = make_scalable(QDialog)
-        # scalable_dialog = ScalableDialog(widget_to_scale=map_dialog)
         move_dialog_down(map_dialog, self.geometry())
         result = map_dialog.exec()
 
         if result == QDialog.DialogCode.Accepted:
             settings_data = map_dialog.get_settings()
-
             if settings_data and settings_data.pixmap:
                 self.custom_map_settings = settings_data
                 self.current_map = settings_data.pixmap
-
-                print(f"[MainWindow] Custom map set. Width: {self.current_map.width()}")
-
+                self.logger.info(f"Custom map set. Width: {self.current_map.width()}")
                 self.scale_map()
-
-            print("[MainWindow] Map settings applied.")
+            self.logger.info("Map settings applied.")
         else:
             self.ui.addMapButton.setChecked(False)
-            print("[MainWindow] Map settings cancelled.")
-
-        self.scalable_dialog = None
+            self.logger.info("Map settings cancelled.")
 
     # endregion
 
@@ -653,8 +602,7 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
         move_dialog_down(db_window, self.geometry())
         db_window.exec()
 
-    def open_logs_dialog(self, classes: List[ObjectClass]):
-
+    def open_logs_dialog(self, classes: List[ObjectClass]) -> None:
         logs_dialog = LogDialog(
             self.log_service,
             self.detection_background_service,
@@ -664,8 +612,7 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
         move_dialog_down(logs_dialog, self.geometry())
         logs_dialog.exec()
 
-    def _on_classes_received_for_logs(self, response: ServiceResponse):
-
+    def _on_classes_received_for_logs(self, response: ServiceResponse) -> None:
         if response.operation == DbOperation.GET_CLASSES:
             self.pi_network.request_finished.disconnect(
                 self._on_classes_received_for_logs
@@ -677,14 +624,13 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
         if isinstance(response.data, dict):
             classes_raw = response.data.get("classes", [])
             classes = [ObjectClass.from_dict(c) for c in classes_raw]
-
             self.open_logs_dialog(classes)
 
-    def request_classes_and_open_logs_dialog(self):
+    def request_classes_and_open_logs_dialog(self) -> None:
         self.pi_network.request_finished.connect(self._on_classes_received_for_logs)
         self.pi_network.request_db_classes()
 
-    def open_chart_monitor_dialog(self):
+    def open_chart_monitor_dialog(self) -> None:
         monitor_dialog = ChartMonitorDialog(self.pi_network, self.settings_service)
         move_dialog_down(monitor_dialog, self.geometry())
         monitor_dialog.exec()
@@ -697,7 +643,6 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
             return
 
         new_settings = settings_dialog.get_settings()
-
         if not new_settings:
             return
 
@@ -717,39 +662,27 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
 
             self.settings_service.zoom = self.calculate_optimal_zoom(new_radius)
             self.ui.radarRadiusSpinbox.setMaximum(new_radius)
-
             QTimer.singleShot(0, self.refresh_map)
 
         if self.settings_service.gps_interval_s != new_interval:
             self.settings_service.gps_interval_s = new_interval
             self.timer_gps.setInterval(new_interval * 1000)
 
-        if self.settings_service.detection_ttl_s != new_detection_ttl:
-            self.settings_service.detection_ttl_s = new_detection_ttl
+        self.settings_service.detection_ttl_s = new_detection_ttl
+        self.settings_service.main_relays = new_main_relays
+        self.settings_service.is_jammer_auto_start_enabled = new_auto_start_enabled
 
-        if self.settings_service.main_relays != new_main_relays:
-            self.settings_service.main_relays = new_main_relays
-
-        if self.settings_service.is_jammer_auto_start_enabled != new_auto_start_enabled:
-            self.settings_service.is_jammer_auto_start_enabled = new_auto_start_enabled
-
-        is_jammer_timer_changed = False
-        if self.settings_service.is_jammer_auto_stop_enabled != new_auto_stop_enabled:
-            self.settings_service.is_jammer_auto_stop_enabled = new_auto_stop_enabled
-            is_jammer_timer_changed = True
-
-        if (
-            self.settings_service.jammer_auto_stop_interval_s
+        is_jammer_timer_changed = (
+            self.settings_service.is_jammer_auto_stop_enabled != new_auto_stop_enabled
+            or self.settings_service.jammer_auto_stop_interval_s
             != new_auto_stop_interval_s
-        ):
-            self.settings_service.jammer_auto_stop_interval_s = new_auto_stop_interval_s
-            is_jammer_timer_changed = True
-
+        )
         if is_jammer_timer_changed:
+            self.settings_service.is_jammer_auto_stop_enabled = new_auto_stop_enabled
+            self.settings_service.jammer_auto_stop_interval_s = new_auto_stop_interval_s
             self.jammer_service.update_auto_stop()
 
-        if self.settings_service.clean_settings != new_clean_settings:
-            self.settings_service.clean_settings = new_clean_settings
+        self.settings_service.clean_settings = new_clean_settings
 
     def calculate_optimal_zoom(self, radius_km: float) -> int:
         BASE_RADIUS_KM = 0.5
@@ -766,49 +699,49 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
 
         optimal_zoom = BASE_ZOOM + zoom_diff
         final_zoom = math.floor(optimal_zoom)
-
         return max(0, min(19, final_zoom))
 
     # endregion
 
     # region --- Screen Recording ---
 
-    def disabled_media_btns(self):
+    def disabled_media_btns(self) -> None:
         self.ui.screenRecordButton.setEnabled(False)
         self.ui.screenSaveButton.setEnabled(False)
 
     @pyqtSlot(bool)
     def handle_toggle_recording(self) -> None:
+        # Перевірка вільного місця перед записом
         button = cast(QPushButton, self.sender())
 
         if button.isChecked():
             is_space_enough = self.check_free_memory()
             if is_space_enough:
+                # Формування імені файлу на основі поточної дати
                 filename = f"{MEDIA_DIR_PATH}/record_{QDateTime.currentDateTime().toString('yyyy-MM-dd_hh-mm-ss')}.mp4"
                 os.makedirs(os.path.dirname(filename), exist_ok=True)
                 self.recorder.start_recording(filename)
             else:
                 button.setChecked(False)
                 self.disabled_media_btns()
-
         else:
             self.recorder.stop_recording()
 
     @pyqtSlot()
     def on_recording_started(self) -> None:
-        print("[MainWindow] Recording started. Showing status widget.")
+        self.logger.info("Recording started. Showing status widget.")
         self.record_status_widget.setVisible(True)
 
     @pyqtSlot()
     def on_recording_stopped(self) -> None:
-        print("[MainWindow] Recording stopped. Hiding status widget.")
+        self.logger.info("Recording stopped. Hiding status widget.")
         if self.ui.screenRecordButton.isChecked():
             self.ui.screenRecordButton.setChecked(False)
         self.record_status_widget.reset_state()
 
     @pyqtSlot(str)
     def show_error_message(self, error_text: str) -> None:
-        print(f"[MainWindow] Recording Error: {error_text}")
+        self.logger.error(f"Recording Error: {error_text}")
         QMessageBox.critical(self, self.tr("Recording Error"), error_text)
         self.on_recording_stopped()
 
@@ -825,23 +758,17 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
         if not btn.isChecked():
             if hasattr(self, "media_service") and self.media_service:
                 self.media_service.stop()
-                print("[MainWindow] Media player closed.")
+                self.logger.info("Media player closed.")
             return
 
         file_filters = (
             f"{self.tr('Media Files (*.png *.jpg *.jpeg *.bmp *.mp4 *.avi *.mkv)')};;"
         )
-
         directory_to_open = os.path.abspath(MEDIA_DIR_PATH)
-
-        if not os.path.exists(directory_to_open):
-            os.makedirs(directory_to_open, exist_ok=True)
+        os.makedirs(directory_to_open, exist_ok=True)
 
         file_path, _ = QFileDialog.getOpenFileName(
-            self,
-            self.tr("Select file to view"),
-            directory_to_open,
-            file_filters,
+            self, self.tr("Select file to view"), directory_to_open, file_filters
         )
 
         if not file_path:
@@ -851,15 +778,15 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
         try:
             self.media_service.play(file_path)
         except Exception as e:
-            print(
-                f"[MainWindow] Critical VLC Error: {e}. Opening in default OS player."
-            )
+            # Fallback для систем без VLC
+            self.logger.error(f"Critical VLC Error: {e}. Opening in default OS player.")
             url = QUrl.fromLocalFile(file_path)
             QDesktopServices.openUrl(url)
 
     # endregion
 
     # region --- Modes & Settings ---
+
     def handle_pi_connection_status(self, active: bool) -> None:
         self.ui.sensor_indicator.setProperty("isActive", active)
         update_element_styles(self.ui.sensor_indicator)
@@ -867,14 +794,12 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
     def set_radar_mode(self) -> None:
         if self.is_radar_mode:
             return
-
         self.is_radar_mode = True
         self.ui.map_background_label.setPixmap(QPixmap())
 
     def set_map_mode(self) -> None:
         if not self.is_radar_mode:
             return
-
         self.is_radar_mode = False
         self.scale_map()
 
@@ -884,63 +809,47 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
 
         self.settings_service.radio_range_mhz = [start_value, end_value]
         self.reset_radio_range_status()
-
         self.pi_network.set_rf_range([start_value, end_value])
 
     def clear_radio_range_values(self) -> None:
         radio_range = self.settings_service.radio_range_mhz
-
         self.ui.radioStartSpinBox.setValue(int(radio_range[0]))
         self.ui.radioEndSpinBox.setValue(int(radio_range[1]))
-
         self.reset_radio_range_status()
 
     def reset_radio_range_status(self) -> None:
         self.ui.radioStartSpinBox.setProperty("status", "saved")
         self.ui.radioEndSpinBox.setProperty("status", "saved")
-
         update_element_styles(self.ui.radioStartSpinBox)
         update_element_styles(self.ui.radioEndSpinBox)
 
         self.ui.saveRadioRangePushButton.setEnabled(False)
-        update_element_styles(self.ui.saveRadioRangePushButton)
         self.ui.clearRadioRangePushButton.setEnabled(False)
+        update_element_styles(self.ui.saveRadioRangePushButton)
         update_element_styles(self.ui.clearRadioRangePushButton)
 
     def handle_signal_range_change(self, value: int) -> None:
+        # Валідація Min < Max
         current_spin_box = cast(QSpinBox, self.sender())
-
-        start_spin_box: Optional[QSpinBox] = None
-        end_spin_box: Optional[QSpinBox] = None
-
-        name = current_spin_box.objectName()
-        if name == "radioStartSpinBox":
-            start_spin_box = current_spin_box
-            end_spin_box = self.ui.radioEndSpinBox
-        elif name == "radioEndSpinBox":
-            start_spin_box = self.ui.radioStartSpinBox
-            end_spin_box = current_spin_box
-
-        if start_spin_box is None or end_spin_box is None:
-            return
+        start_spin_box = self.ui.radioStartSpinBox
+        end_spin_box = self.ui.radioEndSpinBox
 
         current_spin_box.setProperty("status", "unsaved")
         update_element_styles(current_spin_box)
         self.ui.saveRadioRangePushButton.setEnabled(True)
-        update_element_styles(self.ui.saveRadioRangePushButton)
         self.ui.clearRadioRangePushButton.setEnabled(True)
+        update_element_styles(self.ui.saveRadioRangePushButton)
         update_element_styles(self.ui.clearRadioRangePushButton)
 
+        # Динамічне обмеження діапазонів
         start_spin_box.blockSignals(True)
         end_spin_box.blockSignals(True)
-
         end_spin_box.setMinimum(start_spin_box.value())
         start_spin_box.setMaximum(end_spin_box.value())
-
         start_spin_box.blockSignals(False)
         end_spin_box.blockSignals(False)
 
-    def on_jammer_state_changed(self, is_active: bool):
+    def on_jammer_state_changed(self, is_active: bool) -> None:
         time_str = self.jammer_service.get_formatted_time()
         self.ui.jammerTimerTime.setText(time_str)
         self.ui.jammerOnTimerButton.setEnabled(not is_active)
@@ -949,6 +858,7 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
         update_element_styles(self.ui.jammerOnTimerButton)
         update_element_styles(self.ui.jammerOffTimerButton)
 
+        # Візуальна індикація роботи конкретних реле
         for relay in self.settings_service.main_relays:
             label = getattr(self.ui, f"{relay.lower()}_label", None)
             if label:
@@ -965,26 +875,21 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
         self.ui.TimeLabel.setText(current_datetime.toString("hh:mm:ss"))
 
         if self.jammer_service.is_active:
-            time_str = self.jammer_service.get_formatted_time()
-            self.ui.jammerTimerTime.setText(time_str)
+            self.ui.jammerTimerTime.setText(self.jammer_service.get_formatted_time())
 
     def rotate_radar_animation(self) -> None:
         has_detections = self.detection_manager.has_detections()
-
         anim_pixmap = self.radar_renderer.draw_scan_animation(
             size=self.ui.Radar.size(), has_detections=has_detections
         )
-
         self.ui.Radar_Section.setPixmap(anim_pixmap)
 
     @asyncSlot()
     async def refresh_map(self) -> None:
-
         if self.is_radar_mode:
             return
 
-        print("[MainWindow] Loading map asynchronously...")
-
+        self.logger.debug("Loading map asynchronously...")
         map_type = self.map_types[self.current_map_type_index]
 
         result = await self.map_service.get_map_pixmap(
@@ -995,9 +900,9 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
 
         if result:
             pixmap, resolution = result
-            self.custom_map_settings = None
-            print(f"[MainWindow] Map loaded. Res: {resolution:.4f} m/px")
-
+            self.custom_map_settings = (
+                None  # Скидаємо кастомну карту при завантаженні API-карти
+            )
             self.current_map = pixmap
             self.current_map_resolution = resolution
 
@@ -1008,66 +913,52 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
             self.scale_map()
         else:
             QMessageBox.warning(None, self.tr("Error"), self.tr("Failed to load map."))
-            print("[MainWindow] Error: Failed to load map.")
 
     def scale_map(self) -> None:
         if self.is_radar_mode or not self.current_map:
             return
 
-        # --- ГІЛКА 1: Кастомна карта (Ручне налаштування) ---
+        # Трансформація: translate -> rotate -> scale
+
+        # --- ГІЛКА 1: Кастомна карта (Ручне налаштування через діалог) ---
         if self.custom_map_settings:
-            # 1. Отримуємо параметри
             pixmap = self.custom_map_settings.pixmap
             original_px_per_km = self.custom_map_settings.px_per_km
             center_point = self.custom_map_settings.center_px_point
             rotation = self.custom_map_settings.rotation
 
-            # 2. Розраховуємо необхідний масштаб для поточного радіуса радара
-            # Радіус радара на екрані (половина ширини віджета RadarFrame)
+            # Розрахунок масштабу: скільки екранних пікселів припадає на 1 км реального простору
             radar_radius_px = self.ui.RadarFrame.width() / 2
             real_radius_km = self.settings_service.radar_radius_km
 
             if real_radius_km <= 0:
                 return
 
-            # Скільки пікселів на км нам треба зараз на екрані
             needed_px_per_km = radar_radius_px / real_radius_km
-
-            # Коефіцієнт масштабування відносно оригінальної картинки
             scale_factor = needed_px_per_km / original_px_per_km
 
-            # 3. Готуємо канвас
+            # Канвас для фінального відображення
             view_size = self.ui.map_background_label.size()
             final_pixmap = QPixmap(view_size)
             final_pixmap.fill(Qt.GlobalColor.transparent)
 
             painter = QPainter(final_pixmap)
             painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
-            painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
-            # 4. Знаходимо центр радара відносно map_background_label
-            # Оскільки RadarFrame може бути не рівно по центру вікна
+            # Визначення центру радара відносно підкладки карти
             radar_geo = self.ui.RadarFrame.geometry()
             bg_geo = self.ui.map_background_label.geometry()
-
-            # Координати центру радара всередині map_background_label
             target_x = radar_geo.center().x() - bg_geo.x()
             target_y = radar_geo.center().y() - bg_geo.y()
 
-            # 5. Матриця трансформації (аналогічно як в діалозі)
+            # Побудова матриці трансформації
             t = QTransform()
-
-            # А. Переміщуємо пензлик в центр РАДАРА на Main Window
-            t.translate(target_x, target_y)
-
-            # Б. Повертаємо (якщо було задано в діалозі)
-            t.rotate(rotation)
-
-            # В. Масштабуємо під поточний зум
-            t.scale(scale_factor, scale_factor)
-
-            # Г. Зміщуємо назад на точку ЦЕНТРУ КАРТИНКИ (яку ви вибрали кліком)
-            t.translate(-center_point.x(), -center_point.y())
+            t.translate(target_x, target_y)  # 1. Переміщення в центр радара
+            t.rotate(rotation)  # 2. Поворот
+            t.scale(scale_factor, scale_factor)  # 3. Масштабування під зум
+            t.translate(
+                -center_point.x(), -center_point.y()
+            )  # 4. Центрування по опорній точці
 
             painter.setTransform(t)
             painter.drawPixmap(0, 0, pixmap)
@@ -1075,21 +966,20 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
 
             self.ui.map_background_label.setPixmap(final_pixmap)
 
-        # --- ГІЛКА 2: Звичайна карта (API/Generated) ---
+        # --- ГІЛКА 2: Звичайна карта (API/OSM) ---
         else:
             scale_factor = self._calculate_scale_factor()
-
             view_size = self.ui.map_background_label.size()
             radar_geo = self.ui.RadarFrame.geometry()
 
+            # Розрахунок відносних координат для обрізки тайлів
             rel_x = radar_geo.center().x() - self.ui.map_background_label.x()
             rel_y = radar_geo.center().y() - self.ui.map_background_label.y()
-            radar_center_relative = QPointF(rel_x, rel_y)
 
             final_pixmap = MapViewLogic.generate_view_pixmap(
                 source_map=self.current_map,
                 view_size=view_size,
-                radar_center_relative=radar_center_relative,
+                radar_center_relative=QPointF(rel_x, rel_y),
                 scale_factor=scale_factor,
             )
 
@@ -1113,14 +1003,12 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
         await self.refresh_map()
 
     def take_screenshot(self) -> None:
-        is_space_enough = self.check_free_memory()
-        if is_space_enough:
+        if self.check_free_memory():
             screenshot = self.grab()
             filename = f"{MEDIA_DIR_PATH}/screenshot_{QDateTime.currentDateTime().toString('yyyy-MM-dd_hh-mm-ss')}.png"
             os.makedirs(os.path.dirname(filename), exist_ok=True)
-
             screenshot.save(filename, "png")
-            print(f"[Success] Скріншот збережено: {filename}")
+            self.logger.info(f"Screenshot saved: {filename}")
         else:
             self.disabled_media_btns()
 
@@ -1139,7 +1027,10 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
             update_element_styles(self.ui.index_search_edit)
             return
 
-        if not text.isdigit():
+        if text.isdigit():
+            self.searched_index = int(text)
+            self.ui.index_search_edit.setProperty("is_valid", True)
+        else:
             self.ui.index_search_edit.setProperty("is_valid", False)
             update_element_styles(self.ui.index_search_edit)
             return
@@ -1154,11 +1045,10 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
 
     @pyqtSlot(dict)
     def handle_pi_data(self, data: Dict[str, Any]) -> None:
-        print(f"[MainWindow] Received generic data from Pi: {data}")
+        self.logger.debug(f"Received generic data from Pi: {data}")
 
     def update_wifi_signal_info(self) -> None:
         wifi_strength = self.network_signal_service.get_signal_strength()
-
         wifi_level = 0
         if wifi_strength:
             wifi_level = math.ceil(wifi_strength / (100 / SIGNAL_LEVELS_COUNT))
@@ -1167,7 +1057,7 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
         update_element_styles(self.ui.WiFi_level)
 
     def restart_app(self) -> None:
-        print("[MainWindow] Logout requested. Restarting application...")
+        self.logger.info("Logout requested. Restarting application...")
         self.settings_service.remember_me = False
         self.settings_service.role = "operator"
         self.settings_service.sync()
@@ -1177,16 +1067,15 @@ class MainWindow(QMainWindow, TestUIOptimizationMixin):
     # endregion
 
     def closeEvent(self, a0: QCloseEvent | None) -> None:
+        # Блокування потоку для безпечного збереження буферів на диск
         event = a0
-        print("[MainWindow] Application closing...")
+        self.logger.info("Application closing...")
         QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         try:
             if self.recorder.isRunning():
-                print("[MainWindow] Closing: Stopping recording thread...")
+                self.logger.info("Closing: Stopping recording thread...")
                 self.recorder.stop_recording()
-
                 if not self.recorder.wait(3000):
-                    print("[MainWindow] Thread did not stop. Forcing termination.")
                     self.recorder.terminate()
 
             if self.log_service:

@@ -1,18 +1,25 @@
+"""Модуль для запуску та аналізу результатів тестування проєкту SDR_Pi."""
+
 import os
 import re
 import subprocess
 import sys
 import time
 from dataclasses import dataclass
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
-# Налаштування кодування для Windows
+# Налаштування UTF-8 кодування для Windows
 if sys.platform == "win32":
     os.system("chcp 65001 > nul")
+    if hasattr(sys.stdout, "reconfigure"):
+        getattr(sys.stdout, "reconfigure")(encoding="utf-8")
+    if hasattr(sys.stderr, "reconfigure"):
+        getattr(sys.stderr, "reconfigure")(encoding="utf-8")
 
 
-# Кольори для терміналу
 class Colors:
+    """ANSI-коди кольорів для стилізації термінального виводу."""
+
     HEADER = "\033[95m"
     OKBLUE = "\033[94m"
     OKCYAN = "\033[96m"
@@ -26,6 +33,16 @@ class Colors:
 
 @dataclass
 class TestGroup:
+    """
+    ### Тестова група
+
+    Зберігає інформацію про логічне об'єднання тестів.
+
+    - **name**: Назва (напр. "Unit: Models").
+    - **path**: Шлях до файлів.
+    - **description**: Опис групи.
+    """
+
     name: str
     path: str
     description: str
@@ -33,13 +50,13 @@ class TestGroup:
 
 def run_group(
     group: TestGroup, collect_cov: bool = False
-) -> tuple[int, List[str], List[str]]:
+) -> Tuple[int, List[str], List[str]]:
+    """Запускає групу тестів через pytest та повертає статус і списки проблем."""
     print(
         f"\n{Colors.BOLD}{Colors.OKBLUE}=== Running Group: {group.name} ==={Colors.ENDC}"
     )
     print(f"{Colors.OKCYAN}{group.description}{Colors.ENDC}")
 
-    # Базова команда
     cmd = [
         sys.executable,
         "-m",
@@ -51,8 +68,6 @@ def run_group(
     ]
 
     if collect_cov:
-        # Додаємо параметри покриття
-        # --cov-append дозволяє накопичувати дані від різних груп тестів
         cmd.extend(["--cov=app", "--cov=pi_server", "--cov-append", "--cov-report="])
 
     env = os.environ.copy()
@@ -78,14 +93,14 @@ def run_group(
 
     current_warning_test = None
     current_failure_test = None
-    failure_details: Dict[str, List[str]] = {}  # test_id -> list of error lines
+    failure_details: Dict[str, List[str]] = {}
 
     if process.stdout:
         for line in process.stdout:
             print(line, end="", flush=True)
             stripped = line.strip()
 
-            # --- 1. Секція FAILURES (Tracebacks) ---
+            # Аналіз FAILURES
             if re.match(r"^_{3,}.+_{3,}$", stripped):
                 in_failures_section = True
                 test_name = stripped.strip("_ ").split()[0]
@@ -104,7 +119,7 @@ def run_group(
                     in_failures_section = False
                     current_failure_test = None
 
-            # --- 2. Секція warnings summary ---
+            # Аналіз WARNINGS
             if "=== warnings summary ===" in line:
                 in_warnings_summary = True
                 in_failures_section = False
@@ -122,7 +137,7 @@ def run_group(
                 elif line.startswith("==="):
                     in_warnings_summary = False
 
-            # --- 3. Секція short test summary info ---
+            # Аналіз SHORT SUMMARY
             if "=== short test summary info ===" in line:
                 in_short_summary = True
                 in_failures_section = False
@@ -155,12 +170,11 @@ def run_group(
     return process.returncode, failures, warnings
 
 
-def main():
-    # Перевіряємо чи потрібно збирати покриття
+def main() -> None:
+    """Точка входу для запуску всіх груп тестів та формування звіту."""
     collect_cov = "--cov" in sys.argv
 
     if collect_cov:
-        # Очищаємо старі дані покриття перед початком
         subprocess.run([sys.executable, "-m", "coverage", "erase"])
 
     groups = [
@@ -213,13 +227,11 @@ def main():
     end_time = time.time()
     duration = end_time - start_time
 
-    # Фінальний звіт
     print("\n" + "=" * 80)
     print(f"{Colors.BOLD}{Colors.UNDERLINE}FINAL SUMMARY REPORT{Colors.ENDC}")
     print("=" * 80)
     print(f"Total tests duration: {duration:.2f}s")
 
-    # Ворнінги
     if all_warnings:
         print(
             f"\n{Colors.WARNING}{Colors.BOLD}⚠ WARNINGS ({len(all_warnings)}):{Colors.ENDC}"
@@ -233,7 +245,6 @@ def main():
         for w in unique_warnings:
             print(f"  {w}")
 
-    # Помилки
     if all_failures:
         print(
             f"\n{Colors.FAIL}{Colors.BOLD}✘ FAILURES ({len(all_failures)}):{Colors.ENDC}"
@@ -258,7 +269,6 @@ def main():
         print(f"{Colors.BOLD}GENERATING COVERAGE REPORTS{Colors.ENDC}")
         print("=" * 80)
 
-        # Використовуємо модуль coverage для звіту
         subprocess.run(
             [
                 sys.executable,
@@ -270,7 +280,6 @@ def main():
             ]
         )
 
-        # Генерація HTML
         os.makedirs("tests/coverage_html", exist_ok=True)
         subprocess.run(
             [

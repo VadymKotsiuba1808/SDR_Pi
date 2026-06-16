@@ -7,6 +7,7 @@ from PyQt6.QtGui import (
     QBrush,
     QColor,
     QFont,
+    QImage,
     QLinearGradient,
     QPainter,
     QPen,
@@ -31,19 +32,23 @@ from app.utils.convert_measurement_unit import convert_hz_to_mhz
 
 class SpectralChartRenderer(TranslatorMixin):
     """
-    Рендерер для графіків.
-    Логіка: Background дає форму кривої/колір. Event дає позицію маркера.
+    Рендерер для відображення спектральних даних та водоспаду (waterfall).
+
+    Цей клас відповідає за візуалізацію спектральної щільності потужності
+    та історії спектру у часі. Він використовує кешування для оптимізації
+    візуалізації важких об'єктів, таких як теплові карти (heatmap).
     """
 
-    def __init__(self):
-        self.cached_heatmap = None
-        self._last_bg_id = None
+    def __init__(self) -> None:
+        self.cached_heatmap: Optional[QImage] = None
+        self._last_bg_id: Optional[int] = None
 
     def prepare_cache(self, background: Optional[SpectralData]) -> None:
-        """Кешує heatmap для фону, бо це важка операція"""
+        """Підготовлює та кешує теплову карту для водоспаду."""
         if not background or background.data_magnitude is None:
             return
 
+        # Кешування необхідне, оскільки перетворення матриці амплітуд у QImage є важкою операцією.
         matrix = background.data_magnitude
         if isinstance(matrix, np.ndarray) and len(matrix.shape) > 1:
             self.cached_heatmap = ChartMath.create_heatmap(matrix)
@@ -59,7 +64,7 @@ class SpectralChartRenderer(TranslatorMixin):
         background: Optional[SpectralData],
         event: Optional[DetectionEvent] = None,
     ) -> None:
-
+        """Малює графік спектральної щільності (2D лінія)."""
         if not background:
             p.setPen(ChartTheme.TEXT)
             p.drawText(
@@ -67,15 +72,14 @@ class SpectralChartRenderer(TranslatorMixin):
             )
             return
 
-        # 1. Малюємо СІТКУ
         src_type = event.type if event else SourceType.RF
         self._draw_grid(p, rect, background, src_type, mode="dbm")
 
-        # 2. Малюємо КРИВУ СПЕКТРУ
         bg_data = background.data_magnitude
         if bg_data is not None:
             curve = bg_data
 
+            # Якщо маємо 2D матрицю, беремо максимальні значення (Max Hold)
             if isinstance(bg_data, np.ndarray) and len(bg_data.shape) > 1:
                 curve = np.max(bg_data, axis=0)
             elif (
@@ -85,10 +89,8 @@ class SpectralChartRenderer(TranslatorMixin):
             ):
                 curve = np.max(np.array(bg_data), axis=0)
 
-            # Малюємо як заповнену область
             self._draw_curve(p, rect, curve, is_fill=True)
 
-        # 3. Малюємо МАРКЕР ПОДІЇ
         if event:
             self._draw_event_marker(p, rect, background, event)
 
@@ -99,10 +101,10 @@ class SpectralChartRenderer(TranslatorMixin):
         background: Optional[SpectralData],
         event: Optional[DetectionEvent] = None,
     ) -> None:
+        """Малює водоспад (heatmap історії спектру)."""
         if not background:
             return
 
-        # 1. Малюємо HEATMAP
         if self.cached_heatmap:
             p.drawImage(rect, self.cached_heatmap)
         else:
@@ -113,7 +115,6 @@ class SpectralChartRenderer(TranslatorMixin):
             if isinstance(matrix, list):
                 matrix = np.array(matrix, dtype=np.uint8)
 
-            # 2. Якщо прийшов 1D масив -> робимо його 2D (1 рядок)
             if len(matrix.shape) == 1:
                 matrix = np.expand_dims(matrix, axis=0)
                 matrix = background.data_magnitude
@@ -121,11 +122,9 @@ class SpectralChartRenderer(TranslatorMixin):
                 img = ChartMath.create_heatmap(matrix)
                 p.drawImage(rect, img)
 
-        # 2. Малюємо СІТКУ
         src_type = event.type if event else SourceType.RF
         self._draw_grid(p, rect, background, src_type, mode="time")
 
-        # 3. Малюємо МАРКЕР (лінію) для події
         if event:
             self._draw_event_marker(p, rect, background, event)
 
@@ -137,7 +136,7 @@ class SpectralChartRenderer(TranslatorMixin):
         chart_type: str,
         event: Optional[DetectionEvent] = None,
     ) -> CursorState:
-
+        """Обчислює стан курсору (частоту, рівень, час) на основі координат миші."""
         check_pos = pos
 
         if not rect.contains(check_pos) or not background:
@@ -146,6 +145,7 @@ class SpectralChartRenderer(TranslatorMixin):
         x_px = pos.x()
         rx = (x_px - rect.left()) / rect.width()
 
+        # Розрахунок частоти: лінійна інтерполяція між краями смуги пропускання
         freq_hz = (background.center_freq_hz - background.sample_rate_hz / 2) + (
             rx * background.sample_rate_hz
         )
@@ -171,6 +171,7 @@ class SpectralChartRenderer(TranslatorMixin):
                 val_uint8 = data_vec[col_idx]
                 db_val = float(val_uint8) - DB_OFFSET
 
+                # Координата Y відповідає рівню в dB, відмасштабованому до висоти віджета
                 display_db = max(min(db_val, VISUAL_MAX_DB), VISUAL_MIN_DB)
                 ratio = (display_db - VISUAL_MIN_DB) / VISUAL_RANGE_DB
                 y_pos = rect.bottom() - (ratio * rect.height())
@@ -180,6 +181,7 @@ class SpectralChartRenderer(TranslatorMixin):
 
         elif chart_type == "waterfall":
             ry = (pos.y() - rect.top()) / rect.height()
+            # Час відраховується назад від поточного моменту (0) до -duration
             time_s = -background.duration_sec + (ry * background.duration_sec)
             label_text += self.tr(" | {:.2f}s").format(time_s)
 
@@ -193,24 +195,20 @@ class SpectralChartRenderer(TranslatorMixin):
 
     def _draw_event_marker(
         self, p: QPainter, rect: QRect, bg: SpectralData, event: DetectionEvent
-    ):
-        """Малює вертикальну лінію та підсвітку на частоті детекції"""
-
+    ) -> None:
+        """Малює вертикальну лінію та підсвітку на частоті детекції."""
         start_freq = bg.center_freq_hz - (bg.sample_rate_hz / 2)
         freq_offset = event.frequency_hz - start_freq
 
-        # Якщо частота події виходить за межі огляду фону - не малюємо
         if freq_offset < 0 or freq_offset > bg.sample_rate_hz:
             return
 
         ratio_x = freq_offset / bg.sample_rate_hz
         x_px = rect.left() + (ratio_x * rect.width())
 
-        # Малюємо лінію
-        p.setPen(QPen(QColor(255, 255, 0, 180), 2, Qt.PenStyle.DashLine))  # Yellow
+        p.setPen(QPen(QColor(255, 255, 0, 180), 2, Qt.PenStyle.DashLine))
         p.drawLine(int(x_px), rect.top(), int(x_px), rect.bottom())
 
-        # Малюємо трикутник зверху (маркер)
         p.setBrush(QBrush(QColor(255, 255, 0)))
         p.setPen(Qt.PenStyle.NoPen)
         triangle = QPolygonF(
@@ -226,7 +224,10 @@ class SpectralChartRenderer(TranslatorMixin):
         p.setFont(QFont("Arial", 9, QFont.Weight.Bold))
         p.drawText(int(x_px) + 8, int(rect.top()) + 15, event.name)
 
-    def _draw_curve(self, p: QPainter, rect: QRect, data: np.ndarray, is_fill: bool):
+    def _draw_curve(
+        self, p: QPainter, rect: QRect, data: np.ndarray, is_fill: bool
+    ) -> None:
+        """Малює криву спектру."""
         num_points = len(data)
         if num_points < 2:
             return
@@ -260,14 +261,19 @@ class SpectralChartRenderer(TranslatorMixin):
         p.drawPolyline(poly)
 
     def _draw_grid(
-        self, p: QPainter, rect: QRect, data: SpectralData, type: SourceType, mode: str
-    ):
+        self,
+        p: QPainter,
+        rect: QRect,
+        data: SpectralData,
+        source_type: SourceType,
+        mode: str,
+    ) -> None:
+        """Малює координатну сітку та мітки осей."""
         p.setFont(QFont("Arial", 8))
         grid_pen = QPen(ChartTheme.GRID_FAINT, 1, Qt.PenStyle.DashLine)
         text_pen = QPen(ChartTheme.TEXT)
 
-        # (вісь X )
-        if type == SourceType.RF:
+        if source_type == SourceType.RF:
             divisor, unit, dec = 1e6, self.tr("MHz"), 2
         else:
             divisor, unit, dec = 1.0, self.tr("Hz"), 0
@@ -296,7 +302,6 @@ class SpectralChartRenderer(TranslatorMixin):
             current += nice_step
         p.drawText(rect.right() - 20, rect.bottom() + 35, unit)
 
-        # === ВІСЬ Y ===
         steps_y = 6
         for i in range(steps_y):
             ratio = i / (steps_y - 1)

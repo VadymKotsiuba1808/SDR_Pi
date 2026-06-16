@@ -9,26 +9,25 @@ from app.models.source_type import SourceType
 @dataclass
 class StreamDataChunk:
     """
-    Пакет даних, що приходить від SDR або мікрофона в реальному часі.
+    Пакет даних SDR або мікрофона для візуалізації та обробки.
+
+    Транспортує масив потужностей сигналу `data_magnitude` (uint8) та параметри
+    спектру (частота, дискретизація). Конвертація: `dB = value - DB_OFFSET`.
     """
 
-    stream_type: SourceType  # з SourceType
-    # Переводиться у db за формулою dB=value_uint8−DB_OFFSET(у constants)
-    # Містить лише дані про силу сигналу
+    stream_type: SourceType
     data_magnitude: np.ndarray
-    center_freq_hz: float  # Центральна частота (для RF)
-    sample_rate_hz: float  # Частота дискретизації. Визначає ширину смуги огляду.
-    timestamp: float  # Час отримання пакету
+    center_freq_hz: float
+    sample_rate_hz: float
+    timestamp: float
 
     @staticmethod
-    def from_dict(data: dict, type: SourceType) -> "StreamDataChunk":
-        """Парсинг вхідного словника JSON у об'єкт."""
-
+    def from_dict(data: dict, stream_type: SourceType) -> "StreamDataChunk":
         raw_list = data.get("data_magnitude", [])
         magnitude_array = np.array(raw_list, dtype=np.uint8)
 
         return StreamDataChunk(
-            stream_type=data.get("stream_type", type),
+            stream_type=data.get("stream_type", stream_type),
             data_magnitude=magnitude_array,
             center_freq_hz=float(data.get("center_freq_hz", 0)),
             sample_rate_hz=float(data.get("sample_rate_hz", 0)),

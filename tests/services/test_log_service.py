@@ -1,8 +1,7 @@
-"""
-Тести для сервісу логування (LogService).
-"""
+"""Тести для сервісу логування (LogService)."""
 
 import os
+from collections.abc import Generator
 from datetime import datetime
 from pathlib import Path
 
@@ -16,29 +15,23 @@ from app.services.log_service import LogService
 
 @pytest.fixture
 def temp_logs_dir(tmp_path: Path) -> str:
-    """
-    Фікстура для тимчасової директорії логів.
-    """
+    """Створює тимчасову директорію для логів."""
     logs_dir = tmp_path / "logs"
     logs_dir.mkdir()
     return str(logs_dir)
 
 
 @pytest.fixture
-def log_service(temp_logs_dir: str):
-    """
-    Фікстура для ініціалізації LogService.
-    Використовуємо великий інтервал flush, щоб контролювати його вручну.
-    """
+def log_service(temp_logs_dir: str) -> Generator[LogService, None, None]:
+    """Ініціалізує сервіс логування для тестування."""
+    # Великий інтервал flush (100с) для контролю запису в тестах
     service = LogService(flush_interval=100, logs_dir=temp_logs_dir)
     yield service
     service.stop()
 
 
-def create_detection_event(event_id="t1"):
-    """
-    Допоміжна функція для створення події детекції.
-    """
+def create_detection_event(event_id: str = "t1") -> DetectionEvent:
+    """Створює подію детекції для тестів."""
     return DetectionEvent(
         id=event_id,
         type=SourceType.RF,
@@ -53,20 +46,17 @@ def create_detection_event(event_id="t1"):
 
 
 def test_add_log_and_force_flush(log_service: LogService, temp_logs_dir: str) -> None:
-    """
-    Тест додавання логів та примусового запису на диск.
-    """
     event = create_detection_event("test_id")
     entry = LogEntry(type=LogType.DETECTION, payload=event)
 
     log_service.add_log(entry)
     log_service.force_flush()
 
-    # Перевіряємо наявність файлу сесії
+    # Перевіряємо створення файлу сесії
     files = [f for f in os.listdir(temp_logs_dir) if f.startswith("session_")]
     assert len(files) >= 1, "Log session file should be created"
 
-    # Завантажуємо дані та перевіряємо вміст
+    # Перевіряємо коректність збережених даних
     loaded_entries = log_service.load_session_data(files[0])
     assert len(loaded_entries) >= 1, "Should load at least 1 entry"
     assert loaded_entries[0].type == LogType.DETECTION, "Loaded log type mismatch"
@@ -76,17 +66,11 @@ def test_add_log_and_force_flush(log_service: LogService, temp_logs_dir: str) ->
 
 
 def test_load_non_existent_session(log_service: LogService) -> None:
-    """
-    Тест завантаження даних з неіснуючого файлу.
-    """
     entries = log_service.load_session_data("non_existent.jsonl")
     assert entries == [], "Should return empty list for non-existent session file"
 
 
 def test_get_available_sessions(log_service: LogService, temp_logs_dir: str) -> None:
-    """
-    Тест отримання списку доступних сесій.
-    """
     # Створюємо фіктивний файл сесії
     fake_session = os.path.join(temp_logs_dir, "session_2024-01-01_12-00-00.jsonl")
     with open(fake_session, "w", encoding="utf-8") as f:
@@ -100,10 +84,7 @@ def test_get_available_sessions(log_service: LogService, temp_logs_dir: str) -> 
 
 
 def test_session_rotation_by_date(log_service: LogService, temp_logs_dir: str) -> None:
-    """
-    Тест створення нової сесії при зміні дати логів.
-    """
-    # Лог з минулого року
+    # Створюємо подію з минулою датою для ротації
     old_ts = "2023-01-01T10:00:00"
     event = create_detection_event("old_target")
     entry = LogEntry(type=LogType.DETECTION, payload=event, timestamp=old_ts)
@@ -111,11 +92,9 @@ def test_session_rotation_by_date(log_service: LogService, temp_logs_dir: str) -
     log_service.add_log(entry)
     log_service.force_flush()
 
-    # Має з'явитися файл сесії, де self._current_session_date буде "2023-01-01"
     assert log_service._current_session_date == "2023-01-01", (
         "Service should rotate session date to match log entry timestamp"
     )
 
-    # Перевіряємо, що в списку файлів є хоча б один (сервіс створить файл з поточним часом у назві)
     files = os.listdir(temp_logs_dir)
     assert len(files) >= 1, "Log files should exist after flush"

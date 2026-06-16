@@ -13,20 +13,27 @@ from app.core.constants import (
     MAPS_API_URL,
     MAPS_IMG_FORMAT,
 )
+from app.core.logging_config import get_logger
 from app.protocols import MapServiceSettings
+
+logger = get_logger(__name__)
 
 
 class MapTypes(str, Enum):
+    """Перелік доступних типів мапи."""
+
     ROAD = "streets-v2"
-    # SATELLITE = "satellite-v2"
     HYBRID = "hybrid"
     TERRAIN = "topo-v2"
 
 
 class MapService:
     """
-    Сервіс мапи.
-    Відповідає за роботу з геоданими, завантаження тайлів мапи, тощо.
+    Сервіс для роботи з картографічними даними.
+
+    Відповідає за завантаження тайлів (плиток) мапи з віддаленого сервера,
+    їх зшивання у велике зображення та математичні перетворення між
+    географічними координатами (Lat/Lon) та пікселями на екрані.
     """
 
     TILE_SIZE: int = 512
@@ -36,12 +43,13 @@ class MapService:
         self.client: httpx.AsyncClient = httpx.AsyncClient()
 
     def get_resolution_at_lat(self, zoom: int, lat: float) -> float:
+        """Обчислює роздільну здатність мапи (метрів на піксель) для заданої широти."""
         initial_res: float = 156543.03392
         res: float = (initial_res * math.cos(math.radians(lat))) / (2**zoom)
         return res * (256 / self.TILE_SIZE)
 
     def latlon_to_tile(self, lat: float, lon: float, zoom: int) -> Tuple[float, float]:
-
+        """Перетворює географічні координати у координати тайлів за проекцією Меркатора."""
         lat_rad: float = math.radians(lat)
         n: float = 2.0**zoom
         x_tile: float = (lon + 180.0) / 360.0 * n
@@ -55,7 +63,7 @@ class MapService:
     def tile_to_pixel_offset(
         self, lat: float, lon: float, zoom: int
     ) -> Tuple[float, float]:
-
+        """Перетворює координати у глобальне піксельне зміщення на полотні тайлів."""
         x_tile, y_tile = self.latlon_to_tile(lat, lon, zoom)
         return x_tile * self.TILE_SIZE, y_tile * self.TILE_SIZE
 
@@ -69,7 +77,7 @@ class MapService:
         format: str,
         api_key: str,
     ) -> Image.Image:
-
+        """Завантажує окремий тайл мапи або повертає пустий квадрат при помилці."""
         url: str = (
             f"{base_url}/{map_type}/{zoom}/{x}/{y}.{format.lower()}?key={api_key}"
         )
@@ -78,7 +86,7 @@ class MapService:
             response.raise_for_status()
             return Image.open(BytesIO(response.content))
         except Exception as e:
-            print(f"[MapService] Error loading tile {x}/{y}: {e}")
+            logger.error(f"Error loading tile {x}/{y}: {e}")
             return Image.new("RGB", (self.TILE_SIZE, self.TILE_SIZE), (200, 200, 200))
 
     async def get_map_pixmap(
@@ -87,41 +95,37 @@ class MapService:
         map_type: MapTypes,
         add_sizes_k: List[float] = [1, 1],
     ) -> Optional[Tuple[QPixmap, float]]:
-
+        """Отримує готове зображення мапи (QPixmap) та ціну пікселя для заданих координат."""
         if not self.settings_service.api_key:
-            print("[MapService] Error: API key missing.")
+            logger.error("API key missing.")
             return None
 
         lat, lon = coord
-
         geo_data = self._calculate_geometry(lat, lon, add_sizes_k)
 
-        print(
-            f"[MapService] Size: {geo_data['width_px']}x{geo_data['height_px']} | "
+        logger.info(
+            f"Map requested: {geo_data['width_px']}x{geo_data['height_px']} | "
             f"Res: {geo_data['km_per_pixel']:.4f} km/px"
         )
 
         try:
             full_img = await self._fetch_and_stitch_tiles(geo_data, map_type)
-
             pixmap = self._crop_and_convert(full_img, geo_data)
-
             return (pixmap, geo_data["km_per_pixel"])
 
         except Exception as e:
-            print(f"[MapService] Critical Map Error: {e}")
+            logger.exception(f"Critical Map Error: {e}")
             return None
 
     def _calculate_geometry(
         self, lat: float, lon: float, add_sizes_k: List[float]
     ) -> Dict[str, Any]:
-
+        """Розраховує піксельні межі та діапазон тайлів для завантаження області мапи."""
         zoom = self.settings_service.zoom
         radar_max_radius_km = self.settings_service.radar_max_radius_km
         add_width_k, add_height_k = add_sizes_k
 
         km_per_pixel = self.get_resolution_at_lat(zoom, lat) / 1000.0
-
         radius_px = radar_max_radius_km / km_per_pixel
 
         width_px = math.ceil(radius_px * 2 * add_width_k)
@@ -158,7 +162,7 @@ class MapService:
     async def _fetch_and_stitch_tiles(
         self, geo_data: Dict[str, Any], map_type: MapTypes
     ) -> Image.Image:
-
+        """Паралельно завантажує та зшиває необхідні тайли в одне зображення."""
         base_url = MAPS_API_URL
         api_key = self.settings_service.api_key
         img_format = str(MAPS_IMG_FORMAT)
@@ -187,7 +191,7 @@ class MapService:
                 positions.append((x, y))
 
         tiles = await asyncio.gather(*tasks)
-        print(f"[MapService] Count of tiles: {len(tasks)}")
+        logger.debug(f"Stitching {len(tasks)} tiles.")
 
         for img, (x, y) in zip(tiles, positions):
             px = (x - tile_x_min) * self.TILE_SIZE
@@ -206,7 +210,7 @@ class MapService:
     def _crop_and_convert(
         self, full_img: Image.Image, geo_data: Dict[str, Any]
     ) -> QPixmap:
-
+        """Обрізає зшите зображення до точних меж та конвертує в QPixmap."""
         img_format = str(MAPS_IMG_FORMAT)
 
         top_left_px_x = geo_data["top_left_px_x"]

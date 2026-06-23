@@ -27,10 +27,19 @@
     }
   },
 
+  "[markdown]": {
+    "editor.formatOnSave": false
+  },
+
   "ruff.enable": true,
   "ruff.organizeImports": true,
 
   "files.associations": {
     "*.ts": "xml"
-  }
+  },
+
+  "yaml.customTags": [
+    "python/name:mermaid2.fence_mermaid_custom scalar",
+    "tag:yaml.org,2002:python/name:mermaid2.fence_mermaid_custom scalar"
+  ]
 }

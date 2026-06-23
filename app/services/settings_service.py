@@ -79,8 +79,11 @@ class SettingsService(QObject):
         "owner_password_hash": Setting("auth", str, ""),
         "remember_me": Setting("auth", bool, False),
         "radio_range_mhz": ("signal", list, [100, 999]),
-        "detection_ttl_s": ("detection", int, 3),
-        "gps_interval_s": ("timers", int, 2),
+        # Detection
+        "detection_ttl_s": ("detection", int, 5),
+        # Timers
+        "gps_interval_s": ("timers", int, 120),
+        # Jammer
         "main_relays": ("jammer", list, [RELAY_NAMES_LIST[0]]),
         "is_jammer_auto_start_enabled": ("jammer", bool, False),
         "is_jammer_auto_stop_enabled": ("jammer", bool, False),

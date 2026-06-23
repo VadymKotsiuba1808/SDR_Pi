@@ -1,0 +1,97 @@
+site_name: SDR_Pi
+site_description: Програмний комплекс для пасивного радарного та радіомоніторингу БПЛА
+site_author: Bohdan
+
+# Налаштування теми Material
+theme:
+  name: material
+  language: uk
+  features:
+    - navigation.tabs # Верхнє меню навігації
+    - navigation.sections # Розгортання розділів у лівому меню
+    - navigation.top # Кнопка "Вгору"
+    - search.suggest # Підказки при пошуку
+    - search.highlight # Підсвічування результатів пошуку
+    - content.code.copy # Кнопка копіювання коду
+  palette:
+    # Темна тема за замовчуванням (більш підходить для радарних систем)
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: blue grey
+      accent: light blue
+      toggle:
+        icon: material/weather-night
+        name: Увімкнути світлу тему
+    # Світла тема
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: blue grey
+      accent: light blue
+      toggle:
+        icon: material/weather-sunny
+        name: Увімкнути темну тему
+
+# Підключення плагінів
+plugins:
+  - search
+  - mermaid2:
+      arguments:
+        theme: "default"
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: ["."] # Де шукати Python модулі
+          options:
+            docstring_style: google # Використовуємо стиль Google для коментарів
+            show_source: true # Показувати кнопку "Переглянути код"
+            show_root_heading: true # Показувати назву модуля як заголовок
+
+# Налаштування форматування Markdown
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - admonition # Стандартні блоки !!! note, !!! warning
+  - pymdownx.details # Блоки, які можна розгортати (???)
+  - md_in_html
+  - tables
+  # Підтримка діаграм Mermaid.js
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:mermaid2.fence_mermaid_custom
+
+nav:
+  - Головна: index.md
+  - Огляд системи:
+      - Архітектура: architecture.md
+      - Якість та Стандарти: quality.md
+      - Розгортання: installation.md
+      - Тестування: testing.md
+      - План розвитку: roadmap.md
+      - Глосарій термінів: glossary.md
+  - Посібники:
+      - Головний екран та Керування: how-to/main_controls.md
+      - Як додати новий клас об'єкта: how-to/add_object_class.md
+      - Керування реле та GPS: how-to/hardware_control.md
+      - Моніторинг ефіру (Real-time): how-to/realtime_monitor.md
+      - Робота з логами: how-to/manage_logs.md
+      - Медіа (Скріншоти та Запис): how-to/media.md
+      - Налаштування мапи: how-to/map_setup.md
+      - Системне меню (Меню): how-to/menu_settings.md
+      - Безпека та Авторизація: how-to/auth_security.md
+      - Багатомовність (i18n): how-to/translations.md
+  - API Довідник (Клієнт):
+      - Сервіси (Services): api/services.md
+      - Ядро (Core): api/core.md
+      - Віджети (Widgets): api/widgets.md
+      - UI Компоненти: api/ui.md
+      - Утиліти (Utils): api/utils.md
+      - Валідатори (Validators): api/validators.md
+      - Моделі даних (Models): api/models.md
+  - API Довідник (Сервер):
+      - Сервер та БД: api/pi_server.md

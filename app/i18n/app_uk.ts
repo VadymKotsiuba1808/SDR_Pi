@@ -1469,8 +1469,8 @@ li.checked::marker { content: &quot;\2612&quot;; }
     </message>
     <message>
         <location filename="../ui/settings_dialog.ui" line="263"/>
-        <source>Авто-старт глушилки:</source>
-        <translation>Авто-старт глушилки:</translation>
+        <source>Авто-старт реле:</source>
+        <translation>Авто-старт реле:</translation>
     </message>
     <message>
         <location filename="../ui/settings_dialog.ui" line="270"/>
@@ -1480,8 +1480,8 @@ li.checked::marker { content: &quot;\2612&quot;; }
     </message>
     <message>
         <location filename="../ui/settings_dialog.ui" line="277"/>
-        <source>Авто-стоп глушилки:</source>
-        <translation>Авто-стоп глушилки:</translation>
+        <source>Авто-стоп реле:</source>
+        <translation>Авто-стоп реле:</translation>
     </message>
     <message>
         <location filename="../ui/settings_dialog.ui" line="291"/>

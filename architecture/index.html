@@ -1,0 +1,816 @@
+
+<!DOCTYPE html>
+
+<html class="no-js" lang="uk">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta content="Програмний комплекс для пасивного радарного та радіомоніторингу БПЛА" name="description"/>
+<meta content="Bohdan" name="author"/>
+<link href=".." rel="prev"/>
+<link href="../quality/" rel="next"/>
+<link href="../assets/images/favicon.png" rel="icon"/>
+<meta content="mkdocs-1.6.1, mkdocs-material-9.7.6" name="generator"/>
+<title>Архітектура - SDR_Pi</title>
+<link href="../assets/stylesheets/main.484c7ddc.min.css" rel="stylesheet"/>
+<link href="../assets/stylesheets/palette.ab4e12ef.min.css" rel="stylesheet"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&amp;display=fallback" rel="stylesheet"/>
+<style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+<link href="../assets/_mkdocstrings.css" rel="stylesheet"/>
+<script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+</head>
+<body data-md-color-accent="light-blue" data-md-color-primary="blue-grey" data-md-color-scheme="slate" dir="ltr">
+<input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox"/>
+<input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
+<label class="md-overlay" for="__drawer"></label>
+<div data-md-component="skip">
+<a class="md-skip" href="#_1">
+          Перейти до змісту
+        </a>
+</div>
+<div data-md-component="announce">
+</div>
+<header class="md-header" data-md-component="header">
+<nav aria-label="Хедер" class="md-header__inner md-grid">
+<a aria-label="SDR_Pi" class="md-header__button md-logo" data-md-component="logo" href=".." title="SDR_Pi">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"></path></svg>
+</a>
+<label class="md-header__button md-icon" for="__drawer">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"></path></svg>
+</label>
+<div class="md-header__title" data-md-component="header-title">
+<div class="md-header__ellipsis">
+<div class="md-header__topic">
+<span class="md-ellipsis">
+            SDR_Pi
+          </span>
+</div>
+<div class="md-header__topic" data-md-component="header-topic">
+<span class="md-ellipsis">
+            
+              Архітектура
+            
+          </span>
+</div>
+</div>
+</div>
+<form class="md-header__option" data-md-component="palette">
+<input aria-label="Увімкнути світлу тему" class="md-option" data-md-color-accent="light-blue" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-primary="blue-grey" data-md-color-scheme="slate" id="__palette_0" name="__palette" type="radio"/>
+<label class="md-header__button md-icon" for="__palette_1" hidden="" title="Увімкнути світлу тему">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"></path></svg>
+</label>
+<input aria-label="Увімкнути темну тему" class="md-option" data-md-color-accent="light-blue" data-md-color-media="(prefers-color-scheme: light)" data-md-color-primary="blue-grey" data-md-color-scheme="default" id="__palette_1" name="__palette" type="radio"/>
+<label class="md-header__button md-icon" for="__palette_0" hidden="" title="Увімкнути темну тему">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"></path></svg>
+</label>
+</form>
+<script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+<label class="md-header__button md-icon" for="__search">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+</label>
+<div class="md-search" data-md-component="search" role="dialog">
+<label class="md-search__overlay" for="__search"></label>
+<div class="md-search__inner" role="search">
+<form class="md-search__form" name="search">
+<input aria-label="Пошук" autocapitalize="off" autocomplete="off" autocorrect="off" class="md-search__input" data-md-component="search-query" name="query" placeholder="Пошук" required="" spellcheck="false" type="text"/>
+<label class="md-search__icon md-icon" for="__search">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
+</label>
+<nav aria-label="Шукати" class="md-search__options">
+<button aria-label="Очистити" class="md-search__icon md-icon" tabindex="-1" title="Очистити" type="reset">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>
+</button>
+</nav>
+<div class="md-search__suggest" data-md-component="search-suggest"></div>
+</form>
+<div class="md-search__output">
+<div class="md-search__scrollwrap" data-md-scrollfix="" tabindex="0">
+<div class="md-search-result" data-md-component="search-result">
+<div class="md-search-result__meta">
+            Пошук розпочато
+          </div>
+<ol class="md-search-result__list" role="presentation"></ol>
+</div>
+</div>
+</div>
+</div>
+</div>
+</nav>
+</header>
+<div class="md-container" data-md-component="container">
+<nav aria-label="Вкладки" class="md-tabs" data-md-component="tabs">
+<div class="md-grid">
+<ul class="md-tabs__list">
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="..">
+        
+  
+  
+    
+  
+  Головна
+
+      </a>
+</li>
+<li class="md-tabs__item md-tabs__item--active">
+<a class="md-tabs__link" href="./">
+          
+  
+  
+  Огляд системи
+
+        </a>
+</li>
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../how-to/main_controls/">
+          
+  
+  
+  Посібники
+
+        </a>
+</li>
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../api/services/">
+          
+  
+  
+  API Довідник (Клієнт)
+
+        </a>
+</li>
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../api/pi_server/">
+          
+  
+  
+  API Довідник (Сервер)
+
+        </a>
+</li>
+</ul>
+</div>
+</nav>
+<main class="md-main" data-md-component="main">
+<div class="md-main__inner md-grid">
+<div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation">
+<div class="md-sidebar__scrollwrap">
+<div class="md-sidebar__inner">
+<nav aria-label="Навігація" class="md-nav md-nav--primary md-nav--lifted" data-md-level="0">
+<label class="md-nav__title" for="__drawer">
+<a aria-label="SDR_Pi" class="md-nav__button md-logo" data-md-component="logo" href=".." title="SDR_Pi">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"></path></svg>
+</a>
+    SDR_Pi
+  </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="..">
+<span class="md-ellipsis">
+    
+  
+    Головна
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+<input checked="" class="md-nav__toggle md-toggle" id="__nav_2" type="checkbox"/>
+<label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+<span class="md-ellipsis">
+    
+  
+    Огляд системи
+  
+
+    
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="true" aria-labelledby="__nav_2_label" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="__nav_2">
+<span class="md-nav__icon md-icon"></span>
+            
+  
+    Огляд системи
+  
+
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item md-nav__item--active">
+<input class="md-nav__toggle md-toggle" id="__toc" type="checkbox"/>
+<label class="md-nav__link md-nav__link--active" for="__toc">
+<span class="md-ellipsis">
+    
+  
+    Архітектура
+  
+
+    
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<a class="md-nav__link md-nav__link--active" href="./">
+<span class="md-ellipsis">
+    
+  
+    Архітектура
+  
+
+    
+  </span>
+</a>
+<nav aria-label="Зміст" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      Зміст
+    </label>
+<ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_2">
+<span class="md-ellipsis">
+      
+        Високорівнева схема взаємодії
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_3">
+<span class="md-ellipsis">
+      
+        Основні компоненти системи
+      
+    </span>
+</a>
+<nav aria-label="Основні компоненти системи" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#1-raspberry-pi">
+<span class="md-ellipsis">
+      
+        1. Обчислювальний модуль (Сервер на Raspberry Pi)
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#2">
+<span class="md-ellipsis">
+      
+        2. Модуль Оператора (Клієнт на ПК)
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#data-flow">
+<span class="md-ellipsis">
+      
+        Життєвий цикл детекції (Data Flow)
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../quality/">
+<span class="md-ellipsis">
+    
+  
+    Якість та Стандарти
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../installation/">
+<span class="md-ellipsis">
+    
+  
+    Розгортання
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../testing/">
+<span class="md-ellipsis">
+    
+  
+    Тестування
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../roadmap/">
+<span class="md-ellipsis">
+    
+  
+    План розвитку
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../glossary/">
+<span class="md-ellipsis">
+    
+  
+    Глосарій термінів
+  
+
+    
+  </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" id="__nav_3" type="checkbox"/>
+<label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+<span class="md-ellipsis">
+    
+  
+    Посібники
+  
+
+    
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_3_label" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="__nav_3">
+<span class="md-nav__icon md-icon"></span>
+            
+  
+    Посібники
+  
+
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../how-to/main_controls/">
+<span class="md-ellipsis">
+    
+  
+    Головний екран та Керування
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../how-to/add_object_class/">
+<span class="md-ellipsis">
+    
+  
+    Як додати новий клас об'єкта
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../how-to/hardware_control/">
+<span class="md-ellipsis">
+    
+  
+    Керування реле та GPS
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../how-to/realtime_monitor/">
+<span class="md-ellipsis">
+    
+  
+    Моніторинг ефіру (Real-time)
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../how-to/manage_logs/">
+<span class="md-ellipsis">
+    
+  
+    Робота з логами
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../how-to/media/">
+<span class="md-ellipsis">
+    
+  
+    Медіа (Скріншоти та Запис)
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../how-to/map_setup/">
+<span class="md-ellipsis">
+    
+  
+    Налаштування мапи
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../how-to/menu_settings/">
+<span class="md-ellipsis">
+    
+  
+    Системне меню (Меню)
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../how-to/auth_security/">
+<span class="md-ellipsis">
+    
+  
+    Безпека та Авторизація
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../how-to/translations/">
+<span class="md-ellipsis">
+    
+  
+    Багатомовність (i18n)
+  
+
+    
+  </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" id="__nav_4" type="checkbox"/>
+<label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+<span class="md-ellipsis">
+    
+  
+    API Довідник (Клієнт)
+  
+
+    
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_4_label" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="__nav_4">
+<span class="md-nav__icon md-icon"></span>
+            
+  
+    API Довідник (Клієнт)
+  
+
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../api/services/">
+<span class="md-ellipsis">
+    
+  
+    Сервіси (Services)
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../api/core/">
+<span class="md-ellipsis">
+    
+  
+    Ядро (Core)
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../api/widgets/">
+<span class="md-ellipsis">
+    
+  
+    Віджети (Widgets)
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../api/ui/">
+<span class="md-ellipsis">
+    
+  
+    UI Компоненти
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../api/utils/">
+<span class="md-ellipsis">
+    
+  
+    Утиліти (Utils)
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../api/validators/">
+<span class="md-ellipsis">
+    
+  
+    Валідатори (Validators)
+  
+
+    
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../api/models/">
+<span class="md-ellipsis">
+    
+  
+    Моделі даних (Models)
+  
+
+    
+  </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" id="__nav_5" type="checkbox"/>
+<label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+<span class="md-ellipsis">
+    
+  
+    API Довідник (Сервер)
+  
+
+    
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_5_label" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="__nav_5">
+<span class="md-nav__icon md-icon"></span>
+            
+  
+    API Довідник (Сервер)
+  
+
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../api/pi_server/">
+<span class="md-ellipsis">
+    
+  
+    Сервер та БД
+  
+
+    
+  </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+<div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc">
+<div class="md-sidebar__scrollwrap">
+<div class="md-sidebar__inner">
+<nav aria-label="Зміст" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      Зміст
+    </label>
+<ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_2">
+<span class="md-ellipsis">
+      
+        Високорівнева схема взаємодії
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_3">
+<span class="md-ellipsis">
+      
+        Основні компоненти системи
+      
+    </span>
+</a>
+<nav aria-label="Основні компоненти системи" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#1-raspberry-pi">
+<span class="md-ellipsis">
+      
+        1. Обчислювальний модуль (Сервер на Raspberry Pi)
+      
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#2">
+<span class="md-ellipsis">
+      
+        2. Модуль Оператора (Клієнт на ПК)
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#data-flow">
+<span class="md-ellipsis">
+      
+        Життєвий цикл детекції (Data Flow)
+      
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+<div class="md-content" data-md-component="content">
+<article class="md-content__inner md-typeset">
+<h1 id="_1">Архітектура Системи</h1>
+<p>Програмний комплекс <strong>SDR_Pi</strong> розроблений для забезпечення керування, збереження та візуалізації даних у системі пасивного радарного та радіомоніторингу (детекції БПЛА).</p>
+<p>Комплекс логічно та фізично розділений на два основні вузли, які з'єднані безпосередньо через Ethernet-кабель. Це забезпечує мінімальну затримку (latency) та незалежність від зовнішньої мережевої інфраструктури.</p>
+<div class="admonition note">
+<p class="admonition-title">Призначення репозиторію</p>
+<p><strong>Ця документація описує Модуль Оператора (Інтерфейс) та базові заглушки Сервера.</strong>
+Директорія <code>pi_server/</code> у цьому проекті містить серверний код (TCP, SQLite). У межах цього репозиторію він використовується переважно для повноцінного E2E-тестування клієнтського додатку в умовах, максимально наближених до реальних.</p>
+</div>
+<hr/>
+<h2 id="_2">Високорівнева схема взаємодії</h2>
+<pre class="mermaid"><code>graph TD
+    subgraph RaspberryPi ["Обчислювальний Модуль - Сервер"]
+        Hardware["Апаратна частина: SDR, GPS, Реле"]
+        DSP["Модуль Аналізу та Зіставлення"]
+        TCPServer["TCP Сервер pi_server"]
+        DB["SQLite БД Сигнатур"]
+
+        Hardware --&gt; DSP
+        DB --&gt; DSP
+        DSP --&gt; TCPServer
+    end
+
+    subgraph DesktopClient ["Модуль Оператора - Клієнт ПК"]
+        TCPClient["Мережевий Сервіс app.services"]
+        Logic["Ядро Логіки app.core"]
+        GUI["Графічний Інтерфейс PyQt6"]
+        LocalLogs["Локальні журнали JSONL"]
+
+        TCPClient --&gt; Logic
+        Logic --&gt; GUI
+        Logic --&gt; LocalLogs
+    end
+
+    %% Зв'язки
+    TCPServer &lt;--&gt; TCPClient
+</code></pre>
+<hr/>
+<h2 id="_3">Основні компоненти системи</h2>
+<h3 id="1-raspberry-pi">1. Обчислювальний модуль (Сервер на Raspberry Pi)</h3>
+<p>Це "мозок" системи. Він виконує всю важку математику та апаратну взаємодію.</p>
+<ul>
+<li><strong>Апаратний рівень:</strong> Фізично підключені модулі: SDR (для аналізу радіочастот), мікрофони (акустичний аналіз), модуль GPS (позиціонування) та керовані виходи (<strong>апаратні реле</strong>).</li>
+<li><strong>База даних сигнатур (SQLite):</strong> Зберігає еталонні сигнатури різних класів БПЛА.</li>
+<li><strong>Модуль аналізу (DSP):</strong> Отримує сирі сигнали з антен/мікрофонів, завантажує сигнатури з БД та виконує порівняння. Якщо знайдено збіг — формує пакет даних.</li>
+<li><strong>TCP Сервер (<code>pi_server</code>):</strong> Напряму передає клієнту результати аналізу (без очікування додаткових запитів від клієнта) та приймає команди керування (наприклад, активувати реле).</li>
+</ul>
+<h3 id="2">2. Модуль Оператора (Клієнт на ПК)</h3>
+<p>Десктопний додаток на базі PyQt6, який отримує оброблені дані та надає оператору зручний інтерфейс для моніторингу та керування.</p>
+<ul>
+<li><strong>Мережевий рівень (<code>PiNetworkService</code>):</strong> Слухає Ethernet-з'єднання. Десеріалізує вхідні JSON-пакети від Raspberry Pi у внутрішні моделі (Pydantic/Dataclass).</li>
+<li><strong>Бізнес-логіка та Сховище:</strong></li>
+<li>Обробляє отримані дані (відображення на мапі, графіках).</li>
+<li><strong>Локальні журнали (Logs):</strong> Наразі вся історія виявлень та дій оператора зберігається локально у форматі <code>JSONL</code>. В майбутньому планується міграція на локальну базу даних для складнішої аналітики.</li>
+<li><strong>Рівень UI (<code>app/widgets/</code>):</strong> Візуалізація даних. Динамічні графіки спектру, інтерактивна мапа (позиція прив'язується до GPS-даних від сервера) та панелі керування реле (Jammer).</li>
+</ul>
+<hr/>
+<h2 id="data-flow">Життєвий цикл детекції (Data Flow)</h2>
+<p>Ось як інформація проходить через систему:</p>
+<ol>
+<li><strong>Захоплення та Аналіз (Сервер):</strong> Raspberry Pi зчитує частоти з SDR. Аналізатор порівнює їх з еталонними сигнатурами зі своєї SQLite БД.</li>
+<li><strong>Виявлення:</strong> При збігу сигнатур Сервер одразу формує JSON-пакет (<code>DetectionEvent</code>), що містить тип об'єкта, частоту та поточні полярні координати.</li>
+<li><strong>Передача:</strong> Пакет миттєво відправляється по Ethernet-кабелю до Клієнта.</li>
+<li><strong>Візуалізація та Логування (Клієнт):</strong><ul>
+<li><code>PiNetworkService</code> приймає пакет.</li>
+<li>UI оновлюється: на мапі з'являється маркер, графіки оновлюють спектр.</li>
+<li>Подія записується у локальний <code>JSONL</code> файл історії.</li>
+</ul>
+</li>
+<li><strong>Реакція (Опціонально):</strong> Оператор через UI натискає кнопку активації реле. Клієнт відправляє TCP-команду на Сервер, який фізично замикає обрані реле.</li>
+</ol>
+</article>
+</div>
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+</div>
+<button class="md-top md-icon" data-md-component="top" hidden="" type="button">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"></path></svg>
+  Повернутись нагору
+</button>
+</main>
+<footer class="md-footer">
+<div class="md-footer-meta md-typeset">
+<div class="md-footer-meta__inner md-grid">
+<div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" rel="noopener" target="_blank">
+      Material for MkDocs
+    </a>
+</div>
+</div>
+</div>
+</footer>
+</div>
+<div class="md-dialog" data-md-component="dialog">
+<div class="md-dialog__inner md-typeset"></div>
+</div>
+<script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u0421\u043a\u043e\u043f\u0456\u0439\u043e\u0432\u0430\u043d\u043e \u0432 \u0431\u0443\u0444\u0435\u0440", "clipboard.copy": "\u0421\u043a\u043e\u043f\u0456\u044e\u0432\u0430\u0442\u0438 \u0432 \u0431\u0443\u0444\u0435\u0440", "search.result.more.one": "\u0429\u0435 1 \u0437\u0431\u0456\u0433 \u043d\u0430 \u0446\u0456\u0439 \u0441\u0442\u043e\u0440\u0456\u043d\u0446\u0456", "search.result.more.other": "\u0429\u0435 # \u0437\u0431\u0456\u0433\u0456\u0432 \u043d\u0430 \u0446\u0456\u0439 \u0441\u0442\u043e\u0440\u0456\u043d\u0446\u0456", "search.result.none": "\u0417\u0431\u0456\u0433\u0456\u0432 \u043d\u0435 \u0437\u043d\u0430\u0439\u0434\u0435\u043d\u043e", "search.result.one": "\u0417\u043d\u0430\u0439\u0434\u0435\u043d\u043e 1 \u0437\u0431\u0456\u0433", "search.result.other": "\u0417\u043d\u0430\u0439\u0434\u0435\u043d\u043e # \u0437\u0431\u0456\u0433\u0456\u0432", "search.result.placeholder": "\u0420\u043e\u0437\u043f\u043e\u0447\u043d\u0456\u0442\u044c \u043f\u0438\u0441\u0430\u0442\u0438 \u0434\u043b\u044f \u043f\u043e\u0448\u0443\u043a\u0443", "search.result.term.missing": "\u041d\u0435 \u0437\u043d\u0430\u0439\u0434\u0435\u043d\u043e \u0437\u0430\u043f\u0438\u0442\u0443", "select.version": "\u041e\u0431\u0440\u0430\u0442\u0438 \u0432\u0435\u0440\u0441\u0456\u044e"}, "version": null}</script>
+<script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+<script type="module">import mermaid from "https://unpkg.com/mermaid@10.4.0/dist/mermaid.esm.min.mjs";
+window.mermaidConfig = {default: {
+    theme: "default",
+    startOnLoad: false
+}};</script></body>
+</html>
